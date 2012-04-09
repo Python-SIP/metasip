@@ -1,0 +1,190 @@
+#!/usr/bin/env python3
+
+# Copyright (c) 2012 Riverbank Computing Limited.
+#
+# This file is part of metasip.
+#
+# This file may be used under the terms of the GNU General Public License v3
+# as published by the Free Software Foundation which can be found in the file
+# LICENSE-GPL3.txt included in this package.
+#
+# This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+# WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+
+""" msip is a tool for creating Python extension modules using the SIP wrapper
+generator.
+"""
+
+
+import sys
+import os
+
+from metasip.Project import Project
+
+
+def usage(rc = 2):
+    """Print a usage/help message and quit the application.
+
+    rc is the value to return as the exit code to the calling process.
+    """
+    if rc == 0:
+        f = sys.stdout
+    else:
+        f = sys.stderr
+
+    f.write("Usage:\n")
+    f.write("    msip [-h] [-g dir] [-O] [gui-args] [--] [project]\n")
+    f.write("where:\n")
+    f.write("    -h         display this help message\n")
+    f.write("    -g dir     generate the .sip files in dir\n")
+    f.write("    -O         generate .sip files for old versions of SIP\n")
+    f.write("    gui-args   arguments passed to the GUI\n")
+    f.write("    --         stop GUI argument parsing\n")
+    f.write("    project    the project file\n")
+
+    sys.exit(rc)
+
+
+def load_batch_project(prjname):
+    """
+    Load an existing project in anticipation of doing some batch processing.
+    Return the project and a dummy GUI.
+
+    prjname is the name of the project file.
+    """
+    class DummyGUI:
+        """
+        This class is a dummy GUI.
+        """
+        def log(self, msg):
+            """
+            Log a message from the project engine.
+
+            msg is the text of the message excluding newlines.
+            """
+            sys.stdout.write("%s\n" % msg)
+
+    if not prjname:
+        fatal("Specify the name of an existing project file")
+
+    if not os.path.isfile(prjname):
+        fatal("%s is not an existing file" % prjname)
+
+    # Load the project.
+    prj = Project(prjname)
+    gui = DummyGUI()
+
+    if not prj.load(gui):
+        fatal(prj.diagnostic)
+
+    return prj, gui
+
+
+def generate(prjname, gendir, latest_sip):
+    """
+    Generate the .sip files for a project and return an exit code or 0 if there
+    was no error.
+
+    prjname is the name of the project file.
+    gendir is the directory in which to generate the .sip files.
+    """
+    if not os.path.isdir(gendir):
+        fatal("%s is not an existing directory" % gendir)
+
+    prj, gui = load_batch_project(prjname)
+
+    # Generate each module.
+    for mod in prj.modules:
+        if not prj.generateModule(gui, mod, gendir, False, latest_sip=latest_sip):
+            fatal(prj.diagnostic)
+
+    # No error if we have got this far.
+    return 0
+
+
+def launchGUI(prjname, guiargs):
+    """
+    Launch the GUI for a project and return an exit code or 0 if there was no
+    error.
+
+    prjname is the name of the project file.
+    guiargs is a list of any GUI specific command line arguments.
+    """
+    import metasip.QtGUI as GUI
+
+    app = GUI.Application(guiargs)
+    mw = GUI.MainWindow()
+    app.setMainWindow(mw)
+
+    mw.loadProject(Project(prjname))
+
+    return app.execute()
+
+
+def fatal(msg):
+    """
+    Display an error message and exit with a return code of 1.
+
+    msg is the text of the message, excluding newlines.
+    """
+    sys.stderr.write("msip: %s\n" % msg)
+    sys.exit(1)
+
+
+if __name__ == "__main__":
+    # Parse the arguments.
+    argv = sys.argv[1:]
+
+    gendir = None
+    latest_sip = True
+    guiargs = []
+
+    nxt = 0
+    skip = False
+
+    for arg in argv:
+        nxt += 1
+
+        if skip:
+            skip = False
+            continue
+
+        if arg == "-h":
+            usage(0)
+
+        if arg == "-O":
+            latest_sip = False
+        elif arg == "-g":
+            if nxt >= len(argv):
+                usage()
+
+            gendir = argv[nxt]
+            skip = True
+        elif arg == "--":
+            # Stop parsing GUI arguments.
+            break
+        elif arg.startswith("-") or guiargs:
+            guiargs.append(arg)
+        else:
+            nxt -= 1
+            break
+
+    # There might be one argument left which is the project name.
+    unused = len(argv) - nxt
+
+    if unused > 1:
+        usage()
+
+    if unused == 1:
+        prjname = argv[-1]
+    else:
+        prjname = None
+
+    # Carry out the required action.
+    if gendir:
+        rc = generate(prjname, gendir, latest_sip)
+    else:
+        rc = launchGUI(prjname, guiargs)
+
+    sys.exit(rc)
