@@ -21,6 +21,7 @@ from PyQt4.QtCore import QDir, QSettings, Qt
 from PyQt4.QtGui import (QAbstractSlider, QApplication, QFileDialog,
         QMainWindow, QMessageBox, QPlainTextEdit, QProgressDialog, QSplitter)
 
+from ..logger import Logger
 from ..Project import Project
 from ..WebXML import WebXMLParser
 
@@ -60,6 +61,9 @@ class MainWindow(QMainWindow, Ui_MainWindowBase):
         super(MainWindow, self).__init__(parent)
 
         self.setupUi(self)
+
+        # This instance is the logger.
+        Logger().instance = self
 
         self.project = None
         self._webxml = None
