@@ -20,7 +20,16 @@ generator.
 import sys
 import os
 
-from metasip.Project import Project
+from dip.io import IoManager, IStorage, StorageError, IStorageLocation
+from dip.io.storage.filesystem import FilesystemStorageFactory
+
+from metasip import Logger, Project, ProjectCodec
+
+
+# Configure the i/o manager so we can use it for reading and writing projects
+# to the filesystem.
+IoManager.codecs.append(ProjectCodec())
+IoManager.storage_factories.append(FilesystemStorageFactory())
 
 
 def usage(rc = 2):
@@ -53,32 +62,30 @@ def load_batch_project(prjname):
 
     prjname is the name of the project file.
     """
-    class DummyGUI:
-        """
-        This class is a dummy GUI.
-        """
-        def log(self, msg):
-            """
-            Log a message from the project engine.
-
-            msg is the text of the message excluding newlines.
-            """
-            sys.stdout.write("%s\n" % msg)
 
     if not prjname:
         fatal("Specify the name of an existing project file")
 
-    if not os.path.isfile(prjname):
-        fatal("%s is not an existing file" % prjname)
+    # FIXME: Implement dip.io.IoManager.read(self, model, format, location) as
+    #        a convenient replacement for the following.  Also a corresponding
+    #        write() method.
+    # FIXME: Consider adding dip.io.INativeFormat so there would be no need to
+    #        pass the format argument.
+    locations = IoManager.readable_locations_from_string(
+            'metasip.formats.project', prjname)
 
-    # Load the project.
-    prj = Project(prjname)
-    gui = DummyGUI()
+    if len(locations) != 1:
+        fatal("Unknown or ambiguous project location: {0}".format(prjname))
 
-    if not prj.load(gui):
-        fatal(prj.diagnostic)
+    location = locations[0]
 
-    return prj, gui
+    try:
+        prj = IStorage(IStorageLocation(location).storage).read(Project(),
+                location)
+    except StorageError as e:
+        fatal(e.error)
+
+    return prj
 
 
 def generate(prjname, gendir, latest_sip):
@@ -92,11 +99,11 @@ def generate(prjname, gendir, latest_sip):
     if not os.path.isdir(gendir):
         fatal("%s is not an existing directory" % gendir)
 
-    prj, gui = load_batch_project(prjname)
+    prj = load_batch_project(prjname)
 
     # Generate each module.
     for mod in prj.modules:
-        if not prj.generateModule(gui, mod, gendir, False, latest_sip=latest_sip):
+        if not prj.generateModule(Logger, mod, gendir, False, latest_sip=latest_sip):
             fatal(prj.diagnostic)
 
     # No error if we have got this far.

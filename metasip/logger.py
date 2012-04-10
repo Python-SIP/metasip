@@ -10,8 +10,18 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .i_project import IProject
+from dip.model import Singleton
 
-from .logger import Logger
-from .Project import Project
-from .project_codec import ProjectCodec
+
+class Logger(Singleton):
+    """ The Logger class is a singleton that provides access to a message
+    logger.
+    """
+
+    @Singleton.instance.default
+    def instance(self):
+        """ Invoked the return the default logger. """
+
+        from .default_logger import Logger
+
+        return Logger()

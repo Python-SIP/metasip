@@ -10,8 +10,17 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .i_project import IProject
+from dip.model import adapt, Adapter, Interface
 
-from .logger import Logger
 from .Project import Project
-from .project_codec import ProjectCodec
+
+
+class IProject(Interface):
+    """ The IProject interface is implemented by projects.  At the moment it is
+    just a marker class.
+    """
+
+
+@adapt(Project, to=IProject)
+class ProjectIProjectAdapter(Adapter):
+    """ Adapt the legacy Project class to the IProject interface. """

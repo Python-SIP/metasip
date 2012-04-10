@@ -10,8 +10,19 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .i_project import IProject
+import sys
 
-from .logger import Logger
-from .Project import Project
-from .project_codec import ProjectCodec
+
+class Logger:
+    """ The Logger class implements the default logger, i.e. one that simply
+    writes messages to stdout.
+    """
+
+    def log(self, message):
+        """ Log a message by writing it to stdout.
+
+        :param message:
+            is the message.
+        """
+
+        sys.stdout.write('{0}\n'.format(message))
