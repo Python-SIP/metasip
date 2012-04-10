@@ -23,7 +23,7 @@ from PyQt4.QtGui import (QAbstractSlider, QApplication, QFileDialog,
 
 from dip.io import StorageError
 
-from ..dip_future import io_IoManager_read
+from ..dip_future import io_IoManager_read, io_IoManager_write
 from ..logger import Logger
 from ..Project import Project
 from ..WebXML import WebXMLParser
@@ -113,16 +113,20 @@ class MainWindow(QMainWindow, Ui_MainWindowBase):
             self.loadProject(Project(fn), "Open Project")
 
     def fileSave(self, saveas=None):
-        """
-        Handle the File/Save action.
+        """ Handle the File/Save action.
 
-        saveas is the optional name of the file to save the project as.
+        :param saveas:
+            is the optional name of the file to save the project as.
         """
-        if not self.project.save(saveas):
-            QMessageBox.critical(self, "Save Project",
-                                 self.project.diagnostic,
-                                 QMessageBox.Ok|QMessageBox.Default,
-                                 QMessageBox.NoButton)
+
+        location = self.project.name if saveas is None else saveas
+
+        try:
+            io_IoManager_write(self.project, 'metasip.formats.project',
+                    location)
+        except StorageError as e:
+            QMessageBox.critical(self, "Save Project", e.error,
+                    QMessageBox.Ok|QMessageBox.Default, QMessageBox.NoButton)
 
     def fileSaveAs(self):
         """

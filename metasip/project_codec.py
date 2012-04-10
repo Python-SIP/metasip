@@ -10,6 +10,9 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+import os
+import tempfile
+
 from dip.io import ICodec, StorageError
 from dip.model import implements, Model
 
@@ -47,7 +50,7 @@ class ProjectCodec(Model):
         """
 
         # Note that we ignore the source iterator and assume that the location
-        # refers to the filesystem.
+        # refers to the filesystem (unlike the encoder).
 
         model.name = str(location)
 
@@ -68,4 +71,26 @@ class ProjectCodec(Model):
             a generator that will return sections of the encoded byte stream.
         """
 
-        raise NotImplementedError
+        # Ask the project to save itself in a temporary file.
+        saved_name = model.name
+        fd, name = tempfile.mkstemp(text=True)
+
+        if not model.save(name):
+            # Tidy up.
+            model.name = saved_name
+            os.close(fd)
+            os.remove(name)
+
+            raise StorageError(model.diagnostic, location)
+
+        # Pass the contents of the temporary file back so that it can be
+        # written to the real storage location.
+        with os.fdopen(fd) as f:
+            for line in f:
+                yield line
+
+        # Remove the temporary file.
+        os.remove(name)
+
+        # Restore the name of the project.
+        model.name = saved_name
