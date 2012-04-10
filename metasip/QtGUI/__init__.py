@@ -21,6 +21,9 @@ from PyQt4.QtCore import QDir, QSettings, Qt
 from PyQt4.QtGui import (QAbstractSlider, QApplication, QFileDialog,
         QMainWindow, QMessageBox, QPlainTextEdit, QProgressDialog, QSplitter)
 
+from dip.io import StorageError
+
+from ..dip_future import io_IoManager_read
 from ..logger import Logger
 from ..Project import Project
 from ..WebXML import WebXMLParser
@@ -217,16 +220,18 @@ class MainWindow(QMainWindow, Ui_MainWindowBase):
             if ans == QMessageBox.No:
                 return
 
-        self.project = prj
-        self._clearProject()
-
-        # Load the new project.
-        if not prj.load(self):
+        try:
+            prj = io_IoManager_read(prj, 'metasip.formats.project', prj.name)
+        except StorageError as e:
             QMessageBox.critical(self, caption,
                                  prj.diagnostic,
                                  QMessageBox.Ok|QMessageBox.Default,
                                  QMessageBox.NoButton)
 
+            return
+
+        self.project = prj
+        self._clearProject()
         self._draw()
         self._update(False)
 
