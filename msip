@@ -20,10 +20,10 @@ generator.
 import sys
 import os
 
-from dip.io import IoManager, IStorage, StorageError, IStorageLocation
+from dip.io import IoManager, StorageError
 from dip.io.storage.filesystem import FilesystemStorageFactory
 
-from metasip import Logger, Project, ProjectCodec
+from metasip import io_IoManager_read, Logger, Project, ProjectCodec
 
 
 # Configure the i/o manager so we can use it for reading and writing projects
@@ -56,32 +56,20 @@ def usage(rc = 2):
 
 
 def load_batch_project(prjname):
-    """
-    Load an existing project in anticipation of doing some batch processing.
-    Return the project and a dummy GUI.
+    """ Load an existing project in anticipation of doing some batch
+    processing.
 
-    prjname is the name of the project file.
+    :param prjname:
+        is the location of the project.
+    :return:
+        the project.
     """
 
     if not prjname:
         fatal("Specify the name of an existing project file")
 
-    # FIXME: Implement dip.io.IoManager.read(self, model, format, location) as
-    #        a convenient replacement for the following.  Also a corresponding
-    #        write() method.
-    # FIXME: Consider adding dip.io.INativeFormat so there would be no need to
-    #        pass the format argument.
-    locations = IoManager.readable_locations_from_string(
-            'metasip.formats.project', prjname)
-
-    if len(locations) != 1:
-        fatal("Unknown or ambiguous project location: {0}".format(prjname))
-
-    location = locations[0]
-
     try:
-        prj = IStorage(IStorageLocation(location).storage).read(Project(),
-                location)
+        prj = io_IoManager_read(Project(), 'metasip.formats.project', prjname)
     except StorageError as e:
         fatal(e.error)
 
