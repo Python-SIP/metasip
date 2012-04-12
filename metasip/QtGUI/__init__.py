@@ -224,13 +224,14 @@ class MainWindow(QMainWindow, Ui_MainWindowBase):
             if ans == QMessageBox.No:
                 return
 
-        try:
-            prj = io_IoManager_read(prj, 'metasip.formats.project', prj.name)
-        except StorageError as e:
-            QMessageBox.critical(self, caption,
-                                 prj.diagnostic,
-                                 QMessageBox.Ok|QMessageBox.Default,
-                                 QMessageBox.NoButton)
+        if prj.name is not None:
+            try:
+                prj = io_IoManager_read(prj, 'metasip.formats.project',
+                        prj.name)
+            except StorageError as e:
+                QMessageBox.critical(self, caption, prj.diagnostic,
+                        QMessageBox.Ok|QMessageBox.Default,
+                        QMessageBox.NoButton)
 
             return
 
