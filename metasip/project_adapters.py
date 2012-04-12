@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import adapt, Adapter
+from dip.model import adapt, Adapter, observe
 from dip.io import IFilterHints
 from dip.shell import IManagedModel
 
@@ -55,3 +55,12 @@ class ProjectIManagedModelAdapter(Adapter):
             raise NotImplementedError
 
         self.adaptee.resetChanged()
+
+    @observe('location')
+    def __location_changed(self, change):
+        """ Invoked when the location changes. """
+
+        self.adaptee.name = str(change.new)
+
+        if len(self.views) != 0:
+            self.views[0].widget(0).refreshProjectName()
