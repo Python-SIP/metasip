@@ -12,11 +12,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" msip is a tool for creating Python extension modules using the SIP wrapper
-generator.
-"""
-
-
 import sys
 import os
 
@@ -99,22 +94,48 @@ def generate(prjname, gendir, latest_sip):
 
 
 def launchGUI(prjname, guiargs):
+    """ Launch the GUI for a project.
+
+    :param prjname:
+        is the name of the project file.  It is None if there is none.
+    :param guiargs:
+        is a list of any GUI specific command line arguments.
+    :return:
+        the exit code or 0 if there was no error.
     """
-    Launch the GUI for a project and return an exit code or 0 if there was no
-    error.
 
-    prjname is the name of the project file.
-    guiargs is a list of any GUI specific command line arguments.
-    """
-    import metasip.QtGUI as GUI
+    from PyQt4.QtGui import QApplication
 
-    app = GUI.Application(guiargs)
-    mw = GUI.MainWindow()
-    app.setMainWindow(mw)
+    from dip.shell import IShell
+    from dip.shell.shells.main_window import MainWindowShell
+    from dip.shell.tools.dirty import DirtyTool
+    from dip.shell.tools.model_manager import ModelManagerTool
+    from dip.shell.tools.quit import QuitTool
 
-    mw.loadProject(Project(prjname))
+    from metasip import ProjectEditorTool, ProjectFactory
 
-    return app.execute()
+    app = QApplication(guiargs)
+
+    # Define the shell.
+    shell = MainWindowShell(main_area_policy='single',
+            tool_factories=[DirtyTool,
+                    lambda: ModelManagerTool(
+                            model_factories=[ProjectFactory()]),
+                    lambda: ProjectEditorTool(model_policy='one'),
+                    QuitTool],
+            window_title_template="[view][*]")
+
+    # Create the shell.
+    ui = shell()
+
+    # Handle any project passed on the command line.
+    if prjname is not None:
+        IShell(ui).open(prjname, 'metasip.formats.project',
+                'metasip.tools.project_editor')
+
+    ui.show()
+
+    return app.exec()
 
 
 def fatal(msg):
