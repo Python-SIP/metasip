@@ -13,8 +13,8 @@
 import glob
 import os
 
-from PyQt.QtCore import Qt
-from PyQt.QtGui import (QAbstractSlider, QApplication, QPlainTextEdit,
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import (QAbstractSlider, QApplication, QPlainTextEdit,
         QProgressDialog, QSplitter)
 
 from dip.model import Dict, implements, Instance
@@ -23,7 +23,7 @@ from dip.ui import IDisplay
 
 from .logger import Logger
 from .Project import Project
-from .QtGui.Navigation import NavigationPane
+from .QtGUI import Navigation
 
 
 @implements(IManagedModelTool, IDisplay)
@@ -43,7 +43,7 @@ class ProjectEditorTool(BaseManagedModelTool):
     webxml = Dict()
 
     def create_views(self, model):
-        """ Create the views for editing a model. """.
+        """ Create the views for editing a model. """
 
         self.project = model
 
@@ -53,10 +53,11 @@ class ProjectEditorTool(BaseManagedModelTool):
         # Create the view.
         splitter = QSplitter(Qt.Vertical)
 
-        self._editor = NavigationPane(self, splitter)
+        self._editor = Navigation.NavigationPane(self, splitter)
         self._log = QPlainTextEdit(splitter, readOnly=True)
 
         # Display the project.
+        model.resetChanged()
         self._editor.draw()
 
         return [splitter]
