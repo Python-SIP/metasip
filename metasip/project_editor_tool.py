@@ -51,14 +51,14 @@ class ProjectEditorTool(BaseManagedModelTool):
         Logger().instance = self
 
         # Create the view.
-        splitter = QSplitter(Qt.Vertical)
+        self.splitter = splitter = QSplitter(Qt.Vertical)
 
-        self._editor = Navigation.NavigationPane(self, splitter)
+        self.editor = Navigation.NavigationPane(self, splitter)
         self._log = QPlainTextEdit(splitter, readOnly=True)
 
         # Display the project.
         model.resetChanged()
-        self._editor.draw()
+        self.editor.draw()
 
         return [splitter]
 

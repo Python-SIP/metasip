@@ -104,6 +104,7 @@ def launchGUI(prjname, guiargs):
         the exit code or 0 if there was no error.
     """
 
+    from PyQt4.QtCore import QSettings
     from PyQt4.QtGui import QApplication
 
     from dip.shell import IShell
@@ -117,11 +118,13 @@ def launchGUI(prjname, guiargs):
     app = QApplication(guiargs)
 
     # Define the shell.
+    editor_tool = ProjectEditorTool(model_policy='one')
+
     shell = MainWindowShell(main_area_policy='single',
             tool_factories=[DirtyTool,
                     lambda: ModelManagerTool(
                             model_factories=[ProjectFactory()]),
-                    lambda: ProjectEditorTool(model_policy='one'),
+                    lambda: editor_tool,
                     QuitTool],
             window_title_template="[view][*]")
 
@@ -130,12 +133,48 @@ def launchGUI(prjname, guiargs):
 
     # Handle any project passed on the command line.
     if prjname is not None:
+        # FIXME: Add a progress dialog as this may take some time and the GUI
+        #        is not yet visible.
         IShell(ui).open(prjname, 'metasip.formats.project',
                 'metasip.tools.project_editor')
 
+    # Get the user settings and adjust the layout.
+    settings = QSettings('riverbankcomputing.com', 'MetaSIP')
+
+    settings.beginGroup('GUI')
+
+    ui.restoreState(settings.value('mainState'))
+    ui.restoreGeometry(settings.value('mainGeometry'))
+
+    # If there was no project then the editor will not have been created yet.
+    if editor_tool.project is not None:
+        editor_tool.splitter.restoreState(settings.value('mainSplitter'))
+
+        settings.beginGroup('mainPane0')
+        editor_tool.editor.loadGUILayout(settings)
+        settings.endGroup()
+
+    settings.endGroup()
+
+    # Display the GUI.
     ui.show()
 
-    return app.exec()
+    rc = app.exec()
+
+    # Save the GUI layout.
+    settings.beginGroup('GUI')
+
+    settings.setValue('mainState', ui.saveState())
+    settings.setValue('mainGeometry', ui.saveGeometry())
+    settings.setValue('mainSplitter', editor_tool.splitter.saveState())
+
+    settings.beginGroup('mainPane0')
+    editor_tool.editor.saveGUILayout(settings)
+    settings.endGroup()
+
+    settings.endGroup()
+
+    return rc
 
 
 def fatal(msg):
