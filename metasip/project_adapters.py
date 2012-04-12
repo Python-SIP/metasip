@@ -51,7 +51,7 @@ class ProjectIManagedModelAdapter(Adapter):
         # We can only reset the state, which with the current version of dip is
         # all that we will be asked to do.  However check in case this changes
         # in the future.
-        if not value:
+        if value:
             raise NotImplementedError
 
         self.adaptee.resetChanged()
