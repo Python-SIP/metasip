@@ -10,10 +10,20 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Interface
+from dip.model import implements, Model
+from dip.ui import IDisplay
 
 
-class IProject(Interface):
-    """ The IProject interface is implemented by projects.  At the moment it is
-    just a marker class.
-    """
+@implements(IDisplay)
+class ProjectFactory(Model):
+    """ A Project factory that implements the IDisplay interface. """
+
+    # The model type name used in model manager disloags and wizards.
+    name = "MetaSIP project"
+
+    def __call__(self):
+        """ Invoked to create a project instance. """
+
+        from .Project import Project
+
+        return Project()
