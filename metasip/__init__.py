@@ -13,6 +13,7 @@
 from .i_project import IProject
 
 from .logger import Logger
+from .logger_tool import LoggerTool
 from .Project import Project
 from .project_editor_tool import ProjectEditorTool
 from .project_factory import ProjectFactory

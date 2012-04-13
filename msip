@@ -113,7 +113,7 @@ def launchGUI(prjname, guiargs):
     from dip.shell.tools.model_manager import ModelManagerTool
     from dip.shell.tools.quit import QuitTool
 
-    from metasip import ProjectEditorTool, ProjectFactory
+    from metasip import LoggerTool, ProjectEditorTool, ProjectFactory
 
     app = QApplication(guiargs)
 
@@ -121,11 +121,10 @@ def launchGUI(prjname, guiargs):
     editor_tool = ProjectEditorTool(model_policy='one')
 
     shell = MainWindowShell(main_area_policy='single',
-            tool_factories=[DirtyTool,
+            tool_factories=[LoggerTool, DirtyTool, QuitTool,
                     lambda: ModelManagerTool(
                             model_factories=[ProjectFactory()]),
-                    lambda: editor_tool,
-                    QuitTool],
+                    lambda: editor_tool],
             window_title_template="[view][*]")
 
     # Create the shell.
@@ -147,11 +146,9 @@ def launchGUI(prjname, guiargs):
     ui.restoreGeometry(settings.value('mainGeometry'))
 
     # If there was no project then the editor will not have been created yet.
-    if editor_tool.project is not None:
-        editor_tool.splitter.restoreState(settings.value('mainSplitter'))
-
+    if len(editor_tool.views) != 0:
         settings.beginGroup('mainPane0')
-        editor_tool.editor.loadGUILayout(settings)
+        editor_tool.views[0].loadGUILayout(settings)
         settings.endGroup()
 
     settings.endGroup()
@@ -166,10 +163,9 @@ def launchGUI(prjname, guiargs):
 
     settings.setValue('mainState', ui.saveState())
     settings.setValue('mainGeometry', ui.saveGeometry())
-    settings.setValue('mainSplitter', editor_tool.splitter.saveState())
 
     settings.beginGroup('mainPane0')
-    editor_tool.editor.saveGUILayout(settings)
+    editor_tool.views[0].saveGUILayout(settings)
     settings.endGroup()
 
     settings.endGroup()

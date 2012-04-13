@@ -52,12 +52,12 @@ class NavigationPane(QTreeWidget):
 
     headerDirectoryScanned = pyqtSignal(HeaderDirectory)
 
-    def __init__(self, gui, parent):
+    def __init__(self, gui, parent=None):
         """
         Initialise the navigation pane instance.
 
         gui is the GUI instance.
-        parent is the parent widget.
+        parent is the optional parent widget.
         """
         super(NavigationPane, self).__init__(parent)
 

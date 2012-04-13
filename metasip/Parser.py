@@ -10,11 +10,10 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module implements the parser infrastructure. """
-
-
 from xml.sax import make_parser, SAXParseException
 from xml.sax.handler import ContentHandler, ErrorHandler
+
+from .logger import Logger
 
 
 class ParserBase(ContentHandler):
@@ -133,7 +132,7 @@ class _ParserErrorHandler(ErrorHandler):
         """
         xs = str(exception)
 
-        self._ui.log(xs)
+        Logger.log(xs)
 
         if not self.diagnostic:
             self.diagnostic = xs
@@ -146,7 +145,7 @@ class _ParserErrorHandler(ErrorHandler):
         """
         xs = str(exception)
 
-        self._ui.log(xs)
+        Logger.log(xs)
 
         if not self.diagnostic:
             self.diagnostic = xs
@@ -157,7 +156,7 @@ class _ParserErrorHandler(ErrorHandler):
         """
         Handle warnings.
         """
-        self._ui.log(str(exception))
+        Logger.log(str(exception))
 
 
 def optAttribute(attrs, name, default=None):

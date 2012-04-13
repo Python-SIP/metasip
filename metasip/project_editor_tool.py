@@ -13,15 +13,12 @@
 import glob
 import os
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import (QAbstractSlider, QApplication, QPlainTextEdit,
-        QProgressDialog, QSplitter)
+from PyQt4.QtGui import QProgressDialog
 
 from dip.model import Dict, implements, Instance
 from dip.shell import BaseManagedModelTool, IManagedModelTool
 from dip.ui import IDisplay
 
-from .logger import Logger
 from .Project import Project
 from .QtGUI import Navigation
 
@@ -47,20 +44,14 @@ class ProjectEditorTool(BaseManagedModelTool):
 
         self.project = model
 
-        # This instance is the logger.
-        Logger().instance = self
-
         # Create the view.
-        self.splitter = splitter = QSplitter(Qt.Vertical)
-
-        self.editor = Navigation.NavigationPane(self, splitter)
-        self._log = QPlainTextEdit(splitter, readOnly=True)
+        view = Navigation.NavigationPane(self)
 
         # Display the project.
         model.resetChanged()
-        self.editor.draw()
+        view.draw()
 
-        return [splitter]
+        return [view]
 
     def handles(self, model):
         """ Check that the tool can handle a model. """
@@ -97,22 +88,3 @@ class ProjectEditorTool(BaseManagedModelTool):
         progress.setProgress(len(webxml_files))
 
         return webxml
-
-    def log(self, message):
-        """ Write a message to the log window.
-    
-        :param message:
-            is the text of the message and should not include explicit
-            newlines.
-        """
-
-        # Add the new message
-        self._log.appendPlainText(message)
-
-        # Make sure the new message is visible.
-        self._log.verticalScrollBar().triggerAction(
-                QAbstractSlider.SliderToMaximum)
-
-        # Update the screen so that individual messages appear as soon as they
-        # are logged.
-        QApplication.processEvents()

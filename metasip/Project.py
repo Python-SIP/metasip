@@ -10,9 +10,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module manages MetaSIP projects. """
-
-
 import sys
 import os
 import hashlib
@@ -21,6 +18,7 @@ import fnmatch
 import shlex
 from xml.sax import saxutils
 
+from .logger import Logger
 from .Parser import ParserBase, optAttribute
 
 
@@ -1433,7 +1431,7 @@ class Project(WatchedElement):
             if f is None:
                 return False
 
-            ui.log("Generating %s" % f.name)
+            Logger.log("Generating %s" % f.name)
             hf.sip(f, latest_sip)
             hfnames.append(os.path.basename(f.name))
 
@@ -1444,7 +1442,7 @@ class Project(WatchedElement):
         if f is None:
             return False
 
-        ui.log("Generating %s" % f.name)
+        Logger.log("Generating %s" % f.name)
 
         rname = self.rootmodule
 
@@ -1888,7 +1886,7 @@ class HeaderDirectory(WatchedList):
         # Save the files that were in the directory.
         saved = self[:]
 
-        ui.log("Scanning header directory %s" % sd)
+        Logger.log("Scanning header directory %s" % sd)
 
         for (root, dirs, files) in os.walk(sd):
             for f in files:
@@ -1908,15 +1906,15 @@ class HeaderDirectory(WatchedList):
                             saved.remove(shf)
                             break
 
-                    ui.log("Scanned %s" % hfile)
+                    Logger.log("Scanned %s" % hfile)
                 else:
-                    ui.log("Skipping unreadable header file %s" % hfile)
+                    Logger.log("Skipping unreadable header file %s" % hfile)
 
         # Anything left in the known list has gone missing or was already
         # missing.
         for hf in saved:
             if hf.isCurrent():
-                ui.log("%s is no longer in the header directory" % hf.name)
+                Logger.log("%s is no longer in the header directory" % hf.name)
 
                 # If it is unknown then just forget about it.
                 if hf.status == "unknown":

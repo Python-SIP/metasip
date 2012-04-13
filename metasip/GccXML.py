@@ -10,13 +10,11 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module implements a C++ parser based on GCC-XML. """
-
-
 import os
 import subprocess
 import tempfile
 
+from .logger import Logger
 from .Parser import ParserBase, optAttribute
 from .Project import (Code, Function, Argument, Variable, Typedef, OpaqueClass,
         Class, Constructor, Destructor, Method, Enum, EnumValue,
@@ -833,7 +831,7 @@ class GccXMLParser(ParserBase):
         # Check the input directory exists.
         if not os.path.isdir(prj.xinputdir):
             self.diagnostic = "%s directory does not exist" % prj.xinputdir
-            ui.log(self.diagnostic)
+            Logger.log(self.diagnostic)
 
             return None
 
@@ -849,7 +847,7 @@ class GccXMLParser(ParserBase):
         # why it's needed.
         args = ' '.join(argv)
 
-        ui.log(args)
+        Logger.log(args)
 
         cwd = os.getcwd()
         os.chdir(prj.xinputdir)
@@ -866,7 +864,7 @@ class GccXMLParser(ParserBase):
 
         # Log any output.
         for line in output.decode().rstrip().split('\n'):
-            ui.log(line.rstrip())
+            Logger.log(line.rstrip())
 
         if rc != 0:
             try:
@@ -882,11 +880,11 @@ class GccXMLParser(ParserBase):
             else:
                 self.diagnostic = "%s failed with exit code %d" % (argv[0], rc)
 
-            ui.log(self.diagnostic)
+            Logger.log(self.diagnostic)
 
             return None
 
-        ui.log("Parsing %s output for %s" % (argv[0], self._pathname))
+        Logger.log("Parsing %s output for %s" % (argv[0], self._pathname))
 
         # Initialise the parser state.  The first pass is to read in the
         # GCC-XML output filtering out stuff we definately don't need.  The
