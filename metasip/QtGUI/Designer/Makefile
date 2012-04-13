@@ -11,7 +11,6 @@
 
 
 FORMS = \
-	MainWindowBase.py \
 	ArgPropertiesBase.py \
 	CallablePropertiesBase.py \
 	ClassPropertiesBase.py \
