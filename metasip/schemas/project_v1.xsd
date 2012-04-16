@@ -1,0 +1,196 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:annotation>
+        <xsd:documentation xml:lang="en">
+            Schema for a MetaSIP project
+        </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:element name="Project" type="ProjectType"/>
+
+    <xsd:simpleType name="AccessType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="private"/>
+            <xsd:enumeration value="protected"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="ClassLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="subclasscode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ClassType">
+        <xsd:sequence>
+            <xsd:element name="Literal" type="ClassLiterals" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="xsd:string"/>
+        <xsd:attribute name="bases" type="xsd:string"/>
+        <xsd:attribute name="egen" type="GenerationType"/>
+        <xsd:attribute name="features" type="xsd:string"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="xsd:string"/>
+        <xsd:attribute name="pybases" type="xsd:string"/>
+        <xsd:attribute name="sgen" type="GenerationType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="struct" type="xsd:boolean" default="0"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="ExtendedAccessType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="private"/>
+            <xsd:enumeration value="protected"/>
+            <xsd:enumeration value="protected slots"/>
+            <xsd:enumeration value="public slots"/>
+            <xsd:enumeration value="signals"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="GenerationType">
+        <xsd:restriction base="xsd:nonNegativeInteger"/>
+    </xsd:simpleType>
+
+    <xsd:complexType name="HeaderDirectoryType">
+        <xsd:sequence>
+            <xsd:element name="HeaderFile" type="HeaderFileType" minOccurs="0"
+                    maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="parserargs" type="xsd:string" use="required"/>
+        <xsd:attribute name="inputdirsuffix" type="xsd:string" use="required"/>
+        <xsd:attribute name="filefilter" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="HeaderFileLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="exportedheadercode"/>
+                            <xsd:enumeration value="initcode"/>
+                            <xsd:enumeration value="modulecode"/>
+                            <xsd:enumeration value="moduleheadercode"/>
+                            <xsd:enumeration value="postinitcode"/>
+                            <xsd:enumeration value="preinitcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="HeaderFileType">
+        <xsd:sequence>
+            <xsd:element name="Class" type="ClassType" minOccurs="0"
+                    maxOccurs="unbounded"/>
+            <xsd:element name="Literal" type="HeaderFileLiterals"
+                    minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="egen" type="GenerationType"/>
+        <xsd:attribute name="id" type="IdType" use="required"/>
+        <xsd:attribute name="md5" type="xsd:string" use="required"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="parse" type="ParseType"/>
+        <xsd:attribute name="sgen" type="GenerationType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="IdType">
+        <xsd:restriction base="xsd:nonNegativeInteger"/>
+    </xsd:simpleType>
+
+    <xsd:complexType name="ModuleLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="directives"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ModuleType">
+        <xsd:sequence>
+            <xsd:element name="Literal" type="ModuleLiterals"
+                    minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="ModuleHeaderFile" type="ModuleHeaderFileType"
+                    minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="imports" type="xsd:string"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="outputdirssuffix" type="xsd:string"/>
+        <xsd:attribute name="version" type="xsd:nonNegativeInteger"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="ModuleHeaderFileType">
+        <xsd:attribute name="id" type="IdType" use="required"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="ParseType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="needed"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="ProjectLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="sipcomments"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ProjectType">
+        <xsd:sequence>
+            <xsd:element name="Literal" type="ProjectLiterals"
+                    minOccurs="0"/>
+            <xsd:element name="HeaderDirectory" type="HeaderDirectoryType"
+                    minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="Module" type="ModuleType" minOccurs="0"
+                    maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="externalfeatures" type="xsd:string"/>
+        <xsd:attribute name="externalmodules" type="xsd:string"/>
+        <xsd:attribute name="features" type="xsd:string"/>
+        <xsd:attribute name="ignorednamespaces" type="xsd:string"/>
+        <xsd:attribute name="inputdir" type="xsd:string" use="required"/>
+        <xsd:attribute name="outputdir" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="xsd:string"/>
+        <xsd:attribute name="rootmodule" type="xsd:string"/>
+        <xsd:attribute name="version" type="xsd:nonNegativeInteger"
+                use="required"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+        <xsd:attribute name="webxmldir" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="StatusType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ignored"/>
+            <xsd:enumeration value="todo"/>
+            <xsd:enumeration value="unknown"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+</xsd:schema>
