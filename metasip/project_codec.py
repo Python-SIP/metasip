@@ -16,7 +16,6 @@ import tempfile
 from dip.io import ICodec, StorageError
 from dip.model import implements, Model
 
-from .logger import Logger
 from .i_project import IProject
 
 
@@ -54,7 +53,7 @@ class ProjectCodec(Model):
 
         model.name = str(location)
 
-        if not model.load(Logger):
+        if not model.load():
             raise StorageError(model.diagnostic, location)
 
         return model

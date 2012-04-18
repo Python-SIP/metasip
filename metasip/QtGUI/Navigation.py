@@ -59,7 +59,7 @@ class NavigationPane(QTreeWidget):
         gui is the GUI instance.
         parent is the optional parent widget.
         """
-        super(NavigationPane, self).__init__(parent)
+        super().__init__(parent)
 
         # Tweak the tree widget.
         self.setHeaderLabels(["Name", "Access", "Status", "Versions"])
@@ -1522,7 +1522,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
 
         parser = CppParser()
 
-        phf = parser.parse(gui.project, hdir, self.headerfile, gui)
+        phf = parser.parse(gui.project, hdir, self.headerfile)
 
         if phf is None:
             QMessageBox.critical(self.pane, "Parse Header File",

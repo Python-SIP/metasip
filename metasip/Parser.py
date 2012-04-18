@@ -93,14 +93,16 @@ class ParserBase(ContentHandler):
         if m:
             m()
 
-    def parse(self, ifname, ui):
-        """
-        Parse a file and return True if it was successful.
+    def parse(self, ifname):
+        """ Parse an XML file.
 
-        ifname is the name of the XML file to parse.
-        ui is the user interface instance.
+        :param ifname:
+            is the name of a file or a file object to parse.
+        :return:
+            ``True`` if the file was parsed successfully.
         """
-        eh = _ParserErrorHandler(ui)
+
+        eh = _ParserErrorHandler()
 
         self._parser.setErrorHandler(eh)
 
@@ -114,22 +116,16 @@ class ParserBase(ContentHandler):
 
 
 class _ParserErrorHandler(ErrorHandler):
-    """
-    This is the SAX error handler.
-    """
-    def __init__(self, ui):
-        """
-        Initialise the error handler.
+    """ This is the SAX error handler. """
 
-        ui is the user interface instance.
-        """
-        self._ui = ui
+    def __init__(self):
+        """ Initialise the error handler. """
+
         self.diagnostic = None
 
     def error(self, exception):
-        """
-        Handle recoverable errors (where parsing might continue).
-        """
+        """ Handle recoverable errors (where parsing might continue). """
+
         xs = str(exception)
 
         Logger.log(xs)
@@ -140,9 +136,8 @@ class _ParserErrorHandler(ErrorHandler):
         raise exception
 
     def fatalError(self, exception):
-        """
-        Handle non-recoverable errors (where parsing can't continue).
-        """
+        """ Handle non-recoverable errors (where parsing can't continue). """
+
         xs = str(exception)
 
         Logger.log(xs)
@@ -153,9 +148,8 @@ class _ParserErrorHandler(ErrorHandler):
         raise exception
 
     def warning(self, exception):
-        """
-        Handle warnings.
-        """
+        """ Handle warnings. """
+
         Logger.log(str(exception))
 
 

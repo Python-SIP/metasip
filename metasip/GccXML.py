@@ -818,7 +818,7 @@ class GccXMLParser(ParserBase):
                 "arraytype":        _PointerType,
                 "cvqualifiedtype":  _CvQualifiedType}
 
-    def parse(self, prj, hdir, hf, ui):
+    def parse(self, prj, hdir, hf):
         """
         Parse a file and return the parsed file instance or None if there was
         an error.
@@ -826,7 +826,6 @@ class GccXMLParser(ParserBase):
         prj is the project.
         hdir is the header directory instance.
         hf is the header file instance.
-        ui is the user interface instance.
         """
         # Check the input directory exists.
         if not os.path.isdir(prj.xinputdir):
@@ -898,7 +897,7 @@ class GccXMLParser(ParserBase):
         self._evalues = None
         self._fileid = None
 
-        rc = ParserBase.parse(self, iname, ui)
+        rc = super().parse(iname)
 
         #os.remove(iname)
 

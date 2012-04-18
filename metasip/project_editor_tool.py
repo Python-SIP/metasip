@@ -83,7 +83,7 @@ class ProjectEditorTool(BaseManagedModelTool):
             progress.setProgress(step)
 
             parser = WebXMLParser()
-            parser.parse(webxml_file, webxml, self)
+            parser.parse(webxml_file, webxml)
 
         progress.setProgress(len(webxml_files))
 

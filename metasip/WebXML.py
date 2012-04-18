@@ -21,19 +21,18 @@ class WebXMLParser(Parser.ParserBase):
     This is the WebXML file parser.
     """
 
-    def parse(self, webxml, callables, ui):
+    def parse(self, webxml, callables):
         """
         Parse a WebXML file.
 
         webxml is the name of the WebXML file.
         callables is the dictionary of callables to update.
-        ui is the user interface instance.
         """
 
         self._callables = callables
         self._current_prefix = None
 
-        if not Parser.ParserBase.parse(self, webxml, ui):
+        if not super().parse(webxml):
             raise Exception(self.diagnostic)
 
         return self._callables

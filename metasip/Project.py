@@ -89,12 +89,11 @@ class _ProjectParser(ParserBase):
     """
     This is the project file parser.
     """
-    def parse(self, prj, ui):
+    def parse(self, prj):
         """
         Parse a project file and return True if there was no error.
 
         prj is the project.
-        ui is the user interface instance.
         """
         # A bit of a hack.
         global project
@@ -103,7 +102,7 @@ class _ProjectParser(ParserBase):
         self._literal = []
         self._literaltext = None
 
-        rc = ParserBase.parse(self, prj.name, ui)
+        rc = super().parse(prj.name)
 
         if rc:
             if prj.version < 0:
@@ -1378,15 +1377,16 @@ class Project(WatchedElement):
 
         return True
 
-    def load(self, ui):
-        """
-        Load the project and return True if it was successful.
+    def load(self):
+        """ Load the project.
 
-        ui is the user interface instance.
+        :return:
+            ``True`` if the project was successfully loaded.
         """
+
         self._clear()
 
-        if not self.name or self._parser.parse(self, ui):
+        if not self.name or self._parser.parse(self):
             self.resetChanged()
             return True
 
