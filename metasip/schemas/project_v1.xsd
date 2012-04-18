@@ -20,6 +20,15 @@
         <xsd:restriction base="xsd:string"/>
     </xsd:simpleType>
 
+    <xsd:complexType name="ArgumentType">
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="default" type="xsd:string"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="pytype" type="xsd:string"/>
+        <xsd:attribute name="type" type="xsd:string" use="required"/>
+        <xsd:attribute name="unnamed" type="xsd:boolean" default="0"/>
+    </xsd:complexType>
+
     <xsd:complexType name="ClassLiterals">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
@@ -48,10 +57,14 @@
     </xsd:complexType>
 
     <xsd:complexType name="ClassType">
-        <xsd:sequence>
-            <xsd:element name="Literal" type="ClassLiterals" minOccurs="0"/>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:group ref="CodeGroup"/>
-        </xsd:sequence>
+            <xsd:element name="Constructor" type="ConstructorType"/>
+            <xsd:element name="Destructor" type="DestructorType"
+                    maxOccurs="1"/>
+            <xsd:element name="Literal" type="ClassLiterals"/>
+            <xsd:element name="Method" type="MethodType"/>
+        </xsd:choice>
         <xsd:attribute name="access" type="AccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
         <xsd:attribute name="bases" type="xsd:string"/>
@@ -66,13 +79,74 @@
     </xsd:complexType>
 
     <xsd:group name="CodeGroup">
-        <xsd:sequence>
-            <xsd:element name="Class" type="ClassType" minOccurs="0"
-                    maxOccurs="unbounded"/>
-            <xsd:element name="Variable" type="VariableType" minOccurs="0"
-                    maxOccurs="unbounded"/>
-        </xsd:sequence>
+        <xsd:choice>
+            <xsd:element name="Class" type="ClassType"/>
+            <xsd:element name="Variable" type="VariableType"/>
+        </xsd:choice>
     </xsd:group>
+
+    <xsd:complexType name="ConstructorLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="docstring"/>
+                            <xsd:enumeration value="methcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ConstructorType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Argument" type="ArgumentType"/>
+            <xsd:element name="Literal" type="ConstructorLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="egen" type="GenerationType"/>
+        <xsd:attribute name="explicit" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="pyargs" type="xsd:string"/>
+        <xsd:attribute name="sgen" type="GenerationType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="DestructorLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="methcode"/>
+                            <xsd:enumeration value="virtcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="DestructorType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Argument" type="ArgumentType"/>
+            <xsd:element name="Literal" type="DestructorLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="egen" type="GenerationType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="sgen" type="GenerationType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="virtual" type="xsd:boolean" default="0"/>
+    </xsd:complexType>
 
     <xsd:simpleType name="ExtendedAccessType">
         <xsd:restriction base="xsd:string">
@@ -93,10 +167,9 @@
     </xsd:simpleType>
 
     <xsd:complexType name="HeaderDirectoryType">
-        <xsd:sequence>
-            <xsd:element name="HeaderFile" type="HeaderFileType" minOccurs="0"
-                    maxOccurs="unbounded"/>
-        </xsd:sequence>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="HeaderFile" type="HeaderFileType"/>
+        </xsd:choice>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="parserargs" type="xsd:string" use="required"/>
         <xsd:attribute name="inputdirsuffix" type="xsd:string" use="required"/>
@@ -123,11 +196,10 @@
     </xsd:complexType>
 
     <xsd:complexType name="HeaderFileType">
-        <xsd:sequence>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:group ref="CodeGroup"/>
-            <xsd:element name="Literal" type="HeaderFileLiterals"
-                    minOccurs="0"/>
-        </xsd:sequence>
+            <xsd:element name="Literal" type="HeaderFileLiterals"/>
+        </xsd:choice>
         <xsd:attribute name="egen" type="GenerationType"/>
         <xsd:attribute name="id" type="IdType" use="required"/>
         <xsd:attribute name="md5" type="xsd:string" use="required"/>
@@ -140,6 +212,44 @@
     <xsd:simpleType name="IdType">
         <xsd:restriction base="xsd:nonNegativeInteger"/>
     </xsd:simpleType>
+
+    <xsd:complexType name="MethodLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="docstring"/>
+                            <xsd:enumeration value="methcode"/>
+                            <xsd:enumeration value="virtcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="MethodType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Argument" type="ArgumentType"/>
+            <xsd:element name="Literal" type="MethodLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="abstract" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="access" type="ExtendedAccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="const" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="egen" type="GenerationType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="pyargs" type="xsd:string"/>
+        <xsd:attribute name="pytype" type="xsd:string"/>
+        <xsd:attribute name="rtype" type="xsd:string"/>
+        <xsd:attribute name="sgen" type="GenerationType"/>
+        <xsd:attribute name="static" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="virtual" type="xsd:boolean" default="0"/>
+    </xsd:complexType>
 
     <xsd:complexType name="ModuleLiterals">
         <xsd:simpleContent>
@@ -156,12 +266,10 @@
     </xsd:complexType>
 
     <xsd:complexType name="ModuleType">
-        <xsd:sequence>
-            <xsd:element name="Literal" type="ModuleLiterals"
-                    minOccurs="0" maxOccurs="unbounded"/>
-            <xsd:element name="ModuleHeaderFile" type="ModuleHeaderFileType"
-                    minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Literal" type="ModuleLiterals"/>
+            <xsd:element name="ModuleHeaderFile" type="ModuleHeaderFileType"/>
+        </xsd:choice>
         <xsd:attribute name="imports" type="xsd:string"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="outputdirssuffix" type="xsd:string"/>
@@ -197,14 +305,11 @@
     </xsd:complexType>
 
     <xsd:complexType name="ProjectType">
-        <xsd:sequence>
-            <xsd:element name="Literal" type="ProjectLiterals"
-                    minOccurs="0"/>
-            <xsd:element name="HeaderDirectory" type="HeaderDirectoryType"
-                    minOccurs="0" maxOccurs="unbounded"/>
-            <xsd:element name="Module" type="ModuleType" minOccurs="0"
-                    maxOccurs="unbounded"/>
-        </xsd:sequence>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="HeaderDirectory" type="HeaderDirectoryType"/>
+            <xsd:element name="Literal" type="ProjectLiterals"/>
+            <xsd:element name="Module" type="ModuleType"/>
+        </xsd:choice>
         <xsd:attribute name="externalfeatures" type="FeaturesType"/>
         <xsd:attribute name="externalmodules" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
@@ -244,9 +349,9 @@
     </xsd:complexType>
 
     <xsd:complexType name="VariableType">
-        <xsd:sequence>
-            <xsd:element name="Literal" type="VariableLiterals" minOccurs="0"/>
-        </xsd:sequence>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Literal" type="VariableLiterals"/>
+        </xsd:choice>
         <xsd:attribute name="access" type="AccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
         <xsd:attribute name="egen" type="GenerationType"/>
