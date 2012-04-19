@@ -132,8 +132,6 @@ def launchGUI(prjname, guiargs):
 
     # Handle any project passed on the command line.
     if prjname is not None:
-        # FIXME: Add a progress dialog as this may take some time and the GUI
-        #        is not yet visible.
         IShell(ui).open(prjname, 'metasip.formats.project',
                 'metasip.tools.project_editor')
 

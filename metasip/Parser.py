@@ -14,6 +14,7 @@ from xml.sax import make_parser, SAXParseException
 from xml.sax.handler import ContentHandler, ErrorHandler
 
 from .logger import Logger
+from .slow_pyfile import SlowPyfile
 
 
 class ParserBase(ContentHandler):
@@ -107,7 +108,7 @@ class ParserBase(ContentHandler):
         self._parser.setErrorHandler(eh)
 
         try:
-            self._parser.parse(ifname)
+            self._parser.parse(SlowPyfile(ifname))
         except SAXParseException:
             self.diagnostic = eh.diagnostic
             return False
