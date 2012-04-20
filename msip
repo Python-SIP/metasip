@@ -140,8 +140,13 @@ def launchGUI(prjname, guiargs):
 
     settings.beginGroup('GUI')
 
-    ui.restoreState(settings.value('mainState'))
-    ui.restoreGeometry(settings.value('mainGeometry'))
+    main_state = settings.value('mainState')
+    if main_state is not None:
+        ui.restoreState(main_state)
+
+    main_geometry = settings.value('mainGeometry')
+    if main_geometry is not None:
+        ui.restoreGeometry(main_geometry)
 
     # If there was no project then the editor will not have been created yet.
     if len(editor_tool.views) != 0:
