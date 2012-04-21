@@ -10,10 +10,14 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Interface
+from dip.model import Interface, Str
 
 
 class ISchema(Interface):
     """ The ISchema interface is implemented by schemas that can be used to
     validate XML files.
     """
+
+    # The name of the schema file relative to the directory containing the
+    # module implementing the schema object.
+    schema_file = Str()

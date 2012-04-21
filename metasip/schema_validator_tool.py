@@ -10,9 +10,10 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import implements, List, Model
+from dip.model import implements, List, Model, Str
 from dip.shell import ITool
-from dip.ui import Action
+from dip.ui import (Action, IAction, Dialog, IDialog, Label, OptionList,
+        StorageLocationEditor, VBox)
 
 from .i_schema import ISchema
 
@@ -22,6 +23,17 @@ class SchemaValidatorTool(Model):
     """ The SchemaValidatorTool implements a tool for validating an XML file
     against a schema.
     """
+
+    # The tool's dialog.
+    dialog = Dialog(
+            VBox(Label('prompt'),
+                    OptionList('schema', allow_none=False, options='schemas',
+                            sorted=True),
+                    StorageLocationEditor('xml_file', required=True)))
+
+    # The prompt to use in the dialog.
+    dialog_prompt = Str("Select a schema and enter the location of the file "
+            "to validate.")
 
     # The tool's identifier.
     id = 'metasip.tools.schema_validator'
@@ -37,4 +49,13 @@ class SchemaValidatorTool(Model):
     def validate_action(self):
         """ Invoked when the validate action is triggered. """
 
-        print("Action triggered")
+        model = dict(prompt=self.dialog_prompt, schema=self.schemas[0],
+                schemas=self.schemas, xml_file='')
+
+        view = self.dialog(model,
+                window_title=IAction(self.validate_action).plain_text)
+
+        if IDialog(view).execute():
+            schema = model['schema']
+            xml_file = model['xml_file']
+            print("Doing the validation", schema, xml_file)
