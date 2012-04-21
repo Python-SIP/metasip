@@ -17,9 +17,9 @@ import sys
 import os
 
 from PyQt4.QtCore import pyqtSignal, QByteArray, QMimeData, Qt
-from PyQt4.QtGui import (QDialog, QDrag, QFileDialog, QInputDialog, QMenu,
-        QMessageBox, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator,
-        QVBoxLayout)
+from PyQt4.QtGui import (QApplication, QDialog, QDrag, QFileDialog,
+        QInputDialog, QMenu, QMessageBox, QProgressDialog, QTreeWidget,
+        QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout)
 
 from ..Project import (Code, Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
@@ -101,10 +101,20 @@ class NavigationPane(QTreeWidget):
         settings.setValue('widths', ' '.join(colws))
 
     def draw(self):
-        """
-        Draw the current project.
-        """
-        self._navroot.draw()
+        """ Draw the current project. """
+
+        # Progress will be reported against known header files (plus one for
+        # the unknown and ignored header files) so count them all.
+        nr_steps = 1
+        for module in self.gui.project.modules:
+            nr_steps += len(module)
+
+        # Display the progress dialog.
+        progress = QProgressDialog( "Processing...", None, 0, nr_steps)
+        progress.setWindowTitle(self.gui.project.name)
+        progress.setValue(0)
+
+        self._navroot.draw(progress)
 
     def refreshProjectName(self):
         """
@@ -567,13 +577,21 @@ class _ProjectItem(_FixedItem):
         self._prjname = self.pane.gui.project.descriptiveName()
         self.drawName()
 
-    def draw(self):
+    def draw(self, progress):
+        """ Draw the current project.
+
+        :param progress:
+            is the progress dialog to update.
         """
-        Draw the current project.
-        """
+
         self.refreshProjectName()
-        self._mods.draw()
+
+        so_far = self._mods.draw(progress)
         self._hdrs.draw()
+        so_far += 1
+
+        # This will terminate the progress dialog.
+        progress.setValue(so_far)
 
     def clearProject(self):
         """
@@ -756,12 +774,22 @@ class _ModuleGroupItem(_FixedItem):
         """
         return self._text
 
-    def draw(self):
+    def draw(self, progress):
+        """ Draw the current project.
+
+        :param progress:
+            is the progress dialog to update.
+        :return:
+            the updated count of processed items.
         """
-        Draw the current project.
-        """
+
+        so_far = 0
+
         for mod in self.pane.gui.project.modules:
-            _ModuleItem(self, mod)
+            _ModuleItem(self, mod, progress, so_far)
+            so_far += len(mod)
+
+        return so_far
 
     def getMenu(self, slist):
         """
@@ -797,19 +825,24 @@ class _ModuleItem(_FixedItem, _DropSite):
     """
     This class implements a navigation item that represents a module.
     """
-    def __init__(self, parent, mod):
-        """
-        Initialise the item instance.
+    def __init__(self, parent, mod, progress=None, so_far=0):
+        """ Initialise the item instance.
 
-        parent is the parent.
-        mod is the module instance.
+        :param parent:
+            is the parent.
+        :param mod:
+            is the module instance.
+        :param progress:
+            is the optional progress dialog to update.
+        :param so_far:
+            is the optional count of items processed so far.
         """
         self.module = mod
 
         _FixedItem.__init__(self, parent)
         _DropSite.__init__(self)
 
-        self._drawHeaders()
+        self._drawHeaders(progress, so_far)
 
         self.pane.headerDirectoryScanned.connect(self._refresh)
 
@@ -834,12 +867,17 @@ class _ModuleItem(_FixedItem, _DropSite):
 
                 break
 
-    def _drawHeaders(self):
+    def _drawHeaders(self, progress=None, so_far=0):
         """
         Draw the header files group for the module.
         """
         for hf in self.module:
             _ModuleHeaderFileItem(self, hf)
+
+            if progress is not None:
+                so_far += 1
+                progress.setValue(so_far)
+                QApplication.processEvents()
 
     def droppable(self, source):
         """
@@ -973,9 +1011,8 @@ class _HeaderDirectoryGroupItem(_FixedItem):
         return self._text
 
     def draw(self):
-        """
-        Draw the current project.
-        """
+        """ Draw the current project. """
+
         for hdir in self.pane.gui.project.headers:
             _HeaderDirectoryItem(self, hdir).draw()
 

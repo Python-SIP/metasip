@@ -35,8 +35,9 @@ class SlowPyfile:
         self._file_size = os.fstat(self._file.fileno()).st_size
 
         # Create the progress dialog.
-        self._progress = QProgressDialog("Loading {0}...".format(name), None,
-                0, self._file_size)
+        self._progress = QProgressDialog("Loading...", None, 0,
+                self._file_size)
+        self._progress.setWindowTitle(name)
 
         self._read_so_far = 0
         self._update_progress()
