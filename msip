@@ -113,7 +113,9 @@ def launchGUI(prjname, guiargs):
     from dip.shell.tools.model_manager import ModelManagerTool
     from dip.shell.tools.quit import QuitTool
 
-    from metasip import LoggerTool, ProjectEditorTool, ProjectFactory
+    from metasip import (LoggerTool, ProjectEditorTool, ProjectFactory,
+            SchemaValidatorTool)
+    from metasip.schemas import ProjectV1Schema
 
     app = QApplication(guiargs)
 
@@ -124,7 +126,8 @@ def launchGUI(prjname, guiargs):
             tool_factories=[LoggerTool, DirtyTool, QuitTool,
                     lambda: ModelManagerTool(
                             model_factories=[ProjectFactory()]),
-                    lambda: editor_tool],
+                    lambda: editor_tool,
+                    lambda: SchemaValidatorTool(schemas=[ProjectV1Schema()])],
             window_title_template="[view][*]")
 
     # Create the shell.

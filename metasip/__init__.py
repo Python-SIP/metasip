@@ -11,6 +11,7 @@
 
 
 from .i_project import IProject
+from .i_schema import ISchema
 
 from .logger import Logger
 from .logger_tool import LoggerTool
@@ -18,6 +19,7 @@ from .Project import Project
 from .project_editor_tool import ProjectEditorTool
 from .project_factory import ProjectFactory
 from .project_codec import ProjectCodec
+from .schema_validator_tool import SchemaValidatorTool
 
 from .dip_future import io_IoManager_read, io_IoManager_write
 
