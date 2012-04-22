@@ -18,7 +18,7 @@ import os
 from dip.io import IoManager, StorageError
 from dip.io.storage.filesystem import FilesystemStorageFactory
 
-from metasip import io_IoManager_read, Logger, Project, ProjectCodec
+from metasip import Logger, Project, ProjectCodec
 
 
 # Configure the i/o manager so we can use it for reading and writing projects
@@ -64,7 +64,7 @@ def load_batch_project(prjname):
         fatal("Specify the name of an existing project file")
 
     try:
-        prj = io_IoManager_read(Project(), 'metasip.formats.project', prjname)
+        prj = IoManager.read(Project(), prjname, 'metasip.formats.project')
     except StorageError as e:
         fatal(e.error)
 
@@ -135,8 +135,8 @@ def launchGUI(prjname, guiargs):
 
     # Handle any project passed on the command line.
     if prjname is not None:
-        IShell(ui).open(prjname, 'metasip.formats.project',
-                'metasip.tools.project_editor')
+        IShell(ui).open('metasip.tools.project_editor', prjname,
+                'metasip.formats.project')
 
     # Get the user settings and adjust the layout.
     settings = QSettings('riverbankcomputing.com', 'MetaSIP')

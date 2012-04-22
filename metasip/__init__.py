@@ -21,7 +21,5 @@ from .project_factory import ProjectFactory
 from .project_codec import ProjectCodec
 from .schema_validator_tool import SchemaValidatorTool
 
-from .dip_future import io_IoManager_read, io_IoManager_write
-
 # Make sure the adapters get registered.
 from . import project_adapters
