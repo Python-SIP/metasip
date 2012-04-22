@@ -10,11 +10,14 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+import os
+import sys
+
 from dip.io import IFilterHints
 from dip.model import implements, List, Model, Str
 from dip.shell import ITool
-from dip.ui import (Action, IAction, Dialog, IDialog, DialogController,
-        IEditor, Label, OptionList, StorageLocationEditor,
+from dip.ui import (Action, IAction, Application, Dialog, IDialog,
+        DialogController, IEditor, Label, OptionList, StorageLocationEditor,
         IStorageLocationEditor, VBox)
 
 from .i_schema import ISchema
@@ -27,9 +30,6 @@ class _DialogController(DialogController):
 
     def validate(self):
         """ Reimplemented to change the configuration of the dialog. """
-
-        # Do the normal validation.
-        super().validate()
 
         # Configure the storage location editor according to the current
         # schema.
@@ -44,6 +44,9 @@ class _DialogController(DialogController):
             ifilterhints = IFilterHints(schema, exception=False)
             if ifilterhints is not None:
                 ixmlfileeditor.filter_hints = ifilterhints.filter
+
+        # Do the normal validation.
+        super().validate()
 
 
 @implements(ITool)
@@ -78,13 +81,36 @@ class SchemaValidatorTool(Model):
     def validate_action(self):
         """ Invoked when the validate action is triggered. """
 
+        window_title=IAction(self.validate_action).plain_text
+
         model = dict(prompt=self.dialog_prompt, schema=None,
                 schemas=self.schemas, xml_file='')
 
-        view = self.dialog(model,
-                window_title=IAction(self.validate_action).plain_text)
+        view = self.dialog(model, window_title=window_title)
 
         if IDialog(view).execute():
+            from .schema_validator import (SchemaValidator,
+                    SchemaValidationException)
+
             schema = model['schema']
             xml_file = model['xml_file']
-            print("Doing the validation", schema, xml_file)
+
+            schema_file = os.path.join(os.path.dirname(os.path.abspath(sys.modules[type(schema).__module__].__file__)), ISchema(schema).schema_file)
+
+            validator = SchemaValidator()
+
+            try:
+                validator.validate(schema_file, xml_file)
+            except SchemaValidationException as e:
+                Application.warning(window_title, str(e), self.shell,
+                        "File: {0}\nLine: {1}\nColumn: {2}".format(e.filename,
+                                e.line, e.column))
+                return
+            except IOError as e:
+                Application.warning(window_title,
+                        "There was an i/o error validating the file.",
+                        self.shell, str(e))
+                return
+
+            Application.information(window_title,
+                    "{0} is valid.".format(xml_file), self.shell)
