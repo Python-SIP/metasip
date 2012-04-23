@@ -141,7 +141,6 @@
 
     <xsd:complexType name="DestructorType">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
-            <xsd:element name="Argument" type="ArgumentType"/>
             <xsd:element name="Literal" type="DestructorLiterals"/>
         </xsd:choice>
         <xsd:attribute name="access" type="AccessType"/>
@@ -231,10 +230,10 @@
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="HeaderFile" type="HeaderFileType"/>
         </xsd:choice>
+        <xsd:attribute name="filefilter" type="xsd:string" use="required"/>
+        <xsd:attribute name="inputdirsuffix" type="xsd:string" use="required"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="parserargs" type="xsd:string" use="required"/>
-        <xsd:attribute name="inputdirsuffix" type="xsd:string" use="required"/>
-        <xsd:attribute name="filefilter" type="xsd:string" use="required"/>
     </xsd:complexType>
 
     <xsd:complexType name="HeaderFileLiterals">
@@ -372,17 +371,6 @@
         <xsd:attribute name="id" type="IdType" use="required"/>
     </xsd:complexType>
 
-    <xsd:complexType name="OpaqueClassType">
-        <xsd:attribute name="access" type="AccessType"/>
-        <xsd:attribute name="annos" type="AnnosType"/>
-        <xsd:attribute name="egen" type="GenerationType"/>
-        <xsd:attribute name="features" type="FeaturesType"/>
-        <xsd:attribute name="name" type="xsd:string" use="required"/>
-        <xsd:attribute name="platforms" type="PlatformsType"/>
-        <xsd:attribute name="sgen" type="GenerationType"/>
-        <xsd:attribute name="status" type="StatusType"/>
-    </xsd:complexType>
-
     <xsd:complexType name="NamespaceLiterals">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
@@ -404,6 +392,17 @@
             <xsd:element name="Function" type="FunctionType"/>
             <xsd:element name="OperatorFunction" type="OperatorFunctionType"/>
         </xsd:choice>
+        <xsd:attribute name="egen" type="GenerationType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="sgen" type="GenerationType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpaqueClassType">
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
         <xsd:attribute name="egen" type="GenerationType"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
