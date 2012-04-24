@@ -53,16 +53,18 @@ _Q_OBJECT = (
 
 
 def _fixQt(code):
-    """
-    Update the status for code items generated from Qt's Q_OBJECT macro.  At
-    the moment we don't check argument lists as they haven't been set up yet.
+    """ Update the status for code items generated from Qt's Q_OBJECT macro.
+    At the moment we don't check argument lists as they haven't been set up
+    yet.
 
-    code is the code instance.
+    :param code:
+        is the code instance.
     """
+
     def leading(s):
+        """ Return the start of the string up to the first opening parenthesis.
         """
-        Return the start of the string up to the first opening parenthesis.
-        """
+
         idx = s.find("(")
 
         if idx > 0:
@@ -78,19 +80,17 @@ def _fixQt(code):
             break
 
 
-class WatchedElement(object):
+class ProjectElement(object):
     """
     This class is a base class for all project elements that can be modified.
     Specified attributes can be watched so that the instance records if any
     have been updated.  (This is where any undo/redo functionality would be
     added.)  
     """
-    def __init__(self, wlist=None, annos=None, status=None, sgen=None, egen=None):
+    def __init__(self, annos=None, status=None, sgen=None, egen=None):
         """
         Initialise the instance.
 
-        wlist is the list of attributes to watch.  If any is set then the
-        instance is marked as having being changed.
         annos is the string of annotations.
         status is the element status.
         sgen is the start generation as a string, ie. the first generation in
@@ -116,45 +116,10 @@ class WatchedElement(object):
         else:
             egen = sys.maxsize
 
-        # Save these before the watch list is created.
         self.annos = annos
         self.status = status
         self.sgen = sgen
         self.egen = egen
-
-        # Set up the watch list.
-        wl = ["annos", "status", "sgen", "egen"]
-
-        if wlist:
-            wl.extend(wlist)
-
-        super(WatchedElement, self).__setattr__("_wlist", wl)
-
-        # We assume that this is a new element and so has changed.
-        super(WatchedElement, self).__setattr__("changed", True)
-
-    def __setattr__(self, name, value):
-        """
-        Reimplemented to register whenever a watched attribute is set.
-        """
-        # We may set instance variables before we call __init__(), ie. before
-        # the watch list has been created.
-        if hasattr(self, "_wlist") and name in self._wlist:
-            super(WatchedElement, self).__setattr__("changed", True)
-
-        super(WatchedElement, self).__setattr__(name, value)
-
-    def hasChanged(self):
-        """
-        Return True if the instance has changed.
-        """
-        return self.changed
-
-    def resetChanged(self):
-        """
-        Mark this instance as unchanged.
-        """
-        super(WatchedElement, self).__setattr__("changed", False)
 
     def isCurrent(self):
         """
@@ -192,23 +157,22 @@ class WatchedElement(object):
         return s
 
 
-class WatchedList(list, WatchedElement):
+class ProjectList(list, ProjectElement):
     """
     This class is a base class for all list based project elements that can
     be modified.
     """
-    def __init__(self, wlist=None, annos=None, status=None, sgen=None, egen=None):
+    def __init__(self, annos=None, status=None, sgen=None, egen=None):
         """
         Initialise the instance.
 
-        wlist is the optional list of attributes to watch.
         annos is the string of annotations.
         status is the element status.
         sgen is the start generation as a string.
         egen is the end generation as a string.
         """
         list.__init__(self)
-        WatchedElement.__init__(self, wlist, annos, status, sgen, egen)
+        ProjectElement.__init__(self, annos, status, sgen, egen)
 
     def __eq__(self, other):
         """
@@ -216,55 +180,8 @@ class WatchedList(list, WatchedElement):
         """
         return (self is other)
 
-    def append(self, itm):
-        """
-        Reimplemented to watch changes to the instance.
-        """
-        self.changed = True
 
-        super(WatchedList, self).append(itm)
-
-    def insert(self, before, itm):
-        """
-        Reimplemented to watch changes to the instance.
-        """
-        self.changed = True
-
-        super(WatchedList, self).insert(before, itm)
-
-    def remove(self, itm):
-        """
-        Reimplemented to watch changes to the instance.
-        """
-        self.changed = True
-
-        super(WatchedList, self).remove(itm)
-
-    def hasChanged(self):
-        """
-        Return True if the instance has changed.
-        """
-        if self.changed:
-            return True
-
-        for itm in self:
-            if isinstance(itm, WatchedElement) and itm.hasChanged():
-                return True
-
-        return False
-
-    def resetChanged(self):
-        """
-        Mark this instance as unchanged.
-        """
-        super(WatchedList, self).resetChanged()
-
-        for itm in self:
-            if isinstance(itm, WatchedElement):
-                itm.resetChanged()
-
-
-class Project(WatchedElement):
+class Project(ProjectElement):
     """ This class represents a MetaSIP project. """
 
     def __init__(self, pname=None):
@@ -273,7 +190,7 @@ class Project(WatchedElement):
 
         pname is the project name or None if it is a new project.
         """
-        WatchedElement.__init__(self, ["inputdir", "webxmldir", "name", "rootmodule", "outputdir", "platforms", "features", "sipcomments", "externalmodules", "externalfeatures", "ignorednamespaces"])
+        super().__init__()
 
         # FIXME
         global project
@@ -704,30 +621,13 @@ class Project(WatchedElement):
 
         return self.versions[sgen - 1] + " - " + self.versions[egen - 1]
 
-    def hasChanged(self):
-        """
-        Return True if this or any child component has changed.  The changed
-        instance variable only refers to this instance.
-        """
-        return (self.changed or self.modules.hasChanged() or
-                self.headers.hasChanged() or self.versions.hasChanged())
-
-    def resetChanged(self):
-        """
-        Mark this and any child components as unchanged.
-        """
-        super(Project, self).resetChanged()
-        self.modules.resetChanged()
-        self.headers.resetChanged()
-        self.versions.resetChanged()
-
     def _clear(self):
         """
         Clears the internal data structures so the project is completely empty.
         """
-        self.modules = WatchedList()
-        self.headers = WatchedList()
-        self.versions = WatchedList()
+        self.modules = ProjectList()
+        self.headers = ProjectList()
+        self.versions = ProjectList()
 
     def literal(self, ltype, text):
         """
@@ -864,8 +764,6 @@ class Project(WatchedElement):
             os.rename(fname, self.name)
             os.remove(backup)
 
-        self.resetChanged()
-
         return True
 
     def load(self):
@@ -880,7 +778,6 @@ class Project(WatchedElement):
         self._clear()
 
         if not self.name or ProjectParser().parse(self):
-            self.resetChanged()
             return True
 
         return False
@@ -1087,11 +984,10 @@ class Project(WatchedElement):
         return None
 
 
-class Code(WatchedList):
-    """
-    This class is the base class for all elements of parsed C++ code.
-    """
-    def __init__(self, platforms=None, features=None, annos=None, status=None, sgen=None, egen=None, wlist=None):
+class Code(ProjectList):
+    """ This class is the base class for all elements of parsed C++ code. """
+
+    def __init__(self, platforms=None, features=None, annos=None, status=None, sgen=None, egen=None):
         """
         Initialise the class instance.
 
@@ -1101,7 +997,6 @@ class Code(WatchedList):
         status is the class status.
         sgen is the start generation.
         egen is the end generation.
-        wlist is the optional list of attributes to watch.
         """
         if platforms is None:
             platforms = ""
@@ -1113,14 +1008,7 @@ class Code(WatchedList):
 
         self.features = features
 
-        if wlist is None:
-            wlist = []
-        else:
-            wlist = wlist[:]
-
-        wlist.extend(["platforms", "features"])
-
-        WatchedList.__init__(self, wlist, annos, status, sgen, egen)
+        super().__init__(annos, status, sgen, egen)
 
     def signature(self):
         """
@@ -1235,10 +1123,9 @@ class Access(object):
         return s
 
 
-class Module(WatchedList):
-    """
-    This class represents a project module.
-    """
+class Module(ProjectList):
+    """ This class represents a project module. """
+
     def __init__(self, name, outputdirsuffix, version, imports):
         """
         Initialise a module instance.
@@ -1254,23 +1141,7 @@ class Module(WatchedList):
         self.imports = imports
         self.directives = ""
 
-        WatchedList.__init__(self, ["name", "outputdirsuffix", "version", "imports", "directives"])
-
-    def hasChanged(self):
-        """
-        Return True if the instance has changed.
-        """
-        # We ignore the list elements as they are "owned" by the corresponding
-        # header directory.
-        return self.changed
-
-    def resetChanged(self):
-        """
-        Mark this instance as unchanged.
-        """
-        # We ignore the list elements as they are "owned" by the corresponding
-        # header directory.
-        self.changed = False
+        super().__init__()
 
     def literal(self, ltype, text):
         """
@@ -1283,10 +1154,9 @@ class Module(WatchedList):
             self.directives = text
 
 
-class HeaderDirectory(WatchedList):
-    """
-    This class represents a project header directory.
-    """
+class HeaderDirectory(ProjectList):
+    """ This class represents a project header directory. """
+
     def __init__(self, name, parserargs="", inputdirsuffix="", filefilter=""):
         """
         Initialise a header directory instance.
@@ -1303,7 +1173,7 @@ class HeaderDirectory(WatchedList):
         self.inputdirsuffix = inputdirsuffix
         self.filefilter = filefilter
 
-        WatchedList.__init__(self, ["name", "parserargs", "inputdirsuffix", "filefilter"])
+        super().__init__()
 
     def newHeaderFile(self, id, name, md5, parse, status, sgen, egen=None):
         """
@@ -1550,8 +1420,7 @@ class HeaderFile(Code):
         self.initcode = ""
         self.postinitcode = ""
 
-        # Note that there is no need to watch the ID attribute.
-        Code.__init__(self, None, None, None, status, sgen, egen, ["name", "md5", "parse", "exportedheadercode", "moduleheadercode", "modulecode", "preinitcode", "initcode", "postinitcode"])
+        super().__init__(None, None, None, status, sgen, egen)
 
     def literal(self, ltype, text):
         """
@@ -1683,10 +1552,9 @@ class HeaderFile(Code):
         return s
 
 
-class Argument(WatchedElement):
-    """
-    This class represents an argument.
-    """
+class Argument(ProjectElement):
+    """ This class represents an argument. """
+
     def __init__(self, type, name=None, unnamed=True, default=None, pytype="", annos=None):
         """
         Initialise the argument instance.
@@ -1704,7 +1572,7 @@ class Argument(WatchedElement):
         self.default = default
         self.pytype = pytype
 
-        WatchedElement.__init__(self, ["name", "unnamed", "pytype"], annos)
+        super().__init__(annos)
 
         # Prevent a redundant unknown status being written as an XML attribute.
         # (A bit of a hack.)
@@ -1832,7 +1700,7 @@ class Class(Code, Access):
         self.bicharbufcode = ""
         self.picklecode = ""
 
-        Code.__init__(self, platforms, features, annos, status, sgen, egen, ["access", "docstring", "typeheadercode", "typecode", "convtotypecode", "subclasscode", "gctraversecode", "gcclearcode", "bigetbufcode", "birelbufcode", "bireadbufcode", "biwritebufcode", "bisegcountcode", "bicharbufcode", "picklecode"])
+        Code.__init__(self, platforms, features, annos, status, sgen, egen)
         Access.__init__(self, access)
 
         # See if we want to change the default if this is a newly parsed class.
@@ -2144,7 +2012,7 @@ class Callable(Code):
     """
     This class represents a callable.
     """
-    def __init__(self, name, container, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen, wlist=None):
+    def __init__(self, name, container, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen):
         """
         Initialise the callable instance.
 
@@ -2162,7 +2030,6 @@ class Callable(Code):
         status is the callable status.
         sgen is the start generation.
         egen is the end generation.
-        wlist is the optional list of attributes to watch.
         """
         self.name = name
         self.container = container
@@ -2173,36 +2040,7 @@ class Callable(Code):
         self.docstring = ""
         self.methcode = ""
 
-        if wlist is None:
-            wlist = []
-        else:
-            wlist = wlist[:]
-
-        wlist.extend(["docstring", "methcode", "pytype", "pyargs"])
-
-        Code.__init__(self, platforms, features, annos, status, sgen, egen, wlist)
-
-    def hasChanged(self):
-        """
-        Return True if the instance has changed.
-        """
-        if self.changed:
-            return True
-
-        for a in self.args:
-            if a.hasChanged():
-                return True
-
-        return False
-
-    def resetChanged(self):
-        """
-        Mark this instance as unchanged.
-        """
-        super(Callable, self).resetChanged()
-
-        for a in self.args:
-            a.resetChanged()
+        super().__init__(platforms, features, annos, status, sgen, egen)
 
     def literal(self, ltype, text):
         """
@@ -2342,10 +2180,9 @@ class Callable(Code):
         return False
 
 
-class EnumValue(WatchedElement):
-    """
-    This class represents an enum value.
-    """
+class EnumValue(ProjectElement):
+    """ This class represents an enum value. """
+
     def __init__(self, name, annos=None, status=None, sgen=None, egen=None):
         """
         Initialise the enum value instance.
@@ -2358,7 +2195,7 @@ class EnumValue(WatchedElement):
         """
         self.name = name
 
-        WatchedElement.__init__(self, None, annos, status, sgen, egen)
+        super().__init__(annos, status, sgen, egen)
 
     def signature(self):
         """
@@ -2416,7 +2253,7 @@ class Enum(Code, Access):
         """
         self.name = name
 
-        Code.__init__(self, platforms, features, annos, status, sgen, egen, ["access"])
+        Code.__init__(self, platforms, features, annos, status, sgen, egen)
         Access.__init__(self, access)
 
     def signature(self):
@@ -2501,10 +2338,9 @@ class Enum(Code, Access):
 
 
 class ClassCallable(Callable, Access):
-    """
-    This class represents a callable in a class context.
-    """
-    def __init__(self, name, container, access, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen, wlist=None):
+    """ This class represents a callable in a class context. """
+
+    def __init__(self, name, container, access, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen):
         """
         Initialise the callable instance.
 
@@ -2523,20 +2359,14 @@ class ClassCallable(Callable, Access):
         status is the callable status.
         sgen is the start generation.
         egen is the end generation.
-        wlist is the optional list of attributes to watch.
         """
-        if wlist is None:
-            wlist = []
 
-        wlist.append("access")
-
-        Callable.__init__(self, name, container, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen, wlist)
+        Callable.__init__(self, name, container, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen)
         Access.__init__(self, access)
 
     def signature(self):
-        """
-        Return a C/C++ representation for comparison purposes.
-        """
+        """ Return a C/C++ representation for comparison purposes. """
+
         return super(ClassCallable, self).signature() + self.sigAccess()
 
     def xmlAttributes(self):
@@ -2568,7 +2398,7 @@ class Constructor(ClassCallable):
         """
         self.explicit = explicit
 
-        ClassCallable.__init__(self, name, container, access, None, None, pyargs, platforms, features, annos, status, sgen, egen)
+        super().__init__(name, container, access, None, None, pyargs, platforms, features, annos, status, sgen, egen)
 
     def signature(self):
         """
@@ -2668,7 +2498,7 @@ class Destructor(Code, Access):
         self.methcode = ""
         self.virtcode = ""
 
-        Code.__init__(self, platforms, features, annos, status, sgen, egen, ["access", "methcode", "virtcode"])
+        Code.__init__(self, platforms, features, annos, status, sgen, egen)
         Access.__init__(self, access)
 
     def literal(self, ltype, text):
@@ -2768,7 +2598,7 @@ class OperatorCast(ClassCallable):
         """
         self.const = const
 
-        ClassCallable.__init__(self, name, container, access, None, None, None, platforms, features, annos, status, sgen, egen)
+        super().__init__(name, container, access, None, None, None, platforms, features, annos, status, sgen, egen)
 
     def signature(self):
         """
@@ -2871,7 +2701,7 @@ class Method(ClassCallable):
         self.abstract = abstract
         self.virtcode = ""
 
-        ClassCallable.__init__(self, name, container, access, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen, ["virtcode"])
+        super().__init__(name, container, access, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen)
 
         # If the original status was None (rather than "") then we know that
         # this is a newly parsed method - so handle the default status of any
@@ -3064,7 +2894,7 @@ class OperatorMethod(ClassCallable):
         self.abstract = abstract
         self.virtcode = ""
 
-        ClassCallable.__init__(self, name, container, access, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen, ["virtcode"])
+        super().__init__(name, container, access, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen)
 
         # If the original status was None (rather than "") then we know that
         # this is a newly parsed operator - so handle the default status of any
@@ -3372,7 +3202,7 @@ class Variable(Code, Access):
         self.getcode = ""
         self.setcode = ""
 
-        Code.__init__(self, platforms, features, annos, status, sgen, egen, ["access", "accesscode", "getcode", "setcode"])
+        Code.__init__(self, platforms, features, annos, status, sgen, egen)
         Access.__init__(self, access)
 
         # If the original status was None (rather than "") then we know that
@@ -3576,8 +3406,7 @@ class Namespace(Code):
         self.container = container
         self.typeheadercode = ""
 
-        Code.__init__(self, platforms, features, None, status, sgen, egen,
-                ["typeheadercode"])
+        super().__init__(platforms, features, None, status, sgen, egen)
 
     def literal(self, ltype, text):
         """
@@ -3681,7 +3510,7 @@ class OpaqueClass(Code, Access):
         self.name = name
         self.container = container
 
-        Code.__init__(self, platforms, features, annos, status, sgen, egen, ["access"])
+        Code.__init__(self, platforms, features, annos, status, sgen, egen)
         Access.__init__(self, access)
 
     def signature(self):
@@ -3746,7 +3575,7 @@ class ManualCode(Code, Access):
         self.docstring = ""
         self.methcode = ""
 
-        Code.__init__(self, platforms, features, None, status, sgen, egen, ["access", "precis", "body", "docstring", "methcode"])
+        Code.__init__(self, platforms, features, None, status, sgen, egen)
         Access.__init__(self, access)
 
     def literal(self, ltype, text):

@@ -48,7 +48,6 @@ class ProjectEditorTool(BaseManagedModelTool):
         view = Navigation.NavigationPane(self)
 
         # Display the project.
-        model.resetChanged()
         view.draw()
 
         return [view]

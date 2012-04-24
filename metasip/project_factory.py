@@ -18,7 +18,7 @@ from dip.ui import IDisplay
 class ProjectFactory(Model):
     """ A Project factory that implements the IDisplay interface. """
 
-    # The model type name used in model manager disloags and wizards.
+    # The model type name used in model manager dialogs and wizards.
     name = "MetaSIP project"
 
     def __call__(self):
