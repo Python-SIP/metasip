@@ -280,14 +280,14 @@ class IVariable(ICode, IAccess):
     type = Str()
 
 
-class Constructor(IClassCallable, IDocString, IAccess):
+class IConstructor(IClassCallable, IDocString, IAccess):
 
     explicit = Bool(False)
 
     name = Str()
 
 
-class Destructor(ICode, IAccess):
+class IDestructor(ICode, IAccess):
 
     container = Instance(IClass)
 
@@ -300,7 +300,7 @@ class Destructor(ICode, IAccess):
     virtual = Bool(False)
 
 
-class Method(IClassCallable, IDocString, IExtendedAccess):
+class IMethod(IClassCallable, IDocString, IExtendedAccess):
 
     abstract = Bool(False)
 
@@ -313,12 +313,12 @@ class Method(IClassCallable, IDocString, IExtendedAccess):
     virtual = Bool(False)
 
 
-class OperatorCast(IClassCallable, IAccess):
+class IOperatorCast(IClassCallable, IAccess):
 
     const = Bool(False)
 
 
-class OperatorMethod(IClassCallable, IAccess):
+class IOperatorMethod(IClassCallable, IAccess):
 
     abstract = Bool(False)
 
