@@ -212,7 +212,9 @@ class Project(ProjectElement):
         self.externalfeatures = ""
         self.ignorednamespaces = ""
 
-        self._clear()
+        self.modules = []
+        self.headers = []
+        self.versions = []
 
     def nameArgumentsFromConventions(self, prj_item, update):
         """
@@ -621,14 +623,6 @@ class Project(ProjectElement):
 
         return self.versions[sgen - 1] + " - " + self.versions[egen - 1]
 
-    def _clear(self):
-        """
-        Clears the internal data structures so the project is completely empty.
-        """
-        self.modules = ProjectList()
-        self.headers = ProjectList()
-        self.versions = []
-
     def literal(self, ltype, text):
         """
         Accept some literal text.
@@ -774,8 +768,6 @@ class Project(ProjectElement):
         """
 
         from .project_parser import ProjectParser
-
-        self._clear()
 
         if not self.name or ProjectParser().parse(self):
             return True
