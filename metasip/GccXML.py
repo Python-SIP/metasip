@@ -14,6 +14,8 @@ import os
 import subprocess
 import tempfile
 
+from dip.shell import IDirty
+
 from .logger import Logger
 from .Parser import ParserBase, optAttribute
 from .Project import (Code, Function, Argument, Variable, Typedef, OpaqueClass,
@@ -928,6 +930,8 @@ class GccXMLParser(ParserBase):
         scope = Code()
 
         self.transformScope(scope, self._rootns)
+
+        IDirty(prj).dirty = True
 
         return scope
 

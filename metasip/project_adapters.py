@@ -38,24 +38,6 @@ class ProjectIManagedModelAdapter(Adapter):
     # The native format.
     native_format = 'metasip.formats.project'
 
-    @IManagedModel.dirty.getter
-    def dirty(self):
-        """ Invoked to get the dirty state. """
-
-        return self.adaptee.hasChanged()
-
-    @dirty.setter
-    def dirty(self, value):
-        """ Invoked to set the dirty state. """
-
-        # We can only reset the state, which with the current version of dip is
-        # all that we will be asked to do.  However check in case this changes
-        # in the future.
-        if value:
-            raise NotImplementedError
-
-        self.adaptee.resetChanged()
-
     @observe('location')
     def __location_changed(self, change):
         """ Invoked when the location changes. """

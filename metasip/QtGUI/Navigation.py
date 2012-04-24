@@ -10,9 +10,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module implements a navigation pane in the GUI. """
-
-
 import sys
 import os
 
@@ -20,6 +17,8 @@ from PyQt4.QtCore import pyqtSignal, QByteArray, QMimeData, Qt
 from PyQt4.QtGui import (QApplication, QDialog, QDrag, QFileDialog,
         QInputDialog, QMenu, QMessageBox, QProgressDialog, QTreeWidget,
         QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout)
+
+from dip.shell import IDirty
 
 from ..Project import (Code, Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
@@ -44,9 +43,7 @@ from .Generations import GenerationsDialog
 
 
 class NavigationPane(QTreeWidget):
-    """
-    This class represents a navigation pane in the GUI.
-    """
+    """ This class represents a navigation pane in the GUI. """
 
     MIME_FORMAT = 'application/x-item'
 
@@ -74,6 +71,11 @@ class NavigationPane(QTreeWidget):
 
         # Create the (initially empty) project item.
         self._navroot = _ProjectItem(self)
+
+    def set_dirty(self):
+        """ Mark the project as having been modified. """
+
+        IDirty(self.gui.project).dirty = True
 
     def loadGUILayout(self, settings):
         """
@@ -307,6 +309,9 @@ class NavigationPane(QTreeWidget):
         updated_args = self.gui.project.acceptArgumentNames(prj_item)
         self._updateArgs(updated_args)
 
+        if len(updated_args) != 0:
+            self.set_dirty()
+
     def nameArgumentsFromConventions(self, prj_item):
         """
         Name the arguments of all callables contained in a part of the project
@@ -327,6 +332,9 @@ class NavigationPane(QTreeWidget):
                 prj_item, update=(btn == QMessageBox.Yes))
 
         self._updateArgs(updated_args)
+
+        if len(updated_args) != 0:
+            self.set_dirty()
 
         if len(invalid) > 0:
             self._stringDialog("Callables with Invalid Arguments", invalid)
@@ -441,65 +449,61 @@ class _SimpleItem(QTreeWidgetItem):
         self.pane = self.treeWidget()
         self.drawAll()
 
+    def set_dirty(self):
+        """ Mark the project as having been modified. """
+
+        self.pane.set_dirty()
+
     def drawAll(self):
-        """
-        Draw all columns of the item.
-        """
+        """ Draw all columns of the item. """
+
         self.drawName()
         self.drawAccess()
         self.drawStatus()
         self.drawGenerations()
 
     def drawName(self):
-        """
-        Draw the name column of the item.
-        """
+        """ Draw the name column of the item. """
+
         n = self.getName()
 
         if n:
             self.setText(0, n)
 
     def getName(self):
-        """
-        Return the value of the name of the item.
-        """
-        # The name is mandatory.
-        raise "_SimpleItem.getName() must be re-implemented"
+        """ Return the value of the name of the item. """
+
+        raise NotImplementedError
 
     def drawAccess(self):
-        """
-        Draw the access column of the item.
-        """
+        """ Draw the access column of the item. """
+
         a = self.getAccess()
 
         if a is not None:
             self.setText(1, a)
 
     def getAccess(self):
-        """
-        Return the value of the access of the item.
-        """
+        """ Return the value of the access of the item. """
+
         return None
 
     def drawStatus(self):
-        """
-        Draw the status column of the item.
-        """
+        """ Draw the status column of the item. """
+
         s = self.getStatus()
 
         if s is not None:
             self.setText(2, s)
 
     def getStatus(self):
-        """
-        Return the value of the status of the item.
-        """
+        """ Return the value of the status of the item. """
+
         return None
 
     def drawGenerations(self):
-        """
-        Draw the generations column of the item.
-        """
+        """ Draw the generations column of the item. """
+
         g = self.getGenerations()
 
         if g:
@@ -507,9 +511,8 @@ class _SimpleItem(QTreeWidgetItem):
             self.setText(3, self.pane.gui.project.versionRange(sgen, egen))
 
     def getGenerations(self):
-        """
-        Return the value of the generations of the item.
-        """
+        """ Return the value of the generations of the item. """
+
         return None
 
     def getMenu(self, slist):
@@ -544,9 +547,8 @@ class _FixedItem(_SimpleItem):
 
 
 class _ProjectItem(_FixedItem):
-    """
-    This class implements a navigation item that represents a project.
-    """
+    """ This class implements a navigation item that represents a project. """
+
     def __init__(self, parent):
         """
         Initialise the item instance.
@@ -722,35 +724,11 @@ class _ProjectItem(_FixedItem):
         dlg = ProjectPropertiesDialog(prj, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (rootmodule, srcrootdir, webxmlrootdir, platforms, features, externalfeatures, externalmodules, ignorednamespaces, sipcomments) = dlg.fields()
+            (prj.rootmodule, prj.inputdir, prj.webxmldir, prj.platforms, prj.features, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
 
-            if prj.rootmodule != rootmodule:
-                prj.rootmodule = rootmodule
+            prj.xinputdir = os.path.expanduser(prj.inputdir)
 
-            if prj.inputdir != srcrootdir:
-                prj.inputdir = srcrootdir
-                prj.xinputdir = os.path.expanduser(prj.inputdir)
-
-            if prj.webxmldir != webxmlrootdir:
-                prj.webxmldir = webxmlrootdir
-
-            if prj.platforms != platforms:
-                prj.platforms = platforms
-
-            if prj.features != features:
-                prj.features = features
-
-            if prj.externalfeatures != externalfeatures:
-                prj.externalfeatures = externalfeatures
-
-            if prj.externalmodules != externalmodules:
-                prj.externalmodules = externalmodules
-
-            if prj.ignorednamespaces != ignorednamespaces:
-                prj.ignorednamespaces = ignorednamespaces
-
-            if prj.sipcomments != sipcomments:
-                prj.sipcomments = sipcomments
+            self.set_dirty()
 
 
 class _ModuleGroupItem(_FixedItem):
@@ -911,6 +889,8 @@ class _ModuleItem(_FixedItem, _DropSite):
 
         _ModuleHeaderFileItem(self, hf, after)
 
+        self.set_dirty()
+
     def removeHeaderFileItem(self, itm):
         """
         Remove a header file item.
@@ -947,25 +927,15 @@ class _ModuleItem(_FixedItem, _DropSite):
         self.pane.updateArgumentsFromWebXML(self.module)
 
     def _propertiesSlot(self):
-        """
-        Handle the module's properties.
-        """
-        dlg = ModulePropertiesDialog(self.pane.gui.project, self.module, self.pane)
+        """ Handle the module's properties. """
+
+        mod = self.module
+        dlg = ModulePropertiesDialog(self.pane.gui.project, mod, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (odirsuff, imports, adddirectives, version) = dlg.fields()
+            (mod.outputdirsuffix, mod.imports, mod.directives, mod.version) = dlg.fields()
 
-            if self.module.outputdirsuffix != odirsuff:
-                self.module.outputdirsuffix = odirsuff
-
-            if self.module.imports != imports:
-                self.module.imports = imports
-
-            if self.module.directives != adddirectives:
-                self.module.directives = adddirectives
-
-            if self.module.version != version:
-                self.module.version = version
+            self.set_dirty()
 
     def _generateSlot(self):
         """
@@ -1142,19 +1112,13 @@ class _HeaderDirectoryItem(_FixedItem):
         """
         Handle the header directory's properties.
         """
-        dlg = HeaderDirectoryPropertiesDialog(self._hdir, self.pane)
+        hdir = self._hdir
+        dlg = HeaderDirectoryPropertiesDialog(hdir, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (suff, filter, pargs) = dlg.fields()
+            (hdir.inputdirsuffix, hdir.filefilter, hdir.parserargs) = dlg.fields()
 
-            if self._hdir.inputdirsuffix != suff:
-                self._hdir.inputdirsuffix = suff
-
-            if self._hdir.filefilter != filter:
-                self._hdir.filefilter = filter
-
-            if self._hdir.parserargs != pargs:
-                self._hdir.parserargs = pargs
+            self.set_dirty()
 
 
 class _HeaderFileGroupItem(_FixedItem, _DropSite):
@@ -1216,6 +1180,8 @@ class _HeaderFileGroupItem(_FixedItem, _DropSite):
 
         _HeaderFileItem(self, hf)
         self.sortChildren(0, Qt.AscendingOrder)
+
+        self.set_dirty()
 
     def removeHeaderFileItem(self, itm):
         """
@@ -1345,6 +1311,8 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         hf.insert(at, cd)
         self.insertChild(at, source)
 
+        self.set_dirty()
+
     def getMenu(self, slist):
         """
         Return the item's context menu.
@@ -1389,13 +1357,12 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
             (sgen, egen) = dlg.fields()
 
             for itm in self._targets:
-                if itm.headerfile.sgen != sgen:
-                    itm.headerfile.sgen = sgen
-
-                if itm.headerfile.egen != egen:
-                    itm.headerfile.egen = egen
+                itm.headerfile.sgen = sgen
+                itm.headerfile.egen = egen
 
                 itm.drawGenerations()
+
+            self.set_dirty()
 
     def _nameFromConventions(self):
         """ Apply the argument naming conventions to all unnamed arguments. """
@@ -1417,11 +1384,13 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
             (precis, ) = dlg.fields()
 
             if precis:
-                mc = ManualCode(precis)
+                mc = ManualCode(precis=precis)
 
                 self.headerfile.insert(0, mc)
 
                 _CodeItem(self, mc, self)
+
+                self.set_dirty()
 
     def _exportedHeaderCodeSlot(self):
         """
@@ -1441,6 +1410,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         if text_changed:
             self.headerfile.exportedheadercode = text
+            self.set_dirty()
 
         del self._editors["ehc"]
 
@@ -1462,6 +1432,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         if text_changed:
             self.headerfile.moduleheadercode = text
+            self.set_dirty()
 
         del self._editors["mhc"]
 
@@ -1483,6 +1454,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         if text_changed:
             self.headerfile.modulecode = text
+            self.set_dirty()
 
         del self._editors["moc"]
 
@@ -1504,6 +1476,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         if text_changed:
             self.headerfile.preinitcode = text
+            self.set_dirty()
 
         del self._editors["pric"]
 
@@ -1525,6 +1498,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         if text_changed:
             self.headerfile.initcode = text
+            self.set_dirty()
 
         del self._editors["ic"]
 
@@ -1546,6 +1520,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         if text_changed:
             self.headerfile.postinitcode = text
+            self.set_dirty()
 
         del self._editors["poic"]
 
@@ -1645,22 +1620,13 @@ class _Argument(_FixedItem):
         """
         Slot to handle the argument's properties.
         """
-        dlg = ArgPropertiesDialog(self.arg, self.pane)
+        arg = self.arg
+        dlg = ArgPropertiesDialog(arg, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (name, unnamed, pytype, annos) = dlg.fields()
+            (arg.name, arg.unnamed, arg.pytype, arg.annos) = dlg.fields()
 
-            if self.arg.name != name:
-                self.arg.name = name
-
-            if self.arg.unnamed != unnamed:
-                self.arg.unnamed = unnamed
-
-            if self.arg.pytype != pytype:
-                self.arg.pytype = pytype
-
-            if self.arg.annos != annos:
-                self.arg.annos = annos
+            self.set_dirty()
 
             self.drawName()
             self.parent().drawName()
@@ -1816,6 +1782,8 @@ class _CodeItem(_SimpleItem, _DropSite):
 
             cd.insert(at, source.code)
             owner.insertChild(at, source)
+
+            self.set_dirty()
         else:
             # Get the parent to handle the move.
             self.parent().drop(source, self)
@@ -2062,7 +2030,9 @@ class _CodeItem(_SimpleItem, _DropSite):
             (precis, ) = dlg.fields()
 
             if precis:
-                mc = ManualCode(precis)
+                mc = ManualCode(precis=precis)
+
+                self.set_dirty()
 
                 scope = self._getScope()
                 scope.insert(scope.index(self.code) + 1, mc)
@@ -2082,6 +2052,8 @@ class _CodeItem(_SimpleItem, _DropSite):
                 self.code.precis = precis
                 self.drawName()
 
+            self.set_dirty()
+
     def _bodyManualCode(self):
         """
         Slot to handle the update of the manual code body.
@@ -2100,6 +2072,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.body = text
+            self.set_dirty()
 
         del self._editors["mcb"]
 
@@ -2115,6 +2088,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         if ans == QMessageBox.Yes:
             self._getScope().remove(self.code)
             self.parent().removeChild(self)
+            self.set_dirty()
 
     def _accessCodeSlot(self):
         """
@@ -2134,6 +2108,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.accesscode = text
+            self.set_dirty()
 
         del self._editors["ac"]
 
@@ -2155,6 +2130,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.getcode = text
+            self.set_dirty()
 
         del self._editors["gc"]
 
@@ -2176,6 +2152,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.setcode = text
+            self.set_dirty()
 
         del self._editors["sc"]
 
@@ -2197,6 +2174,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.typeheadercode = text
+            self.set_dirty()
 
         del self._editors["thc"]
 
@@ -2218,6 +2196,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.typecode = text
+            self.set_dirty()
 
         del self._editors["tc"]
 
@@ -2239,6 +2218,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.convtotypecode = text
+            self.set_dirty()
 
         del self._editors["cttc"]
 
@@ -2260,6 +2240,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.gctraversecode = text
+            self.set_dirty()
 
         del self._editors["gctc"]
 
@@ -2281,6 +2262,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.gcclearcode = text
+            self.set_dirty()
 
         del self._editors["gccc"]
 
@@ -2302,6 +2284,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.bigetbufcode = text
+            self.set_dirty()
 
         del self._editors["bigetb"]
 
@@ -2323,6 +2306,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.birelbufcode = text
+            self.set_dirty()
 
         del self._editors["birelb"]
 
@@ -2344,6 +2328,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.bireadbufcode = text
+            self.set_dirty()
 
         del self._editors["birb"]
 
@@ -2365,6 +2350,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.biwritebufcode = text
+            self.set_dirty()
 
         del self._editors["biwb"]
 
@@ -2386,6 +2372,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.bisegcountcode = text
+            self.set_dirty()
 
         del self._editors["bisc"]
 
@@ -2407,6 +2394,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.bicharbufcode = text
+            self.set_dirty()
 
         del self._editors["bicb"]
 
@@ -2428,6 +2416,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.picklecode = text
+            self.set_dirty()
 
         del self._editors["pick"]
 
@@ -2449,6 +2438,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.subclasscode = text
+            self.set_dirty()
 
         del self._editors["scc"]
 
@@ -2470,6 +2460,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.docstring = text
+            self.set_dirty()
 
         del self._editors["ds"]
 
@@ -2491,6 +2482,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.methcode = text
+            self.set_dirty()
 
         del self._editors["mc"]
 
@@ -2512,6 +2504,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if text_changed:
             self.code.virtcode = text
+            self.set_dirty()
 
         del self._editors["vcc"]
 
@@ -2525,49 +2518,48 @@ class _CodeItem(_SimpleItem, _DropSite):
             (sgen, egen) = dlg.fields()
 
             for itm in self._targets:
-                if itm.code.sgen != sgen:
-                    itm.code.sgen = sgen
-
-                if itm.code.egen != egen:
-                    itm.code.egen = egen
+                itm.code.sgen = sgen
+                itm.code.egen = egen
 
                 itm.drawGenerations()
+
+            self.set_dirty()
 
     def _platformTagsSlot(self):
         """
         Slot to handle the platform tags.
         """
-        dlg = PlatformPickerDialog(self.pane.gui.project, self.code, self.pane)
+        code = self.code
+        dlg = PlatformPickerDialog(self.pane.gui.project, code, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (platforms, ) = dlg.fields()
+            (code.platforms, ) = dlg.fields()
 
-            if self.code.platforms != platforms:
-                self.code.platforms = platforms
+            self.set_dirty()
 
     def _featureTagsSlot(self):
         """
         Slot to handle the feature tags.
         """
-        dlg = FeaturePickerDialog(self.pane.gui.project, self.code, self.pane)
+        code = self.code
+        dlg = FeaturePickerDialog(self.pane.gui.project, code, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (features, ) = dlg.fields()
+            (code.features, ) = dlg.fields()
 
-            if self.code.features != features:
-                self.code.features = features
+            self.set_dirty()
 
     def _opaqueClassPropertiesSlot(self):
         """
         Slot to handle the properties for opaque classes.
         """
-        dlg = OpaqueClassPropertiesDialog(self.code, self.pane)
+        code = self.code
+        dlg = OpaqueClassPropertiesDialog(code, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (annos, ) = dlg.fields()
+            (code.annos, ) = dlg.fields()
 
-            if self.code.annos != annos:
-                self.code.annos = annos
+            self.set_dirty()
 
             self.setText(0, self.code.user())
 
@@ -2575,16 +2567,13 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         Slot to handle the properties for classes.
         """
-        dlg = ClassPropertiesDialog(self.code, self.pane)
+        code = self.code
+        dlg = ClassPropertiesDialog(code, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (pybases, annos) = dlg.fields()
+            (code.pybases, code.annos) = dlg.fields()
 
-            if self.code.pybases != pybases:
-                self.code.pybases = pybases
-
-            if self.code.annos != annos:
-                self.code.annos = annos
+            self.set_dirty()
 
             self.setText(0, self.code.user())
 
@@ -2592,21 +2581,19 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         Slot to handle the properties for callables.
         """
-        dlg = CallablePropertiesDialog(self.code, self.pane)
+        code = self.code
+        dlg = CallablePropertiesDialog(code, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (pytype, pyargs, annos) = dlg.fields()
+            (pytype, pyargs, code.annos) = dlg.fields()
 
-            if hasattr(self.code, "pytype") and self.code.pytype is not None:
-                if self.code.pytype != pytype:
-                    self.code.pytype = pytype
+            if hasattr(code, "pytype") and code.pytype is not None:
+                code.pytype = pytype
 
-            if hasattr(self.code, "pyargs"):
-                if self.code.pyargs != pyargs:
-                    self.code.pyargs = pyargs
+            if hasattr(code, "pyargs"):
+                code.pyargs = pyargs
 
-            if self.code.annos != annos:
-                self.code.annos = annos
+            self.set_dirty()
 
             self.setText(0, self.code.user())
 
@@ -2614,13 +2601,13 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         Slot to handle the properties for variables.
         """
-        dlg = VariablePropertiesDialog(self.code, self.pane)
+        code = self.code
+        dlg = VariablePropertiesDialog(code, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (annos, ) = dlg.fields()
+            (code.annos, ) = dlg.fields()
 
-            if self.code.annos != annos:
-                self.code.annos = annos
+            self.set_dirty()
 
             self.setText(0, self.code.user())
 
@@ -2628,13 +2615,13 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         Slot to handle the properties for enums.
         """
-        dlg = EnumPropertiesDialog(self.code, self.pane)
+        code = self.code
+        dlg = EnumPropertiesDialog(code, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (annos, ) = dlg.fields()
+            (code.annos, ) = dlg.fields()
 
-            if self.code.annos != annos:
-                self.code.annos = annos
+            self.set_dirty()
 
             self.setText(0, self.code.user())
 
@@ -2642,13 +2629,13 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         Slot to handle the properties for enum values.
         """
+        code = self.code
         dlg = EnumValuePropertiesDialog(self.code, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (annos, ) = dlg.fields()
+            (code.annos, ) = dlg.fields()
 
-            if self.code.annos != annos:
-                self.code.annos = annos
+            self.set_dirty()
 
             self.setText(0, self.code.user())
 
@@ -2685,6 +2672,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         for itm in self._targets:
             if itm.code.status != new:
                 itm.code.status = new
+                self.set_dirty()
                 itm.drawStatus()
 
     def _setAccessPublic(self):
@@ -2737,6 +2725,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         if self.code.access != new:
             self.code.access = new
+            self.set_dirty()
             self.drawAccess()
 
 

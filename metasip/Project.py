@@ -17,6 +17,8 @@ import time
 import fnmatch
 from xml.sax import saxutils
 
+from dip.shell import IDirty
+
 from .logger import Logger
 
 
@@ -314,6 +316,9 @@ class Project(WatchedElement):
             invalid += more_invalid
             updated += more_updated
 
+        if len(updated) != 0:
+            IDirty(self).dirty = True
+
         return invalid, updated
 
     def acceptArgumentNames(self, prj_item):
@@ -331,6 +336,9 @@ class Project(WatchedElement):
                 if arg.unnamed and arg.default is not None:
                     arg.unnamed = False
                     updated.append(arg)
+
+        if len(updated) != 0:
+            IDirty(self).dirty = True
 
         return updated
 
@@ -404,6 +412,9 @@ class Project(WatchedElement):
                         if arg.unnamed and name:
                             arg.name = name
                             updated_args.append(arg)
+
+        if len(updated_args) != 0:
+            IDirty(self).dirty = True
 
         return undocumented, updated_args
 
@@ -608,6 +619,8 @@ class Project(WatchedElement):
         self.versions.append(vers)
         self.generation = len(self.versions)
 
+        IDirty(self).dirty = True
+
     def addPlatform(self, plat):
         """
         Add a new platform to the project.
@@ -618,6 +631,8 @@ class Project(WatchedElement):
             self.platforms += " "
 
         self.platforms += plat
+
+        IDirty(self).dirty = True
 
     def addFeature(self, feat):
         """
@@ -630,6 +645,8 @@ class Project(WatchedElement):
 
         self.features += feat
 
+        IDirty(self).dirty = True
+
     def addExternalModule(self, xm):
         """
         Add a new external module to the project.
@@ -640,6 +657,8 @@ class Project(WatchedElement):
             self.externalmodules += " "
 
         self.externalmodules += xm
+
+        IDirty(self).dirty = True
 
     def addExternalFeature(self, xf):
         """
@@ -652,6 +671,8 @@ class Project(WatchedElement):
 
         self.externalfeatures += xf
 
+        IDirty(self).dirty = True
+
     def addIgnoredNamespace(self, ns):
         """
         Add a new ignored namespace to the project.
@@ -662,6 +683,8 @@ class Project(WatchedElement):
             self.ignorednamespaces += " "
 
         self.ignorednamespaces += ns
+
+        IDirty(self).dirty = True
 
     def versionRange(self, sgen, egen):
         """
@@ -1026,6 +1049,8 @@ class Project(WatchedElement):
                 imports=imports)
         self.modules.append(mod)
 
+        IDirty(self).dirty = True
+
         return mod
 
     def newHeaderDirectory(self, name, pargs="", inputdirsuffix="", filefilter=""):
@@ -1042,6 +1067,8 @@ class Project(WatchedElement):
         hdir = HeaderDirectory(name=name, parserargs=pargs,
                 inputdirsuffix=inputdirsuffix, filefilter=filefilter)
         self.headers.append(hdir)
+
+        IDirty(self).dirty = True
 
         return hdir
 
@@ -1295,6 +1322,9 @@ class HeaderDirectory(WatchedList):
                 sgen=sgen, egen=egen)
         self.append(hf)
 
+        # FIXME
+        IDirty(project).dirty = True
+
         return hf
 
     def addParsedHeaderFile(self, hf, phf):
@@ -1305,6 +1335,10 @@ class HeaderDirectory(WatchedList):
         phf is the parsed header file.
         """
         self._mergeCode(hf, phf)
+
+        # Assume something has changed.
+        # FIXME
+        IDirty(project).dirty = True
 
     def _mergeCode(self, dsc, ssc):
         """
@@ -1398,6 +1432,10 @@ class HeaderDirectory(WatchedList):
                 else:
                     # FIXME
                     hf.egen = project.generation
+
+        # Assume something has changed.
+        # FIXME
+        IDirty(project).dirty = True
 
     def _scanHeaderFile(self, hpath, hfile):
         """
