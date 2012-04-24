@@ -85,7 +85,7 @@ class ProjectParser(ParserBase):
         vers = optAttribute(attrs, "versions")
 
         if vers:
-            self.project.versions.extend(vers.split())
+            self.project.versions = vers.split()
 
         self.project.generation = len(self.project.versions)
 
@@ -152,9 +152,9 @@ class ProjectParser(ParserBase):
 
         # Find the corresponding header file.
         for hdir in self.project.headers:
-            for hf in hdir:
+            for hf in hdir.content:
                 if hf.id == id:
-                    self.project.modules[-1].append(hf)
+                    self.project.modules[-1].content.append(hf)
                     return
 
     def headerdirectoryStart(self, attrs):
@@ -204,7 +204,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(cls)
+        self._scope.content.append(cls)
         self._pushScope(cls)
         self._literal.append(cls)
 
@@ -229,7 +229,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(mc)
+        self._scope.content.append(mc)
         self._literal.append(mc)
 
     def manualcodeEnd(self):
@@ -255,7 +255,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(cn)
+        self._scope.content.append(cn)
         self._argumentscope = cn
         self._literal.append(cn)
 
@@ -281,7 +281,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(ds)
+        self._scope.content.append(ds)
         self._literal.append(ds)
 
     def destructorEnd(self):
@@ -306,7 +306,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(oc)
+        self._scope.content.append(oc)
         self._literal.append(oc)
 
     def operatorcastEnd(self):
@@ -337,7 +337,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(mt)
+        self._scope.content.append(mt)
         self._argumentscope = mt
         self._literal.append(mt)
 
@@ -367,7 +367,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(mt)
+        self._scope.content.append(mt)
         self._argumentscope = mt
         self._literal.append(mt)
 
@@ -393,7 +393,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(fn)
+        self._scope.content.append(fn)
         self._argumentscope = fn
         self._literal.append(fn)
 
@@ -419,7 +419,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(fn)
+        self._scope.content.append(fn)
         self._argumentscope = fn
         self._literal.append(fn)
 
@@ -457,7 +457,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(en)
+        self._scope.content.append(en)
         self._enumscope = en
 
     def enumvalueStart(self, attrs):
@@ -466,7 +466,7 @@ class ProjectParser(ParserBase):
 
         attrs is the dictionary of attributes.
         """
-        self._enumscope.append(EnumValue(name=attrs["name"],
+        self._enumscope.content.append(EnumValue(name=attrs["name"],
                 annos=optAttribute(attrs, "annos"),
                 status=optAttribute(attrs, "status", ""),
                 sgen=optAttribute(attrs, "sgen"),
@@ -488,7 +488,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(v)
+        self._scope.content.append(v)
         self._literal.append(v)
 
     def variableEnd(self):
@@ -510,7 +510,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(ns)
+        self._scope.content.append(ns)
         self._pushScope(ns)
         self._literal.append(ns)
 
@@ -536,7 +536,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(oc)
+        self._scope.content.append(oc)
 
     def typedefStart(self, attrs):
         """
@@ -552,7 +552,7 @@ class ProjectParser(ParserBase):
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
-        self._scope.append(td)
+        self._scope.content.append(td)
 
     def _setScope(self, scope):
         """

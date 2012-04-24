@@ -20,7 +20,7 @@ from PyQt4.QtGui import (QApplication, QDialog, QDrag, QFileDialog,
 
 from dip.shell import IDirty
 
-from ..Project import (Code, Class, Constructor, Destructor, Method, Function,
+from ..Project import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
         ManualCode, OpaqueClass, OperatorCast, Namespace, HeaderDirectory)
 from ..GccXML import GccXMLParser as CppParser
@@ -109,7 +109,7 @@ class NavigationPane(QTreeWidget):
         # the unknown and ignored header files) so count them all.
         nr_steps = 1
         for module in self.gui.project.modules:
-            nr_steps += len(module)
+            nr_steps += len(module.content)
 
         # Display the progress dialog.
         progress = QProgressDialog( "Processing...", None, 0, nr_steps)
@@ -765,7 +765,7 @@ class _ModuleGroupItem(_FixedItem):
 
         for mod in self.pane.gui.project.modules:
             _ModuleItem(self, mod, progress, so_far)
-            so_far += len(mod)
+            so_far += len(mod.content)
 
         return so_far
 
@@ -849,7 +849,7 @@ class _ModuleItem(_FixedItem, _DropSite):
         """
         Draw the header files group for the module.
         """
-        for hf in self.module:
+        for hf in self.module.content:
             _ModuleHeaderFileItem(self, hf)
 
             if progress is not None:
@@ -1035,7 +1035,7 @@ class _HeaderDirectoryItem(_FixedItem):
         self._ignored = _HeaderFileGroupItem(self, hdir, "ignored", "Ignored")
 
         # Open the unknown branch if it contains anything.
-        for hf in hdir:
+        for hf in hdir.content:
             if hf.status == "unknown":
                 self._unknown.setExpanded(True)
                 self.setExpanded(True)
@@ -1056,7 +1056,7 @@ class _HeaderDirectoryItem(_FixedItem):
         sortunknown = False
         sortignored = False
 
-        for hf in self._hdir:
+        for hf in self._hdir.content:
             if hf.status == "unknown":
                 _HeaderFileItem(self._unknown, hf)
                 sortunknown = True
@@ -1265,7 +1265,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         Draw the current project.
         """
-        for cd in self.headerfile:
+        for cd in self.headerfile.content:
             _CodeItem(self, cd)
 
         self.drawStatus()
@@ -1676,8 +1676,8 @@ class _CodeItem(_SimpleItem, _DropSite):
 
                 if access != 'private' and a.unnamed and a.default is not None:
                     unnamed_args = True
-        elif isinstance(cd, Code):
-            for c in cd:
+        elif isinstance(cd, (Class, Namespace)):
+            for c in cd.content:
                 _CodeItem(self, c)
 
         # The parent should be open if it is not ignored and we are, or we are

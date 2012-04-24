@@ -157,30 +157,6 @@ class ProjectElement(object):
         return s
 
 
-class ProjectList(list, ProjectElement):
-    """
-    This class is a base class for all list based project elements that can
-    be modified.
-    """
-    def __init__(self, annos=None, status=None, sgen=None, egen=None):
-        """
-        Initialise the instance.
-
-        annos is the string of annotations.
-        status is the element status.
-        sgen is the start generation as a string.
-        egen is the end generation as a string.
-        """
-        list.__init__(self)
-        ProjectElement.__init__(self, annos, status, sgen, egen)
-
-    def __eq__(self, other):
-        """
-        Reimplemented so that the other list operations work.
-        """
-        return (self is other)
-
-
 class Project(ProjectElement):
     """ This class represents a MetaSIP project. """
 
@@ -705,7 +681,7 @@ class Project(ProjectElement):
             f.write('<HeaderDirectory name="%s" parserargs="%s" inputdirsuffix="%s" filefilter="%s">\n' % (hdir.name, hdir.parserargs, hdir.inputdirsuffix, hdir.filefilter))
             f += 1
 
-            for hf in hdir:
+            for hf in hdir.content:
                 hf.id = hfid
                 hf.xml(f)
                 hfid += 1
@@ -807,7 +783,7 @@ class Project(ProjectElement):
 
         # Generate each applicable header file.
         hfnames = []
-        for hf in mod:
+        for hf in mod.content:
             f = self._createSIPFile(od, mod, hf)
 
             if f is None:
@@ -968,7 +944,7 @@ class Project(ProjectElement):
         target is the header file instance.
         """
         for hdir in self.headers:
-            for hf in hdir:
+            for hf in hdir.content:
                 if hf is target:
                     return hdir
 
@@ -976,7 +952,7 @@ class Project(ProjectElement):
         return None
 
 
-class Code(ProjectList):
+class Code(ProjectElement):
     """ This class is the base class for all elements of parsed C++ code. """
 
     def __init__(self, platforms=None, features=None, annos=None, status=None, sgen=None, egen=None):
@@ -1018,7 +994,7 @@ class Code(ProjectList):
         f is the file.
         hf is the corresponding header file instance.
         """
-        for c in self:
+        for c in self.content:
             if c.status:
                 continue
 
@@ -1053,7 +1029,7 @@ class Code(ProjectList):
 
         f is the file.
         """
-        for c in self:
+        for c in self.content:
             c.xml(f)
 
     def xmlAttributes(self):
@@ -1115,7 +1091,7 @@ class Access(object):
         return s
 
 
-class Module(ProjectList):
+class Module(ProjectElement):
     """ This class represents a project module. """
 
     def __init__(self, name, outputdirsuffix, version, imports):
@@ -1132,6 +1108,7 @@ class Module(ProjectList):
         self.version = version
         self.imports = imports
         self.directives = ""
+        self.content = []
 
         super().__init__()
 
@@ -1146,7 +1123,7 @@ class Module(ProjectList):
             self.directives = text
 
 
-class HeaderDirectory(ProjectList):
+class HeaderDirectory(ProjectElement):
     """ This class represents a project header directory. """
 
     def __init__(self, name, parserargs="", inputdirsuffix="", filefilter=""):
@@ -1164,6 +1141,7 @@ class HeaderDirectory(ProjectList):
         self.parserargs = parserargs
         self.inputdirsuffix = inputdirsuffix
         self.filefilter = filefilter
+        self.content = []
 
         super().__init__()
 
@@ -1182,7 +1160,7 @@ class HeaderDirectory(ProjectList):
         """
         hf = HeaderFile(id=id, name=name, md5=md5, parse=parse, status=status,
                 sgen=sgen, egen=egen)
-        self.append(hf)
+        self.content.append(hf)
 
         # FIXME
         IDirty(project).dirty = True
@@ -1207,10 +1185,10 @@ class HeaderDirectory(ProjectList):
         Merge source code into destination code.
 
         dsc is the destination code instance.
-        ssc is the source code instance.
+        ssc is the list of parsed source code items.
         """
         # Go though each existing code item.
-        for dsi in dsc:
+        for dsi in dsc.content:
             # Ignore anything that isn't current.
             if not dsi.isCurrent():
                 continue
@@ -1235,15 +1213,15 @@ class HeaderDirectory(ProjectList):
                 ssc.remove(ssi)
 
                 # Merge any child code.
-                if isinstance(dsi, list):
-                    self._mergeCode(dsi, ssi)
+                if isinstance(dsi, (Class, Namespace)):
+                    self._mergeCode(dsi, ssi.content)
 
         # Anything left in the source code is new.
         for ssi in ssc:
             # FIXME
             ssi.sgen = project.generation
 
-            dsc.append(ssi)
+            dsc.content.append(ssi)
 
     def scan(self, sd, ui):
         """
@@ -1290,7 +1268,7 @@ class HeaderDirectory(ProjectList):
 
                 # If it is unknown then just forget about it.
                 if hf.status == "unknown":
-                    self.remove(hf)
+                    self.content.remove(hf)
                 else:
                     # FIXME
                     hf.egen = project.generation
@@ -1368,7 +1346,7 @@ class HeaderDirectory(ProjectList):
         sig = m.hexdigest()
 
         # See if we already know about the file.
-        for hf in self:
+        for hf in self.content:
             if hf.name == hfile:
                 if hf.isCurrent():
                     if hf.md5 != sig:
@@ -1411,6 +1389,7 @@ class HeaderFile(Code):
         self.preinitcode = ""
         self.initcode = ""
         self.postinitcode = ""
+        self.content = []
 
         super().__init__(None, None, None, status, sgen, egen)
 
@@ -1450,7 +1429,7 @@ class HeaderFile(Code):
 
         # See if we need a %ModuleCode directive for things which will be
         # implemented at the module level.
-        for c in self:
+        for c in self.content:
             if c.status:
                 continue
 
@@ -1652,9 +1631,8 @@ class Argument(ProjectElement):
 
 
 class Class(Code, Access):
-    """
-    This class represents a class.
-    """
+    """ This class represents a class. """
+
     def __init__(self, name, container, bases, struct, access, pybases="", platforms=None, features=None, annos=None, status=None, sgen=None, egen=None):
         """
         Initialise the class instance.
@@ -1691,6 +1669,7 @@ class Class(Code, Access):
         self.bisegcountcode = ""
         self.bicharbufcode = ""
         self.picklecode = ""
+        self.content = []
 
         Code.__init__(self, platforms, features, annos, status, sgen, egen)
         Access.__init__(self, access)
@@ -1873,7 +1852,7 @@ class Class(Code, Access):
         else:
             access = "private"
 
-        for c in self:
+        for c in self.content:
             if c.status:
                 continue
 
@@ -2227,9 +2206,8 @@ class EnumValue(ProjectElement):
 
 
 class Enum(Code, Access):
-    """
-    This class represents an enum.
-    """
+    """ This class represents an enum. """
+
     def __init__(self, name, access, platforms=None, features=None, annos=None, status=None, sgen=None, egen=None):
         """
         Initialise the enum instance.
@@ -2244,6 +2222,7 @@ class Enum(Code, Access):
         egen is the end generation.
         """
         self.name = name
+        self.content = []
 
         Code.__init__(self, platforms, features, annos, status, sgen, egen)
         Access.__init__(self, access)
@@ -2282,7 +2261,7 @@ class Enum(Code, Access):
         f.write(self.sipAnnos() + "\n{\n")
         f += 1
 
-        for e in self:
+        for e in self.content:
             if e.status:
                 continue
 
@@ -2310,7 +2289,7 @@ class Enum(Code, Access):
         f.write('<Enum%s>\n' % self.xmlAttributes())
         f += 1
 
-        for e in self:
+        for e in self.content:
             e.xml(f)
 
         f -= 1
@@ -3397,6 +3376,7 @@ class Namespace(Code):
         self.name = name
         self.container = container
         self.typeheadercode = ""
+        self.content = []
 
         super().__init__(platforms, features, None, status, sgen, egen)
 

@@ -14,11 +14,9 @@ import os
 import subprocess
 import tempfile
 
-from dip.shell import IDirty
-
 from .logger import Logger
 from .Parser import ParserBase, optAttribute
-from .Project import (Code, Function, Argument, Variable, Typedef, OpaqueClass,
+from .Project import (Function, Argument, Variable, Typedef, OpaqueClass,
         Class, Constructor, Destructor, Method, Enum, EnumValue,
         OperatorFunction, OperatorMethod, Namespace, OperatorCast)
 
@@ -122,7 +120,7 @@ class _Namespace(_ScopedItem):
         tci = Namespace(name=self.name, container=scope)
         scope.append(tci)
 
-        parser.transformScope(tci, self)
+        parser.transformScope(tci.content, self)
 
 
 class _Class(_ScopedItem, _Access):
@@ -165,7 +163,7 @@ class _Class(_ScopedItem, _Access):
                 struct=False, access=self.access)
         scope.append(tci)
 
-        parser.transformScope(tci, self)
+        parser.transformScope(tci.content, self)
 
 
 class _Struct(_ScopedItem, _Access):
@@ -200,7 +198,7 @@ class _Struct(_ScopedItem, _Access):
                     access=self.access)
             scope.append(tci)
 
-            parser.transformScope(tci, self)
+            parser.transformScope(tci.content, self)
 
 
 class _Callable(_ScopedItem):
@@ -538,7 +536,7 @@ class _Enumeration(_ScopedItem, _Access):
         tci = Enum(name=self.name, access=self.access)
 
         for e in self.values:
-            tci.append(EnumValue(name=e.name))
+            tci.content.append(EnumValue(name=e.name))
 
         scope.append(tci)
 
@@ -927,13 +925,11 @@ class GccXMLParser(ParserBase):
         hf.parse = ""
 
         # Now convert it to the internal format.
-        scope = Code()
+        phf = []
 
-        self.transformScope(scope, self._rootns)
+        self.transformScope(phf, self._rootns)
 
-        IDirty(prj).dirty = True
-
-        return scope
+        return phf
 
     def namespaceStart(self, attrs):
         """
@@ -1139,7 +1135,7 @@ class GccXMLParser(ParserBase):
         Transform a scope (either a namespace or a class) from the stripped
         down GCC-XML format to the internal project format.
 
-        code is the code instance to add to.
+        code is the list of code items to add to.
         scope is the scope to convert.
         """
         def sortedScope(scope):
