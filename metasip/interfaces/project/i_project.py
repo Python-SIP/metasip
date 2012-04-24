@@ -15,7 +15,7 @@ from dip.model import Bool, Enum, Int, Instance, Interface, List, Str
 
 class ICodeContainer(Interface):
 
-    pass
+    content = List(ICode)
 
 
 class IAnnos(Interface):
@@ -41,8 +41,6 @@ class IWorkflow(Interface):
 
 
 class IHeaderFile(ICodeContainer, IVersionRange, IWorkflow):
-
-    content = List()
 
     exportedheadercode = Str()
 
@@ -189,8 +187,6 @@ class IOperatorFunction(ICallable):
 
 
 class IClass(ICode, ICodeContainer, IDocString, IAccess):
-
-    content = List(ICode)
 
     bases = Str()
 
