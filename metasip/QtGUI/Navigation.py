@@ -1323,7 +1323,8 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         self._targets = slist[:]
         self._targets.append(self)
 
-        versions = ("Versions...", self._generationsSlot, bool(self.pane.gui.project.versions))
+        versions = ("Versions...", self._generationsSlot,
+                len(self.pane.gui.project.versions) != 0)
 
         if slist:
             return [versions]
@@ -1805,7 +1806,7 @@ class _CodeItem(_SimpleItem, _DropSite):
 
         if slist:
             menu.append(None)
-            menu.append(("Versions...", self._generationsSlot, bool(self.pane.gui.project.versions)))
+            menu.append(("Versions...", self._generationsSlot, len(self.pane.gui.project.versions) != 0))
 
             return menu
 
@@ -1985,7 +1986,7 @@ class _CodeItem(_SimpleItem, _DropSite):
 
         # Add the extra menu items.
         menu.append(None)
-        menu.append(("Versions...", self._generationsSlot, bool(self.pane.gui.project.versions)))
+        menu.append(("Versions...", self._generationsSlot, len(self.pane.gui.project.versions) != 0))
         menu.append(("Platform Tags...", self._platformTagsSlot, bool(self.pane.gui.project.platforms)))
         menu.append(("Feature Tags...", self._featureTagsSlot, bool(self.pane.gui.project.features) or bool(self.pane.gui.project.externalfeatures)))
 

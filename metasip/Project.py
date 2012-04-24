@@ -627,7 +627,7 @@ class Project(ProjectElement):
         """
         self.modules = ProjectList()
         self.headers = ProjectList()
-        self.versions = ProjectList()
+        self.versions = []
 
     def literal(self, ltype, text):
         """
@@ -658,7 +658,7 @@ class Project(ProjectElement):
             return False
 
         # Handle the list of versions.
-        if self.versions:
+        if len(self.versions) != 0:
             vers = ' versions="%s"' % " ".join(self.versions)
         else:
             vers = ''
@@ -865,7 +865,7 @@ class Project(ProjectElement):
             # Add any version, platform and feature information to all top
             # level modules (ie. those that don't import anything).
 
-            if self.versions:
+            if len(self.versions) != 0:
                 f.write("%%Timeline {%s}\n\n" % " ".join(self.versions))
 
             if self.platforms:
