@@ -116,7 +116,7 @@ class IProject(Interface):
 
     rootmodule = Str()
 
-    sip_comments = Str()
+    sipcomments = Str()
 
     version = Int()
 
