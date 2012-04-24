@@ -117,7 +117,7 @@ class _Namespace(_ScopedItem):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        tci = Namespace(self.name, scope)
+        tci = Namespace(name=self.name, container=scope)
         scope.append(tci)
 
         parser.transformScope(tci, self)
@@ -159,7 +159,8 @@ class _Class(_ScopedItem, _Access):
 
             bl.append("%s %s" % (acc, parser.byid[bid].asType(parser)))
 
-        tci = Class(self.name, scope, ", ".join(bl), False, self.access)
+        tci = Class(name=self.name, container=scope, bases=", ".join(bl),
+                struct=False, access=self.access)
         scope.append(tci)
 
         parser.transformScope(tci, self)
@@ -189,9 +190,12 @@ class _Struct(_ScopedItem, _Access):
         scope is the scope to append the transformed entity to.
         """
         if self.incomplete:
-            scope.append(OpaqueClass(self.name, scope, self.access))
+            scope.append(
+                    OpaqueClass(name=self.name, container=scope,
+                            access=self.access))
         else:
-            tci = Class(self.name, scope, "", True, self.access)
+            tci = Class(name=self.name, container=scope, bases="", struct=True,
+                    access=self.access)
             scope.append(tci)
 
             parser.transformScope(tci, self)
@@ -256,7 +260,8 @@ class _Constructor(_ClassCallable):
         else:
             explicit = False
 
-        tci = Constructor(self.name, scope, self.access, explicit)
+        tci = Constructor(name=self.name, container=scope, access=self.access,
+                explicit=explicit)
 
         _transformArgs(parser, self.args, tci.args)
 
@@ -286,7 +291,9 @@ class _Destructor(_ScopedItem, _Access):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        scope.append(Destructor(self.name, scope, self.access, self.virtual))
+        scope.append(
+                Destructor(name=self.name, container=scope, access=self.access,
+                        virtual=self.virtual))
 
 
 class _Converter(_ClassCallable):
@@ -312,7 +319,8 @@ class _Converter(_ClassCallable):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        tci = OperatorCast(parser.asType(self.returns), scope, self.access, self.const)
+        tci = OperatorCast(name=parser.asType(self.returns), container=scope,
+                access=self.access, const=self.const)
 
         scope.append(tci)
 
@@ -343,7 +351,9 @@ class _Method(_ClassCallable):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        tci = Method(self.name, scope, self.access, parser.asType(self.returns), self.virtual, self.const, self.static, self.abstract)
+        tci = Method(name=self.name, container=scope, access=self.access,
+                rtype=parser.asType(self.returns), virtual=self.virtual,
+                const=self.const, static=self.static, abstract=self.abstract)
 
         _transformArgs(parser, self.args, tci.args)
 
@@ -375,7 +385,9 @@ class _OperatorMethod(_ClassCallable):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        tci = OperatorMethod(self.name, scope, self.access, parser.asType(self.returns), self.virtual, self.const, self.abstract)
+        tci = OperatorMethod(name=self.name, container=scope,
+                access=self.access, rtype=parser.asType(self.returns),
+                virtual=self.virtual, const=self.const, abstract=self.abstract)
 
         _transformArgs(parser, self.args, tci.args)
 
@@ -404,7 +416,8 @@ class _Function(_Callable):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        tci = Function(self.name, scope, parser.asType(self.returns))
+        tci = Function(name=self.name, container=scope,
+                rtype=parser.asType(self.returns))
 
         _transformArgs(parser, self.args, tci.args)
 
@@ -433,7 +446,8 @@ class _OperatorFunction(_Callable):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        tci = OperatorFunction(self.name, scope, parser.asType(self.returns))
+        tci = OperatorFunction(name=self.name, container=scope,
+                rtype=parser.asType(self.returns))
 
         _transformArgs(parser, self.args, tci.args)
 
@@ -463,7 +477,9 @@ class _Variable(_ScopedItem, _Access):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        scope.append(Variable(self.name, parser.asType(self.type_id), isinstance(scope, Class), self.access))
+        scope.append(
+                Variable(name=self.name, type=parser.asType(self.type_id),
+                        static=isinstance(scope, Class), access=self.access))
 
 
 class _Field(_Variable):
@@ -480,7 +496,9 @@ class _Field(_Variable):
         t = parser.asType(self.type_id)
 
         if t:
-            scope.append(Variable(self.name, t, False, self.access))
+            scope.append(
+                    Variable(name=self.name, type=t, static=False,
+                            access=self.access))
 
 
 class _Enumeration(_ScopedItem, _Access):
@@ -515,10 +533,10 @@ class _Enumeration(_ScopedItem, _Access):
         if self.access.startswith("private"):
             return
 
-        tci = Enum(self.name, self.access)
+        tci = Enum(name=self.name, access=self.access)
 
         for e in self.values:
-            tci.append(EnumValue(e.name))
+            tci.append(EnumValue(name=e.name))
 
         scope.append(tci)
 
@@ -564,7 +582,7 @@ class _Typedef(_ScopedItem):
         # Ignore unsupported types - probably only those defined in terms of
         # a MethodType (eg. typedef foo_t (scope::*bar)();).
         if t:
-            scope.append(Typedef(self.name, t))
+            scope.append(Typedef(name=self.name, type=t))
 
 
 class _FunctionType(object):
@@ -782,7 +800,7 @@ def _transformArgs(parser, gargs, pargs):
     """
     for a in gargs:
         if isinstance(a, _Ellipsis):
-            pa = Argument("...")
+            pa = Argument(type="...")
         else:
             # GCC-XML doesn't add the scope to default values of enums so we
             # try and fix it here.
@@ -794,8 +812,8 @@ def _transformArgs(parser, gargs, pargs):
                 (default not in ("0", "NULL", "true", "TRUE", "false", "FALSE"))):
                 default = typ[:typ.rfind("::")] + "::" + default
 
-            pa = Argument(typ, name=a.name, default=default)
-            #pa = Argument(parser.asType(a.type_id), name=a.name, default=a.default)
+            pa = Argument(type=typ, name=a.name, default=default)
+            #pa = Argument(type=parser.asType(a.type_id), name=a.name, default=a.default)
 
         pargs.append(pa)
 
