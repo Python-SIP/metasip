@@ -89,7 +89,7 @@ class ProjectElement(object):
 class Project(ProjectElement):
     """ This class represents a MetaSIP project. """
 
-    # Note: name, generation and xinputdir are additional attributes (not in IProject).
+    # Note: name and xinputdir are additional attributes (not in IProject).
 
     def __init__(self):
         """
@@ -442,7 +442,6 @@ class Project(ProjectElement):
         vers is the new version.
         """
         self.versions.append(vers)
-        self.generation = len(self.versions)
 
         IDirty(self).dirty = True
 
@@ -1106,6 +1105,9 @@ class HeaderDirectory(ProjectElement):
         dsc is the destination code instance.
         ssc is the list of parsed source code items.
         """
+        # FIXME
+        generation = str(len(project.versions))
+
         # Go though each existing code item.
         for dsi in dsc.content:
             # Ignore anything that isn't current.
@@ -1125,8 +1127,7 @@ class HeaderDirectory(ProjectElement):
 
             if ssi is None:
                 # The existing one no longer exists.
-                # FIXME
-                dsi.egen = str(project.generation)
+                dsi.egen = generation
             else:
                 # Discard the new code item.
                 ssc.remove(ssi)
@@ -1137,8 +1138,7 @@ class HeaderDirectory(ProjectElement):
 
         # Anything left in the source code is new.
         for ssi in ssc:
-            # FIXME
-            ssi.sgen = str(project.generation)
+            ssi.sgen = generation
 
             dsc.content.append(ssi)
 
@@ -1181,6 +1181,8 @@ class HeaderDirectory(ProjectElement):
 
         # Anything left in the known list has gone missing or was already
         # missing.
+        # FIXME
+        generation = str(len(project.versions))
         for hf in saved:
             if hf.isCurrent():
                 Logger.log("%s is no longer in the header directory" % hf.name)
@@ -1189,8 +1191,7 @@ class HeaderDirectory(ProjectElement):
                 if hf.status == "unknown":
                     self.content.remove(hf)
                 else:
-                    # FIXME
-                    hf.egen = project.generation
+                    hf.egen = generation
 
         # Assume something has changed.
         # FIXME
@@ -1278,7 +1279,8 @@ class HeaderDirectory(ProjectElement):
 
         # It is a new file, or the reappearence of an old one.
         # FIXME
-        return self.newHeaderFile(None, hfile, sig, "needed", "unknown", project.generation)
+        return self.newHeaderFile('', hfile, sig, 'needed', 'unknown',
+                str(len(project.versions)))
 
 
 class HeaderFile(Code):

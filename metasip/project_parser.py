@@ -81,8 +81,6 @@ class ProjectParser(ParserBase):
         if vers != '':
             self.project.versions = vers.split()
 
-        self.project.generation = len(self.project.versions)
-
         self._literal.append(self.project)
 
     def projectEnd(self):
