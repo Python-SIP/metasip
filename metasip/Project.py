@@ -673,10 +673,7 @@ class Project(ProjectElement):
 
         from .project_parser import ProjectParser
 
-        if ProjectParser().parse(self):
-            return True
-
-        return False
+        return ProjectParser().parse(self):
 
     def descriptiveName(self):
         """
@@ -694,11 +691,10 @@ class Project(ProjectElement):
 
         return os.path.basename(root)
 
-    def generateModule(self, ui, mod, od, saveod=True, latest_sip=True):
+    def generateModule(self, mod, od, saveod=True, latest_sip=True):
         """
         Generate the output for a module.  Return True if there was no error.
 
-        ui is the user interface instance.
         mod is the module instance.
         od is the root of the output directory.
         saveod is True if od should be saved in the project.
@@ -732,10 +728,10 @@ class Project(ProjectElement):
 
         rname = self.rootmodule
 
-        if rname:
+        if rname != '':
             rname += "."
 
-        if mod.version != "":
+        if mod.version != '':
             version = ", version=%s" % mod.version
         else:
             version = ""
@@ -1141,13 +1137,13 @@ class HeaderDirectory(ProjectElement):
 
             dsc.content.append(ssi)
 
-    def scan(self, sd, ui):
-        """
-        Scan a header directory and process it's contents.
+    def scan(self, sd):
+        """ Scan a header directory and process it's contents.
 
-        sd is the name of the directory to scan.
-        ui is the user interface instance.
+        :param sd:
+            is the name of the directory to scan.
         """
+
         sd = os.path.abspath(sd)
         sdlen = len(sd) + len(os.path.sep)
 

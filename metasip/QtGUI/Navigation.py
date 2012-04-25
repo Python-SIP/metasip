@@ -1103,7 +1103,7 @@ class _HeaderDirectoryItem(_FixedItem):
         sd = os.path.join(os.path.expanduser(self.pane.gui.project.inputdir),
                 self._hdir.inputdirsuffix)
 
-        self._hdir.scan(sd, self.pane.gui)
+        self._hdir.scan(sd)
         self.pane.headerDirectoryScanned.emit(self._hdir)
 
     def _propertiesSlot(self):
@@ -2752,10 +2752,9 @@ def _generateModule(pane, mod, od):
     mod is the module instance.
     od is the name of the output directory.
     """
-    gui = pane.gui
-    prj = gui.project
+    prj = pane.gui.project
 
-    if prj.generateModule(gui, mod, od):
+    if prj.generateModule(mod, od):
         return True
 
     QMessageBox.critical(pane, "Generate Output", prj.diagnostic,

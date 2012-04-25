@@ -90,7 +90,7 @@ class IModule(Interface):
 
     outputdirsuffix = Str()
 
-    version = Int()
+    version = Str()
 
 
 class IProject(Interface):
