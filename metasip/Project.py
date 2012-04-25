@@ -26,12 +26,9 @@ from .project_version import ProjectVersion
 project = None
 
 
-class ProjectElement(object):
+class ProjectElement:
     """
     This class is a base class for all project elements that can be modified.
-    Specified attributes can be watched so that the instance records if any
-    have been updated.  (This is where any undo/redo functionality would be
-    added.)  
     """
     def __init__(self, annos='', status='unknown', sgen='', egen=''):
         """
@@ -40,10 +37,10 @@ class ProjectElement(object):
         annos is the string of annotations.
         status is the element status.
         sgen is the start generation as a string, ie. the first generation in
-        which it appeared.  None means the beginning of time.
+        which it appeared.  An empty string means the beginning of time.
         egen is the end generation as a string, ie. the first generation in
         which it was missing (and not the last generation in which it
-        appeared).  None means the end of time.
+        appeared).  An empty string means the end of time.
         """
         self.annos = annos
         self.status = status
@@ -86,18 +83,13 @@ class ProjectElement(object):
         return s
 
 
-class Project(ProjectElement):
+class Project:
     """ This class represents a MetaSIP project. """
 
     # Note: name is an additional attributes (not in IProject).
 
     def __init__(self):
-        """
-        Initialise a project instance.
-
-        pname is the project name or None if it is a new project.
-        """
-        super().__init__()
+        """ Initialise a project instance. """
 
         # FIXME
         global project
@@ -953,7 +945,7 @@ class Code(ProjectElement):
         return s
 
 
-class Access(object):
+class Access:
     """ This class is derived by all code that is affected by class access. """
 
     def __init__(self, access):
@@ -993,7 +985,7 @@ class Access(object):
         return s
 
 
-class Module(ProjectElement):
+class Module:
     """ This class represents a project module. """
 
     def __init__(self, name, outputdirsuffix, version, imports):
@@ -1012,8 +1004,6 @@ class Module(ProjectElement):
         self.directives = ""
         self.content = []
 
-        super().__init__()
-
     def literal(self, ltype, text):
         """
         Accept some literal text.
@@ -1025,7 +1015,7 @@ class Module(ProjectElement):
             self.directives = text
 
 
-class HeaderDirectory(ProjectElement):
+class HeaderDirectory:
     """ This class represents a project header directory. """
 
     def __init__(self, name, parserargs="", inputdirsuffix="", filefilter=""):
@@ -1428,6 +1418,8 @@ class HeaderFile(Code):
         return s
 
 
+# FIXME: Create an Annotation class that is the super-class of this one and
+#        ProjectElement.
 class Argument(ProjectElement):
     """ This class represents an argument. """
 
