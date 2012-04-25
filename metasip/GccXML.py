@@ -922,13 +922,15 @@ class GccXMLParser(ParserBase):
         hf is the header file instance.
         """
         # Check the input directory exists.
-        if not os.path.isdir(prj.xinputdir):
-            self.diagnostic = "%s directory does not exist" % prj.xinputdir
+        input_dir = os.path.expanduser(prj.inputdir)
+
+        if not os.path.isdir(input_dir):
+            self.diagnostic = "%s directory does not exist" % input_dir
             Logger.log(self.diagnostic)
 
             return None
 
-        self._pathname = os.path.join(prj.xinputdir, hdir.inputdirsuffix, hf.name)
+        self._pathname = os.path.join(input_dir, hdir.inputdirsuffix, hf.name)
         iname = os.path.join(tempfile.gettempdir(), os.path.basename(hf.name) + ".tmp")
 
         argv = ["gccxml"]
@@ -943,7 +945,7 @@ class GccXMLParser(ParserBase):
         Logger.log(args)
 
         cwd = os.getcwd()
-        os.chdir(prj.xinputdir)
+        os.chdir(input_dir)
 
         try:
             output = subprocess.check_output(args, shell=True,

@@ -89,7 +89,7 @@ class ProjectElement(object):
 class Project(ProjectElement):
     """ This class represents a MetaSIP project. """
 
-    # Note: name and xinputdir are additional attributes (not in IProject).
+    # Note: name is an additional attributes (not in IProject).
 
     def __init__(self):
         """
@@ -106,7 +106,6 @@ class Project(ProjectElement):
         self.version = ProjectVersion
 
         self.inputdir = ""
-        self.xinputdir = ""
         self.webxmldir = ""
         self.name = ""
         self.rootmodule = ""

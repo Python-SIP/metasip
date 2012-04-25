@@ -726,8 +726,6 @@ class _ProjectItem(_FixedItem):
         if dlg.exec_() == QDialog.Accepted:
             (prj.rootmodule, prj.inputdir, prj.webxmldir, prj.platforms, prj.features, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
 
-            prj.xinputdir = os.path.expanduser(prj.inputdir)
-
             self.set_dirty()
 
 
@@ -1102,7 +1100,7 @@ class _HeaderDirectoryItem(_FixedItem):
         """
         Handle scanning the header directory.
         """
-        sd = os.path.join(self.pane.gui.project.xinputdir,
+        sd = os.path.join(os.path.expanduser(self.pane.gui.project.inputdir),
                 self._hdir.inputdirsuffix)
 
         self._hdir.scan(sd, self.pane.gui)

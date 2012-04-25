@@ -10,8 +10,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-import os
-
 from .Parser import optAttribute, ParserBase
 from .Project import (Argument, Class, Constructor, Destructor, Enum,
         EnumValue, Function, ManualCode, Method, Namespace, OpaqueClass,
@@ -71,8 +69,6 @@ class ProjectParser(ParserBase):
         self.project.inputdir = attrs["inputdir"]
         self.project.webxmldir = optAttribute(attrs, "webxmldir")
         self.project.outputdir = attrs["outputdir"]
-
-        self.project.xinputdir = os.path.expanduser(self.project.inputdir)
 
         # Handle the list of versions.  A version is a name, its number is
         # called its generation.
