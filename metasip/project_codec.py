@@ -17,6 +17,7 @@ from dip.io import ICodec, StorageError
 from dip.model import implements, Model
 
 from .i_project import IProject
+from .project_parser import ProjectParser
 
 
 @implements(ICodec)
@@ -53,7 +54,7 @@ class ProjectCodec(Model):
 
         model.name = str(location)
 
-        if not model.load():
+        if not ProjectParser().parse(model):
             raise StorageError(model.diagnostic, location)
 
         return model

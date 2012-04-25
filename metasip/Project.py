@@ -664,17 +664,6 @@ class Project(ProjectElement):
 
         return True
 
-    def load(self):
-        """ Load the project.
-
-        :return:
-            ``True`` if the project was successfully loaded.
-        """
-
-        from .project_parser import ProjectParser
-
-        return ProjectParser().parse(self):
-
     def descriptiveName(self):
         """
         Return the descriptive name of the project.
