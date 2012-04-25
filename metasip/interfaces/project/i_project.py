@@ -12,6 +12,8 @@
 
 from dip.model import Bool, Enum, Int, Instance, Interface, List, Str
 
+from ... import ProjectVersion
+
 
 class ICodeContainer(Interface):
 
@@ -30,14 +32,14 @@ class IDocString(Interface):
 
 class IVersionRange(Interface):
 
-    egen = Int()
+    egen = Str()
 
-    sgen = Int()
+    sgen = Str()
 
 
 class IWorkflow(Interface):
 
-    status = Enum('', 'ignored', 'todo', 'unknown')
+    status = Enum('', 'ignored', 'todo', 'unknown', default='unknown')
 
 
 class IHeaderFile(ICodeContainer, IVersionRange, IWorkflow):
@@ -116,7 +118,7 @@ class IProject(Interface):
 
     sipcomments = Str()
 
-    version = Int()
+    version = Int(ProjectVersion)
 
     versions = List(Str())
 
@@ -133,7 +135,7 @@ class IArgument(IAnnos):
 
     type = Str()
 
-    unnamed = Bool(False)
+    unnamed = Bool(True)
 
 
 class ICode(IAnnos, IVersionRange, IWorkflow):

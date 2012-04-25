@@ -26,7 +26,7 @@
         <xsd:attribute name="name" type="xsd:string"/>
         <xsd:attribute name="pytype" type="xsd:string"/>
         <xsd:attribute name="type" type="xsd:string" use="required"/>
-        <xsd:attribute name="unnamed" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="unnamed" type="xsd:boolean" default="1"/>
     </xsd:complexType>
 
     <xsd:complexType name="ClassLiterals">

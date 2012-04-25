@@ -19,6 +19,7 @@ from .Project import Project
 from .project_editor_tool import ProjectEditorTool
 from .project_factory import ProjectFactory
 from .project_codec import ProjectCodec
+from .project_version import ProjectVersion
 from .schema_validator_tool import SchemaValidatorTool
 
 # Make sure the adapters get registered.

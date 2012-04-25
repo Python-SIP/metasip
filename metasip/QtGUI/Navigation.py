@@ -1674,7 +1674,7 @@ class _CodeItem(_SimpleItem, _DropSite):
             for a in cd.args:
                 _Argument(self, a)
 
-                if access != 'private' and a.unnamed and a.default is not None:
+                if access != 'private' and a.unnamed and a.default != '':
                     unnamed_args = True
         elif isinstance(cd, (Class, Namespace)):
             for c in cd.content:
@@ -1734,7 +1734,7 @@ class _CodeItem(_SimpleItem, _DropSite):
                     access = ''
 
             for a in self.code.args:
-                if access != 'private' and a.unnamed and a.default is not None:
+                if access != 'private' and a.unnamed and a.default != '':
                     status.append("Unnamed arguments")
                     break
 
@@ -1986,9 +1986,12 @@ class _CodeItem(_SimpleItem, _DropSite):
 
         # Add the extra menu items.
         menu.append(None)
-        menu.append(("Versions...", self._generationsSlot, len(self.pane.gui.project.versions) != 0))
-        menu.append(("Platform Tags...", self._platformTagsSlot, bool(self.pane.gui.project.platforms)))
-        menu.append(("Feature Tags...", self._featureTagsSlot, bool(self.pane.gui.project.features) or bool(self.pane.gui.project.externalfeatures)))
+        menu.append(("Versions...", self._generationsSlot,
+                len(self.pane.gui.project.versions) != 0))
+        menu.append(("Platform Tags...", self._platformTagsSlot,
+                self.pane.gui.project.platforms != ''))
+        menu.append(("Feature Tags...", self._featureTagsSlot,
+                (self.pane.gui.project.features != '' or self.pane.gui.project.externalfeatures != '')))
 
         if pslot:
             menu.append(("Properties...", pslot))

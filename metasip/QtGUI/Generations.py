@@ -13,8 +13,6 @@
 """ This module handles a code item's generations. """
 
 
-import sys
-
 from PyQt4.QtGui import QDialog
 
 from .Designer.GenerationsBase import Ui_GenerationsBase
@@ -46,12 +44,12 @@ class GenerationsDialog(QDialog, Ui_GenerationsBase):
 
         self.egen.addItem("Latest")
 
-        self.sgen.setCurrentIndex(sgen)
+        self.sgen.setCurrentIndex(int(sgen))
 
-        if egen >= self.egen.count():
+        if egen == '':
             last = self.egen.count()
         else:
-            last = egen
+            last = int(egen)
 
         self.egen.setCurrentIndex(last - 1)
 
@@ -63,6 +61,8 @@ class GenerationsDialog(QDialog, Ui_GenerationsBase):
         egen = self.egen.currentIndex() + 1
 
         if egen == self.egen.count():
-            egen = sys.maxsize
+            egen = ''
+        else:
+            egen = str(egen)
 
-        return (sgen, egen)
+        return (str(sgen), egen)

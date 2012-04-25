@@ -17,14 +17,7 @@ from .Project import (Argument, Class, Constructor, Destructor, Enum,
         EnumValue, Function, ManualCode, Method, Namespace, OpaqueClass,
         OperatorCast, OperatorFunction, OperatorMethod, Project, Typedef,
         Variable)
-
-
-# The current project file format version number.
-#
-# History:
-#   0   The original undocumented version.
-#   1   The first documented version.
-Version = 1
+from .project_version import ProjectVersion
 
 
 class ProjectParser(ParserBase):
@@ -44,13 +37,16 @@ class ProjectParser(ParserBase):
         self._literal = []
         self._literaltext = None
 
+        # This should get overwritten.
+        prj.version = -1
+
         rc = super().parse(prj.name)
 
         if rc:
             if prj.version < 0:
                 prj.diagnostic = "The file doesn't appear to contain a valid MetaSIP project"
                 rc = False
-            elif prj.version > Version:
+            elif prj.version > ProjectVersion:
                 prj.diagnostic = "The project was created with a later version of MetaSIP"
                 rc = False
         else:
@@ -65,15 +61,13 @@ class ProjectParser(ParserBase):
         attrs is the dictionary of attributes.
         """
         self.project.version = int(attrs["version"])
-        self.project.rootmodule = optAttribute(attrs, "rootmodule", "")
-        self.project.platforms = optAttribute(attrs, "platforms", "")
-        self.project.features = optAttribute(attrs, "features", "")
-        self.project.externalmodules = optAttribute(attrs, "externalmodules",
-                "")
-        self.project.externalfeatures = optAttribute(attrs, "externalfeatures",
-                "")
+        self.project.rootmodule = optAttribute(attrs, "rootmodule")
+        self.project.platforms = optAttribute(attrs, "platforms")
+        self.project.features = optAttribute(attrs, "features")
+        self.project.externalmodules = optAttribute(attrs, "externalmodules")
+        self.project.externalfeatures = optAttribute(attrs, "externalfeatures")
         self.project.ignorednamespaces = optAttribute(attrs,
-                "ignorednamespaces", "")
+                "ignorednamespaces")
         self.project.inputdir = attrs["inputdir"]
         self.project.webxmldir = optAttribute(attrs, "webxmldir")
         self.project.outputdir = attrs["outputdir"]
@@ -84,7 +78,7 @@ class ProjectParser(ParserBase):
         # called its generation.
         vers = optAttribute(attrs, "versions")
 
-        if vers:
+        if vers != '':
             self.project.versions = vers.split()
 
         self.project.generation = len(self.project.versions)
@@ -104,9 +98,8 @@ class ProjectParser(ParserBase):
         attrs is the dictionary of attributes.
         """
         mod = self.project.newModule(attrs["name"],
-                optAttribute(attrs, "outputdirsuffix", ""),
-                optAttribute(attrs, "version", ""),
-                optAttribute(attrs, "imports", ""))
+                optAttribute(attrs, "outputdirsuffix"),
+                optAttribute(attrs, "version"), optAttribute(attrs, "imports"))
 
         self._literal.append(mod)
 
@@ -173,8 +166,8 @@ class ProjectParser(ParserBase):
         attrs is the dictionary of attributes.
         """
         hf = self.project.headers[-1].newHeaderFile(int(attrs["id"]),
-                attrs["name"], attrs["md5"], optAttribute(attrs, "parse", ""),
-                optAttribute(attrs, "status", ""), optAttribute(attrs, "sgen"),
+                attrs["name"], attrs["md5"], optAttribute(attrs, "parse"),
+                optAttribute(attrs, "status"), optAttribute(attrs, "sgen"),
                 optAttribute(attrs, "egen"))
 
         self._setScope(hf)
@@ -193,14 +186,14 @@ class ProjectParser(ParserBase):
         attrs is the dictionary of attributes.
         """
         cls = Class(name=attrs["name"], container=self._scope,
-                bases=optAttribute(attrs, "bases", ""),
-                struct=int(optAttribute(attrs, "struct", "0")),
+                bases=optAttribute(attrs, "bases"),
+                struct=bool(int(optAttribute(attrs, "struct", "0"))),
                 access=optAttribute(attrs, "access"),
-                pybases=optAttribute(attrs, "pybases", ""),
+                pybases=optAttribute(attrs, "pybases"),
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -225,7 +218,7 @@ class ProjectParser(ParserBase):
                 access=optAttribute(attrs, "access"),
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -246,12 +239,12 @@ class ProjectParser(ParserBase):
         """
         cn = Constructor(name=attrs["name"], container=self._scope,
                 access=optAttribute(attrs, "access"),
-                explicit=int(optAttribute(attrs, "explicit", "0")),
-                pyargs=optAttribute(attrs, "pyargs", ""),
+                explicit=bool(int(optAttribute(attrs, "explicit", "0"))),
+                pyargs=optAttribute(attrs, "pyargs"),
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -273,11 +266,11 @@ class ProjectParser(ParserBase):
         """
         ds = Destructor(name=attrs["name"], container=self._scope,
                 access=optAttribute(attrs, "access"),
-                virtual=int(optAttribute(attrs, "virtual", "0")),
+                virtual=bool(int(optAttribute(attrs, "virtual", "0"))),
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -298,11 +291,11 @@ class ProjectParser(ParserBase):
         """
         oc = OperatorCast(name=attrs["name"], container=self._scope,
                 access=optAttribute(attrs, "access"),
-                const=int(optAttribute(attrs, "const", "0")),
+                const=bool(int(optAttribute(attrs, "const", "0"))),
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -324,16 +317,16 @@ class ProjectParser(ParserBase):
         mt = Method(name=attrs["name"], container=self._scope,
                 access=optAttribute(attrs, "access"),
                 rtype=attrs["rtype"],
-                virtual=int(optAttribute(attrs, "virtual", "0")),
-                const=int(optAttribute(attrs, "const", "0")),
-                static=int(optAttribute(attrs, "static", "0")),
-                abstract=int(optAttribute(attrs, "abstract", "0")),
-                pytype=optAttribute(attrs, "pytype", ""),
-                pyargs=optAttribute(attrs, "pyargs", ""),
+                virtual=bool(int(optAttribute(attrs, "virtual", "0"))),
+                const=bool(int(optAttribute(attrs, "const", "0"))),
+                static=bool(int(optAttribute(attrs, "static", "0"))),
+                abstract=bool(int(optAttribute(attrs, "abstract", "0"))),
+                pytype=optAttribute(attrs, "pytype"),
+                pyargs=optAttribute(attrs, "pyargs"),
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -355,15 +348,15 @@ class ProjectParser(ParserBase):
         """
         mt = OperatorMethod(name=attrs["name"], container=self._scope,
                 access=optAttribute(attrs, "access"), rtype=attrs["rtype"],
-                virtual=int(optAttribute(attrs, "virtual", "0")),
-                const=int(optAttribute(attrs, "const", "0")),
-                abstract=int(optAttribute(attrs, "abstract", "0")),
-                pytype=optAttribute(attrs, "pytype", ""),
-                pyargs=optAttribute(attrs, "pyargs", ""),
+                virtual=bool(int(optAttribute(attrs, "virtual", "0"))),
+                const=bool(int(optAttribute(attrs, "const", "0"))),
+                abstract=bool(int(optAttribute(attrs, "abstract", "0"))),
+                pytype=optAttribute(attrs, "pytype"),
+                pyargs=optAttribute(attrs, "pyargs"),
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -384,12 +377,12 @@ class ProjectParser(ParserBase):
         attrs is the dictionary of attributes.
         """
         fn = Function(name=attrs["name"], container=self._scope,
-                rtype=attrs["rtype"], pytype=optAttribute(attrs, "pytype", ""),
-                pyargs=optAttribute(attrs, "pyargs", ""),
+                rtype=attrs["rtype"], pytype=optAttribute(attrs, "pytype"),
+                pyargs=optAttribute(attrs, "pyargs"),
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -410,12 +403,12 @@ class ProjectParser(ParserBase):
         attrs is the dictionary of attributes.
         """
         fn = OperatorFunction(name=attrs["name"], container=self._scope,
-                rtype=attrs["rtype"], pytype=optAttribute(attrs, "pytype", ""),
-                pyargs=optAttribute(attrs, "pyargs", ""),
+                rtype=attrs["rtype"], pytype=optAttribute(attrs, "pytype"),
+                pyargs=optAttribute(attrs, "pyargs"),
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -438,7 +431,7 @@ class ProjectParser(ParserBase):
         a = Argument(type=attrs["type"], name=optAttribute(attrs, "name"),
                 unnamed=bool(int(optAttribute(attrs, "unnamed", '0'))),
                 default=optAttribute(attrs, "default"),
-                pytype=optAttribute(attrs, "pytype", ""),
+                pytype=optAttribute(attrs, "pytype"),
                 annos=optAttribute(attrs, "annos"))
 
         self._argumentscope.args.append(a)
@@ -453,7 +446,7 @@ class ProjectParser(ParserBase):
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -468,7 +461,7 @@ class ProjectParser(ParserBase):
         """
         self._enumscope.content.append(EnumValue(name=attrs["name"],
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen")))
 
@@ -479,12 +472,12 @@ class ProjectParser(ParserBase):
         attrs is the dictionary of attributes.
         """
         v = Variable(name=attrs["name"], type=attrs["type"],
-                static=int(optAttribute(attrs, "static", "0")),
+                static=bool(int(optAttribute(attrs, "static", "0"))),
                 access=optAttribute(attrs, "access"),
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -506,7 +499,7 @@ class ProjectParser(ParserBase):
         ns = Namespace(name=attrs["name"], container=self._scope,
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -532,7 +525,7 @@ class ProjectParser(ParserBase):
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 
@@ -548,7 +541,7 @@ class ProjectParser(ParserBase):
                 platforms=optAttribute(attrs, "platforms"),
                 features=optAttribute(attrs, "features"),
                 annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status", ""),
+                status=optAttribute(attrs, "status"),
                 sgen=optAttribute(attrs, "sgen"),
                 egen=optAttribute(attrs, "egen"))
 

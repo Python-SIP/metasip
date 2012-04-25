@@ -154,14 +154,19 @@ class _ParserErrorHandler(ErrorHandler):
         Logger.log(str(exception))
 
 
-def optAttribute(attrs, name, default=None):
-    """
-    Return the value of an optional attribute.
+def optAttribute(attrs, name, default=''):
+    """ Return the value of an optional attribute.
 
-    attrs is the dictionary of attributes.
-    name is the name of the attribute to return.
-    default is the value to return if the attribute wasn't specified.
+    :param attrs:
+        is the dictionary of attributes.
+    :param name:
+        is the name of the attribute to return.
+    :param default:
+        is the value to return if the attribute wasn't specified.
+    :return:
+        the value of the attribute.
     """
+
     try:
         return attrs[name]
     except KeyError:
