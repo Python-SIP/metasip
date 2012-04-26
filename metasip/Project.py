@@ -22,12 +22,43 @@ from .logger import Logger
 from .project_version import ProjectVersion
 
 
-class ProjectElement:
+class Annotations:
+    """ This class is a base class for any project item that has annotations.
+    """
+
+    def __init__(self, annos):
+        """
+        Initialise the instance.
+
+        annos is the string of annotations.
+        """
+        self.annos = annos
+
+    def sipAnnos(self):
+        """ Return the annotations suitable for writing to a SIP file.
+
+        :return:
+            the annotations.
+        """
+
+        return ' /{0}/'.format(self.annos) if self.annos != '' else ''
+
+    def xmlAttributes(self):
+        """ Return the XML attributes as a string.
+
+        :return:
+            the XML attributes.
+        """
+
+        return ' annos="{0}"'.format(escape(self.annos)) if self.annos != '' else ''
+
+
+class VersionedItem(Annotations):
     """ This class is a base class for all project elements that may have
     annotations, subject to workflow or versions.
     """
 
-    def __init__(self, annos='', status='unknown', sgen='', egen=''):
+    def __init__(self, annos, status, sgen, egen):
         """
         Initialise the instance.
 
@@ -39,7 +70,8 @@ class ProjectElement:
         which it was missing (and not the last generation in which it
         appeared).  An empty string means the end of time.
         """
-        self.annos = annos
+        super().__init__(annos)
+
         self.status = status
         self.sgen = sgen
         self.egen = egen
@@ -50,23 +82,14 @@ class ProjectElement:
         """
         return (self.egen == '')
 
-    def sipAnnos(self):
-        """
-        Return the annotations suitable for writing to a SIP file.
-        """
-        if self.annos != '':
-            return " /%s/" % self.annos
-
-        return ""
-
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = ''
+        """ Return the XML attributes as a string.
 
-        if self.annos != '':
-            s += ' annos="%s"' % escape(self.annos)
+        :return:
+            the XML attributes.
+        """
+
+        s = super().xmlAttributes()
 
         if self.status != '':
             s += ' status="%s"' % self.status
@@ -653,7 +676,7 @@ class Project:
 
         # Write the project using the current version.
         f.write('<?xml version="1.0"?>\n')
-        f.write('<Project version="%u" rootmodule="%s"%s%s%s%s%s%s inputdir="%s" webxmldir="%s" outputdir="%s">\n' % (Version, self.rootmodule, vers, plat, feat, xmod, xf, ins, self.inputdir, self.webxmldir, self.outputdir))
+        f.write('<Project version="%u" rootmodule="%s"%s%s%s%s%s%s inputdir="%s" webxmldir="%s" outputdir="%s">\n' % (ProjectVersion, self.rootmodule, vers, plat, feat, xmod, xf, ins, self.inputdir, self.webxmldir, self.outputdir))
 
         if self.sipcomments != '':
             _writeLiteralXML(f, "sipcomments", self.sipcomments)
@@ -696,7 +719,7 @@ class Project:
             if mod.directives:
                 _writeLiteralXML(f, "directives", mod.directives)
 
-            for hf in mod:
+            for hf in mod.content:
                 f.write('<ModuleHeaderFile id="%u"/>\n' % hf.id)
 
             f -= 1
@@ -925,10 +948,10 @@ class Project:
         return None
 
 
-class Code(ProjectElement):
+class Code(VersionedItem):
     """ This class is the base class for all elements of parsed C++ code. """
 
-    def __init__(self, platforms='', features='', annos='', status='unknown', sgen='', egen=''):
+    def __init__(self, platforms, features, annos, status, sgen, egen):
         """
         Initialise the class instance.
 
@@ -939,10 +962,10 @@ class Code(ProjectElement):
         sgen is the start generation.
         egen is the end generation.
         """
+        super().__init__(annos, status, sgen, egen)
+
         self.platforms = platforms
         self.features = features
-
-        super().__init__(annos, status, sgen, egen)
 
     def signature(self):
         """
@@ -1001,7 +1024,7 @@ class Code(ProjectElement):
         """
         Return the XML attributes as a string.
         """
-        s = super(Code, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         if self.platforms != '':
             s += ' platforms="%s"' % self.platforms
@@ -1339,6 +1362,8 @@ class HeaderFile(Code):
         sgen is the start generation.
         egen is the end generation.
         """
+        super().__init__('', '', '', status, sgen, egen)
+
         self.project = project
         self.id = id
         self.name = name
@@ -1351,8 +1376,6 @@ class HeaderFile(Code):
         self.initcode = ""
         self.postinitcode = ""
         self.content = []
-
-        super().__init__(None, None, None, status, sgen, egen)
 
     def literal(self, ltype, text):
         """
@@ -1413,7 +1436,7 @@ class HeaderFile(Code):
 
                 break
 
-        super(HeaderFile, self).sip(f, self, latest_sip)
+        super().sip(f, self, latest_sip)
 
         f.blank()
 
@@ -1444,7 +1467,7 @@ class HeaderFile(Code):
         f.write('<HeaderFile%s>\n' % self.xmlAttributes())
 
         f += 1
-        super(HeaderFile, self).xml(f)
+        super().xml(f)
         f -= 1
 
         if self.exportedheadercode:
@@ -1471,7 +1494,7 @@ class HeaderFile(Code):
         """
         Return the XML attributes as a string.
         """
-        s = super(HeaderFile, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         s += ' id="%u"' % self.id
         s += ' name="%s"' % self.name
@@ -1483,9 +1506,7 @@ class HeaderFile(Code):
         return s
 
 
-# FIXME: Create a class Annotation that is the super-class of this and
-#        ProjectElement.  Rename ProjectElement to something more appropriate.
-class Argument(ProjectElement):
+class Argument(Annotations):
     """ This class represents an argument. """
 
     def __init__(self, type, name='', unnamed=True, default='', pytype='', annos=''):
@@ -1499,13 +1520,13 @@ class Argument(ProjectElement):
         pytype is the Python type.
         annos is the string of annotations.
         """
+        super().__init__(annos)
+
         self.type = type
         self.name = name
         self.unnamed = unnamed
         self.default = default
         self.pytype = pytype
-
-        super().__init__(annos, status='')
 
     def signature(self, callable):
         """
@@ -1570,7 +1591,7 @@ class Argument(ProjectElement):
         """
         Return the XML attributes as a string.
         """
-        s = super(Argument, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         s += ' type="%s"' % escape(self.type)
 
@@ -1609,6 +1630,9 @@ class Class(Code, Access):
         sgen is the start generation.
         egen is the end generation.
         """
+        Code.__init__(self, platforms, features, annos, status, sgen, egen)
+        Access.__init__(self, access)
+
         self.name = name
         self.container = container
         self.bases = bases
@@ -1629,9 +1653,6 @@ class Class(Code, Access):
         self.bicharbufcode = ""
         self.picklecode = ""
         self.content = []
-
-        Code.__init__(self, platforms, features, annos, status, sgen, egen)
-        Access.__init__(self, access)
 
     def literal(self, ltype, text):
         """
@@ -1900,7 +1921,7 @@ class Class(Code, Access):
             _writeLiteralXML(f, "picklecode", self.picklecode)
 
         f += 1
-        super(Class, self).xml(f)
+        super().xml(f)
         f -= 1
         f.write('</Class>\n')
 
@@ -1908,7 +1929,7 @@ class Class(Code, Access):
         """
         Return the XML attributes as a string.
         """
-        s = super(Class, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         s += self.xmlAccess()
 
@@ -1954,6 +1975,8 @@ class Callable(Code):
         sgen is the start generation.
         egen is the end generation.
         """
+        super().__init__(platforms, features, annos, status, sgen, egen)
+
         self.name = name
         self.container = container
         self.rtype = rtype
@@ -1962,8 +1985,6 @@ class Callable(Code):
         self.args = []
         self.docstring = ""
         self.methcode = ""
-
-        super().__init__(platforms, features, annos, status, sgen, egen)
 
     def literal(self, ltype, text):
         """
@@ -2061,7 +2082,7 @@ class Callable(Code):
         """
         Return the XML attributes as a string.
         """
-        s = super(Callable, self).xmlAttributes()
+        s = super().xmlAttributes()
         s += ' name="%s"' % escape(self.name)
 
         if self.rtype != '':
@@ -2104,7 +2125,7 @@ class Callable(Code):
         return False
 
 
-class EnumValue(ProjectElement):
+class EnumValue(VersionedItem):
     """ This class represents an enum value. """
 
     def __init__(self, name, annos='', status='unknown', sgen='', egen=''):
@@ -2117,9 +2138,9 @@ class EnumValue(ProjectElement):
         sgen is the start generation.
         egen is the end generation.
         """
-        self.name = name
-
         super().__init__(annos, status, sgen, egen)
+
+        self.name = name
 
     def signature(self):
         """
@@ -2151,7 +2172,7 @@ class EnumValue(ProjectElement):
         """
         Return the XML attributes as a string.
         """
-        s = super(EnumValue, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         s += ' name="%s"' % self.name
 
@@ -2174,17 +2195,17 @@ class Enum(Code, Access):
         sgen is the start generation.
         egen is the end generation.
         """
-        self.name = name
-        self.content = []
-
         Code.__init__(self, platforms, features, annos, status, sgen, egen)
         Access.__init__(self, access)
+
+        self.name = name
+        self.content = []
 
     def signature(self):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return super(Enum, self).signature() + self.sigAccess()
+        return super().signature() + self.sigAccess()
 
     def user(self):
         """
@@ -2251,7 +2272,7 @@ class Enum(Code, Access):
         """
         Return the XML attributes as a string.
         """
-        s = super(Enum, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         s += self.xmlAccess()
 
@@ -2284,19 +2305,20 @@ class ClassCallable(Callable, Access):
         egen is the end generation.
         """
 
-        Callable.__init__(self, name, container, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen)
+        Callable.__init__(self, name, container, rtype, pytype, pyargs,
+                platforms, features, annos, status, sgen, egen)
         Access.__init__(self, access)
 
     def signature(self):
         """ Return a C/C++ representation for comparison purposes. """
 
-        return super(ClassCallable, self).signature() + self.sigAccess()
+        return super().signature() + self.sigAccess()
 
     def xmlAttributes(self):
         """
         Return the XML attributes as a string.
         """
-        return super(ClassCallable, self).xmlAttributes() + self.xmlAccess()
+        return super().xmlAttributes() + self.xmlAccess()
 
 
 class Constructor(ClassCallable):
@@ -2319,15 +2341,16 @@ class Constructor(ClassCallable):
         sgen is the start generation.
         egen is the end generation.
         """
-        self.explicit = explicit
+        super().__init__(name, container, access, '', '', pyargs, platforms,
+                features, annos, status, sgen, egen)
 
-        super().__init__(name, container, access, '', '', pyargs, platforms, features, annos, status, sgen, egen)
+        self.explicit = explicit
 
     def signature(self):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        s = super(Constructor, self).signature()
+        s = super().signature()
 
         if self.explicit:
             s = "explicit " + s
@@ -2338,7 +2361,7 @@ class Constructor(ClassCallable):
         """
         Return a user friendly representation of the constructor.
         """
-        s = super(Constructor, self).user()
+        s = super().user()
 
         if self.explicit:
             s = "explicit " + s
@@ -2355,7 +2378,7 @@ class Constructor(ClassCallable):
         if self.explicit:
             f.write("explicit ")
 
-        super(Constructor, self).sip(f, hf, latest_sip)
+        super().sip(f, hf, latest_sip)
 
         if self.pyargs != '' or self.hasPyArgs():
             f.write(" [(%s)]" % ", ".join([a.user(self) for a in self.args]))
@@ -2388,7 +2411,7 @@ class Constructor(ClassCallable):
         """
         Return the XML attributes as a string.
         """
-        s = super(Constructor, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         if self.explicit:
             s += ' explicit="1"'
@@ -2415,14 +2438,14 @@ class Destructor(Code, Access):
         sgen is the start generation.
         egen is the end generation.
         """
+        Code.__init__(self, platforms, features, annos, status, sgen, egen)
+        Access.__init__(self, access)
+
         self.name = name
         self.container = container
         self.virtual = virtual
         self.methcode = ""
         self.virtcode = ""
-
-        Code.__init__(self, platforms, features, annos, status, sgen, egen)
-        Access.__init__(self, access)
 
     def literal(self, ltype, text):
         """
@@ -2490,7 +2513,7 @@ class Destructor(Code, Access):
         """
         Return the XML attributes as a string.
         """
-        s = super(Destructor, self).xmlAttributes() + self.xmlAccess()
+        s = super().xmlAttributes() + self.xmlAccess()
 
         s += ' name="%s"' % escape(self.name)
 
@@ -2519,15 +2542,16 @@ class OperatorCast(ClassCallable):
         sgen is the start generation.
         egen is the end generation.
         """
-        self.const = const
+        super().__init__(name, container, access, '', '', '', platforms,
+                features, annos, status, sgen, egen)
 
-        super().__init__(name, container, access, '', '', '', platforms, features, annos, status, sgen, egen)
+        self.const = const
 
     def signature(self):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        s = "operator " + super(OperatorCast, self).signature()
+        s = "operator " + super().signature()
 
         if self.const:
             s += " const"
@@ -2538,7 +2562,7 @@ class OperatorCast(ClassCallable):
         """
         Return a user friendly representation of the operator cast.
         """
-        s = "operator " + super(OperatorCast, self).user()
+        s = "operator " + super().user()
 
         if self.const:
             s += " const"
@@ -2554,7 +2578,7 @@ class OperatorCast(ClassCallable):
         """
         f.write("operator ")
 
-        super(OperatorCast, self).sip(f, hf, latest_sip)
+        super().sip(f, hf, latest_sip)
 
         if self.const:
             f.write(" const")
@@ -2585,7 +2609,7 @@ class OperatorCast(ClassCallable):
         """
         Return the XML attributes as a string.
         """
-        s = super(OperatorCast, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         if self.const:
             s += ' const="1"'
@@ -2618,13 +2642,14 @@ class Method(ClassCallable):
         sgen is the start generation.
         egen is the end generation.
         """
+        super().__init__(name, container, access, rtype, pytype, pyargs,
+                platforms, features, annos, status, sgen, egen)
+
         self.virtual = virtual
         self.const = const
         self.static = static
         self.abstract = abstract
         self.virtcode = ""
-
-        super().__init__(name, container, access, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen)
 
     def literal(self, ltype, text):
         """
@@ -2636,7 +2661,7 @@ class Method(ClassCallable):
         if ltype == "virtcode":
             self.virtcode = text
         else:
-            super(Method, self).literal(ltype, text)
+            super().literal(ltype, text)
 
     def signature(self):
         """
@@ -2762,7 +2787,7 @@ class Method(ClassCallable):
         """
         Return the XML attributes as a string.
         """
-        s = super(Method, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         if self.virtual:
             s += ' virtual="1"'
@@ -2803,12 +2828,13 @@ class OperatorMethod(ClassCallable):
         sgen is the start generation.
         egen is the end generation.
         """
+        super().__init__(name, container, access, rtype, pytype, pyargs,
+                platforms, features, annos, status, sgen, egen)
+
         self.virtual = virtual
         self.const = const
         self.abstract = abstract
         self.virtcode = ""
-
-        super().__init__(name, container, access, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen)
 
     def literal(self, ltype, text):
         """
@@ -2820,7 +2846,7 @@ class OperatorMethod(ClassCallable):
         if ltype == "virtcode":
             self.virtcode = text
         else:
-            super(OperatorMethod, self).literal(ltype, text)
+            super().literal(ltype, text)
 
     def signature(self):
         """
@@ -2931,7 +2957,7 @@ class OperatorMethod(ClassCallable):
         """
         Return the XML attributes as a string.
         """
-        s = super(OperatorMethod, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         if self.virtual:
             s += ' virtual="1"'
@@ -2965,7 +2991,8 @@ class Function(Callable):
         sgen is the start generation.
         egen is the end generation.
         """
-        Callable.__init__(self, name, container, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen)
+        super().__init__(name, container, rtype, pytype, pyargs, platforms,
+                features, annos, status, sgen, egen)
 
     def sip(self, f, hf, latest_sip):
         """
@@ -2974,7 +3001,7 @@ class Function(Callable):
         f is the file.
         hf is the corresponding header file instance.
         """
-        super(Function, self).sip(f, hf, latest_sip)
+        super().sip(f, hf, latest_sip)
         f.write(";\n")
         self.sipDocstring(f)
         self.sipMethcode(f)
@@ -3019,7 +3046,8 @@ class OperatorFunction(Callable):
         sgen is the start generation.
         egen is the end generation.
         """
-        Callable.__init__(self, name, container, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen)
+        super().__init__(name, container, rtype, pytype, pyargs, platforms,
+                features, annos, status, sgen, egen)
 
     def signature(self):
         """
@@ -3103,15 +3131,15 @@ class Variable(Code, Access):
         sgen is the start generation.
         egen is the end generation.
         """
+        Code.__init__(self, platforms, features, annos, status, sgen, egen)
+        Access.__init__(self, access)
+
         self.name = name
         self.type = type
         self.static = static
         self.accesscode = ""
         self.getcode = ""
         self.setcode = ""
-
-        Code.__init__(self, platforms, features, annos, status, sgen, egen)
-        Access.__init__(self, access)
 
     def literal(self, ltype, text):
         """
@@ -3131,7 +3159,7 @@ class Variable(Code, Access):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return super(Variable, self).signature() + self.sigAccess()
+        return super().signature() + self.sigAccess()
 
     def user(self):
         """
@@ -3217,7 +3245,7 @@ class Variable(Code, Access):
         """
         Return the XML attributes as a string.
         """
-        s = super(Variable, self).xmlAttributes() + self.xmlAccess()
+        s = super().xmlAttributes() + self.xmlAccess()
 
         s += ' name="%s"' % escape(self.name)
         s += ' type="%s"' % escape(self.type)
@@ -3245,10 +3273,10 @@ class Typedef(Code):
         sgen is the start generation.
         egen is the end generation.
         """
+        super().__init__(platforms, features, annos, status, sgen, egen)
+
         self.name = name
         self.type = type
-
-        Code.__init__(self, platforms, features, annos, status, sgen, egen)
 
     def user(self):
         """
@@ -3277,7 +3305,7 @@ class Typedef(Code):
         """
         Return the XML attributes as a string.
         """
-        s = super(Typedef, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         s += ' name="%s"' % escape(self.name)
         s += ' type="%s"' % escape(self.type)
@@ -3301,12 +3329,12 @@ class Namespace(Code):
         sgen is the start generation.
         egen is the end generation.
         """
+        super().__init__(platforms, features, '', status, sgen, egen)
+
         self.name = name
         self.container = container
         self.typeheadercode = ""
         self.content = []
-
-        super().__init__(platforms, features, None, status, sgen, egen)
 
     def literal(self, ltype, text):
         """
@@ -3354,7 +3382,7 @@ class Namespace(Code):
         f.blank()
 
         f += 1
-        super(Namespace, self).sip(f, hf, latest_sip)
+        super().sip(f, hf, latest_sip)
         f -= 1
 
         f.write("};\n")
@@ -3373,7 +3401,7 @@ class Namespace(Code):
             _writeLiteralXML(f, "typeheadercode", self.typeheadercode)
 
         f += 1
-        super(Namespace, self).xml(f)
+        super().xml(f)
         f -= 1
         f.write('</Namespace>\n')
 
@@ -3381,7 +3409,7 @@ class Namespace(Code):
         """
         Return the XML attributes as a string.
         """
-        s = super(Namespace, self).xmlAttributes()
+        s = super().xmlAttributes()
 
         s += ' name="%s"' % escape(self.name)
 
@@ -3406,17 +3434,17 @@ class OpaqueClass(Code, Access):
         sgen is the start generation.
         egen is the end generation.
         """
-        self.name = name
-        self.container = container
-
         Code.__init__(self, platforms, features, annos, status, sgen, egen)
         Access.__init__(self, access)
+
+        self.name = name
+        self.container = container
 
     def signature(self):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return super(OpaqueClass, self).signature() + self.sigAccess()
+        return super().signature() + self.sigAccess()
 
     def user(self):
         """
@@ -3445,7 +3473,7 @@ class OpaqueClass(Code, Access):
         """
         Return the XML attributes as a string.
         """
-        s = super(OpaqueClass, self).xmlAttributes() + self.xmlAccess()
+        s = super().xmlAttributes() + self.xmlAccess()
 
         s += ' name="%s"' % escape(self.name)
 
@@ -3469,13 +3497,13 @@ class ManualCode(Code, Access):
         sgen is the start generation.
         egen is the end generation.
         """
+        Code.__init__(self, platforms, features, '', status, sgen, egen)
+        Access.__init__(self, access)
+
         self.precis = precis
         self.body = ""
         self.docstring = ""
         self.methcode = ""
-
-        Code.__init__(self, platforms, features, '', status, sgen, egen)
-        Access.__init__(self, access)
 
     def literal(self, ltype, text):
         """
@@ -3495,7 +3523,7 @@ class ManualCode(Code, Access):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return super(ManualCode, self).signature() + self.sigAccess()
+        return super().signature() + self.sigAccess()
 
     def user(self):
         """
@@ -3540,7 +3568,7 @@ class ManualCode(Code, Access):
         """
         Return the XML attributes as a string.
         """
-        s = super(ManualCode, self).xmlAttributes() + self.xmlAccess()
+        s = super().xmlAttributes() + self.xmlAccess()
 
         s += ' precis="%s"' % escape(self.precis)
 
