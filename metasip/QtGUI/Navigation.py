@@ -1602,7 +1602,7 @@ class _Argument(_FixedItem):
         """
         Return the value of the name column.
         """
-        return self.arg.user()
+        return self.arg.user(self.parent().code)
 
     def getMenu(self, slist):
         """

@@ -22,14 +22,11 @@ from .logger import Logger
 from .project_version import ProjectVersion
 
 
-# The current project.
-project = None
-
-
 class ProjectElement:
+    """ This class is a base class for all project elements that may have
+    annotations, subject to workflow or versions.
     """
-    This class is a base class for all project elements that can be modified.
-    """
+
     def __init__(self, annos='', status='unknown', sgen='', egen=''):
         """
         Initialise the instance.
@@ -82,6 +79,81 @@ class ProjectElement:
 
         return s
 
+    def project(self):
+        """ Return the project instance. """
+
+        hf = self
+        while not isinstance(hf, HeaderFile):
+            hf = hf.container
+
+        return hf.project
+
+    def expand_type(self, typ, name="", ignore_namespaces=False):
+        """
+        Return the full type for a name.
+
+        typ is the type.
+        name is the optional name.
+        ignore_namespaces is True if any ignored namespaces should be ignored.
+        """
+        # Handle the trivial case.
+        if not typ:
+            return ""
+
+        if ignore_namespaces:
+            const = 'const '
+            if typ.startswith(const):
+                typ = typ[len(const):]
+            else:
+                const = ''
+
+            typ = const + self.ignore_namespaces(typ)
+
+        # SIP can't handle every C++ fundamental type.
+        typ = typ.replace("long int", "long")
+
+        # If there is no embedded %s then just append the name.
+        if "%s" in typ:
+            s = typ % name
+        else:
+            s = typ
+
+            if name:
+                if typ[-1] not in "&*":
+                    s += " "
+
+                s += name
+
+        return s
+
+    def ignore_namespaces(self, typ):
+        """
+        Return the name of a type with any namespaces to be ignored removed.
+
+        typ is the type.
+        """
+        for ins in self.project().ignorednamespaces.split():
+            ns_name = ins + "::"
+
+            if typ.startswith(ns_name):
+                typ = typ[len(ns_name):]
+                break
+
+        # Handle any template arguments.
+        t_start = typ.find('<')
+        t_end = typ.rfind('>')
+
+        if t_start > 0 and t_end > t_start:
+            xt = []
+
+            # Note that this doesn't handle nested template arguments properly.
+            for t_arg in typ[t_start + 1:t_end].split(','):
+                xt.append(self.ignore_namespaces(t_arg.strip()))
+
+            typ = typ[:t_start + 1] + ', '.join(xt) + typ[t_end:]
+
+        return typ
+
 
 class Project:
     """ This class represents a MetaSIP project. """
@@ -90,10 +162,6 @@ class Project:
 
     def __init__(self):
         """ Initialise a project instance. """
-
-        # FIXME
-        global project
-        project = self
 
         self.version = ProjectVersion
 
@@ -834,7 +902,7 @@ class Project:
         filefilter is the optional pattern used to select only those files of
         interest.
         """
-        hdir = HeaderDirectory(name=name, parserargs=pargs,
+        hdir = HeaderDirectory(project=self, name=name, parserargs=pargs,
                 inputdirsuffix=inputdirsuffix, filefilter=filefilter)
         self.headers.append(hdir)
 
@@ -896,8 +964,7 @@ class Code(ProjectElement):
             if c.status:
                 continue
 
-            # FIXME
-            vrange = project.versionRange(c.sgen, c.egen)
+            vrange = self.project().versionRange(c.sgen, c.egen)
 
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
@@ -1018,10 +1085,13 @@ class Module:
 class HeaderDirectory:
     """ This class represents a project header directory. """
 
-    def __init__(self, name, parserargs="", inputdirsuffix="", filefilter=""):
+    # Note that the project attribute is not part of IHeaderDirectory.
+
+    def __init__(self, project, name, parserargs="", inputdirsuffix="", filefilter=""):
         """
         Initialise a header directory instance.
 
+        project is the project.
         name is the descriptive name of the header directory.
         parserargs is the optional string of parser arguments.
         inputdirsuffix when joined to the inputdir gives the absolute name of
@@ -1029,13 +1099,12 @@ class HeaderDirectory:
         filefilter is the optional pattern used to select only those files of
         interest.
         """
+        self.project = project
         self.name = name
         self.parserargs = parserargs
         self.inputdirsuffix = inputdirsuffix
         self.filefilter = filefilter
         self.content = []
-
-        super().__init__()
 
     def newHeaderFile(self, id, name, md5, parse, status, sgen, egen=''):
         """
@@ -1050,12 +1119,11 @@ class HeaderDirectory:
         sgen is the start generation.
         egen is the end generation.
         """
-        hf = HeaderFile(id=id, name=name, md5=md5, parse=parse, status=status,
-                sgen=sgen, egen=egen)
+        hf = HeaderFile(project=self.project, id=id, name=name, md5=md5,
+                parse=parse, status=status, sgen=sgen, egen=egen)
         self.content.append(hf)
 
-        # FIXME
-        IDirty(project).dirty = True
+        IDirty(self.project).dirty = True
 
         return hf
 
@@ -1069,8 +1137,7 @@ class HeaderDirectory:
         self._mergeCode(hf, phf)
 
         # Assume something has changed.
-        # FIXME
-        IDirty(project).dirty = True
+        IDirty(self.project).dirty = True
 
     def _mergeCode(self, dsc, ssc):
         """
@@ -1079,8 +1146,7 @@ class HeaderDirectory:
         dsc is the destination code instance.
         ssc is the list of parsed source code items.
         """
-        # FIXME
-        generation = str(len(project.versions))
+        generation = str(len(self.project.versions))
 
         # Go though each existing code item.
         for dsi in dsc.content:
@@ -1155,8 +1221,7 @@ class HeaderDirectory:
 
         # Anything left in the known list has gone missing or was already
         # missing.
-        # FIXME
-        generation = str(len(project.versions))
+        generation = str(len(self.project.versions))
         for hf in saved:
             if hf.isCurrent():
                 Logger.log("%s is no longer in the header directory" % hf.name)
@@ -1168,8 +1233,7 @@ class HeaderDirectory:
                     hf.egen = generation
 
         # Assume something has changed.
-        # FIXME
-        IDirty(project).dirty = True
+        IDirty(self.project).dirty = True
 
     def _scanHeaderFile(self, hpath, hfile):
         """
@@ -1252,19 +1316,20 @@ class HeaderDirectory:
                 break
 
         # It is a new file, or the reappearence of an old one.
-        # FIXME
         return self.newHeaderFile('', hfile, sig, 'needed', 'unknown',
-                str(len(project.versions)))
+                str(len(self.project.versions)))
 
 
 class HeaderFile(Code):
-    """
-    This class represents a project header file.
-    """
-    def __init__(self, id, name, md5, parse, status, sgen, egen):
+    """ This class represents a project header file. """
+
+    # Note that the project attribute is not part of IHeaderFile.
+
+    def __init__(self, project, id, name, md5, parse, status, sgen, egen):
         """
         Initialise a header file instance.
 
+        project is the project.
         id is the file's ID.
         name is the path name of the header file excluding the header directory
         root.
@@ -1274,6 +1339,7 @@ class HeaderFile(Code):
         sgen is the start generation.
         egen is the end generation.
         """
+        self.project = project
         self.id = id
         self.name = name
         self.md5 = md5
@@ -1329,8 +1395,7 @@ class HeaderFile(Code):
                 continue
 
             if isinstance(c, Function) or isinstance(c, OperatorFunction) or isinstance(c, Variable) or isinstance(c, Enum):
-                # FIXME
-                vrange = project.versionRange(self.sgen, self.egen)
+                vrange = self.project.versionRange(self.sgen, self.egen)
 
                 if vrange:
                     f.write("%%If (%s)\n" % vrange, False)
@@ -1418,8 +1483,8 @@ class HeaderFile(Code):
         return s
 
 
-# FIXME: Create an Annotation class that is the super-class of this one and
-#        ProjectElement.
+# FIXME: Create a class Annotation that is the super-class of this and
+#        ProjectElement.  Rename ProjectElement to something more appropriate.
 class Argument(ProjectElement):
     """ This class represents an argument. """
 
@@ -1442,22 +1507,22 @@ class Argument(ProjectElement):
 
         super().__init__(annos, status='')
 
-    def signature(self):
+    def signature(self, callable):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        s = _expandType(self.type)
+        s = callable.expand_type(self.type)
 
         if self.default != '':
             s += " = " + self.default
 
         return s
 
-    def user(self):
+    def user(self, callable):
         """
         Return a user friendly representation of the argument.
         """
-        s = _expandType(self.type)
+        s = callable.expand_type(self.type)
 
         if self.name != '':
             if s[-1] not in "&*":
@@ -1470,14 +1535,15 @@ class Argument(ProjectElement):
 
         return s
 
-    def sip(self, latest_sip, ignore_namespaces=True):
+    def sip(self, callable, latest_sip, ignore_namespaces=True):
         """
         Return the argument suitable for writing to a SIP file.
         """
         if self.pytype != '':
             s = self.pytype
         else:
-            s = _expandType(self.type, ignore_namespaces=ignore_namespaces)
+            s = callable.expand_type(self.type,
+                    ignore_namespaces=ignore_namespaces)
 
         if self.name != '':
             if s[-1] not in "&*":
@@ -1488,7 +1554,7 @@ class Argument(ProjectElement):
         s += self.sipAnnos()
 
         if self.default != '':
-            s += " = " + _ignoreNamespaces(self.default)
+            s += " = " + callable.ignore_namespaces(self.default)
 
         return s
 
@@ -1671,7 +1737,7 @@ class Class(Code, Access):
                 acc, cls = b.split()
 
                 # Handle any ignored namespace.
-                cls = _ignoreNamespaces(cls)
+                cls = self.ignore_namespaces(cls)
 
                 # Remove public to maintain compatibility with old SIPs.
                 if acc == "public":
@@ -1757,8 +1823,7 @@ class Class(Code, Access):
                     f.write(astr + ":\n")
                     f += 1
 
-            # FIXME
-            vrange = project.versionRange(c.sgen, c.egen)
+            vrange = self.project().versionRange(c.sgen, c.egen)
 
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
@@ -1916,7 +1981,7 @@ class Callable(Code):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return _expandType(self.rtype) + self.name + "(" + ", ".join([a.signature() for a in self.args]) + ")"
+        return self.expand_type(self.rtype) + self.name + "(" + ", ".join([a.signature(self) for a in self.args]) + ")"
 
     def user(self):
         """
@@ -1931,12 +1996,12 @@ class Callable(Code):
         if self.pyargs != '':
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self, latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
 
         s += self.sipAnnos()
 
         if self.pytype != '' or self.pyargs != '' or self.hasPyArgs():
-            s += " [%s (%s)]" % (_expandType(self.rtype), ", ".join([a.user() for a in self.args]))
+            s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         return s
 
@@ -1955,7 +2020,7 @@ class Callable(Code):
         if self.pyargs != '':
             f.write(self.pyargs)
         else:
-            f.write("(" + ", ".join([a.sip(latest_sip) for a in self.args]) + ")")
+            f.write("(" + ", ".join([a.sip(self, latest_sip) for a in self.args]) + ")")
 
         f.write(self.sipAnnos())
 
@@ -1966,7 +2031,8 @@ class Callable(Code):
         if self.pytype != '':
             s = self.pytype
         elif self.rtype != '':
-            s = _expandType(self.rtype, ignore_namespaces=ignore_namespaces)
+            s = self.expand_type(self.rtype,
+                    ignore_namespaces=ignore_namespaces)
         else:
             return ""
 
@@ -2152,8 +2218,7 @@ class Enum(Code, Access):
             if e.status != '':
                 continue
 
-            # FIXME
-            vrange = project.versionRange(e.sgen, e.egen)
+            vrange = self.project().versionRange(e.sgen, e.egen)
 
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
@@ -2293,7 +2358,7 @@ class Constructor(ClassCallable):
         super(Constructor, self).sip(f, hf, latest_sip)
 
         if self.pyargs != '' or self.hasPyArgs():
-            f.write(" [(%s)]" % ", ".join([a.user() for a in self.args]))
+            f.write(" [(%s)]" % ", ".join([a.user(self) for a in self.args]))
 
         f.write(";\n")
 
@@ -2585,7 +2650,7 @@ class Method(ClassCallable):
         if self.static:
             s += "static "
 
-        s += _expandType(self.rtype) + self.name + "(" + ", ".join([a.signature() for a in self.args]) + ")"
+        s += self.expand_type(self.rtype) + self.name + "(" + ", ".join([a.signature(self) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -2616,7 +2681,7 @@ class Method(ClassCallable):
         if self.pyargs:
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self, latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -2627,7 +2692,7 @@ class Method(ClassCallable):
         s += self.sipAnnos()
 
         if self.pytype or self.pyargs or self.hasPyArgs():
-            s += " [%s (%s)]" % (_expandType(self.rtype), ", ".join([a.user() for a in self.args]))
+            s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         return s
 
@@ -2653,7 +2718,7 @@ class Method(ClassCallable):
         if self.pyargs:
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(latest_sip) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self, latest_sip) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -2664,7 +2729,7 @@ class Method(ClassCallable):
         s += self.sipAnnos()
 
         if (self.virtual or self.access.startswith("protected") or not self.methcode) and (self.pytype or self.pyargs or self.hasPyArgs()):
-            s += " [%s (%s)]" % (_expandType(self.rtype, ignore_namespaces=True), ", ".join([a.user() for a in self.args]))
+            s += " [%s (%s)]" % (self.expand_type(self.rtype, ignore_namespaces=True), ", ".join([a.user(self) for a in self.args]))
 
         f.write(s + ";\n")
 
@@ -2766,7 +2831,7 @@ class OperatorMethod(ClassCallable):
         if self.virtual:
             s += "virtual "
 
-        s += _expandType(self.rtype) + "operator" + self.name + "(" + ", ".join([a.signature() for a in self.args]) + ")"
+        s += self.expand_type(self.rtype) + "operator" + self.name + "(" + ", ".join([a.signature(self) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -2792,7 +2857,7 @@ class OperatorMethod(ClassCallable):
         if self.pyargs != '':
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self, latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -2803,7 +2868,7 @@ class OperatorMethod(ClassCallable):
         s += self.sipAnnos()
 
         if self.pytype != '' or self.pyargs != '' or self.hasPyArgs():
-            s += " [%s (%s)]" % (_expandType(self.rtype), ", ".join([a.user() for a in self.args]))
+            s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         return s
 
@@ -2824,7 +2889,7 @@ class OperatorMethod(ClassCallable):
         if self.pyargs != '':
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(latest_sip) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self, latest_sip) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -2835,7 +2900,7 @@ class OperatorMethod(ClassCallable):
         s += self.sipAnnos()
 
         if (self.virtual or self.access.startswith("protected") or not self.methcode) and (self.pytype or self.pyargs or self.hasPyArgs()):
-            s += " [%s (%s)]" % (_expandType(self.rtype, ignore_namespaces=True), ", ".join([a.user() for a in self.args]))
+            s += " [%s (%s)]" % (self.expand_type(self.rtype, ignore_namespaces=True), ", ".join([a.user(self) for a in self.args]))
 
         f.write(s + ";\n")
 
@@ -2960,7 +3025,7 @@ class OperatorFunction(Callable):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return _expandType(self.rtype) + "operator" + self.name + "(" + ", ".join([a.signature() for a in self.args]) + ")"
+        return self.expand_type(self.rtype) + "operator" + self.name + "(" + ", ".join([a.signature(self) for a in self.args]) + ")"
 
     def user(self):
         """
@@ -2971,12 +3036,12 @@ class OperatorFunction(Callable):
         if self.pyargs != '':
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self, latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
 
         s += self.sipAnnos()
 
         if self.pytype != '' or self.pyargs != '' or self.hasPyArgs():
-            s += " [%s (%s)]" % (_expandType(self.rtype), ", ".join([a.user() for a in self.args]))
+            s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         return s
 
@@ -2992,7 +3057,7 @@ class OperatorFunction(Callable):
         if self.pyargs != '':
             f.write(self.pyargs)
         else:
-            f.write("(" + ", ".join([a.sip(latest_sip) for a in self.args]) + ")")
+            f.write("(" + ", ".join([a.sip(self, latest_sip) for a in self.args]) + ")")
 
         f.write(self.sipAnnos())
 
@@ -3072,7 +3137,7 @@ class Variable(Code, Access):
         """
         Return a user friendly representation of the variable.
         """
-        s = _expandType(self.type, self.name) + self.sipAnnos()
+        s = self.expand_type(self.type, self.name) + self.sipAnnos()
 
         if self.static:
             s = "static " + s
@@ -3086,7 +3151,7 @@ class Variable(Code, Access):
         f is the file.
         hf is the corresponding header file instance.
         """
-        s = _expandType(self.type, self.name, ignore_namespaces=True)
+        s = self.expand_type(self.type, self.name, ignore_namespaces=True)
 
         if self.static:
             s = "static " + s
@@ -3189,7 +3254,7 @@ class Typedef(Code):
         """
         Return a user friendly representation of the typedef.
         """
-        return "typedef " + _expandType(self.type, self.name) + self.sipAnnos()
+        return "typedef " + self.expand_type(self.type, self.name) + self.sipAnnos()
 
     def sip(self, f, hf, latest_sip):
         """
@@ -3198,7 +3263,7 @@ class Typedef(Code):
         f is the file.
         hf is the corresponding header file instance.
         """
-        f.write("typedef " + _expandType(self.type, self.name, ignore_namespaces=True) + self.sipAnnos() + ";\n")
+        f.write("typedef " + self.expand_type(self.type, self.name, ignore_namespaces=True) + self.sipAnnos() + ";\n")
 
     def xml(self, f):
         """
@@ -3269,9 +3334,8 @@ class Namespace(Code):
         if self.status:
             return 
 
-        # FIXME
-        if self.name in project.ignorednamespaces.split():
-            super(Namespace, self).sip(f, hf, latest_sip)
+        if self.name in self.project().ignorednamespaces.split():
+            super().sip(f, hf, latest_sip)
             return
 
         f.blank()
@@ -3590,75 +3654,6 @@ def _createIndentFile(prj, fname, indent=2):
         return None
 
     return f
-
-
-def _ignoreNamespaces(typ):
-    """
-    Return the name of a type with any namespaces to be ignored removed.
-
-    typ is the type.
-    """
-    # FIXME
-    for ins in project.ignorednamespaces.split():
-        ns_name = ins + "::"
-
-        if typ.startswith(ns_name):
-            typ = typ[len(ns_name):]
-            break
-
-    # Handle any template arguments.
-    t_start = typ.find('<')
-    t_end = typ.rfind('>')
-
-    if t_start > 0 and t_end > t_start:
-        xt = []
-
-        # Note that this doesn't handle nested template arguments properly.
-        for t_arg in typ[t_start + 1:t_end].split(','):
-            xt.append(_ignoreNamespaces(t_arg.strip()))
-
-        typ = typ[:t_start + 1] + ', '.join(xt) + typ[t_end:]
-
-    return typ
-
-
-def _expandType(typ, name="", ignore_namespaces=False):
-    """
-    Return the full type for a name.
-
-    typ is the type.
-    name is the optional name.
-    ignore_namespaces is True if any ignored namespaces should be ignored.
-    """
-    # Handle the trivial case.
-    if not typ:
-        return ""
-
-    if ignore_namespaces:
-        const = 'const '
-        if typ.startswith(const):
-            typ = typ[len(const):]
-        else:
-            const = ''
-
-        typ = const + _ignoreNamespaces(typ)
-
-    # SIP can't handle every C++ fundamental type.
-    typ = typ.replace("long int", "long")
-
-    # If there is no embedded %s then just append the name.
-    if "%s" in typ:
-        s = typ % name
-    else:
-        s = typ
-
-        if name:
-            if typ[-1] not in "&*":
-                s += " "
-            
-            s += name
-
-    return s
 
 
 def _writeLiteralXML(f, type, text):
