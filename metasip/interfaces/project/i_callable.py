@@ -10,15 +10,22 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .i_schema import ISchema
+from dip.model import List, Str
 
-from .logger import Logger
-from .logger_tool import LoggerTool
-from .Project import Project
-from .project_editor_tool import ProjectEditorTool
-from .project_factory import ProjectFactory
-from .project_codec import ProjectCodec
-from .schema_validator_tool import SchemaValidatorTool
+from .i_argument import IArgument
+from .i_code import ICode
 
-# Make sure the adapters get registered.
-from . import project_adapters
+
+class ICallable(ICode):
+
+    args = List(IArgument)
+
+    methcode = Str()
+
+    name = Str()
+
+    pyargs = Str()
+
+    pytype = Str()
+
+    rtype = Str()

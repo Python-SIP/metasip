@@ -10,10 +10,21 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Interface
+from dip.model import Interface, List, Str
+
+from .i_header_file import IHeaderFile
 
 
-class IProject(Interface):
-    """ The IProject interface is implemented by projects.  At the moment it is
-    just a marker class.
-    """
+class IModule(Interface):
+
+    content = List(IHeaderFile)
+
+    directives = Str()
+
+    imports = List(Str())
+
+    name = Str()
+
+    outputdirsuffix = Str()
+
+    version = Str()

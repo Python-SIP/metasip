@@ -10,15 +10,19 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .i_schema import ISchema
+from dip.model import Interface, List, Str
 
-from .logger import Logger
-from .logger_tool import LoggerTool
-from .Project import Project
-from .project_editor_tool import ProjectEditorTool
-from .project_factory import ProjectFactory
-from .project_codec import ProjectCodec
-from .schema_validator_tool import SchemaValidatorTool
+from .i_header_file import IHeaderFile
 
-# Make sure the adapters get registered.
-from . import project_adapters
+
+class IHeaderDirectory(Interface):
+
+    content = List(IHeaderFile)
+
+    filefilter = Str()
+
+    inputdirsuffix = Str()
+
+    name = Str()
+
+    parserargs = Str()

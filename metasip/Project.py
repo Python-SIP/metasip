@@ -16,10 +16,11 @@ import time
 import fnmatch
 from xml.sax import saxutils
 
+from dip.model import implements, Model
 from dip.shell import IDirty
 
 from .logger import Logger
-from .project_version import ProjectVersion
+from .interfaces.project import ProjectVersion, IProject
 
 
 class Annotations:
@@ -178,31 +179,12 @@ class VersionedItem(Annotations):
         return typ
 
 
-class Project:
+@implements(IProject)
+class Project(Model):
     """ This class represents a MetaSIP project. """
 
-    # Note: name is an additional attributes (not in IProject).
-
-    def __init__(self):
-        """ Initialise a project instance. """
-
-        self.version = ProjectVersion
-
-        self.inputdir = ""
-        self.webxmldir = ""
-        self.name = ""
-        self.rootmodule = ""
-        self.outputdir = ""
-        self.platforms = ""
-        self.features = ""
-        self.sipcomments = ""
-        self.externalmodules = ""
-        self.externalfeatures = ""
-        self.ignorednamespaces = ""
-
-        self.modules = []
-        self.headers = []
-        self.versions = []
+    # The filename of the project.
+    name = Str()
 
     def nameArgumentsFromConventions(self, prj_item, update):
         """

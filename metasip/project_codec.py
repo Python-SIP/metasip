@@ -16,7 +16,7 @@ import tempfile
 from dip.io import ICodec, StorageError
 from dip.model import implements, Model
 
-from .i_project import IProject
+from .interfaces.project import IProject
 from .project_parser import ProjectParser
 
 

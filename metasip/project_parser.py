@@ -10,12 +10,12 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from .interfaces.project import ProjectVersion
 from .Parser import optAttribute, ParserBase
 from .Project import (Argument, Class, Constructor, Destructor, Enum,
         EnumValue, Function, ManualCode, Method, Namespace, OpaqueClass,
         OperatorCast, OperatorFunction, OperatorMethod, Project, Typedef,
         Variable)
-from .project_version import ProjectVersion
 
 
 class ProjectParser(ParserBase):

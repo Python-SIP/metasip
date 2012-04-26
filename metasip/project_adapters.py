@@ -15,12 +15,6 @@ from dip.io import IFilterHints
 from dip.shell import IManagedModel
 
 from .Project import Project
-from .i_project import IProject
-
-
-@adapt(Project, to=IProject)
-class ProjectIProjectAdapter(Adapter):
-    """ Adapt the Project class to the IProject interface. """
 
 
 @adapt(Project, to=IFilterHints)
