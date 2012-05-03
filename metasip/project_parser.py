@@ -12,6 +12,8 @@
 
 from xml.etree import ElementTree
 
+from PyQt4.QtGui import QApplication, QProgressDialog
+
 from .interfaces.project import ProjectVersion
 from .Project import (Argument, Class, Constructor, Destructor, Enum,
         EnumValue, Function, ManualCode, Method, Namespace, OpaqueClass,
@@ -47,6 +49,17 @@ class ProjectParser:
         if version > ProjectVersion:
             raise Exception(
                     "The project was created with a later version of MetaSIP")
+
+        # Create a progress dialog if there is a GUI.
+        if QApplication.instance() is not None:
+            # Progress will be reported against classes.
+            nr_steps = len(root.findall('.//Class'))
+
+            self._progress = QProgressDialog("Loading...", None, 0, nr_steps)
+            self._progress.setWindowTitle(project.name)
+            self._progress.setValue(0)
+        else:
+            self._progress = None
 
         # Read the project.
         project.version = version
@@ -113,6 +126,10 @@ class ProjectParser:
                 self.add_code(cls, child)
 
         scope.content.append(cls)
+
+        if self._progress is not None:
+            self._progress.setValue(self._progress.value() + 1)
+            QApplication.processEvents()
 
     def add_code(self, scope, elem):
         """ Add an element defining scoped code to a scope. """
