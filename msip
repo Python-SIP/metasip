@@ -105,7 +105,7 @@ def launchGUI(prjname, guiargs):
     """
 
     from PyQt4.QtCore import QSettings
-    from PyQt4.QtGui import QApplication
+    from PyQt4.QtGui import QApplication, QMessageBox
 
     from dip.shell import IShell
     from dip.shell.shells.main_window import MainWindowShell
@@ -135,8 +135,14 @@ def launchGUI(prjname, guiargs):
 
     # Handle any project passed on the command line.
     if prjname is not None:
-        IShell(ui).open('metasip.tools.project_editor', prjname,
-                'metasip.formats.project')
+        try:
+            IShell(ui).open('metasip.tools.project_editor', prjname,
+                    'metasip.formats.project')
+        except Exception as e:
+            msg_box = QMessageBox(QMessageBox.Warning, "Open",
+                    "There was an error opening {0}.".format(prjname),
+                    detailedText=str(e))
+            msg_box.exec()
 
     # Get the user settings and adjust the layout.
     settings = QSettings('riverbankcomputing.com', 'MetaSIP')
