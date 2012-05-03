@@ -411,6 +411,36 @@
         <xsd:attribute name="status" type="StatusType"/>
     </xsd:complexType>
 
+    <xsd:complexType name="OperatorCastLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="methcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="OperatorCastType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Argument" type="ArgumentType"/>
+            <xsd:element name="Literal" type="OperatorCastLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="const" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="egen" type="GenerationType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="sgen" type="GenerationType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+    </xsd:complexType>
+
     <xsd:complexType name="OperatorFunctionLiterals">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
@@ -438,36 +468,6 @@
         <xsd:attribute name="pyargs" type="xsd:string"/>
         <xsd:attribute name="pytype" type="xsd:string"/>
         <xsd:attribute name="rtype" type="xsd:string" use="required"/>
-        <xsd:attribute name="sgen" type="GenerationType"/>
-        <xsd:attribute name="status" type="StatusType"/>
-    </xsd:complexType>
-
-    <xsd:complexType name="OperatorCastLiterals">
-        <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
-                <xsd:attribute name="type">
-                    <xsd:simpleType>
-                        <xsd:restriction base="xsd:string">
-                            <xsd:enumeration value="methcode"/>
-                        </xsd:restriction>
-                    </xsd:simpleType>
-                </xsd:attribute>
-            </xsd:extension>
-        </xsd:simpleContent>
-    </xsd:complexType>
-
-    <xsd:complexType name="OperatorCastType">
-        <xsd:choice minOccurs="0" maxOccurs="unbounded">
-            <xsd:element name="Argument" type="ArgumentType"/>
-            <xsd:element name="Literal" type="OperatorCastLiterals"/>
-        </xsd:choice>
-        <xsd:attribute name="access" type="AccessType"/>
-        <xsd:attribute name="annos" type="AnnosType"/>
-        <xsd:attribute name="const" type="xsd:boolean" default="0"/>
-        <xsd:attribute name="egen" type="GenerationType"/>
-        <xsd:attribute name="features" type="FeaturesType"/>
-        <xsd:attribute name="name" type="xsd:string" use="required"/>
-        <xsd:attribute name="platforms" type="PlatformsType"/>
         <xsd:attribute name="sgen" type="GenerationType"/>
         <xsd:attribute name="status" type="StatusType"/>
     </xsd:complexType>

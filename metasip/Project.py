@@ -663,20 +663,20 @@ class Project(Model):
         for mod in self.modules:
             f.write('<Module name="%s"' % mod.name)
 
-            if mod.outputdirsuffix:
+            if mod.outputdirsuffix != '':
                 f.write(' outputdirsuffix="%s"' % mod.outputdirsuffix)
 
-            if mod.version:
+            if mod.version != '':
                 f.write(' version="%s"' % mod.version)
 
-            if mod.imports:
+            if mod.imports != '':
                 f.write(' imports="%s"' % mod.imports)
 
             f.write('>\n')
 
             f += 1
 
-            if mod.directives:
+            if mod.directives != '':
                 _writeLiteralXML(f, "directives", mod.directives)
 
             for hf in mod.content:

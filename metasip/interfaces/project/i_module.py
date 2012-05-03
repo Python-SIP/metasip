@@ -21,7 +21,7 @@ class IModule(Interface):
 
     directives = Str()
 
-    imports = List(Str())
+    imports = Str()
 
     name = Str()
 

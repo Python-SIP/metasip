@@ -10,557 +10,422 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from xml.etree import ElementTree
+
 from .interfaces.project import ProjectVersion
-from .Parser import optAttribute, ParserBase
 from .Project import (Argument, Class, Constructor, Destructor, Enum,
         EnumValue, Function, ManualCode, Method, Namespace, OpaqueClass,
         OperatorCast, OperatorFunction, OperatorMethod, Project, Typedef,
         Variable)
 
 
-class ProjectParser(ParserBase):
+class ProjectParser:
     """ This is the project file parser. """
 
-    def parse(self, prj):
+    def parse(self, project):
         """ Parse a project file.
 
-        :param prj:
+        :param project:
             is the project.
-        :return:
-            ``True`` if there was no error.
         """
 
-        self.project = prj
+        # Load the file.
+        tree = ElementTree.parse(project.name)
 
-        self._literal = []
-        self._literaltext = None
+        # Do some basic sanity checks.
+        root = tree.getroot()
 
-        # This should get overwritten.
-        prj.version = -1
+        version = root.get('version')
 
-        rc = super().parse(prj.name)
+        if root.tag != 'Project' or version is None:
+            raise Exception(
+                    "The file doesn't appear to be a valid MetaSIP project")
 
-        if rc:
-            if prj.version < 0:
-                prj.diagnostic = "The file doesn't appear to contain a valid MetaSIP project"
-                rc = False
-            elif prj.version > ProjectVersion:
-                prj.diagnostic = "The project was created with a later version of MetaSIP"
-                rc = False
-        else:
-            prj.diagnostic = self.diagnostic
+        # Check the version.
+        version = int(version)
 
-        return rc
+        if version > ProjectVersion:
+            raise Exception(
+                    "The project was created with a later version of MetaSIP")
 
-    def projectStart(self, attrs):
-        """
-        Called at the start of a project.
-
-        attrs is the dictionary of attributes.
-        """
-        self.project.version = int(attrs["version"])
-        self.project.rootmodule = optAttribute(attrs, "rootmodule")
-        self.project.platforms = optAttribute(attrs, "platforms")
-        self.project.features = optAttribute(attrs, "features")
-        self.project.externalmodules = optAttribute(attrs, "externalmodules")
-        self.project.externalfeatures = optAttribute(attrs, "externalfeatures")
-        self.project.ignorednamespaces = optAttribute(attrs,
-                "ignorednamespaces")
-        self.project.inputdir = attrs["inputdir"]
-        self.project.webxmldir = optAttribute(attrs, "webxmldir")
-        self.project.outputdir = attrs["outputdir"]
+        # Read the project.
+        project.version = version
+        project.rootmodule = root.get('rootmodule', '')
+        project.platforms = root.get('platforms', '')
+        project.features = root.get('features', '')
+        project.externalmodules = root.get('externalmodules', '')
+        project.externalfeatures = root.get('externalfeatures', '')
+        project.ignorednamespaces = root.get('ignorednamespaces', '')
+        project.inputdir = root.get('inputdir')
+        project.webxmldir = root.get('webxmldir', '')
+        project.outputdir = root.get('outputdir')
 
         # Handle the list of versions.  A version is a name, its number is
         # called its generation.
-        vers = optAttribute(attrs, "versions")
+        vers = root.get('versions')
+        if vers is not None:
+            project.versions = vers.split()
 
-        if vers != '':
-            self.project.versions = vers.split()
+        for child in root:
+            if child.tag == 'HeaderDirectory':
+                self.add_header_directory(project, child)
+            elif child.tag == 'Literal':
+                self.add_literal(project, child)
+            elif child.tag == 'Module':
+                self.add_module(project, child)
 
-        self._literal.append(self.project)
+    def add_argument(self, callable, elem):
+        """ Add an element defining an argument to a callable. """
 
-    def projectEnd(self):
-        """
-        Called at the end of a project.
-        """
-        self._literal.pop()
+        arg = Argument(type=elem.get('type'), name=elem.get('name', ''),
+                unnamed=bool(int(elem.get('unnamed', '0'))),
+                default=elem.get('default', ''), pytype=elem.get('pytype', ''),
+                annos=elem.get('annos', ''))
 
-    def moduleStart(self, attrs):
-        """
-        Called at the start of a module.
+        callable.args.append(arg)
 
-        attrs is the dictionary of attributes.
-        """
-        mod = self.project.newModule(attrs["name"],
-                optAttribute(attrs, "outputdirsuffix"),
-                optAttribute(attrs, "version"), optAttribute(attrs, "imports"))
+    def add_class(self, scope, elem):
+        """ Add an element defining a class to a scope. """
 
-        self._literal.append(mod)
+        cls = Class(name=elem.get('name'), container=scope,
+                bases=elem.get('bases', ''),
+                struct=bool(int(elem.get('struct', '0'))),
+                access=elem.get('access', ''), pybases=elem.get('pybases', ''),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
 
-    def moduleEnd(self):
-        """
-        Called at the end of a module.
-        """
-        self._literal.pop()
+        for child in elem:
+            if child.tag == 'Constructor':
+                self.add_constructor(cls, child)
+            elif child.tag == 'Destructor':
+                self.add_destructor(cls, child)
+            elif child.tag == 'Literal':
+                self.add_literal(cls, child)
+            elif child.tag == 'Method':
+                self.add_method(cls, child)
+            elif child.tag == 'OperatorCast':
+                self.add_operator_cast(cls, child)
+            elif child.tag == 'OperatorMethod':
+                self.add_operator_method(cls, child)
+            else:
+                self.add_code(cls, child)
 
-    def literalStart(self, attrs):
-        """
-        Called at the start of a literal block.
+        scope.content.append(cls)
 
-        attrs is the dictionary of attributes used to determine the type of the
-        literal block.
-        """
-        self._literaltype = attrs["type"]
-        self._literaltext = ""
+    def add_code(self, scope, elem):
+        """ Add an element defining scoped code to a scope. """
 
-    def characters(self, content):
-        """
-        Called with #PCDATA content.
+        if elem.tag == 'Class':
+            self.add_class(scope, elem)
+        elif elem.tag == 'Enum':
+            self.add_enum(scope, elem)
+        elif elem.tag == 'ManualCode':
+            self.add_manual_code(scope, elem)
+        elif elem.tag == 'Namespace':
+            self.add_namespace(scope, elem)
+        elif elem.tag == 'OpaqueClass':
+            self.add_opaque_class(scope, elem)
+        elif elem.tag == 'Typedef':
+            self.add_typedef(scope, elem)
+        elif elem.tag == 'Variable':
+            self.add_variable(scope, elem)
 
-        content is the content.
-        """
-        if self._literaltext is not None:
-            self._literaltext += content
+    def add_constructor(self, cls, elem):
+        """ Add an element defining a constructor to a class. """
 
-    def literalEnd(self):
-        """
-        Called at the end of a literal block.
-        """
-        self._literal[-1].literal(self._literaltype, self._literaltext.strip())
-        self._literaltext = None
+        cn = Constructor(name=elem.get('name'), container=cls,
+                access=elem.get('access', ''),
+                explicit=bool(int(elem.get('explicit', '0'))),
+                pyargs=elem.get('pyargs', ''),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
 
-    def moduleheaderfileStart(self, attrs):
-        """
-        Called at the start of a module header file.
+        for child in elem:
+            if child.tag == 'Argument':
+                self.add_argument(cn, child)
+            elif child.tag == 'Literal':
+                self.add_literal(cn, child)
 
-        attrs is the dictionary of attributes.
-        """
-        id = int(attrs["id"])
+        cls.content.append(cn)
+
+    def add_destructor(self, cls, elem):
+        """ Add an element defining a destructor to a class. """
+
+        ds = Destructor(name=elem.get('name'), container=cls,
+                access=elem.get('access', ''),
+                virtual=bool(int(elem.get('virtual', '0'))),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        for child in elem:
+            if child.tag == 'Literal':
+                self.add_literal(ds, child)
+
+        cls.content.append(ds)
+
+    def add_enum(self, scope, elem):
+        """ Add an element defining an enum to a scope. """
+
+        en = Enum(name=elem.get('name'), access=elem.get('access', ''),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        for child in elem:
+            if child.tag == 'EnumValue':
+                self.add_enum_value(en, child)
+
+        scope.content.append(en)
+
+    def add_enum_value(self, en, elem):
+        """ Add an element defining an enum value to an enum. """
+
+        ev = EnumValue(name=elem.get('name'), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        en.content.append(ev)
+
+    def add_function(self, hf, elem):
+        """ Add an element defining a function to a header file. """
+
+        fn = Function(name=elem.get('name'), container=hf,
+                rtype=elem.get('rtype'), pytype=elem.get('pytype', ''),
+                pyargs=elem.get('pyargs', ''),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        for child in elem:
+            if child.tag == 'Argument':
+                self.add_argument(fn, child)
+            elif child.tag == 'Literal':
+                self.add_literal(fn, child)
+
+        hf.content.append(fn)
+
+    def add_header_directory(self, project, elem):
+        """ Add an element defining a header directory to a project. """
+
+        hdir = project.newHeaderDirectory(elem.get('name'),
+                elem.get('parserargs'), elem.get('inputdirsuffix'),
+                elem.get('filefilter'))
+
+        for child in elem:
+            if child.tag == 'HeaderFile':
+                self.add_header_file(hdir, child)
+
+    def add_header_file(self, hdir, elem):
+        """ Add an element defining a header file to a header directory. """
+
+        hf = hdir.newHeaderFile(int(elem.get('id')), elem.get('name'),
+                elem.get('md5'), elem.get('parse', ''), elem.get('status', ''),
+                elem.get('sgen', ''), elem.get('egen', ''))
+
+        for child in elem:
+            if child.tag == 'Function':
+                self.add_function(hf, child)
+            elif child.tag == 'Literal':
+                self.add_literal(hf, child)
+            elif child.tag == 'OperatorFunction':
+                self.add_operator_function(hf, child)
+            else:
+                self.add_code(hf, child)
+
+    def add_literal(self, model, elem):
+        """ Add an element defining some literal text to a model. """
+
+        setattr(model, elem.get('type'), elem.text)
+
+    def add_manual_code(self, scope, elem):
+        """ Add an element defining manual code to a scope. """
+
+        mc = ManualCode(precis=elem.get('precis'),
+                access=elem.get('access', ''),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        for child in elem:
+            if child.tag == 'Literal':
+                self.add_literal(mc, child)
+
+        scope.content.append(mc)
+
+    def add_method(self, cls, elem):
+        """ Add an element defining a method to a class. """
+
+        mt = Method(name=elem.get('name'), container=cls,
+                access=elem.get('access', ''), rtype=elem.get('rtype'),
+                virtual=bool(int(elem.get('virtual', '0'))),
+                const=bool(int(elem.get('const', '0'))),
+                static=bool(int(elem.get('static', '0'))),
+                abstract=bool(int(elem.get('abstract', '0'))),
+                pytype=elem.get('pytype', ''), pyargs=elem.get('pyargs', ''),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        for child in elem:
+            if child.tag == 'Argument':
+                self.add_argument(mt, child)
+            elif child.tag == 'Literal':
+                self.add_literal(mt, child)
+
+        cls.content.append(mt)
+
+    def add_module(self, project, elem):
+        """ Add an element defining a module to a project. """
+
+        mod = project.newModule(elem.get('name'),
+                elem.get('outputdirsuffix', ''), elem.get('version', ''),
+                elem.get('imports', ''))
+
+        for child in elem:
+            if child.tag == 'Literal':
+                self.add_literal(mod, child)
+            elif child.tag == 'ModuleHeaderFile':
+                self.add_module_header_file(project, mod, child)
+
+    def add_module_header_file(self, project, mod, elem):
+        """ Add an element defining a module header file to a module. """
+
+        id = int(elem.get('id'))
 
         # Find the corresponding header file.
-        for hdir in self.project.headers:
+        for hdir in project.headers:
             for hf in hdir.content:
                 if hf.id == id:
-                    self.project.modules[-1].content.append(hf)
+                    mod.content.append(hf)
                     return
 
-    def headerdirectoryStart(self, attrs):
-        """
-        Called at the start of a header directory.
-
-        attrs is the dictionary of attributes.
-        """
-        self.project.newHeaderDirectory(attrs["name"], attrs["parserargs"],
-                attrs["inputdirsuffix"], attrs["filefilter"])
-
-    def headerfileStart(self, attrs):
-        """
-        Called at the start of a header file.
-
-        attrs is the dictionary of attributes.
-        """
-        hf = self.project.headers[-1].newHeaderFile(int(attrs["id"]),
-                attrs["name"], attrs["md5"], optAttribute(attrs, "parse"),
-                optAttribute(attrs, "status"), optAttribute(attrs, "sgen"),
-                optAttribute(attrs, "egen"))
-
-        self._setScope(hf)
-        self._literal.append(hf)
-
-    def headerfileEnd(self):
-        """
-        Called at the end of a header file.
-        """
-        self._literal.pop()
-
-    def classStart(self, attrs):
-        """
-        Called at the start of a class.
-
-        attrs is the dictionary of attributes.
-        """
-        cls = Class(name=attrs["name"], container=self._scope,
-                bases=optAttribute(attrs, "bases"),
-                struct=bool(int(optAttribute(attrs, "struct", "0"))),
-                access=optAttribute(attrs, "access"),
-                pybases=optAttribute(attrs, "pybases"),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(cls)
-        self._pushScope(cls)
-        self._literal.append(cls)
-
-    def classEnd(self):
-        """
-        Called at the end of a class.
-        """
-        self._popScope()
-        self._literal.pop()
-
-    def manualcodeStart(self, attrs):
-        """
-        Called at the start of manual code.
-
-        attrs is the dictionary of attributes.
-        """
-        mc = ManualCode(precis=attrs["precis"],
-                access=optAttribute(attrs, "access"),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(mc)
-        self._literal.append(mc)
-
-    def manualcodeEnd(self):
-        """
-        Called at the end of manual code.
-        """
-        self._literal.pop()
-
-    def constructorStart(self, attrs):
-        """
-        Called at the start of a constructor.
-
-        attrs is the dictionary of attributes.
-        """
-        cn = Constructor(name=attrs["name"], container=self._scope,
-                access=optAttribute(attrs, "access"),
-                explicit=bool(int(optAttribute(attrs, "explicit", "0"))),
-                pyargs=optAttribute(attrs, "pyargs"),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(cn)
-        self._argumentscope = cn
-        self._literal.append(cn)
-
-    def constructorEnd(self):
-        """
-        Called at the end of a constructor.
-        """
-        self._literal.pop()
-
-    def destructorStart(self, attrs):
-        """
-        Called at the start of a destructor.
-
-        attrs is the dictionary of attributes.
-        """
-        ds = Destructor(name=attrs["name"], container=self._scope,
-                access=optAttribute(attrs, "access"),
-                virtual=bool(int(optAttribute(attrs, "virtual", "0"))),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(ds)
-        self._literal.append(ds)
-
-    def destructorEnd(self):
-        """
-        Called at the end of a destructor.
-        """
-        self._literal.pop()
-
-    def operatorcastStart(self, attrs):
-        """
-        Called at the start of an operator cast.
-
-        attrs is the dictionary of attributes.
-        """
-        oc = OperatorCast(name=attrs["name"], container=self._scope,
-                access=optAttribute(attrs, "access"),
-                const=bool(int(optAttribute(attrs, "const", "0"))),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(oc)
-        self._literal.append(oc)
-
-    def operatorcastEnd(self):
-        """
-        Called at the end of an operator cast.
-        """
-        self._literal.pop()
-
-    def methodStart(self, attrs):
-        """
-        Called at the start of a method.
-
-        attrs is the dictionary of attributes.
-        """
-        mt = Method(name=attrs["name"], container=self._scope,
-                access=optAttribute(attrs, "access"),
-                rtype=attrs["rtype"],
-                virtual=bool(int(optAttribute(attrs, "virtual", "0"))),
-                const=bool(int(optAttribute(attrs, "const", "0"))),
-                static=bool(int(optAttribute(attrs, "static", "0"))),
-                abstract=bool(int(optAttribute(attrs, "abstract", "0"))),
-                pytype=optAttribute(attrs, "pytype"),
-                pyargs=optAttribute(attrs, "pyargs"),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(mt)
-        self._argumentscope = mt
-        self._literal.append(mt)
-
-    def methodEnd(self):
-        """
-        Called at the end of a method.
-        """
-        self._literal.pop()
-
-    def operatormethodStart(self, attrs):
-        """
-        Called at the start of an operatormethod.
-
-        attrs is the dictionary of attributes.
-        """
-        mt = OperatorMethod(name=attrs["name"], container=self._scope,
-                access=optAttribute(attrs, "access"), rtype=attrs["rtype"],
-                virtual=bool(int(optAttribute(attrs, "virtual", "0"))),
-                const=bool(int(optAttribute(attrs, "const", "0"))),
-                abstract=bool(int(optAttribute(attrs, "abstract", "0"))),
-                pytype=optAttribute(attrs, "pytype"),
-                pyargs=optAttribute(attrs, "pyargs"),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(mt)
-        self._argumentscope = mt
-        self._literal.append(mt)
-
-    def operatormethodEnd(self):
-        """
-        Called at the end of an operatormethod.
-        """
-        self._literal.pop()
-
-    def functionStart(self, attrs):
-        """
-        Called at the start of a function.
-
-        attrs is the dictionary of attributes.
-        """
-        fn = Function(name=attrs["name"], container=self._scope,
-                rtype=attrs["rtype"], pytype=optAttribute(attrs, "pytype"),
-                pyargs=optAttribute(attrs, "pyargs"),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(fn)
-        self._argumentscope = fn
-        self._literal.append(fn)
-
-    def functionEnd(self):
-        """
-        Called at the end of a function.
-        """
-        self._literal.pop()
-
-    def operatorfunctionStart(self, attrs):
-        """
-        Called at the start of an operatorfunction.
-
-        attrs is the dictionary of attributes.
-        """
-        fn = OperatorFunction(name=attrs["name"], container=self._scope,
-                rtype=attrs["rtype"], pytype=optAttribute(attrs, "pytype"),
-                pyargs=optAttribute(attrs, "pyargs"),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(fn)
-        self._argumentscope = fn
-        self._literal.append(fn)
-
-    def operatorfunctionEnd(self):
-        """
-        Called at the end of an operatorfunction.
-        """
-        self._literal.pop()
-
-    def argumentStart(self, attrs):
-        """
-        Called at the start of an argument.
-
-        attrs is the dictionary of attributes.
-        """
-        a = Argument(type=attrs["type"], name=optAttribute(attrs, "name"),
-                unnamed=bool(int(optAttribute(attrs, "unnamed", '0'))),
-                default=optAttribute(attrs, "default"),
-                pytype=optAttribute(attrs, "pytype"),
-                annos=optAttribute(attrs, "annos"))
-
-        self._argumentscope.args.append(a)
-
-    def enumStart(self, attrs):
-        """
-        Called at the start of an enum.
-
-        attrs is the dictionary of attributes.
-        """
-        en = Enum(name=attrs["name"], access=optAttribute(attrs, "access"),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(en)
-        self._enumscope = en
-
-    def enumvalueStart(self, attrs):
-        """
-        Called at the start of an enum value.
-
-        attrs is the dictionary of attributes.
-        """
-        self._enumscope.content.append(EnumValue(name=attrs["name"],
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen")))
-
-    def variableStart(self, attrs):
-        """
-        Called at the start of a variable.
-
-        attrs is the dictionary of attributes.
-        """
-        v = Variable(name=attrs["name"], type=attrs["type"],
-                static=bool(int(optAttribute(attrs, "static", "0"))),
-                access=optAttribute(attrs, "access"),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(v)
-        self._literal.append(v)
-
-    def variableEnd(self):
-        """
-        Called at the end of a variable.
-        """
-        self._literal.pop()
-
-    def namespaceStart(self, attrs):
-        """
-        Called at the start of a namespace.
-
-        attrs is the dictionary of attributes.
-        """
-        ns = Namespace(name=attrs["name"], container=self._scope,
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(ns)
-        self._pushScope(ns)
-        self._literal.append(ns)
-
-    def namespaceEnd(self):
-        """
-        Called at the end of a namespace.
-        """
-        self._popScope()
-        self._literal.pop()
-
-    def opaqueclassStart(self, attrs):
-        """
-        Called at the start of an opaque class.
-
-        attrs is the dictionary of attributes.
-        """
-        oc = OpaqueClass(name=attrs["name"], container=self._scope,
-                access=optAttribute(attrs, "access"),
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(oc)
-
-    def typedefStart(self, attrs):
-        """
-        Called at the start of a typedef.
-
-        attrs is the dictionary of attributes.
-        """
-        td = Typedef(name=attrs["name"], type=attrs["type"],
-                platforms=optAttribute(attrs, "platforms"),
-                features=optAttribute(attrs, "features"),
-                annos=optAttribute(attrs, "annos"),
-                status=optAttribute(attrs, "status"),
-                sgen=optAttribute(attrs, "sgen"),
-                egen=optAttribute(attrs, "egen"))
-
-        self._scope.content.append(td)
-
-    def _setScope(self, scope):
-        """
-        Clear the scope stack and set the initial scope.
-
-        scope is the initial scope.
-        """
-        self._scopestack = []
-        self._scope = scope
-
-    def _pushScope(self, scope):
-        """
-        Make a scope current.
-
-        scope is the scope to make current.
-        """
-        self._scopestack.append(self._scope)
-        self._scope = scope
-
-    def _popScope(self):
-        """
-        Restore the previous scope.
-        """
-        self._scope = self._scopestack.pop()
+    def add_namespace(self, scope, elem):
+        """ Add an element defining a namespace to a scope. """
+
+        ns = Namespace(name=elem.get('name'), container=scope,
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        for child in elem:
+            if child.tag == 'Function':
+                self.add_function(ns, child)
+            elif child.tag == 'Literal':
+                self.add_literal(ns, child)
+            elif child.tag == 'OperatorFunction':
+                self.add_operator_function(ns, child)
+            else:
+                self.add_code(ns, child)
+
+        scope.content.append(ns)
+
+    def add_opaque_class(self, scope, elem):
+        """ Add an element defining an opaque class to a scope. """
+
+        oc = OpaqueClass(name=elem.get('name'), container=scope,
+                access=elem.get('access', ''),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        scope.content.append(oc)
+
+    def add_operator_cast(self, cls, elem):
+        """ Add an element defining an operator cast to a class. """
+
+        oc = OperatorCast(name=elem.get('name'), container=cls,
+                access=elem.get('access', ''),
+                const=bool(int(elem.get('const', '0'))),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        for child in elem:
+            if child.tag == 'Argument':
+                self.add_argument(oc, child)
+            elif child.tag == 'Literal':
+                self.add_literal(oc, child)
+
+        cls.content.append(oc)
+
+    def add_operator_function(self, hf, elem):
+        """ Add an element defining an operator function to a header file. """
+
+        fn = OperatorFunction(name=elem.get('name'), container=hf,
+                rtype=elem.get('rtype'), pytype=elem.get('pytype', ''),
+                pyargs=elem.get('pyargs', ''),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        for child in elem:
+            if child.tag == 'Argument':
+                self.add_argument(fn, child)
+            elif child.tag == 'Literal':
+                self.add_literal(fn, child)
+
+        hf.content.append(fn)
+
+    def add_operator_method(self, cls, elem):
+        """ Add an element defining an operator method to a class. """
+
+        mt = OperatorMethod(name=elem.get('name'), container=cls,
+                access=elem.get('access', ''), rtype=elem.get('rtype'),
+                virtual=bool(int(elem.get('virtual', '0'))),
+                const=bool(int(elem.get('const', '0'))),
+                abstract=bool(int(elem.get('abstract', '0'))),
+                pytype=elem.get('pytype', ''), pyargs=elem.get('pyargs', ''),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        for child in elem:
+            if child.tag == 'Argument':
+                self.add_argument(mt, child)
+            elif child.tag == 'Literal':
+                self.add_literal(mt, child)
+
+        cls.content.append(mt)
+
+    def add_typedef(self, scope, elem):
+        """ Add an element defining a typedef to a scope. """
+
+        td = Typedef(name=elem.get('name'), type=elem.get('type'),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+
+        scope.content.append(td)
+
+    def add_variable(self, scope, elem):
+        """ Add an element defining a variable to a scope. """
+
+        var = Variable(name=elem.get('name'), type=elem.get('type'),
+                static=bool(int(elem.get('static', '0'))),
+                access=elem.get('access', ''),
+                platforms=elem.get('platforms', ''),
+                features=elem.get('features', ''), annos=elem.get('annos', ''),
+                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                egen=elem.get('egen', ''))
+
+        for child in elem:
+            if child.tag == 'Literal':
+                self.add_literal(var, child)
+
+        scope.content.append(var)

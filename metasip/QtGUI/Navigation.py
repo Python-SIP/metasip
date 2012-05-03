@@ -1674,7 +1674,7 @@ class _CodeItem(_SimpleItem, _DropSite):
 
                 if access != 'private' and a.unnamed and a.default != '':
                     unnamed_args = True
-        elif isinstance(cd, (Class, Namespace)):
+        elif isinstance(cd, (Class, Enum, Namespace)):
             for c in cd.content:
                 _CodeItem(self, c)
 

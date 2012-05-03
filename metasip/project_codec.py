@@ -54,8 +54,10 @@ class ProjectCodec(Model):
 
         model.name = str(location)
 
-        if not ProjectParser().parse(model):
-            raise StorageError(model.diagnostic, location)
+        try:
+            ProjectParser().parse(model)
+        except Exception as e:
+            raise StorageError(str(e), location)
 
         return model
 
