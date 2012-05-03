@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import List
+from dip.model import List, Str
 
 from .i_access import IAccess
 from .i_code import ICode
@@ -20,3 +20,5 @@ from .i_enum_value import IEnumValue
 class IEnum(ICode, IAccess):
 
     content = List(IEnumValue)
+
+    name = Str()

@@ -20,7 +20,6 @@ from dip.shell import BaseManagedModelTool, IManagedModelTool
 from dip.ui import IDisplay
 
 from .Project import Project
-from .QtGUI import Navigation
 
 
 @implements(IManagedModelTool, IDisplay)
@@ -41,6 +40,8 @@ class ProjectEditorTool(BaseManagedModelTool):
 
     def create_views(self, model):
         """ Create the views for editing a model. """
+
+        from .QtGUI import Navigation
 
         self.project = model
 

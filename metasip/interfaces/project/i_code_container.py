@@ -15,4 +15,4 @@ from dip.model import Interface, List
 
 class ICodeContainer(Interface):
 
-    content = List('metasip.interfaces.project.ICode')
+    content = List('.ICode')

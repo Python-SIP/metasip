@@ -16,24 +16,20 @@ import time
 import fnmatch
 from xml.sax import saxutils
 
-from dip.model import implements, Model
+from dip.model import implements, Instance, Model, Str
 from dip.shell import IDirty
 
 from .logger import Logger
-from .interfaces.project import ProjectVersion, IProject
+from .interfaces.project import (ProjectVersion, IArgument, IClass,
+        IConstructor, IDestructor, IEnum, IEnumValue, IFunction,
+        IHeaderDirectory, IHeaderFile, IManualCode, IMethod, IModule,
+        INamespace, IOpaqueClass, IOperatorCast, IOperatorFunction,
+        IOperatorMethod, IProject, ITypedef, IVariable)
 
 
-class Annotations:
+class Annotations(Model):
     """ This class is a base class for any project item that has annotations.
     """
-
-    def __init__(self, annos):
-        """
-        Initialise the instance.
-
-        annos is the string of annotations.
-        """
-        self.annos = annos
 
     def sipAnnos(self):
         """ Return the annotations suitable for writing to a SIP file.
@@ -58,24 +54,6 @@ class VersionedItem(Annotations):
     """ This class is a base class for all project elements that may have
     annotations, subject to workflow or versions.
     """
-
-    def __init__(self, annos, status, sgen, egen):
-        """
-        Initialise the instance.
-
-        annos is the string of annotations.
-        status is the element status.
-        sgen is the start generation as a string, ie. the first generation in
-        which it appeared.  An empty string means the beginning of time.
-        egen is the end generation as a string, ie. the first generation in
-        which it was missing (and not the last generation in which it
-        appeared).  An empty string means the end of time.
-        """
-        super().__init__(annos)
-
-        self.status = status
-        self.sgen = sgen
-        self.egen = egen
 
     def isCurrent(self):
         """
@@ -933,22 +911,6 @@ class Project(Model):
 class Code(VersionedItem):
     """ This class is the base class for all elements of parsed C++ code. """
 
-    def __init__(self, platforms, features, annos, status, sgen, egen):
-        """
-        Initialise the class instance.
-
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the class status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__(annos, status, sgen, egen)
-
-        self.platforms = platforms
-        self.features = features
-
     def signature(self):
         """
         Return a C/C++ representation for comparison purposes.
@@ -1017,16 +979,8 @@ class Code(VersionedItem):
         return s
 
 
-class Access:
+class Access(Model):
     """ This class is derived by all code that is affected by class access. """
-
-    def __init__(self, access):
-        """
-        Initialise the access instance.
-
-        access is the access.
-        """
-        self.access = access
 
     def sigAccess(self):
         """
@@ -1057,24 +1011,9 @@ class Access:
         return s
 
 
-class Module:
+@implements(IModule)
+class Module(Model):
     """ This class represents a project module. """
-
-    def __init__(self, name, outputdirsuffix, version, imports):
-        """
-        Initialise a module instance.
-
-        name is the module name.
-        outputdirsuffix is the output directory suffix.
-        version is the module version number.
-        imports is the space separated list of module imports.
-        """
-        self.name = name
-        self.outputdirsuffix = outputdirsuffix
-        self.version = version
-        self.imports = imports
-        self.directives = ""
-        self.content = []
 
     def literal(self, ltype, text):
         """
@@ -1087,29 +1026,12 @@ class Module:
             self.directives = text
 
 
-class HeaderDirectory:
+@implements(IHeaderDirectory)
+class HeaderDirectory(Model):
     """ This class represents a project header directory. """
 
-    # Note that the project attribute is not part of IHeaderDirectory.
-
-    def __init__(self, project, name, parserargs="", inputdirsuffix="", filefilter=""):
-        """
-        Initialise a header directory instance.
-
-        project is the project.
-        name is the descriptive name of the header directory.
-        parserargs is the optional string of parser arguments.
-        inputdirsuffix when joined to the inputdir gives the absolute name of
-        the header directory.
-        filefilter is the optional pattern used to select only those files of
-        interest.
-        """
-        self.project = project
-        self.name = name
-        self.parserargs = parserargs
-        self.inputdirsuffix = inputdirsuffix
-        self.filefilter = filefilter
-        self.content = []
+    # The project.
+    project = Instance(IProject)
 
     def newHeaderFile(self, id, name, md5, parse, status, sgen, egen=''):
         """
@@ -1325,39 +1247,12 @@ class HeaderDirectory:
                 str(len(self.project.versions)))
 
 
+@implements(IHeaderFile)
 class HeaderFile(Code):
     """ This class represents a project header file. """
 
-    # Note that the project attribute is not part of IHeaderFile.
-
-    def __init__(self, project, id, name, md5, parse, status, sgen, egen):
-        """
-        Initialise a header file instance.
-
-        project is the project.
-        id is the file's ID.
-        name is the path name of the header file excluding the header directory
-        root.
-        md5 is the file's MD5 signature.
-        parse is the file's parse status (either "" or "needed").
-        status is the file status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__('', '', '', status, sgen, egen)
-
-        self.project = project
-        self.id = id
-        self.name = name
-        self.md5 = md5
-        self.parse = parse
-        self.exportedheadercode = ""
-        self.moduleheadercode = ""
-        self.modulecode = ""
-        self.preinitcode = ""
-        self.initcode = ""
-        self.postinitcode = ""
-        self.content = []
+    # The project.
+    project = Instance(IProject)
 
     def literal(self, ltype, text):
         """
@@ -1488,27 +1383,9 @@ class HeaderFile(Code):
         return s
 
 
+@implements(IArgument)
 class Argument(Annotations):
     """ This class represents an argument. """
-
-    def __init__(self, type, name='', unnamed=True, default='', pytype='', annos=''):
-        """
-        Initialise the argument instance.
-
-        type is the type of the argument.
-        name is the optional name of the argument.
-        unnamed is set if the name is not "official".
-        default is the optional default value of the argument.
-        pytype is the Python type.
-        annos is the string of annotations.
-        """
-        super().__init__(annos)
-
-        self.type = type
-        self.name = name
-        self.unnamed = unnamed
-        self.default = default
-        self.pytype = pytype
 
     def signature(self, callable):
         """
@@ -1592,49 +1469,9 @@ class Argument(Annotations):
         return s
 
 
+@implements(IClass)
 class Class(Code, Access):
     """ This class represents a class. """
-
-    def __init__(self, name, container, bases, struct, access, pybases='', platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the class instance.
-
-        name is the name of the class.
-        container is the container of the class.
-        bases is the list of base classes.
-        struct set if the class is a struct.
-        access is the access.
-        pybases is the list of Python base classes.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the class status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        Code.__init__(self, platforms, features, annos, status, sgen, egen)
-        Access.__init__(self, access)
-
-        self.name = name
-        self.container = container
-        self.bases = bases
-        self.struct = struct
-        self.pybases = pybases
-        self.docstring = ""
-        self.typeheadercode = ""
-        self.typecode = ""
-        self.convtotypecode = ""
-        self.subclasscode = ""
-        self.gctraversecode = ""
-        self.gcclearcode = ""
-        self.bigetbufcode = ""
-        self.birelbufcode = ""
-        self.bireadbufcode = ""
-        self.biwritebufcode = ""
-        self.bisegcountcode = ""
-        self.bicharbufcode = ""
-        self.picklecode = ""
-        self.content = []
 
     def literal(self, ltype, text):
         """
@@ -1935,38 +1772,7 @@ class Class(Code, Access):
 
 
 class Callable(Code):
-    """
-    This class represents a callable.
-    """
-    def __init__(self, name, container, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen):
-        """
-        Initialise the callable instance.
-
-        name is the name of the callable.
-        container is the container of the callable.
-        rtype is the C/C++ return type (which will be None for constructors and
-        operator casts).
-        pytype is the Python return type (which will be None for constructors
-        and operator casts).
-        pyargs is the Python signature excluding any return type (which will be
-        None for operator casts).
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the callable status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__(platforms, features, annos, status, sgen, egen)
-
-        self.name = name
-        self.container = container
-        self.rtype = rtype
-        self.pytype = pytype
-        self.pyargs = pyargs
-        self.args = []
-        self.docstring = ""
-        self.methcode = ""
+    """ This class represents a callable. """
 
     def literal(self, ltype, text):
         """
@@ -2107,22 +1913,9 @@ class Callable(Code):
         return False
 
 
+@implements(IEnumValue)
 class EnumValue(VersionedItem):
     """ This class represents an enum value. """
-
-    def __init__(self, name, annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the enum value instance.
-
-        name is the name of the enum value.
-        annos is the string of annotations.
-        status is the status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__(annos, status, sgen, egen)
-
-        self.name = name
 
     def signature(self):
         """
@@ -2161,27 +1954,9 @@ class EnumValue(VersionedItem):
         return s
 
 
+@implements(IEnum)
 class Enum(Code, Access):
     """ This class represents an enum. """
-
-    def __init__(self, name, access, platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the enum instance.
-
-        name is the name of the enum.
-        access is the access.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the enum status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        Code.__init__(self, platforms, features, annos, status, sgen, egen)
-        Access.__init__(self, access)
-
-        self.name = name
-        self.content = []
 
     def signature(self):
         """
@@ -2266,31 +2041,6 @@ class Enum(Code, Access):
 class ClassCallable(Callable, Access):
     """ This class represents a callable in a class context. """
 
-    def __init__(self, name, container, access, rtype, pytype, pyargs, platforms, features, annos, status, sgen, egen):
-        """
-        Initialise the callable instance.
-
-        name is the name of the callable.
-        container is the container of the callable.
-        access is the access.
-        rtype is the C/C++ return type (which will be None for constructors and
-        operator casts).
-        pytype is the Python return type (which will be None for constructors
-        and operator casts).
-        pyargs is the Python signature excluding any return type (which will be
-        None for operator casts).
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the callable status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-
-        Callable.__init__(self, name, container, rtype, pytype, pyargs,
-                platforms, features, annos, status, sgen, egen)
-        Access.__init__(self, access)
-
     def signature(self):
         """ Return a C/C++ representation for comparison purposes. """
 
@@ -2303,30 +2053,9 @@ class ClassCallable(Callable, Access):
         return super().xmlAttributes() + self.xmlAccess()
 
 
+@implements(IConstructor)
 class Constructor(ClassCallable):
-    """
-    This class represents a constructor.
-    """
-    def __init__(self, name, container, access, explicit, pyargs='', platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the constructor instance.
-
-        name is the name of the constructor.
-        container is the container of the constructor.
-        access is the access.
-        explicit is set if the ctor is explicit.
-        pyargs is the Python signature.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the constructor status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__(name, container, access, '', '', pyargs, platforms,
-                features, annos, status, sgen, egen)
-
-        self.explicit = explicit
+    """ This class represents a constructor. """
 
     def signature(self):
         """
@@ -2401,33 +2130,9 @@ class Constructor(ClassCallable):
         return s
 
 
+@implements(IDestructor)
 class Destructor(Code, Access):
-    """
-    This class represents a destructor.
-    """
-    def __init__(self, name, container, access, virtual, platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the destructor instance.
-
-        name is the name of the destructor.
-        container is the container of the destructor.
-        access is the access.
-        virtual is set if the destructor is virtual.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the destructor status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        Code.__init__(self, platforms, features, annos, status, sgen, egen)
-        Access.__init__(self, access)
-
-        self.name = name
-        self.container = container
-        self.virtual = virtual
-        self.methcode = ""
-        self.virtcode = ""
+    """ This class represents a destructor. """
 
     def literal(self, ltype, text):
         """
@@ -2505,29 +2210,9 @@ class Destructor(Code, Access):
         return s
 
 
+@implements(IOperatorCast)
 class OperatorCast(ClassCallable):
-    """
-    This class represents an operator cast.
-    """
-    def __init__(self, name, container, access, const, platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the operator cast instance.
-
-        name is the name of the operator cast (ie. the type being cast to).
-        container is the container of the operator cast.
-        access is the access.
-        const is set if the method is const.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the constructor status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__(name, container, access, '', '', '', platforms,
-                features, annos, status, sgen, egen)
-
-        self.const = const
+    """ This class represents an operator cast. """
 
     def signature(self):
         """
@@ -2599,39 +2284,9 @@ class OperatorCast(ClassCallable):
         return s
 
 
+@implements(IMethod)
 class Method(ClassCallable):
-    """
-    This class represents a method.
-    """
-    def __init__(self, name, container, access, rtype, virtual, const, static, abstract, pytype='', pyargs='', platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the method instance.
-
-        name is the name of the method.
-        container is the container of the method.
-        access is the access.
-        rtype is the C/C++ return type.
-        virtual is set if the method is virtual.
-        const is set if the method is const.
-        static is set if the method is static.
-        abstract is set if the method is pure virtual.
-        pytype is the Python return type.
-        pyargs is the Python signature excluding the return type.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the method status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__(name, container, access, rtype, pytype, pyargs,
-                platforms, features, annos, status, sgen, egen)
-
-        self.virtual = virtual
-        self.const = const
-        self.static = static
-        self.abstract = abstract
-        self.virtcode = ""
+    """ This class represents a method. """
 
     def literal(self, ltype, text):
         """
@@ -2786,37 +2441,9 @@ class Method(ClassCallable):
         return s
 
 
+@implements(IOperatorMethod)
 class OperatorMethod(ClassCallable):
-    """
-    This class represents a scoped operator.
-    """
-    def __init__(self, name, container, access, rtype, virtual, const, abstract, pytype='', pyargs='', platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the operator instance.
-
-        name is the name of the operator.
-        container is the container of the operator.
-        access is the access.
-        rtype is the C/C++ return type.
-        virtual is set if the operator is virtual.
-        const is set if the operator is const.
-        abstract is set if the operator is pure virtual.
-        pytype is the Python return type.
-        pyargs is the Python signature excluding the return type.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the operator status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__(name, container, access, rtype, pytype, pyargs,
-                platforms, features, annos, status, sgen, egen)
-
-        self.virtual = virtual
-        self.const = const
-        self.abstract = abstract
-        self.virtcode = ""
+    """ This class represents a scoped operator. """
 
     def literal(self, ltype, text):
         """
@@ -2953,28 +2580,9 @@ class OperatorMethod(ClassCallable):
         return s
 
 
+@implements(IFunction)
 class Function(Callable):
-    """
-    This class represents a function.
-    """
-    def __init__(self, name, container, rtype, pytype='', pyargs='', platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the function instance.
-
-        name is the name of the function.
-        container is the container of the function.
-        rtype is the C/C++ return type.
-        pytype is the Python return type.
-        pyargs is the Python signature excluding the return type.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the function status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__(name, container, rtype, pytype, pyargs, platforms,
-                features, annos, status, sgen, egen)
+    """ This class represents a function. """
 
     def sip(self, f, hf, latest_sip):
         """
@@ -3008,28 +2616,9 @@ class Function(Callable):
         f.write('</Function>\n')
 
 
+@implements(IOperatorFunction)
 class OperatorFunction(Callable):
-    """
-    This class represents a global operator.
-    """
-    def __init__(self, name, container, rtype, pytype='', pyargs='', platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the operaror instance.
-
-        name is the name of the operator.
-        container is the container of the operator.
-        rtype is the C/C++ return type.
-        pytype is the Python return type.
-        pyargs is the Python signature excluding the return type.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the operator status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__(name, container, rtype, pytype, pyargs, platforms,
-                features, annos, status, sgen, egen)
+    """ This class represents a global operator. """
 
     def signature(self):
         """
@@ -3094,34 +2683,9 @@ class OperatorFunction(Callable):
         f.write('</OperatorFunction>\n')
 
 
+@implements(IVariable)
 class Variable(Code, Access):
-    """
-    This class represents a variable.
-    """
-    def __init__(self, name, type, static, access, platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the variable instance.
-
-        name is the name of the variable.
-        type is the type of the variable.
-        static is set if the variable is static.
-        access is the access.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the variable status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        Code.__init__(self, platforms, features, annos, status, sgen, egen)
-        Access.__init__(self, access)
-
-        self.name = name
-        self.type = type
-        self.static = static
-        self.accesscode = ""
-        self.getcode = ""
-        self.setcode = ""
+    """ This class represents a variable. """
 
     def literal(self, ltype, text):
         """
@@ -3238,27 +2802,9 @@ class Variable(Code, Access):
         return s
 
 
+@implements(ITypedef)
 class Typedef(Code):
-    """
-    This class represents a typedef.
-    """
-    def __init__(self, name, type, platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the typedef instance.
-
-        name is the name of the typedef.
-        type is the type of the typedef.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the typedef status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__(platforms, features, annos, status, sgen, egen)
-
-        self.name = name
-        self.type = type
+    """ This class represents a typedef. """
 
     def user(self):
         """
@@ -3295,28 +2841,9 @@ class Typedef(Code):
         return s
 
 
+@implements(INamespace)
 class Namespace(Code):
-    """
-    This class represents a namespace.
-    """
-    def __init__(self, name, container, platforms='', features='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the namespace instance.
-
-        name is the name of the namespace.
-        container is the container of the namespace.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        status is the namespace status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        super().__init__(platforms, features, '', status, sgen, egen)
-
-        self.name = name
-        self.container = container
-        self.typeheadercode = ""
-        self.content = []
+    """ This class represents a namespace. """
 
     def literal(self, ltype, text):
         """
@@ -3398,29 +2925,9 @@ class Namespace(Code):
         return s
 
 
+@implements(IOpaqueClass)
 class OpaqueClass(Code, Access):
-    """
-    This class represents an opaque class.
-    """
-    def __init__(self, name, container, access, platforms='', features='', annos='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the opaque class instance.
-
-        name is the name of the opaque class.
-        container is the container of the opaque class.
-        access is the access.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        annos is the string of annotations.
-        status is the opaque class status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        Code.__init__(self, platforms, features, annos, status, sgen, egen)
-        Access.__init__(self, access)
-
-        self.name = name
-        self.container = container
+    """ This class represents an opaque class. """
 
     def signature(self):
         """
@@ -3462,30 +2969,9 @@ class OpaqueClass(Code, Access):
         return s
 
 
+@implements(IManualCode)
 class ManualCode(Code, Access):
-    """
-    This class represents some manual code.
-    """
-    def __init__(self, precis, access='', platforms='', features='', status='unknown', sgen='', egen=''):
-        """
-        Initialise the manual code instance.
-
-        precis is the name of the manual code (or the code itself if it is one
-        line).
-        access is the access specifier.
-        platforms is the space separated list of platforms.
-        features is the space separated list of features.
-        status is the opaque class status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        Code.__init__(self, platforms, features, '', status, sgen, egen)
-        Access.__init__(self, access)
-
-        self.precis = precis
-        self.body = ""
-        self.docstring = ""
-        self.methcode = ""
+    """ This class represents some manual code. """
 
     def literal(self, ltype, text):
         """

@@ -20,15 +20,15 @@ from .project_version import ProjectVersion
 class IProject(Interface):
     """ The IProject interface is implemented by projects. """
 
-    externalfeatures = List(Str())
+    externalfeatures = Str()
 
-    externalmodules = List(Str())
+    externalmodules = Str()
 
     features = List(Str())
 
     headers = List(IHeaderDirectory)
 
-    ignorednamespaces = List(Str())
+    ignorednamespaces = Str()
 
     inputdir = Str()
 

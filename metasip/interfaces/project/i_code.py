@@ -19,7 +19,7 @@ from .i_workflow import IWorkflow
 
 class ICode(IAnnos, IVersionRange, IWorkflow):
 
-    container = Instance('metasip.interfaces.project.ICodeContainer')
+    container = Instance('.ICodeContainer')
 
     features = List(Str())
 
