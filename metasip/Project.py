@@ -570,16 +570,6 @@ class Project(Model):
 
         return self.versions[int(sgen) - 1] + " - " + self.versions[int(egen) - 1]
 
-    def literal(self, ltype, text):
-        """
-        Accept some literal text.
-
-        ltype is the type of the text.
-        text is the text.
-        """
-        if ltype == "sipcomments":
-            self.sipcomments = text
-
     def save(self, saveas=None):
         """
         Save the project and return True if the save was successful.
@@ -1015,16 +1005,6 @@ class Access(Model):
 class Module(Model):
     """ This class represents a project module. """
 
-    def literal(self, ltype, text):
-        """
-        Accept some literal text.
-
-        ltype is the type of the text.
-        text is the text.
-        """
-        if ltype == "directives":
-            self.directives = text
-
 
 @implements(IHeaderDirectory)
 class HeaderDirectory(Model):
@@ -1254,31 +1234,6 @@ class HeaderFile(Code):
     # The project.
     project = Instance(IProject)
 
-    def literal(self, ltype, text):
-        """
-        Accept some literal text.
-
-        ltype is the type of the text.
-        text is the text.
-        """
-        if ltype == "exportedheadercode":
-            self.exportedheadercode = text
-
-        if ltype == "moduleheadercode":
-            self.moduleheadercode = text
-
-        if ltype == "modulecode":
-            self.modulecode = text
-
-        if ltype == "preinitcode":
-            self.preinitcode = text
-
-        if ltype == "initcode":
-            self.initcode = text
-
-        if ltype == "postinitcode":
-            self.postinitcode = text
-
     def sip(self, f, latest_sip):
         """
         Write the header file to a SIP file.
@@ -1472,42 +1427,6 @@ class Argument(Annotations):
 @implements(IClass)
 class Class(Code, Access):
     """ This class represents a class. """
-
-    def literal(self, ltype, text):
-        """
-        Accept some literal text.
-
-        ltype is the type of the text.
-        text is the text.
-        """
-        if ltype == "docstring":
-            self.docstring = text
-        elif ltype == "typeheadercode":
-            self.typeheadercode = text
-        elif ltype == "typecode":
-            self.typecode = text
-        elif ltype == "convtotypecode":
-            self.convtotypecode = text
-        elif ltype == "subclasscode":
-            self.subclasscode = text
-        elif ltype == "gctraversecode":
-            self.gctraversecode = text
-        elif ltype == "gcclearcode":
-            self.gcclearcode = text
-        elif ltype == "bigetbufcode":
-            self.bigetbufcode = text
-        elif ltype == "birelbufcode":
-            self.birelbufcode = text
-        elif ltype == "bireadbufcode":
-            self.bireadbufcode = text
-        elif ltype == "biwritebufcode":
-            self.biwritebufcode = text
-        elif ltype == "bisegcountcode":
-            self.bisegcountcode = text
-        elif ltype == "bicharbufcode":
-            self.bicharbufcode = text
-        elif ltype == "picklecode":
-            self.picklecode = text
 
     def signature(self):
         """
@@ -1773,18 +1692,6 @@ class Class(Code, Access):
 
 class Callable(Code):
     """ This class represents a callable. """
-
-    def literal(self, ltype, text):
-        """
-        Accept some literal text.
-
-        ltype is the type of the text.
-        text is the text.
-        """
-        if ltype == "docstring":
-            self.docstring = text
-        elif ltype == "methcode":
-            self.methcode = text
 
     def signature(self):
         """
@@ -2134,18 +2041,6 @@ class Constructor(ClassCallable):
 class Destructor(Code, Access):
     """ This class represents a destructor. """
 
-    def literal(self, ltype, text):
-        """
-        Accept some literal text.
-
-        ltype is the type of the text.
-        text is the text.
-        """
-        if ltype == "methcode":
-            self.methcode = text
-        elif ltype == "virtcode":
-            self.virtcode = text
-
     def signature(self):
         """
         Return a C/C++ representation for comparison purposes.
@@ -2287,18 +2182,6 @@ class OperatorCast(ClassCallable):
 @implements(IMethod)
 class Method(ClassCallable):
     """ This class represents a method. """
-
-    def literal(self, ltype, text):
-        """
-        Accept some literal text.
-
-        ltype is the type of the text.
-        text is the text.
-        """
-        if ltype == "virtcode":
-            self.virtcode = text
-        else:
-            super().literal(ltype, text)
 
     def signature(self):
         """
@@ -2444,18 +2327,6 @@ class Method(ClassCallable):
 @implements(IOperatorMethod)
 class OperatorMethod(ClassCallable):
     """ This class represents a scoped operator. """
-
-    def literal(self, ltype, text):
-        """
-        Accept some literal text.
-
-        ltype is the type of the text.
-        text is the text.
-        """
-        if ltype == "virtcode":
-            self.virtcode = text
-        else:
-            super().literal(ltype, text)
 
     def signature(self):
         """
@@ -2687,20 +2558,6 @@ class OperatorFunction(Callable):
 class Variable(Code, Access):
     """ This class represents a variable. """
 
-    def literal(self, ltype, text):
-        """
-        Accept some literal text.
-
-        ltype is the type of the text.
-        text is the text.
-        """
-        if ltype == "accesscode":
-            self.accesscode = text
-        elif ltype == "getcode":
-            self.getcode = text
-        elif ltype == "setcode":
-            self.setcode = text
-
     def signature(self):
         """
         Return a C/C++ representation for comparison purposes.
@@ -2845,16 +2702,6 @@ class Typedef(Code):
 class Namespace(Code):
     """ This class represents a namespace. """
 
-    def literal(self, ltype, text):
-        """
-        Accept some literal text.
-
-        ltype is the type of the text.
-        text is the text.
-        """
-        if ltype == "typeheadercode":
-            self.typeheadercode = text
-
     def user(self):
         """
         Return a user friendly representation of the namespace.
@@ -2972,20 +2819,6 @@ class OpaqueClass(Code, Access):
 @implements(IManualCode)
 class ManualCode(Code, Access):
     """ This class represents some manual code. """
-
-    def literal(self, ltype, text):
-        """
-        Accept some literal text.
-
-        ltype is the type of the text.
-        text is the text.
-        """
-        if ltype == "body":
-            self.body = text
-        elif ltype == "docstring":
-            self.docstring = text
-        elif ltype == "methcode":
-            self.methcode = text
 
     def signature(self):
         """
