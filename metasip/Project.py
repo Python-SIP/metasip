@@ -547,15 +547,9 @@ class Project(Model):
         IDirty(self).dirty = True
 
     def addExternalModule(self, xm):
-        """
-        Add a new external module to the project.
+        """ Add a new external module to the project. """
 
-        xm is the new external module.
-        """
-        if self.externalmodules:
-            self.externalmodules += " "
-
-        self.externalmodules += xm
+        self.externalmodules.append(xm)
 
         IDirty(self).dirty = True
 
@@ -634,8 +628,9 @@ class Project(Model):
             feat = ''
 
         # Handle the external modules.
-        if self.externalmodules != '':
-            xmod = ' externalmodules="%s"' % self.externalmodules
+        if len(self.externalmodules) != 0:
+            xmod = ' externalmodules="{0}"'.format(
+                    ' '.join(self.externalmodules))
         else:
             xmod = ''
 
@@ -792,13 +787,12 @@ class Project(Model):
             f.write("%%Module %s%s 0\n\n" % (rname, mod.name))
 
         top_level_module = True
-        external = self.externalmodules.split()
 
         if mod.imports:
             for m in mod.imports.split():
                 f.write("%%Import %s/%smod.sip\n" % (m, m))
 
-                if m not in external:
+                if m not in self.externalmodules:
                     top_level_module = False
 
             f.write("\n")

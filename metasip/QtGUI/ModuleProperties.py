@@ -10,9 +10,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module handles a module's properties. """
-
-
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QCheckBox, QDialog, QGridLayout
 
@@ -20,9 +17,8 @@ from .Designer.ModulePropertiesBase import Ui_ModulePropertiesBase
 
 
 class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
-    """
-    This class implements the dialog for a module's properties.
-    """
+    """ This class implements the dialog for a module's properties. """
+
     def __init__(self, prj, mod, parent):
         """
         Initialise the dialog.
@@ -35,7 +31,7 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
 
         self.setupUi(self)
 
-        self._ilistall = prj.externalmodules.split()
+        self._ilistall = prj.externalmodules
         self._ilistall.extend([m.name for m in prj.modules])
         self._ilistall.sort()
 

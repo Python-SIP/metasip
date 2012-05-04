@@ -52,7 +52,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         self.buttonRemoveExtFeatTag.setEnabled(self.extFeatureTags.count())
         self.buttonRemoveExtFeatTag.clicked.connect(self._removeExtFeatTag)
 
-        for m in prj.externalmodules.split():
+        for m in prj.externalmodules:
             self.externalModules.addItem(m)
 
         self.buttonRemoveModule.setEnabled(self.externalModules.count())
@@ -71,41 +71,30 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         self.browseWebXmlRootDir.clicked.connect(self._browse_webxml)
 
     def fields(self):
-        """
-        Return a tuple of the dialog fields.
-        """
-        rootmodule = str(self.rootModule.text()).strip()
-        srcrootdir = str(self.srcRootDir.text()).strip()
-        webxmlrootdir = str(self.webXmlRootDir.text()).strip()
-        sipcomments = str(self.sipFileComments.toPlainText()).strip()
+        """ Return a tuple of the dialog fields. """
 
-        pl = []
+        rootmodule = self.rootModule.text().strip()
+        srcrootdir = self.srcRootDir.text().strip()
+        webxmlrootdir = self.webXmlRootDir.text().strip()
+        sipcomments = self.sipFileComments.toPlainText().strip()
 
-        for i in range(self.platformTags.count()):
-            pl.append(str(self.platformTags.itemText(i)))
+        pl = [self.platformTags.itemText(i)
+                for i in range(self.platformTags.count())]
 
-        fl = []
+        fl = [self.featureTags.itemText(i)
+                for i in range(self.featureTags.count())]
 
-        for i in range(self.featureTags.count()):
-            fl.append(str(self.featureTags.itemText(i)))
+        xfl = [self.extFeatureTags.itemText(i)
+                for i in range(self.extFeatureTags.count())]
 
-        xfl = []
+        ml = [self.externalModules.itemText(i)
+                for i in range(self.externalModules.count())]
 
-        for i in range(self.extFeatureTags.count()):
-            xfl.append(str(self.extFeatureTags.itemText(i)))
-
-        ml = []
-
-        for i in range(self.externalModules.count()):
-            ml.append(str(self.externalModules.itemText(i)))
-
-        ns = []
-
-        for i in range(self.ignoredNamespaces.count()):
-            ml.append(str(self.ignoredNamespaces.itemText(i)))
+        ns = [self.ignoredNamespaces.itemText(i)
+                for i in range(self.ignoredNamespaces.count())]
 
         return (rootmodule, srcrootdir, webxmlrootdir, ' '.join(pl),
-                ' '.join(fl), xfl, ' '.join(ml), ' '.join(ns), sipcomments)
+                ' '.join(fl), xfl, ml, ' '.join(ns), sipcomments)
 
     def _removePlatTag(self):
         """

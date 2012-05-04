@@ -22,7 +22,7 @@ class IProject(Interface):
 
     externalfeatures = List(Str())
 
-    externalmodules = Str()
+    externalmodules = List(Str())
 
     features = Str()
 
