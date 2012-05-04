@@ -167,7 +167,7 @@ class VersionedItem(Model):
 
         typ is the type.
         """
-        for ins in self.get_project().ignorednamespaces.split():
+        for ins in self.get_project().ignorednamespaces:
             ns_name = ins + "::"
 
             if typ.startswith(ns_name):
@@ -550,27 +550,18 @@ class Project(Model):
         """ Add a new external module to the project. """
 
         self.externalmodules.append(xm)
-
         IDirty(self).dirty = True
 
     def addExternalFeature(self, xf):
         """ Add a new external feature to the project. """
 
         self.externalfeatures.append(xf)
-
         IDirty(self).dirty = True
 
     def addIgnoredNamespace(self, ns):
-        """
-        Add a new ignored namespace to the project.
+        """ Add a new ignored namespace to the project. """
 
-        ns is the new ignored namespace.
-        """
-        if self.ignorednamespaces:
-            self.ignorednamespaces += " "
-
-        self.ignorednamespaces += ns
-
+        self.ignorednamespaces.append(ns)
         IDirty(self).dirty = True
 
     def versionRange(self, sgen, egen):
@@ -642,8 +633,9 @@ class Project(Model):
             xf = ''
 
         # Handle the ignored namespaces.
-        if self.ignorednamespaces != '':
-            ins = ' ignorednamespaces="%s"' % self.ignorednamespaces
+        if len(self.ignorednamespaces) != 0:
+            ins = ' ignorednamespaces="{0}"'.format(
+                    ' '.join(self.ignorednamespaces))
         else:
             ins = ''
 
@@ -2653,7 +2645,7 @@ class Namespace(Code):
         if self.status:
             return 
 
-        if self.name in self.get_project().ignorednamespaces.split():
+        if self.name in self.get_project().ignorednamespaces:
             super().sip(f, hf, latest_sip)
             return
 

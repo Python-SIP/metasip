@@ -58,7 +58,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         self.buttonRemoveModule.setEnabled(self.externalModules.count())
         self.buttonRemoveModule.clicked.connect(self._removeModule)
 
-        for n in prj.ignorednamespaces.split():
+        for n in prj.ignorednamespaces():
             self.ignoredNamespaces.addItem(n)
 
         self.buttonRemoveNamespace.setEnabled(self.ignoredNamespaces.count())
@@ -94,7 +94,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
                 for i in range(self.ignoredNamespaces.count())]
 
         return (rootmodule, srcrootdir, webxmlrootdir, ' '.join(pl),
-                ' '.join(fl), xfl, ml, ' '.join(ns), sipcomments)
+                ' '.join(fl), xfl, ml, ns, sipcomments)
 
     def _removePlatTag(self):
         """

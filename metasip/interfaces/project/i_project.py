@@ -28,7 +28,7 @@ class IProject(Interface):
 
     headers = List(IHeaderDirectory)
 
-    ignorednamespaces = Str()
+    ignorednamespaces = List(Str())
 
     inputdir = Str()
 

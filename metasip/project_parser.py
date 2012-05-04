@@ -68,7 +68,7 @@ class ProjectParser:
         project.features = root.get('features', '')
         project.externalmodules = root.get('externalmodules', '').split()
         project.externalfeatures = root.get('externalfeatures', '').split()
-        project.ignorednamespaces = root.get('ignorednamespaces', '')
+        project.ignorednamespaces = root.get('ignorednamespaces', '').split()
         project.inputdir = root.get('inputdir')
         project.webxmldir = root.get('webxmldir', '')
         project.outputdir = root.get('outputdir')
