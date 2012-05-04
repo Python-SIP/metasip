@@ -41,18 +41,19 @@ class Annotations(Model):
         return ' /{0}/'.format(self.annos) if self.annos != '' else ''
 
     def xmlAttributes(self):
-        """ Return the XML attributes as a string.
+        """ Return the XML attributes as a list. """
 
-        :return:
-            the XML attributes.
-        """
+        xml = []
 
-        return ' annos="{0}"'.format(escape(self.annos)) if self.annos != '' else ''
+        if self.annos != '':
+            xml.append('annos="{0}"'.format(escape(self.annos)))
+
+        return xml
 
 
-class VersionedItem(Annotations):
-    """ This class is a base class for all project elements that may have
-    annotations, subject to workflow or versions.
+class VersionedItem(Model):
+    """ This class is a base class for all project elements that is subject to
+    workflow or versions.
     """
 
     def isCurrent(self):
@@ -62,24 +63,20 @@ class VersionedItem(Annotations):
         return (self.egen == '')
 
     def xmlAttributes(self):
-        """ Return the XML attributes as a string.
+        """ Return the XML attributes as a list. """
 
-        :return:
-            the XML attributes.
-        """
-
-        s = super().xmlAttributes()
+        xml = []
 
         if self.status != '':
-            s += ' status="%s"' % self.status
+            xml.append('status="{0}"'.format(self.status))
 
         if self.sgen != '':
-            s += ' sgen="%s"' % self.sgen
+            xml.append('sgen="{0}"'.format(self.sgen))
 
         if not self.isCurrent():
-            s += ' egen="%s"' % self.egen
+            xml.append('egen="{0}"'.format(self.egen))
 
-        return s
+        return xml
 
     def project(self):
         """ Return the project instance. """
@@ -898,7 +895,7 @@ class Project(Model):
         return None
 
 
-class Code(VersionedItem):
+class Code(VersionedItem, Annotations):
     """ This class is the base class for all elements of parsed C++ code. """
 
     def signature(self):
@@ -955,18 +952,18 @@ class Code(VersionedItem):
             c.xml(f)
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
+
+        xml = Annotations.xmlAttributes(self)
+        xml += VersionedItem.xmlAttributes(self)
 
         if self.platforms != '':
-            s += ' platforms="%s"' % self.platforms
+            xml.append('platforms="{0}"'.format(self.platforms))
 
         if self.features != '':
-            s += ' features="%s"' % self.features
+            xml.append('features="{0}"'.format(self.features))
 
-        return s
+        return xml
 
 
 class Access(Model):
@@ -989,16 +986,15 @@ class Access(Model):
 
         return s
 
-    def xmlAccess(self):
-        """
-        Return an XML representation of the access.
-        """
-        if self.access != '':
-            s = ' access="%s"' % self.access
-        else:
-            s = ''
+    def xmlAttributes(self):
+        """ Return the XML attributes as a list. """
 
-        return s
+        xml = []
+
+        if self.access != '':
+            xml.append('access="{0}"'.format(self.access))
+
+        return xml
 
 
 @implements(IModule)
@@ -1228,7 +1224,7 @@ class HeaderDirectory(Model):
 
 
 @implements(IHeaderFile)
-class HeaderFile(Code):
+class HeaderFile(VersionedItem):
     """ This class represents a project header file. """
 
     # The project.
@@ -1240,13 +1236,13 @@ class HeaderFile(Code):
 
         f is the output file.
         """
-        if self.status:
+        if self.status != '':
             return 
 
         # See if we need a %ModuleCode directive for things which will be
         # implemented at the module level.
         for c in self.content:
-            if c.status:
+            if c.status != '':
                 continue
 
             if isinstance(c, Function) or isinstance(c, OperatorFunction) or isinstance(c, Variable) or isinstance(c, Enum):
@@ -1291,15 +1287,13 @@ class HeaderFile(Code):
             _writeCodeSIP(f, "%PostInitialisationCode", self.postinitcode, False)
 
     def xml(self, f):
-        """
-        Write the header file to an XML file.
+        """ Write the header file to an XML file. """
 
-        f is the file.
-        """
-        f.write('<HeaderFile%s>\n' % self.xmlAttributes())
+        f.write('<HeaderFile%s>\n' % _attrsAsString(self))
 
         f += 1
-        super().xml(f)
+        for c in self.content:
+            c.xml(f)
         f -= 1
 
         if self.exportedheadercode:
@@ -1323,19 +1317,18 @@ class HeaderFile(Code):
         f.write('</HeaderFile>\n')
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
 
-        s += ' id="%u"' % self.id
-        s += ' name="%s"' % self.name
-        s += ' md5="%s"' % self.md5
+        xml = super().xmlAttributes()
 
-        if self.parse:
-            s += ' parse="%s"' % self.parse
+        xml.append('id="{0}"'.format(self.id))
+        xml.append('name="{0}"'.format(self.name))
+        xml.append('md5="{0}"'.format(self.md5))
 
-        return s
+        if self.parse != '':
+            xml.append('parse="{0}"'.format(self.parse))
+
+        return xml
 
 
 @implements(IArgument)
@@ -1394,34 +1387,30 @@ class Argument(Annotations):
         return s
 
     def xml(self, f):
-        """
-        Write the argument to an XML file.
+        """ Write the argument to an XML file. """
 
-        f is the file.
-        """
-        f.write('<Argument%s/>\n' % self.xmlAttributes())
+        f.write('<Argument%s/>\n' % _attrsAsString(self))
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
 
-        s += ' type="%s"' % escape(self.type)
+        xml = super().xmlAttributes()
+
+        xml.append('type="{0}"'.format(escape(self.type)))
 
         if self.unnamed:
-            s += ' unnamed="1"'
+            xml.append('unnamed="1"')
 
         if self.name != '':
-            s += ' name="%s"' % escape(self.name)
+            xml.append('name="{0}"'.format(escape(self.name)))
 
         if self.default != '':
-            s += ' default="%s"' % escape(self.default)
+            xml.append('default="{0}"'.format(escape(self.default)))
 
         if self.pytype != '':
-            s += ' pytype="%s"' % escape(self.pytype)
+            xml.append('pytype="{0}"'.format(escape(self.pytype)))
 
-        return s
+        return xml
 
 
 @implements(IClass)
@@ -1610,12 +1599,9 @@ class Class(Code, Access):
         f.blank()
 
     def xml(self, f):
-        """
-        Write the class to an XML file.
+        """ Write the class to an XML file. """
 
-        f is the file.
-        """
-        f.write('<Class%s>\n' % self.xmlAttributes())
+        f.write('<Class%s>\n' % _attrsAsString(self))
 
         _writeDocstringXML(f, self.docstring)
 
@@ -1664,30 +1650,30 @@ class Class(Code, Access):
         f.write('</Class>\n')
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
 
-        s += self.xmlAccess()
+        xml = Code.xmlAttributes(self)
+        xml += Access.xmlAttributes(self)
 
-        s += ' name="'
+        name = 'name="'
 
         if self.name != '':
-            s += escape(self.name)
+            name += escape(self.name)
 
-        s += '"'
+        name += '"'
+
+        xml.append(name)
 
         if self.bases != '':
-            s += ' bases="%s"' % escape(self.bases)
+            xml.append('bases="{0}"'.format(escape(self.bases)))
 
         if self.pybases != '':
-            s += ' pybases="%s"' % escape(self.pybases)
+            xml.append('pybases="{0}"'.format(escape(self.pybases)))
 
         if self.struct:
-            s += ' struct="1"'
+            xml.append('struct="1"')
 
-        return s
+        return xml
 
 
 class Callable(Code):
@@ -1774,22 +1760,22 @@ class Callable(Code):
         _writeMethCodeSIP(f, self.methcode)
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
-        s += ' name="%s"' % escape(self.name)
+        """ Return the XML attributes as a list. """
+
+        xml = super().xmlAttributes()
+
+        xml.append('name="{0}"'.format(escape(self.name)))
 
         if self.rtype != '':
-            s += ' rtype="%s"' % escape(self.rtype)
+            xml.append('rtype="{0}"'.format(escape(self.rtype)))
 
         if self.pytype != '':
-            s += ' pytype="%s"' % escape(self.pytype)
+            xml.append('pytype="{0}"'.format(escape(self.pytype)))
 
         if self.pyargs != '':
-            s += ' pyargs="%s"' % escape(self.pyargs)
+            xml.append('pyargs="{0}"'.format(escape(self.pyargs)))
 
-        return s
+        return xml
 
     def xmlDocstring(self, f):
         """
@@ -1821,7 +1807,7 @@ class Callable(Code):
 
 
 @implements(IEnumValue)
-class EnumValue(VersionedItem):
+class EnumValue(VersionedItem, Annotations):
     """ This class represents an enum value. """
 
     def signature(self):
@@ -1843,22 +1829,19 @@ class EnumValue(VersionedItem):
         return self.name + self.sipAnnos()
 
     def xml(self, f):
-        """
-        Write the enum value to an XML file.
+        """ Write the enum value to an XML file. """
 
-        f is the file.
-        """
-        f.write('<EnumValue%s/>\n' % self.xmlAttributes())
+        f.write('<EnumValue%s/>\n' % _attrsAsString(self))
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
 
-        s += ' name="%s"' % self.name
+        xml = Annotations.xmlAttributes(self)
+        xml += VersionedItem.xmlAttributes(self)
 
-        return s
+        xml.append('name="{0}"'.format(self.name))
+
+        return xml
 
 
 @implements(IEnum)
@@ -1918,12 +1901,9 @@ class Enum(Code, Access):
         f.blank()
 
     def xml(self, f):
-        """
-        Write the enum to an XML file.
+        """ Write the enum to an XML file. """
 
-        f is the file.
-        """
-        f.write('<Enum%s>\n' % self.xmlAttributes())
+        f.write('<Enum%s>\n' % _attrsAsString(self))
         f += 1
 
         for e in self.content:
@@ -1933,16 +1913,14 @@ class Enum(Code, Access):
         f.write('</Enum>\n')
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
 
-        s += self.xmlAccess()
+        xml = Code.xmlAttributes(self)
+        xml += Access.xmlAttributes(self)
 
-        s += ' name="%s"' % self.name
+        xml.append('name="{0}"'.format(self.name))
 
-        return s
+        return xml
 
 
 class ClassCallable(Callable, Access):
@@ -1954,10 +1932,9 @@ class ClassCallable(Callable, Access):
         return super().signature() + self.sigAccess()
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        return super().xmlAttributes() + self.xmlAccess()
+        """ Return the XML attributes as a list. """
+
+        return Callable.xmlAttributes(self) + Access.xmlAttributes(self)
 
 
 @implements(IConstructor)
@@ -2007,12 +1984,9 @@ class Constructor(ClassCallable):
         self.sipMethcode(f)
 
     def xml(self, f):
-        """
-        Write the constructor to an XML file.
+        """ Write the constructor to an XML file. """
 
-        f is the file.
-        """
-        f.write('<Constructor%s>\n' % self.xmlAttributes())
+        f.write('<Constructor%s>\n' % _attrsAsString(self))
 
         f += 1
 
@@ -2026,15 +2000,14 @@ class Constructor(ClassCallable):
         f.write('</Constructor>\n')
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
+
+        xml = super().xmlAttributes()
 
         if self.explicit:
-            s += ' explicit="1"'
+            xml.append('explicit="1"')
 
-        return s
+        return xml
 
 
 @implements(IDestructor)
@@ -2079,12 +2052,9 @@ class Destructor(Code, Access):
         _writeVirtCodeSIP(f, self.virtcode)
 
     def xml(self, f):
-        """
-        Write the destructor to an XML file.
+        """ Write the destructor to an XML file. """
 
-        f is the file.
-        """
-        f.write('<Destructor%s>\n' % self.xmlAttributes())
+        f.write('<Destructor%s>\n' % _attrsAsString(self))
 
         _writeMethCodeXML(f, self.methcode)
         _writeVirtCodeXML(f, self.virtcode)
@@ -2092,17 +2062,17 @@ class Destructor(Code, Access):
         f.write('</Destructor>\n')
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes() + self.xmlAccess()
+        """ Return the XML attributes as a list. """
 
-        s += ' name="%s"' % escape(self.name)
+        xml = Code.xmlAttributes(self)
+        xml += Access.xmlAttributes(self)
+
+        xml.append('name="{0}"'.format(escape(self.name)))
 
         if self.virtual:
-            s += ' virtual="1"'
+            xml.append('virtual="1"')
 
-        return s
+        return xml
 
 
 @implements(IOperatorCast)
@@ -2150,12 +2120,9 @@ class OperatorCast(ClassCallable):
         self.sipMethcode(f)
 
     def xml(self, f):
-        """
-        Write the operator cast to an XML file.
+        """ Write the operator cast to an XML file. """
 
-        f is the file.
-        """
-        f.write('<OperatorCast%s>\n' % self.xmlAttributes())
+        f.write('<OperatorCast%s>\n' % _attrsAsString(self))
 
         f += 1
 
@@ -2168,15 +2135,14 @@ class OperatorCast(ClassCallable):
         f.write('</OperatorCast>\n')
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
+
+        xml = super().xmlAttributes()
 
         if self.const:
-            s += ' const="1"'
+            xml.append('const="1"')
 
-        return s
+        return xml
 
 
 @implements(IMethod)
@@ -2283,12 +2249,9 @@ class Method(ClassCallable):
         _writeVirtCodeSIP(f, self.virtcode)
 
     def xml(self, f):
-        """
-        Write the method to an XML file.
+        """ Write the method to an XML file. """
 
-        f is the file.
-        """
-        f.write('<Method%s>\n' % self.xmlAttributes())
+        f.write('<Method%s>\n' % _attrsAsString(self))
 
         f += 1
 
@@ -2304,24 +2267,23 @@ class Method(ClassCallable):
         f.write('</Method>\n')
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
+
+        xml = super().xmlAttributes()
 
         if self.virtual:
-            s += ' virtual="1"'
+            xml.append('virtual="1"')
 
         if self.const:
-            s += ' const="1"'
+            xml.append('const="1"')
 
         if self.static:
-            s += ' static="1"'
+            xml.append('static="1"')
 
         if self.abstract:
-            s += ' abstract="1"'
+            xml.append('abstract="1"')
 
-        return s
+        return xml
 
 
 @implements(IOperatorMethod)
@@ -2414,12 +2376,9 @@ class OperatorMethod(ClassCallable):
         _writeVirtCodeSIP(f, self.virtcode)
 
     def xml(self, f):
-        """
-        Write the operator to an XML file.
+        """ Write the operator to an XML file. """
 
-        f is the file.
-        """
-        f.write('<OperatorMethod%s>\n' % self.xmlAttributes())
+        f.write('<OperatorMethod%s>\n' % _attrsAsString(self))
 
         f += 1
 
@@ -2434,21 +2393,20 @@ class OperatorMethod(ClassCallable):
         f.write('</OperatorMethod>\n')
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
+
+        xml = super().xmlAttributes()
 
         if self.virtual:
-            s += ' virtual="1"'
+            xml.append('virtual="1"')
 
         if self.const:
-            s += ' const="1"'
+            xml.append('const="1"')
 
         if self.abstract:
-            s += ' abstract="1"'
+            xml.append('abstract="1"')
 
-        return s
+        return xml
 
 
 @implements(IFunction)
@@ -2468,12 +2426,9 @@ class Function(Callable):
         self.sipMethcode(f)
 
     def xml(self, f):
-        """
-        Write the function to an XML file.
+        """ Write the function to an XML file. """
 
-        f is the file.
-        """
-        f.write('<Function%s>\n' % self.xmlAttributes())
+        f.write('<Function%s>\n' % _attrsAsString(self))
 
         f += 1
 
@@ -2536,12 +2491,9 @@ class OperatorFunction(Callable):
         self.sipMethcode(f)
 
     def xml(self, f):
-        """
-        Write the operator to an XML file.
+        """ Write the operator to an XML file. """
 
-        f is the file.
-        """
-        f.write('<OperatorFunction%s>\n' % self.xmlAttributes())
+        f.write('<OperatorFunction%s>\n' % _attrsAsString(self))
 
         f += 1
 
@@ -2623,13 +2575,10 @@ class Variable(Code, Access):
             f.write(";\n", indent=False)
 
     def xml(self, f):
-        """
-        Write the variable to an XML file.
+        """ Write the variable to an XML file. """
 
-        f is the file.
-        """
         if self.accesscode or self.getcode or self.setcode:
-            f.write('<Variable%s>\n' % self.xmlAttributes())
+            f.write('<Variable%s>\n' % _attrsAsString(self))
 
             if self.accesscode:
                 _writeLiteralXML(f, "accesscode", self.accesscode)
@@ -2642,21 +2591,21 @@ class Variable(Code, Access):
 
             f.write('</Variable>\n')
         else:
-            f.write('<Variable%s/>\n' % self.xmlAttributes())
+            f.write('<Variable%s/>\n' % _attrsAsString(self))
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes() + self.xmlAccess()
+        """ Return the XML attributes as a list. """
 
-        s += ' name="%s"' % escape(self.name)
-        s += ' type="%s"' % escape(self.type)
+        xml = Code.xmlAttributes(self)
+        xml += Access.xmlAttributes(self)
+
+        xml.append('name="{0}"'.format(escape(self.name)))
+        xml.append('type="{0}"'.format(escape(self.type)))
 
         if self.static:
-            s += ' static="1"'
+            xml.append('static="1"')
 
-        return s
+        return xml
 
 
 @implements(ITypedef)
@@ -2679,23 +2628,19 @@ class Typedef(Code):
         f.write("typedef " + self.expand_type(self.type, self.name, ignore_namespaces=True) + self.sipAnnos() + ";\n")
 
     def xml(self, f):
-        """
-        Write the typedef to an XML file.
+        """ Write the typedef to an XML file. """
 
-        f is the file.
-        """
-        f.write('<Typedef%s/>\n' % self.xmlAttributes())
+        f.write('<Typedef%s/>\n' % _attrsAsString(self))
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
 
-        s += ' name="%s"' % escape(self.name)
-        s += ' type="%s"' % escape(self.type)
+        xml = super().xmlAttributes()
 
-        return s
+        xml.append('name="{0}"'.format(escape(self.name)))
+        xml.append('type="{0}"'.format(escape(self.type)))
+
+        return xml
 
 
 @implements(INamespace)
@@ -2746,12 +2691,9 @@ class Namespace(Code):
         f.blank()
 
     def xml(self, f):
-        """
-        Write the namespace to an XML file.
+        """ Write the namespace to an XML file. """
 
-        f is the file.
-        """
-        f.write('<Namespace%s>\n' % self.xmlAttributes())
+        f.write('<Namespace%s>\n' % _attrsAsString(self))
 
         if self.typeheadercode:
             _writeLiteralXML(f, "typeheadercode", self.typeheadercode)
@@ -2762,14 +2704,13 @@ class Namespace(Code):
         f.write('</Namespace>\n')
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes()
+        """ Return the XML attributes as a list. """
 
-        s += ' name="%s"' % escape(self.name)
+        xml = super().xmlAttributes()
 
-        return s
+        xml.append('name="{0}"'.format(escape(self.name)))
+
+        return xml
 
 
 @implements(IOpaqueClass)
@@ -2798,22 +2739,19 @@ class OpaqueClass(Code, Access):
         f.write("class " + self.name + self.sipAnnos() + ";\n")
 
     def xml(self, f):
-        """
-        Write the opaque class to an XML file.
+        """ Write the opaque class to an XML file. """
 
-        f is the file.
-        """
-        f.write('<OpaqueClass%s/>\n' % self.xmlAttributes())
+        f.write('<OpaqueClass%s/>\n' % _attrsAsString(self))
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes() + self.xmlAccess()
+        """ Return the XML attributes as a list. """
 
-        s += ' name="%s"' % escape(self.name)
+        xml = Code.xmlAttributes(self)
+        xml += Access.xmlAttributes(self)
 
-        return s
+        xml.append('name="{0}"'.format(escape(self.name)))
+
+        return xml
 
 
 @implements(IManualCode)
@@ -2850,12 +2788,9 @@ class ManualCode(Code, Access):
         _writeMethCodeSIP(f, self.methcode)
 
     def xml(self, f):
-        """
-        Write the manual code to an XML file.
+        """ Write the manual code to an XML file. """
 
-        f is the file.
-        """
-        f.write('<ManualCode%s>\n' % self.xmlAttributes())
+        f.write('<ManualCode%s>\n' % _attrsAsString(self))
 
         if self.body:
             _writeLiteralXML(f, "body", self.body)
@@ -2866,14 +2801,14 @@ class ManualCode(Code, Access):
         f.write('</ManualCode>\n')
 
     def xmlAttributes(self):
-        """
-        Return the XML attributes as a string.
-        """
-        s = super().xmlAttributes() + self.xmlAccess()
+        """ Return the XML attributes as a list. """
 
-        s += ' precis="%s"' % escape(self.precis)
+        xml = Code.xmlAttributes(self)
+        xml += Access.xmlAttributes(self)
 
-        return s
+        xml.append('precis="{0}"'.format(escape(self.precis)))
+
+        return xml
 
 
 class _IndentFile:
@@ -3077,6 +3012,14 @@ def _writeVirtCodeXML(f, code):
     """
     if code:
         _writeLiteralXML(f, "virtcode", code)
+
+
+def _attrsAsString(item):
+    """ Return the XML attributes of an item as a string. """
+
+    attrs = item.xmlAttributes()
+
+    return ' ' + ' '.join(attrs) if len(attrs) != 0 else ''
 
 
 def escape(s):

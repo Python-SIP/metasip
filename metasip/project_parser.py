@@ -260,7 +260,7 @@ class ProjectParser:
     def add_literal(self, model, elem):
         """ Add an element defining some literal text to a model. """
 
-        setattr(model, elem.get('type'), elem.text)
+        setattr(model, elem.get('type'), elem.text.strip())
 
     def add_manual_code(self, scope, elem):
         """ Add an element defining manual code to a scope. """

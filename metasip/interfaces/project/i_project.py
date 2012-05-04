@@ -24,7 +24,7 @@ class IProject(Interface):
 
     externalmodules = Str()
 
-    features = List(Str())
+    features = Str()
 
     headers = List(IHeaderDirectory)
 
@@ -36,7 +36,7 @@ class IProject(Interface):
 
     outputdir = Str()
 
-    platforms = List(Str())
+    platforms = Str()
 
     rootmodule = Str()
 
