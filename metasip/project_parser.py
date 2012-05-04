@@ -67,17 +67,12 @@ class ProjectParser:
         project.platforms = root.get('platforms', '')
         project.features = root.get('features', '')
         project.externalmodules = root.get('externalmodules', '')
-        project.externalfeatures = root.get('externalfeatures', '')
+        project.externalfeatures = root.get('externalfeatures', '').split()
         project.ignorednamespaces = root.get('ignorednamespaces', '')
         project.inputdir = root.get('inputdir')
         project.webxmldir = root.get('webxmldir', '')
         project.outputdir = root.get('outputdir')
-
-        # Handle the list of versions.  A version is a name, its number is
-        # called its generation.
-        vers = root.get('versions')
-        if vers is not None:
-            project.versions = vers.split()
+        project.versions = root.get('versions', '').split()
 
         for child in root:
             if child.tag == 'HeaderDirectory':

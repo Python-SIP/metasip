@@ -10,17 +10,14 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module handles the selection of a number of feature tags. """
-
-
 from PyQt4.QtGui import QComboBox, QDialog, QGridLayout, QLabel
 
 from .Designer.FeaturePickerBase import Ui_FeaturePickerBase
 
 
 class FeaturePickerDialog(QDialog, Ui_FeaturePickerBase):
-    """
-    This class implements the dialog for selecting a number of feature tags.
+    """ This class implements the dialog for selecting a number of feature
+    tags.
     """
 
     FEATURE_VALUES = ["Unset", "Set", "Inverted"]
@@ -45,7 +42,7 @@ class FeaturePickerDialog(QDialog, Ui_FeaturePickerBase):
         self._features = []
 
         # Initialise the dialog.
-        all_features = prj.features.split() + prj.externalfeatures.split()
+        all_features = prj.features.split() + prj.externalfeatures
 
         for row, feature in enumerate(all_features):
             name = QLabel(feature, self)

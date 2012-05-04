@@ -560,15 +560,9 @@ class Project(Model):
         IDirty(self).dirty = True
 
     def addExternalFeature(self, xf):
-        """
-        Add a new external feature to the project.
+        """ Add a new external feature to the project. """
 
-        xf is the new external feature.
-        """
-        if self.externalfeatures != '':
-            self.externalfeatures += " "
-
-        self.externalfeatures += xf
+        self.externalfeatures.append(xf)
 
         IDirty(self).dirty = True
 
@@ -646,8 +640,9 @@ class Project(Model):
             xmod = ''
 
         # Handle the external features.
-        if self.externalfeatures != '':
-            xf = ' externalfeatures="%s"' % self.externalfeatures
+        if len(self.externalfeatures) != 0:
+            xf = ' externalfeatures="{0}"'.format(
+                    ' '.join(self.externalfeatures))
         else:
             xf = ''
 

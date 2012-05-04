@@ -1989,7 +1989,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         menu.append(("Platform Tags...", self._platformTagsSlot,
                 self.pane.gui.project.platforms != ''))
         menu.append(("Feature Tags...", self._featureTagsSlot,
-                (self.pane.gui.project.features != '' or self.pane.gui.project.externalfeatures != '')))
+                (self.pane.gui.project.features != '' or len(self.pane.gui.project.externalfeatures) != 0)))
 
         if pslot:
             menu.append(("Properties...", pslot))

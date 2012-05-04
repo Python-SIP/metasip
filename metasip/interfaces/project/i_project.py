@@ -20,7 +20,7 @@ from .project_version import ProjectVersion
 class IProject(Interface):
     """ The IProject interface is implemented by projects. """
 
-    externalfeatures = Str()
+    externalfeatures = List(Str())
 
     externalmodules = Str()
 

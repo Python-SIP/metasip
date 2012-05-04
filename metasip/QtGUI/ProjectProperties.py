@@ -10,18 +10,14 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module handles a project's properties. """
-
-
 from PyQt4.QtGui import QDialog, QFileDialog
 
 from .Designer.ProjectPropertiesBase import Ui_ProjectPropertiesBase
 
 
 class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
-    """
-    This class implements the dialog for a project's properties.
-    """
+    """ This class implements the dialog for a project's properties. """
+
     def __init__(self, prj, parent):
         """
         Initialise the dialog.
@@ -50,7 +46,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         self.buttonRemoveFeatTag.setEnabled(self.featureTags.count())
         self.buttonRemoveFeatTag.clicked.connect(self._removeFeatTag)
 
-        for f in prj.externalfeatures.split():
+        for f in prj.externalfeatures:
             self.extFeatureTags.addItem(f)
 
         self.buttonRemoveExtFeatTag.setEnabled(self.extFeatureTags.count())
@@ -109,8 +105,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
             ml.append(str(self.ignoredNamespaces.itemText(i)))
 
         return (rootmodule, srcrootdir, webxmlrootdir, ' '.join(pl),
-                ' '.join(fl), ' '.join(xfl), ' '.join(ml), ' '.join(ns),
-                sipcomments)
+                ' '.join(fl), xfl, ' '.join(ml), ' '.join(ns), sipcomments)
 
     def _removePlatTag(self):
         """
