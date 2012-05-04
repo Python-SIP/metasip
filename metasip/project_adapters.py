@@ -39,4 +39,4 @@ class ProjectIManagedModelAdapter(Adapter):
         self.adaptee.name = str(change.new)
 
         if len(self.views) != 0:
-            self.views[0].widget(0).refreshProjectName()
+            self.views[0].refreshProjectName()
