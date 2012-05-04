@@ -657,7 +657,7 @@ class Project(Model):
                 f.write(' version="%s"' % mod.version)
 
             if len(mod.imports) != 0:
-                f.write(' imports="{0}"'.format(mod.imports))
+                f.write(' imports="{0}"'.format(' '.join(mod.imports)))
 
             f.write('>\n')
 
