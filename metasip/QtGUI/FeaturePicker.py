@@ -38,11 +38,11 @@ class FeaturePickerDialog(QDialog, Ui_FeaturePickerBase):
         grid = QGridLayout()
         lay.insertLayout(0, grid)
 
-        flistset = code.features.split()
+        flistset = code.features
         self._features = []
 
         # Initialise the dialog.
-        all_features = prj.features.split() + prj.externalfeatures
+        all_features = prj.features + prj.externalfeatures
 
         for row, feature in enumerate(all_features):
             name = QLabel(feature, self)
@@ -74,4 +74,4 @@ class FeaturePickerDialog(QDialog, Ui_FeaturePickerBase):
             elif state_index == 1:
                 fl.append(state._feature)
 
-        return (' '.join(fl), )
+        return (fl, )

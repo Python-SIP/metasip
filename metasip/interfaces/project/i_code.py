@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Instance, Str
+from dip.model import Instance, List, Str
 
 from .i_annos import IAnnos
 from .i_version_range import IVersionRange
@@ -21,6 +21,6 @@ class ICode(IAnnos, IVersionRange, IWorkflow):
 
     container = Instance('.ICodeContainer')
 
-    features = Str()
+    features = List(Str())
 
     platforms = Str()

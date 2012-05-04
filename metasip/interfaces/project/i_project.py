@@ -24,7 +24,7 @@ class IProject(Interface):
 
     externalmodules = List(Str())
 
-    features = Str()
+    features = List(Str())
 
     headers = List(IHeaderDirectory)
 

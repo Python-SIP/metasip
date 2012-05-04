@@ -65,7 +65,7 @@ class ProjectParser:
         project.version = version
         project.rootmodule = root.get('rootmodule', '')
         project.platforms = root.get('platforms', '')
-        project.features = root.get('features', '')
+        project.features = root.get('features', '').split()
         project.externalmodules = root.get('externalmodules', '').split()
         project.externalfeatures = root.get('externalfeatures', '').split()
         project.ignorednamespaces = root.get('ignorednamespaces', '').split()
@@ -100,8 +100,9 @@ class ProjectParser:
                 struct=bool(int(elem.get('struct', '0'))),
                 access=elem.get('access', ''), pybases=elem.get('pybases', ''),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''),
                 egen=elem.get('egen', ''))
 
         for child in elem:
@@ -152,9 +153,9 @@ class ProjectParser:
                 explicit=bool(int(elem.get('explicit', '0'))),
                 pyargs=elem.get('pyargs', ''),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -171,9 +172,9 @@ class ProjectParser:
                 access=elem.get('access', ''),
                 virtual=bool(int(elem.get('virtual', '0'))),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
         for child in elem:
             if child.tag == 'Literal':
@@ -187,9 +188,9 @@ class ProjectParser:
         en = Enum(name=elem.get('name'), container=scope,
                 access=elem.get('access', ''),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
         for child in elem:
             if child.tag == 'EnumValue':
@@ -213,9 +214,9 @@ class ProjectParser:
                 rtype=elem.get('rtype'), pytype=elem.get('pytype', ''),
                 pyargs=elem.get('pyargs', ''),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -264,7 +265,7 @@ class ProjectParser:
         mc = ManualCode(precis=elem.get('precis'), container=scope,
                 access=elem.get('access', ''),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''),
+                features=elem.get('features', '').split(),
                 status=elem.get('status', ''), sgen=elem.get('sgen', ''),
                 egen=elem.get('egen', ''))
 
@@ -285,9 +286,9 @@ class ProjectParser:
                 abstract=bool(int(elem.get('abstract', '0'))),
                 pytype=elem.get('pytype', ''), pyargs=elem.get('pyargs', ''),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -327,7 +328,7 @@ class ProjectParser:
 
         ns = Namespace(name=elem.get('name'), container=scope,
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''),
+                features=elem.get('features', '').split(),
                 status=elem.get('status', ''), sgen=elem.get('sgen', ''),
                 egen=elem.get('egen', ''))
 
@@ -349,9 +350,9 @@ class ProjectParser:
         oc = OpaqueClass(name=elem.get('name'), container=scope,
                 access=elem.get('access', ''),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
         scope.content.append(oc)
 
@@ -362,9 +363,9 @@ class ProjectParser:
                 access=elem.get('access', ''),
                 const=bool(int(elem.get('const', '0'))),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -381,9 +382,9 @@ class ProjectParser:
                 rtype=elem.get('rtype'), pytype=elem.get('pytype', ''),
                 pyargs=elem.get('pyargs', ''),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -403,9 +404,9 @@ class ProjectParser:
                 abstract=bool(int(elem.get('abstract', '0'))),
                 pytype=elem.get('pytype', ''), pyargs=elem.get('pyargs', ''),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -420,7 +421,7 @@ class ProjectParser:
 
         td = Typedef(name=elem.get('name'), container=scope,
                 type=elem.get('type'), platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''),
+                features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
@@ -434,9 +435,9 @@ class ProjectParser:
                 static=bool(int(elem.get('static', '0'))),
                 access=elem.get('access', ''),
                 platforms=elem.get('platforms', ''),
-                features=elem.get('features', ''), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
         for child in elem:
             if child.tag == 'Literal':

@@ -84,12 +84,12 @@ class VersionedItem(Model):
             if c.platforms != '':
                 f.write("%%If (%s)\n" % " || ".join(c.platforms.split()), False)
 
-            if c.features != '':
-                f.write("%%If (%s)\n" % " || ".join(c.features.split()), False)
+            if len(c.features) != 0:
+                f.write("%%If (%s)\n" % " || ".join(c.features), False)
 
             c.sip(f, hf, latest_sip)
 
-            if c.features != '':
+            if len(c.features) != 0:
                 f.write("%End\n", False)
 
             if c.platforms != '':
@@ -511,13 +511,9 @@ class Project(Model):
                         yield callable
 
     def addVersion(self, vers):
-        """
-        Add a new version to the project.
+        """ Add a new version to the project. """
 
-        vers is the new version.
-        """
         self.versions.append(vers)
-
         IDirty(self).dirty = True
 
     def addPlatform(self, plat):
@@ -534,16 +530,9 @@ class Project(Model):
         IDirty(self).dirty = True
 
     def addFeature(self, feat):
-        """
-        Add a new feature to the project.
+        """ Add a new feature to the project. """
 
-        feat is the new feature.
-        """
-        if self.features != '':
-            self.features += " "
-
-        self.features += feat
-
+        self.features.append(feat)
         IDirty(self).dirty = True
 
     def addExternalModule(self, xm):
@@ -602,7 +591,7 @@ class Project(Model):
 
         # Handle the list of versions.
         if len(self.versions) != 0:
-            vers = ' versions="%s"' % " ".join(self.versions)
+            vers = ' versions="{0}"'.format(' '.join(self.versions))
         else:
             vers = ''
 
@@ -613,8 +602,8 @@ class Project(Model):
             plat = ''
 
         # Handle the features.
-        if self.features != '':
-            feat = ' features="%s"' % self.features
+        if len(self.features) != 0:
+            feat = ' features="{0}"'.format(' '.join(self.features))
         else:
             feat = ''
 
@@ -799,8 +788,8 @@ class Project(Model):
             if self.platforms != '':
                 f.write("%%Platforms {%s}\n\n" % self.platforms)
 
-            if self.features != '':
-                for feat in self.features.split():
+            if len(self.features) != 0:
+                for feat in self.features:
                     f.write("%%Feature %s\n" % feat)
 
                 f.write("\n")
@@ -942,8 +931,8 @@ class Code(VersionedItem, Annotations):
         if self.platforms != '':
             xml.append('platforms="{0}"'.format(self.platforms))
 
-        if self.features != '':
-            xml.append('features="{0}"'.format(self.features))
+        if len(self.features) != 0:
+            xml.append('features="{0}"'.format(' '.join(self.features)))
 
         return xml
 
@@ -1561,12 +1550,12 @@ class Class(Code, Access):
             if c.platforms != '':
                 f.write("%%If (%s)\n" % " || ".join(c.platforms.split()), False)
 
-            if c.features != '':
-                f.write("%%If (%s)\n" % " || ".join(c.features.split()), False)
+            if len(c.features) != 0:
+                f.write("%%If (%s)\n" % " || ".join(c.features), False)
 
             c.sip(f, hf, latest_sip)
 
-            if c.features != '':
+            if len(c.features) != 0:
                 f.write("%End\n", False)
 
             if c.platforms != '':
