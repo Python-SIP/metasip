@@ -656,8 +656,8 @@ class Project(Model):
             if mod.version != '':
                 f.write(' version="%s"' % mod.version)
 
-            if mod.imports != '':
-                f.write(' imports="%s"' % mod.imports)
+            if len(mod.imports) != 0:
+                f.write(' imports="{0}"'.format(mod.imports))
 
             f.write('>\n')
 
@@ -762,8 +762,8 @@ class Project(Model):
 
         top_level_module = True
 
-        if mod.imports:
-            for m in mod.imports.split():
+        if len(mod.imports) != 0:
+            for m in mod.imports:
                 f.write("%%Import %s/%smod.sip\n" % (m, m))
 
                 if m not in self.externalmodules:
@@ -853,7 +853,7 @@ class Project(Model):
         imports is the optional space separated list of imported modules.
         """
         mod = Module(name=name, outputdirsuffix=odirsuff, version=version,
-                imports=imports)
+                imports=imports.split())
         self.modules.append(mod)
 
         IDirty(self).dirty = True

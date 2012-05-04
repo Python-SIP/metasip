@@ -35,7 +35,7 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
         self._ilistall.extend([m.name for m in prj.modules])
         self._ilistall.sort()
 
-        ilistset = mod.imports.split()
+        ilistset = mod.imports
 
         # Initialise the dialog.
         self.outputDirSuffix.setText(mod.outputdirsuffix)
@@ -60,9 +60,8 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
         self.imports.setLayout(layout)
 
     def fields(self):
-        """
-        Return a tuple of the dialog fields.
-        """
+        """ Return a tuple of the dialog fields. """
+
         odirsuff = str(self.outputDirSuffix.text()).strip()
         adddirectives = str(self.additionalDirectives.toPlainText()).strip()
         version = str(self.version.text()).strip()
@@ -78,4 +77,4 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
             if cb.checkState() == Qt.Checked:
                 il.append(self._ilistall[i])
 
-        return (odirsuff, " ".join(il), adddirectives, version)
+        return (odirsuff, il, adddirectives, version)
