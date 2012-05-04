@@ -233,7 +233,7 @@ class Project(Model):
 
         for callable in self._get_unnamed_callables(prj_item):
             for arg in callable.args:
-                if arg.unnamed and arg.default is not None:
+                if arg.unnamed and arg.default != '':
                     arg.unnamed = False
                     updated.append(arg)
 
@@ -295,12 +295,7 @@ class Project(Model):
                         atype = atype % ''
 
                     arg_types.append(atype)
-
-                    name = arg.name
-                    if name is None:
-                        name = ''
-
-                    arg_names.append(name)
+                    arg_names.append(arg.name)
 
                 sig = '%s%s(%s)%s' % (static, self._fullName(callable), ', '.join(arg_types), const)
 
@@ -337,9 +332,9 @@ class Project(Model):
                 if atype == 'const%s&' % callable.name:
                     skip = True
 
-                    if arg.name is not None and arg.default is not None:
+                    if arg.name != '' and arg.default != '':
                         if update:
-                            arg.name = None
+                            arg.name = ''
                             arg.unnamed = False
                             updated.append(arg)
                         else:
@@ -355,38 +350,34 @@ class Project(Model):
 
                     arg = callable.args[0]
 
-                    if arg.default is not None:
+                    if arg.default != '':
                         if update:
                             arg.unnamed = False
                             updated.append(arg)
 
-                        if arg.name is not None:
+                        if arg.name != '':
                             if update:
-                                arg.name = None
+                                arg.name = ''
                             else:
                                 invalid.append("%s() event handler has a named argument" % self._fullName(callable))
 
         if not skip:
             for arg in callable.args:
-                if arg.default is None:
+                if arg.default == '':
                     continue
 
                 if arg.unnamed:
-                    aname = arg.name
-                    if aname is None:
-                        aname = ''
-
                     # Check that events are called 'event'.
                     if self._argType(arg).endswith('Event*'):
                         if update:
                             arg.unnamed = False
                             updated.append(arg)
 
-                        if aname != 'event':
+                        if arg.name != 'event':
                             if update:
                                 arg.name = 'event'
                             else:
-                                invalid.append("%s() event argument name '%s' is not 'event'" % (self._fullName(callable), aname))
+                                invalid.append("%s() event argument name '%s' is not 'event'" % (self._fullName(callable), arg.name))
 
                         continue
 
@@ -396,11 +387,11 @@ class Project(Model):
                             arg.unnamed = False
                             updated.append(arg)
 
-                        if aname not in ('object', 'parent'):
+                        if arg.name not in ('object', 'parent'):
                             if update:
                                 arg.name = 'object'
                             else:
-                                invalid.append("%s() QObject argument name '%s' is not 'object' or 'parent'" % (self._fullName(callable), aname))
+                                invalid.append("%s() QObject argument name '%s' is not 'object' or 'parent'" % (self._fullName(callable), arg.name))
 
                         continue
 
@@ -410,11 +401,11 @@ class Project(Model):
                             arg.unnamed = False
                             updated.append(arg)
 
-                        if aname not in ('widget', 'parent'):
+                        if arg.name not in ('widget', 'parent'):
                             if update:
                                 arg.name = 'widget'
                             else:
-                                invalid.append("%s() QWidget argument name '%s' is not 'widget' or 'parent'" % (self._fullName(callable), aname))
+                                invalid.append("%s() QWidget argument name '%s' is not 'widget' or 'parent'" % (self._fullName(callable), arg.name))
 
                         continue
 
@@ -429,31 +420,31 @@ class Project(Model):
                                 updated.append(arg)
 
                             lc_s = s[0].lower() + s[1:]
-                            if aname != lc_s:
+                            if arg.name != lc_s:
                                 if update:
                                     arg.name = lc_s
                                 else:
-                                    invalid.append("%s() '%s' argument name '%s' is not '%s'" % (self._fullName(callable), s, aname, lc_s))
+                                    invalid.append("%s() '%s' argument name '%s' is not '%s'" % (self._fullName(callable), s, arg.name, lc_s))
 
                     # Check for non-standard acronyms.
                     acronyms = ("XML", "URI", "URL")
 
                     for a in acronyms:
-                        if a in aname:
+                        if a in arg.name:
                             if update:
                                 arg.unnamed = False
                                 updated.append(arg)
 
-                            lc_a = aname.replace(a, a[0] + a[1:].lower())
+                            lc_a = arg.name.replace(a, a[0] + a[1:].lower())
                             if update:
                                 arg.name = lc_a
                             else:
-                                invalid.append("%s() argument name '%s' should be '%s'" % (self._fullName(callable), aname, lc_a))
+                                invalid.append("%s() argument name '%s' should be '%s'" % (self._fullName(callable), arg.name, lc_a))
 
                     # Check the callable has arguments with names and that they
                     # are long enough that they don't need checking manually.
-                    if len(aname) <= 2:
-                        invalid.append("%s() argument name '%s' is too short" % (self._fullName(callable), aname))
+                    if len(arg.name) <= 2:
+                        invalid.append("%s() argument name '%s' is too short" % (self._fullName(callable), arg.name))
 
         return invalid, updated
 
@@ -496,13 +487,13 @@ class Project(Model):
         elif not part.status:
             if ptype is Function:
                 for arg in part.args:
-                    if arg.unnamed and arg.default is not None:
+                    if arg.unnamed and arg.default != '':
                         yield part
                         break
             elif ptype in (Constructor, Method):
                 if part.access != 'private':
                     for arg in part.args:
-                        if arg.unnamed and arg.default is not None:
+                        if arg.unnamed and arg.default != '':
                             yield part
                             break
             elif ptype in (Class, Namespace):
