@@ -62,6 +62,42 @@ class VersionedItem(Model):
         """
         return (self.egen == '')
 
+    def sip(self, f, hf, latest_sip):
+        """
+        Write the code to a SIP file.  This only calls the method for each
+        child code.  This method should be reimplemented to write the code
+        specific data.  Note that this is in this class only because it is the
+        common super-class of the classes that call it.
+
+        f is the file.
+        hf is the corresponding header file instance.
+        """
+        for c in self.content:
+            if c.status:
+                continue
+
+            vrange = self.get_project().versionRange(c.sgen, c.egen)
+
+            if vrange != '':
+                f.write("%%If (%s)\n" % vrange, False)
+
+            if c.platforms != '':
+                f.write("%%If (%s)\n" % " || ".join(c.platforms.split()), False)
+
+            if c.features != '':
+                f.write("%%If (%s)\n" % " || ".join(c.features.split()), False)
+
+            c.sip(f, hf, latest_sip)
+
+            if c.features != '':
+                f.write("%End\n", False)
+
+            if c.platforms != '':
+                f.write("%End\n", False)
+
+            if vrange != '':
+                f.write("%End\n", False)
+
     def xmlAttributes(self):
         """ Return the XML attributes as a list. """
 
@@ -78,7 +114,7 @@ class VersionedItem(Model):
 
         return xml
 
-    def project(self):
+    def get_project(self):
         """ Return the project instance. """
 
         hf = self
@@ -131,7 +167,7 @@ class VersionedItem(Model):
 
         typ is the type.
         """
-        for ins in self.project().ignorednamespaces.split():
+        for ins in self.get_project().ignorednamespaces.split():
             ns_name = ins + "::"
 
             if typ.startswith(ns_name):
@@ -905,41 +941,6 @@ class Code(VersionedItem, Annotations):
         # Return the user friendly representation by default.
         return self.user()
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the code to a SIP file.  This only calls the method for each
-        child code.  This method should be reimplemented to write the code
-        specific data.
-
-        f is the file.
-        hf is the corresponding header file instance.
-        """
-        for c in self.content:
-            if c.status:
-                continue
-
-            vrange = self.project().versionRange(c.sgen, c.egen)
-
-            if vrange != '':
-                f.write("%%If (%s)\n" % vrange, False)
-
-            if c.platforms != '':
-                f.write("%%If (%s)\n" % " || ".join(c.platforms.split()), False)
-
-            if c.features != '':
-                f.write("%%If (%s)\n" % " || ".join(c.features.split()), False)
-
-            c.sip(f, hf, latest_sip)
-
-            if c.features != '':
-                f.write("%End\n", False)
-
-            if c.platforms != '':
-                f.write("%End\n", False)
-
-            if vrange != '':
-                f.write("%End\n", False)
-
     def xml(self, f):
         """
         Write the code to an XML file.  This only calls the method for each
@@ -1571,7 +1572,7 @@ class Class(Code, Access):
                     f.write(astr + ":\n")
                     f += 1
 
-            vrange = self.project().versionRange(c.sgen, c.egen)
+            vrange = self.get_project().versionRange(c.sgen, c.egen)
 
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
@@ -1886,7 +1887,7 @@ class Enum(Code, Access):
             if e.status != '':
                 continue
 
-            vrange = self.project().versionRange(e.sgen, e.egen)
+            vrange = self.get_project().versionRange(e.sgen, e.egen)
 
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
@@ -2663,7 +2664,7 @@ class Namespace(Code):
         if self.status:
             return 
 
-        if self.name in self.project().ignorednamespaces.split():
+        if self.name in self.get_project().ignorednamespaces.split():
             super().sip(f, hf, latest_sip)
             return
 

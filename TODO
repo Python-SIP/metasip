@@ -1,7 +1,5 @@
-Need progress feedback when loading a .msp file.
 Need feedback when the scanning of a header directory is complete.
 Adjust the column widths so that "Name" takes all available space by default.
-Move the log window to a dock.
 Consider splitting the main tree - maybe header directories go in a dock, maybe
 modules go into separate tabs (with the aim of maximising the screen space
 available when working on a module).

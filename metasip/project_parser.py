@@ -189,7 +189,8 @@ class ProjectParser:
     def add_enum(self, scope, elem):
         """ Add an element defining an enum to a scope. """
 
-        en = Enum(name=elem.get('name'), access=elem.get('access', ''),
+        en = Enum(name=elem.get('name'), container=scope,
+                access=elem.get('access', ''),
                 platforms=elem.get('platforms', ''),
                 features=elem.get('features', ''), annos=elem.get('annos', ''),
                 status=elem.get('status', ''), sgen=elem.get('sgen', ''),
@@ -265,7 +266,7 @@ class ProjectParser:
     def add_manual_code(self, scope, elem):
         """ Add an element defining manual code to a scope. """
 
-        mc = ManualCode(precis=elem.get('precis'),
+        mc = ManualCode(precis=elem.get('precis'), container=scope,
                 access=elem.get('access', ''),
                 platforms=elem.get('platforms', ''),
                 features=elem.get('features', ''),
@@ -422,8 +423,8 @@ class ProjectParser:
     def add_typedef(self, scope, elem):
         """ Add an element defining a typedef to a scope. """
 
-        td = Typedef(name=elem.get('name'), type=elem.get('type'),
-                platforms=elem.get('platforms', ''),
+        td = Typedef(name=elem.get('name'), container=scope,
+                type=elem.get('type'), platforms=elem.get('platforms', ''),
                 features=elem.get('features', ''),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
@@ -433,7 +434,8 @@ class ProjectParser:
     def add_variable(self, scope, elem):
         """ Add an element defining a variable to a scope. """
 
-        var = Variable(name=elem.get('name'), type=elem.get('type'),
+        var = Variable(name=elem.get('name'), container=scope,
+                type=elem.get('type'),
                 static=bool(int(elem.get('static', '0'))),
                 access=elem.get('access', ''),
                 platforms=elem.get('platforms', ''),
