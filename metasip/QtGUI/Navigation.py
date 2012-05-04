@@ -1987,7 +1987,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         menu.append(("Versions...", self._generationsSlot,
                 len(self.pane.gui.project.versions) != 0))
         menu.append(("Platform Tags...", self._platformTagsSlot,
-                self.pane.gui.project.platforms != ''))
+                len(self.pane.gui.project.platforms) != 0))
         menu.append(("Feature Tags...", self._featureTagsSlot,
                 (len(self.pane.gui.project.features) != 0 or len(self.pane.gui.project.externalfeatures) != 0)))
 

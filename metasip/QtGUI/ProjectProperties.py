@@ -34,7 +34,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         self.srcRootDir.setText(prj.inputdir)
         self.webXmlRootDir.setText(prj.webxmldir)
 
-        for p in prj.platforms.split():
+        for p in prj.platforms:
             self.platformTags.addItem(p)
 
         self.buttonRemovePlatTag.setEnabled(self.platformTags.count())
@@ -93,8 +93,8 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         ns = [self.ignoredNamespaces.itemText(i)
                 for i in range(self.ignoredNamespaces.count())]
 
-        return (rootmodule, srcrootdir, webxmlrootdir, ' '.join(pl), fl, xfl,
-                ml, ns, sipcomments)
+        return (rootmodule, srcrootdir, webxmlrootdir, pl, fl, xfl, ml, ns,
+                sipcomments)
 
     def _removePlatTag(self):
         """

@@ -81,8 +81,8 @@ class VersionedItem(Model):
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
 
-            if c.platforms != '':
-                f.write("%%If (%s)\n" % " || ".join(c.platforms.split()), False)
+            if len(c.platforms) != 0:
+                f.write("%%If (%s)\n" % " || ".join(c.platforms), False)
 
             if len(c.features) != 0:
                 f.write("%%If (%s)\n" % " || ".join(c.features), False)
@@ -92,7 +92,7 @@ class VersionedItem(Model):
             if len(c.features) != 0:
                 f.write("%End\n", False)
 
-            if c.platforms != '':
+            if len(c.platforms) != 0:
                 f.write("%End\n", False)
 
             if vrange != '':
@@ -517,16 +517,9 @@ class Project(Model):
         IDirty(self).dirty = True
 
     def addPlatform(self, plat):
-        """
-        Add a new platform to the project.
+        """ Add a new platform to the project. """
 
-        plat is the new platform.
-        """
-        if self.platforms != '':
-            self.platforms += " "
-
-        self.platforms += plat
-
+        self.platforms.append(plat)
         IDirty(self).dirty = True
 
     def addFeature(self, feat):
@@ -596,8 +589,8 @@ class Project(Model):
             vers = ''
 
         # Handle the platforms.
-        if self.platforms != '':
-            plat = ' platforms="%s"' % self.platforms
+        if len(self.platforms) != 0:
+            plat = ' platforms="{0}"'.format(' '.join(self.platforms))
         else:
             plat = ''
 
@@ -783,14 +776,14 @@ class Project(Model):
             # level modules (ie. those that don't import anything).
 
             if len(self.versions) != 0:
-                f.write("%%Timeline {%s}\n\n" % " ".join(self.versions))
+                f.write("%%Timeline {%s}\n\n" % ' '.join(self.versions))
 
-            if self.platforms != '':
-                f.write("%%Platforms {%s}\n\n" % self.platforms)
+            if len(self.platforms) != 0:
+                f.write("%%Platforms {%s}\n\n" % ' '.join(self.platforms))
 
             if len(self.features) != 0:
                 for feat in self.features:
-                    f.write("%%Feature %s\n" % feat)
+                    f.write("%Feature {0}\n".format(feat))
 
                 f.write("\n")
 
@@ -928,8 +921,8 @@ class Code(VersionedItem, Annotations):
         xml = Annotations.xmlAttributes(self)
         xml += VersionedItem.xmlAttributes(self)
 
-        if self.platforms != '':
-            xml.append('platforms="{0}"'.format(self.platforms))
+        if len(self.platforms) != 0:
+            xml.append('platforms="{0}"'.format(' '.join(self.platforms)))
 
         if len(self.features) != 0:
             xml.append('features="{0}"'.format(' '.join(self.features)))
@@ -1547,8 +1540,8 @@ class Class(Code, Access):
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
 
-            if c.platforms != '':
-                f.write("%%If (%s)\n" % " || ".join(c.platforms.split()), False)
+            if len(c.platforms) != 0:
+                f.write("%%If (%s)\n" % " || ".join(c.platforms), False)
 
             if len(c.features) != 0:
                 f.write("%%If (%s)\n" % " || ".join(c.features), False)
@@ -1558,7 +1551,7 @@ class Class(Code, Access):
             if len(c.features) != 0:
                 f.write("%End\n", False)
 
-            if c.platforms != '':
+            if len(c.platforms) != 0:
                 f.write("%End\n", False)
 
             if vrange != '':

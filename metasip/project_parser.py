@@ -64,7 +64,7 @@ class ProjectParser:
         # Read the project.
         project.version = version
         project.rootmodule = root.get('rootmodule', '')
-        project.platforms = root.get('platforms', '')
+        project.platforms = root.get('platforms', '').split()
         project.features = root.get('features', '').split()
         project.externalmodules = root.get('externalmodules', '').split()
         project.externalfeatures = root.get('externalfeatures', '').split()
@@ -99,7 +99,7 @@ class ProjectParser:
                 bases=elem.get('bases', ''),
                 struct=bool(int(elem.get('struct', '0'))),
                 access=elem.get('access', ''), pybases=elem.get('pybases', ''),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''),
@@ -152,7 +152,7 @@ class ProjectParser:
                 access=elem.get('access', ''),
                 explicit=bool(int(elem.get('explicit', '0'))),
                 pyargs=elem.get('pyargs', ''),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
@@ -171,7 +171,7 @@ class ProjectParser:
         ds = Destructor(name=elem.get('name'), container=cls,
                 access=elem.get('access', ''),
                 virtual=bool(int(elem.get('virtual', '0'))),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
@@ -187,7 +187,7 @@ class ProjectParser:
 
         en = Enum(name=elem.get('name'), container=scope,
                 access=elem.get('access', ''),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
@@ -213,7 +213,7 @@ class ProjectParser:
         fn = Function(name=elem.get('name'), container=hf,
                 rtype=elem.get('rtype'), pytype=elem.get('pytype', ''),
                 pyargs=elem.get('pyargs', ''),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
@@ -264,7 +264,7 @@ class ProjectParser:
 
         mc = ManualCode(precis=elem.get('precis'), container=scope,
                 access=elem.get('access', ''),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 status=elem.get('status', ''), sgen=elem.get('sgen', ''),
                 egen=elem.get('egen', ''))
@@ -285,7 +285,7 @@ class ProjectParser:
                 static=bool(int(elem.get('static', '0'))),
                 abstract=bool(int(elem.get('abstract', '0'))),
                 pytype=elem.get('pytype', ''), pyargs=elem.get('pyargs', ''),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
@@ -327,7 +327,7 @@ class ProjectParser:
         """ Add an element defining a namespace to a scope. """
 
         ns = Namespace(name=elem.get('name'), container=scope,
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 status=elem.get('status', ''), sgen=elem.get('sgen', ''),
                 egen=elem.get('egen', ''))
@@ -349,7 +349,7 @@ class ProjectParser:
 
         oc = OpaqueClass(name=elem.get('name'), container=scope,
                 access=elem.get('access', ''),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
@@ -362,7 +362,7 @@ class ProjectParser:
         oc = OperatorCast(name=elem.get('name'), container=cls,
                 access=elem.get('access', ''),
                 const=bool(int(elem.get('const', '0'))),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
@@ -381,7 +381,7 @@ class ProjectParser:
         fn = OperatorFunction(name=elem.get('name'), container=hf,
                 rtype=elem.get('rtype'), pytype=elem.get('pytype', ''),
                 pyargs=elem.get('pyargs', ''),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
@@ -403,7 +403,7 @@ class ProjectParser:
                 const=bool(int(elem.get('const', '0'))),
                 abstract=bool(int(elem.get('abstract', '0'))),
                 pytype=elem.get('pytype', ''), pyargs=elem.get('pyargs', ''),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
@@ -420,7 +420,8 @@ class ProjectParser:
         """ Add an element defining a typedef to a scope. """
 
         td = Typedef(name=elem.get('name'), container=scope,
-                type=elem.get('type'), platforms=elem.get('platforms', ''),
+                type=elem.get('type'),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
@@ -434,7 +435,7 @@ class ProjectParser:
                 type=elem.get('type'),
                 static=bool(int(elem.get('static', '0'))),
                 access=elem.get('access', ''),
-                platforms=elem.get('platforms', ''),
+                platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
                 sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))

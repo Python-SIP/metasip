@@ -36,7 +36,7 @@ class IProject(Interface):
 
     outputdir = Str()
 
-    platforms = Str()
+    platforms = List(Str())
 
     rootmodule = Str()
 

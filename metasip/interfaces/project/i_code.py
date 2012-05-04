@@ -23,4 +23,4 @@ class ICode(IAnnos, IVersionRange, IWorkflow):
 
     features = List(Str())
 
-    platforms = Str()
+    platforms = List(Str())

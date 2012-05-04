@@ -10,18 +10,16 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module handles the selection of a number of platform tags. """
-
-
 from PyQt4.QtGui import QCheckBox, QDialog
 
 from .Designer.PlatformPickerBase import Ui_PlatformPickerBase
 
 
 class PlatformPickerDialog(QDialog, Ui_PlatformPickerBase):
+    """ This class implements the dialog for selecting a number of platform
+    tags.
     """
-    This class implements the dialog for selecting a number of platform tags.
-    """
+
     def __init__(self, prj, code, parent):
         """
         Initialise the dialog.
@@ -34,8 +32,8 @@ class PlatformPickerDialog(QDialog, Ui_PlatformPickerBase):
 
         self.setupUi(self)
 
-        self._plistall = prj.platforms.split()
-        plistset = code.platforms.split()
+        self._plistall = prj.platforms
+        plistset = code.platforms
 
         # Initialise the dialog.
         for p_nr, p in enumerate(self._plistall):
@@ -47,9 +45,8 @@ class PlatformPickerDialog(QDialog, Ui_PlatformPickerBase):
             self.layout().insertWidget(p_nr, cb)
 
     def fields(self):
-        """
-        Return a tuple of the dialog fields.
-        """
+        """ Return a tuple of the dialog fields. """
+
         pl = []
 
         for p_nr in range(self.layout().count()):
@@ -60,4 +57,4 @@ class PlatformPickerDialog(QDialog, Ui_PlatformPickerBase):
             if cb.isChecked():
                 pl.append(self._plistall[p_nr])
 
-        return (" ".join(pl), )
+        return (pl, )
