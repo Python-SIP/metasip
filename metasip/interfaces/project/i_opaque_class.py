@@ -17,5 +17,9 @@ from .i_code import ICode
 
 
 class IOpaqueClass(ICode, IAccess):
+    """ The IOpaqueClass interface is implemented by models representing an
+    opaque class.
+    """
 
+    # The name of the class.
     name = Str()

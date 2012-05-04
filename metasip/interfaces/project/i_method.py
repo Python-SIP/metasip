@@ -18,13 +18,21 @@ from .i_extended_access import IExtendedAccess
 
 
 class IMethod(IClassCallable, IDocString, IExtendedAccess):
+    """ The IMethod interface is implemented by models representing a C++ class
+    method.
+    """
 
+    # This is set if the method is abstract.
     abstract = Bool(False)
 
+    # This is set if the method is const.
     const = Bool(False)
 
+    # This is set if the method is static.
     static = Bool(False)
 
+    # The optional %VirtualCatcherCode.
     virtcode = Str()
 
+    # This is set if the method is virtual.
     virtual = Bool(False)

@@ -16,15 +16,28 @@ from .i_header_file import IHeaderFile
 
 
 class IModule(Interface):
+    """ The IModule interface is implemented by models representing a Python
+    module.
+    """
 
+    # The list of header files declaring API items included in the module.  A
+    # .sip file will be generated for each one.
     content = List(IHeaderFile)
 
+    # The SIP directives to be included at the start of the main .sip file for
+    # the module.
     directives = Str()
 
+    # The list of modules that this module depends on.
     imports = List(Str())
 
+    # The name of the module.
     name = Str()
 
+    # The optional suffix added to IProject.outputdir to create the full name
+    # of the directory where the generated .sip files will be placed.
     outputdirsuffix = Str()
 
+    # The version number of the module ABI.
+    # FIXME: Convert to Int.
     version = Str()

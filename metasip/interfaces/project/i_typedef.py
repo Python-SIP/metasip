@@ -16,7 +16,11 @@ from .i_code import ICode
 
 
 class ITypedef(ICode):
+    """ The ITypedef interface is implemented by models representing a typedef.
+    """
 
+    # The name of the type.
     name = Str()
 
+    # The definition of the type.
     type = Str()

@@ -16,6 +16,10 @@ from .i_access import IAccess
 
 
 class IExtendedAccess(IAccess):
+    """ The IExtendedAccess interface is implemented by API items subject to
+    the extended (i.e. Qt specific) C++ access specifiers.
+    """
 
+    # The access specifier.  An empty string means public.
     access = Enum('', 'protected', 'protected slots', 'private',
             'public slots', 'signals')

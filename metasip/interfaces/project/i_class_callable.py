@@ -17,5 +17,9 @@ from .i_class import IClass
 
 
 class IClassCallable(ICallable):
+    """ The IClassCallable interface is implemented by API items that represent
+    most class callables (i.e. everything except destructors).
+    """
 
+    # The containing class.
     container = Instance(IClass)

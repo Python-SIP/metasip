@@ -18,7 +18,10 @@ from .i_enum_value import IEnumValue
 
 
 class IEnum(ICode, IAccess):
+    """ The IEnum interface is implemented by models representing an enum. """
 
+    # The list of enum values.
     content = List(IEnumValue)
 
+    # The optional name of the enum.
     name = Str()

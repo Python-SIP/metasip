@@ -17,15 +17,26 @@ from .i_code import ICode
 
 
 class ICallable(ICode):
+    """ The ICallable interface is implemented by API items that represent
+    most callables (i.e. everything except destructors).
+    """
 
+    # The C/C++ arguments.
     args = List(IArgument)
 
+    # The optional %MethodCode.
     methcode = Str()
 
+    # The name of the callable.
+    # FIXME: Don't use for constructors or add a new interface that excludes
+    #        name, pytype and rtype.
     name = Str()
 
+    # The optional Python arguments.
     pyargs = Str()
 
+    # The optional Python return type.
     pytype = Str()
 
+    # The C/C++ return type.  This is not used by constructors.
     rtype = Str()

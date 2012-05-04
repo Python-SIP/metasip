@@ -18,13 +18,24 @@ from .i_code import ICode
 
 
 class IDestructor(ICode, IAccess):
+    """ The IDestructor interface is implemented by models representing a C++
+    destructor.
+    """
 
+    # The containing class.
     container = Instance(IClass)
 
+    # The optional %MethodCode.
+    # FIXME: Consider implementing IMethodCode.
     methcode = Str()
 
+    # The name of the destructor.
+    # FIXME: Remove this.
     name = Str()
 
+    # The optional %VirtualCatcherCode.
+    # FIXME: Consider implementing IVirtualCatcherCode.
     virtcode = Str()
 
+    # This is set if the destructor is virtual.
     virtual = Bool(False)

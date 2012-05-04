@@ -17,5 +17,9 @@ from .i_class_callable import IClassCallable
 
 
 class IOperatorCast(IClassCallable, IAccess):
+    """ The IOperatorCast interface is implemented by models representing a
+    cast operator.
+    """
 
+    # This is set if the operator is const.
     const = Bool(False)

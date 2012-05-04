@@ -18,9 +18,16 @@ from .i_workflow import IWorkflow
 
 
 class ICode(IAnnos, IVersionRange, IWorkflow):
+    """ The ICode interface is implemented by API items that can be annotated,
+    are subject to version control and a workflow.
+    """
 
+    # The containing API item.
     container = Instance('.ICodeContainer')
 
+    # The optional list of features that the API item is limited to.  A feature
+    # may be preceded by "!" to indicate the logical inverse.
     features = List(Str())
 
+    # The optional list of platforms that the API item is limited to.
     platforms = List(Str())

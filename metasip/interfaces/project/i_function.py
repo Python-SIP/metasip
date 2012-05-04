@@ -15,5 +15,6 @@ from .i_doc_string import IDocString
 
 
 class IFunction(ICallable, IDocString):
-
-    pass
+    """ The IFunction interface is implemented by models representing a global
+    C/C++ function.
+    """

@@ -17,15 +17,24 @@ from .i_code import ICode
 
 
 class IVariable(ICode, IAccess):
+    """ The IVariable interface is implemented by models representing C struct
+    and C++ class member variables.
+    """
 
+    # The optional %AccessCode.
     accesscode = Str()
 
+    # The optional %GetCode.
     getcode = Str()
 
+    # The name of the variable.
     name = Str()
 
+    # The optional %SetCode.
     setcode = Str()
 
+    # This is set if the variable is static.
     static = Bool(False)
 
+    # The type of the variable.
     type = Str()

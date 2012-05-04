@@ -14,5 +14,9 @@ from dip.model import Interface, Str
 
 
 class IDocString(Interface):
+    """ The IDocString interface is implemented by API items that can have a
+    doc string.
+    """
 
+    # The optional doc string.
     docstring = Str()

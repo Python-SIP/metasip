@@ -14,5 +14,9 @@ from dip.model import Interface, Str
 
 
 class IAnnos(Interface):
+    """ The IAnnos interface is implemented by API items that may have SIP
+    annotations.
+    """
 
+    # The annotations.
     annos = Str()

@@ -16,13 +16,22 @@ from .i_header_file import IHeaderFile
 
 
 class IHeaderDirectory(Interface):
+    """ The IHeaderDirectory interface is implemented by models that represent
+    a directory containing C/C++ .h files.
+    """
 
+    # The list of C/C++ .h files in the directory.
     content = List(IHeaderFile)
 
+    # The optional glob-like filter to apply to file names.
     filefilter = Str()
 
+    # The suffix added to IProject.inputdir to create the full name of the
+    # directory.
     inputdirsuffix = Str()
 
+    # The name of the header directory.  This is used for display purposes.
     name = Str()
 
+    # The optional additional arguments passed to the external C++ parser.
     parserargs = Str()

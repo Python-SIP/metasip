@@ -14,7 +14,12 @@ from dip.model import Interface, Str
 
 
 class IVersionRange(Interface):
+    """ The IVersionRange interface is implemented by API items that are
+    subject to version control.
+    """
 
+    # The end generation.
     egen = Str()
 
+    # The start generation.
     sgen = Str()

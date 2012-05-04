@@ -19,37 +19,57 @@ from .i_doc_string import IDocString
 
 
 class IClass(ICode, ICodeContainer, IDocString, IAccess):
+    """ The IClass interface is implemented by models representing a class. """
 
+    # The C++ base classes.
     bases = Str()
 
+    # The optional %BIGetCharBufferCode.
     bicharbufcode = Str()
 
+    # The optional %BIGetBufferCode.
     bigetbufcode = Str()
 
+    # The optional %BIReadBufferCode.
     bireadbufcode = Str()
 
+    # The optional %BIReleaseBufferCode.
     birelbufcode = Str()
 
+    # The optional %BIGetSegCountCode.
     bisegcountcode = Str()
 
+    # The optional %BIWriteBufferCode.
     biwritebufcode = Str()
 
+    # The optional %ConvertToTypeCode.
     convtotypecode = Str()
 
+    # The optional %GCClearCode.
     gcclearcode = Str()
 
+    # The optional %GCTraverseCode.
     gctraversecode = Str()
 
+    # The name of the class.
     name = Str()
 
+    # The optional %PickleCode.
     picklecode = Str()
 
+    # The optional Python base classes.  An empty string means that the C++
+    # base classes should be used.  A value of "None" means that there are no
+    # base classes.
     pybases = Str()
 
+    # This is set if the class is a struct.
     struct = Bool(False)
 
+    # The optional %ConvertToSubClassCode.
     subclasscode = Str()
 
+    # The optional %TypeCode.
     typecode = Str()
 
+    # The optional %TypeHeaderCode.
     typeheadercode = Str()

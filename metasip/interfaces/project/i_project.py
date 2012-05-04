@@ -18,32 +18,49 @@ from .project_version import ProjectVersion
 
 
 class IProject(Interface):
-    """ The IProject interface is implemented by projects. """
+    """ The IProject interface is implemented by models representing a project.
+    """
 
+    # The list of externally defined features.
     externalfeatures = List(Str())
 
+    # The list of externally defined modules.
     externalmodules = List(Str())
 
+    # The list of features.
     features = List(Str())
 
+    # The list of header directories.
     headers = List(IHeaderDirectory)
 
+    # The list of namespaces to ignore.
     ignorednamespaces = List(Str())
 
+    # The name of the root directory hierachy containing the header
+    # directories.  Any leading ~ is honoured.
     inputdir = Str()
 
+    # The list of Python modules.
     modules = List(IModule)
 
+    # The name of the root directory where all generated .sip files will be
+    # placed.
     outputdir = Str()
 
+    # The list of platforms.
     platforms = List(Str())
 
+    # The name of the optional root Python module.
     rootmodule = Str()
 
+    # The comments placed at the start of every generated .sip file.
     sipcomments = Str()
 
+    # The version number of the project format.
     version = Int(ProjectVersion)
 
+    # The ordered list of versions.
     versions = List(Str())
 
+    # The name of the directory containing the WebXML source files.
     webxmldir = Str()

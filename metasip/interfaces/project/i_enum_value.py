@@ -18,5 +18,9 @@ from .i_workflow import IWorkflow
 
 
 class IEnumValue(IAnnos, IVersionRange, IWorkflow):
+    """ The IEnumValue interface is implemented by models representing an enum
+    value.
+    """
 
+    # The name of the value.
     name = Str()

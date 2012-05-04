@@ -14,5 +14,9 @@ from dip.model import Enum, Interface
 
 
 class IWorkflow(Interface):
+    """ The IWorkflow interface is implemented by API items that are subject to
+    a workflow.
+    """
 
+    # The workflow status of the API item.
     status = Enum('', 'ignored', 'todo', 'unknown', default='unknown')

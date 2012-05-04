@@ -18,9 +18,21 @@ from .i_extended_access import IExtendedAccess
 
 
 class IManualCode(ICode, IDocString, IExtendedAccess):
+    """ The IManualCode interface is implemented by models that represent an
+    explicitly written API item.
+    """
 
+    # The optional explicitly written API item.  If the API item can be
+    # specified in a single line then the precis attribute is normally used
+    # instead.
     body = Str()
 
+    # The optional %MethodCode.  This would not normally be specified if the
+    # body attribute is not an empty string.
     methcode = Str()
 
+    # The one-line summary of the code.  If the body attribute is an empty
+    # strin then this is copied to the .sip file unaltered.  If the body
+    # attribute is not an empty string then this is copied to the .sip file as
+    # a comment above the body.
     precis = Str()

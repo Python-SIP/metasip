@@ -17,11 +17,18 @@ from .i_class_callable import IClassCallable
 
 
 class IOperatorMethod(IClassCallable, IAccess):
+    """ The IOperatorMethod is implemented by models representing a C++ class
+    operator.
+    """
 
+    # This is set if the operator is abstract.
     abstract = Bool(False)
 
+    # This is set if the operator is const.
     const = Bool(False)
 
+    # The optional %VirtualCatcherCode.
     virtcode = Str()
 
+    # This is set if the operator is virtual.
     virtual = Bool(False)

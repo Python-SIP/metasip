@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Bool, Str
+from dip.model import Bool
 
 from .i_access import IAccess
 from .i_class_callable import IClassCallable
@@ -18,7 +18,9 @@ from .i_doc_string import IDocString
 
 
 class IConstructor(IClassCallable, IDocString, IAccess):
+    """ The IConstructor interface is implemented by models representing a C++
+    constructor.
+    """
 
+    # This is set if the constructor is explicit.
     explicit = Bool(False)
-
-    name = Str()

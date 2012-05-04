@@ -14,5 +14,6 @@ from .i_callable import ICallable
 
 
 class IOperatorFunction(ICallable):
-
-    pass
+    """ The IOperatorFunction is implemented by models representing a global
+    C++ operator.
+    """

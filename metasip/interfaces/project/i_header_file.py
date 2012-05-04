@@ -18,23 +18,37 @@ from .i_workflow import IWorkflow
 
 
 class IHeaderFile(ICodeContainer, IVersionRange, IWorkflow):
+    """ The IHeaderFile interface is implemented by models that represent a
+    C/C++ .h file.
+    """
 
+    # The optional %ExportedHeaderCode.
     exportedheadercode = Str()
 
+    # The identifier of the header file.
     id = Int()
 
+    # The optional %InitialisationCode.
     initcode = Str()
 
+    # The MD5 siganture of the header file excluding any initial comments.
     md5 = Str()
 
+    # The optional %ModuleCode.
     modulecode = Str()
 
+    # The optional %ModuleHeaderCode.
     moduleheadercode = Str()
 
+    # The name of the header file.
     name = Str()
 
+    # This specifies if the header file needs parsing.
+    # FIXME: Change to Bool.
     parse = Enum('', 'needed')
 
+    # The optional %PostInitialisationCode.
     postinitcode = Str()
 
+    # The optional %PreInitialisationCode.
     preinitcode = Str()

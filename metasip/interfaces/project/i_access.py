@@ -14,5 +14,9 @@ from dip.model import Enum, Interface
 
 
 class IAccess(Interface):
+    """ The IAccess interface is implemented by API items subject to standard
+    C++ access specifiers.
+    """
 
+    # The access specifier.  An empty string means public.
     access = Enum('', 'protected', 'private')

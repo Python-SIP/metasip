@@ -14,5 +14,9 @@ from dip.model import Interface, List
 
 
 class ICodeContainer(Interface):
+    """ The ICodeContainer interface is implemented by API items that can
+    contain other API items.
+    """
 
+    # The list of contained API items.
     content = List('.ICode')

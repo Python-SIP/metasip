@@ -17,7 +17,13 @@ from .i_code_container import ICodeContainer
 
 
 class INamespace(ICode, ICodeContainer):
+    """ The INamespace interface is implemented by models representing a
+    namespace.
+    """
 
+    # The name of the namespace.
     name = Str()
 
+    # The optional %TypeHeaderCode.
+    # FIXME: Consider adding ITypeHeaderCode.
     typeheadercode = Str()
