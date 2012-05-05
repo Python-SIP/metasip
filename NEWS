@@ -1,2 +1,11 @@
+v1.1 5th May 2012
+  - The logger is now a separate dock window.
+  - Added the ability to verify the format of a project file against a formal
+    XML schema definition.
+  - The XML format of a project and the internal implementation are now fully
+    documented.
+  - Much refactoring to make it much easier to change the format of a project
+    file and to implement tools to upgrade from older formats.
+
 v1.0 9th April 2012
   - The first public release.
