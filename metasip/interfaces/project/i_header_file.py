@@ -31,7 +31,7 @@ class IHeaderFile(ICodeContainer, IVersionRange, IWorkflow):
     # The optional %InitialisationCode.
     initcode = Str()
 
-    # The MD5 siganture of the header file excluding any initial comments.
+    # The MD5 signature of the header file excluding any initial comments.
     md5 = Str()
 
     # The optional %ModuleCode.

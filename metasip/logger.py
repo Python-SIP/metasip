@@ -20,8 +20,8 @@ class Logger(Singleton):
 
     @Singleton.instance.default
     def instance(self):
-        """ Invoked the return the default logger. """
+        """ Invoked to return the default logger. """
 
-        from .default_logger import Logger
+        from .stdout_logger import StdoutLogger
 
-        return Logger()
+        return StdoutLogger()

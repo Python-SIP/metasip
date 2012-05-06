@@ -13,9 +13,9 @@
 import sys
 
 
-class Logger:
-    """ The Logger class implements the default logger, i.e. one that simply
-    writes messages to stdout.
+class StdoutLogger:
+    """ The StdoutLogger class implements a logger that simply writes messages
+    to stdout.
     """
 
     def log(self, message):
