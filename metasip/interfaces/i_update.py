@@ -10,19 +10,34 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Int, Interface
+from dip.model import Int, Interface, Str
 
 
 class IUpdate(Interface):
     """ The IUpdate interface is implemented by project updates. """
 
+    # The instruction to the user for completing the view (if there is one).
+    instruction = Str()
+
     # The project format version number that this will update to (from the
     # immediately previous format).
     updates_to = Int()
 
-    def update(self, root):
+    def create_view(self, root):
+        """ Create an optional view that will gather any information from the
+        user needed to perform the update.
+
+        :param root:
+            is the root element of the project.
+        :return:
+            the view or ``None`` if no user input is required.
+        """
+
+    def update(self, root, view):
         """ Update a project, including the 'version' attribute.
 
         :param root:
             is the root element of the project.
+        :param view:
+            is the view returned by create_view().
         """

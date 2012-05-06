@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import implements, Model
+from dip.model import implements, Model, Str
 from dip.ui import Application
 
 from ..interfaces import IUpdate, IUpdateManager
@@ -21,6 +21,9 @@ class UpdateManager(Model):
     """ The UpdateManager class is the default implementation of the project
     update manager.
     """
+
+    # The title used in dialogs and wizards.
+    window_title = Str("Updating Project")
 
     def update(self, root, update_to):
         """ Update a project to a later format.
@@ -45,7 +48,7 @@ class UpdateManager(Model):
                     iupdates.append(iupdate)
                     break
             else:
-                Application.warning("Updating Project",
+                Application.warning(self.window_title,
                         "The project has format v{0} and needs to be updated "
                         "to v{1} but there is no update from v{2} to "
                         "v{3}.".format(update_from, update_to, format - 1,
@@ -53,8 +56,59 @@ class UpdateManager(Model):
 
                 return False
 
-        # Do the updates.
+        # Create any views needed.
+        need_wizard = False
+        views = []
         for iupdate in iupdates:
-            iupdate.update(root)
+            view = iupdate.create_view(root)
+            views.append(view)
+
+            if view is not None:
+                need_wizard = True
+
+        if need_wizard:
+            from PyQt4.QtGui import QLabel
+
+            from dip.pui import Label, Wizard, WizardPage
+            from dip.ui import IWizard
+
+            intro = WizardPage(
+                    view=QLabel("The project has format v{0} and needs to be "
+                            "updated to v{1}.\n\n"
+                            "This wizard will guide you through the different "
+                            "steps\n"
+                            "required to do the update.\n\n"
+                            "Cancel the wizard if you do not want to update "
+                            "the project.".format(update_from,
+                                    update_to)),
+                    title="Updating project from v{0} to v{1}".format(
+                            update_from, update_to))
+
+            pages = [intro]
+            for v, view in enumerate(views):
+                if view is not None:
+                    page = WizardPage(view=view,
+                            title="Updating project from v{0} to v{1}".format(
+                                    update_from + v, update_from + v + 1),
+                            subtitle=iupdate.instruction)
+
+                    pages.append(page)
+
+            wizard = Wizard(views=pages)
+
+            if not IWizard(wizard).execute():
+                return False
+        else:
+            button = Application.question(self.window_title,
+                    "The project has format v{0} and needs to be updated to "
+                    "v{1}. Do you want to update it?".format(update_from,
+                            update_to))
+
+            if button != 'yes':
+                return False
+
+        # Do the updates.
+        for iupdate, view in zip(iupdates, views):
+            iupdate.update(root, view)
 
         return True

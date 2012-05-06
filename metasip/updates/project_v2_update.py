@@ -12,6 +12,8 @@
 
 from dip.model import implements, Model
 
+from PyQt4.QtGui import QComboBox
+
 from ..interfaces import IUpdate
 
 
@@ -21,17 +23,46 @@ class ProjectV2Update(Model):
     v2.
     """
 
+    # The instruction to the user.
+    instruction = "Select the version that was current when the project's header directories were last scanned. Normally this would be the latest version.\n"
+
     # The project format version number that this will update to (from the
     # immediately previous format).
     updates_to = 2
 
-    def update(self, root):
+    def create_view(self, root):
+        """ Create the view that will gather the information from the user
+        needed to perform the update.
+
+        :param root:
+            is the root element of the project.
+        :return:
+            the view.
+        """
+
+        versions = root.get('versions', '').split()
+        if len(versions) == 0:
+            return None
+
+        versions.reverse()
+
+        view = QComboBox()
+        view.addItems(versions)
+
+        return view
+
+    def update(self, root, view):
         """ Update a project, including the 'version' attribute.
 
         :param root:
             is the root element of the project.
+        :param view:
+            is the view returned by create_view().
         """
 
-        print("Updating to v2")
+        if view is not None:
+            version = view.currentText()
+
+            print("Updating to v2:", version)
 
         root.set('version', str(self.updates_to))
