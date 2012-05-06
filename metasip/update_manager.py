@@ -10,6 +10,18 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .i_schema import ISchema
-from .i_update import IUpdate
-from .i_update_manager import IUpdateManager
+from dip.model import Singleton
+
+
+class UpdateManager(Singleton):
+    """ The UpdateManager class is a singleton that provides access to a
+    project update manager.
+    """
+
+    @Singleton.instance.default
+    def instance(self):
+        """ Invoked to return the default update manager. """
+
+        from .default_update_manager import UpdateManager
+
+        return UpdateManager()

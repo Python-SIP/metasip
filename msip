@@ -114,10 +114,14 @@ def launchGUI(prjname, guiargs):
     from dip.shell.tools.quit import QuitTool
 
     from metasip import (LoggerTool, ProjectEditorTool, ProjectFactory,
-            SchemaValidatorTool)
+            SchemaValidatorTool, UpdateManager)
     from metasip.schemas import ProjectV1Schema
+    from metasip.updates import ProjectV2Update
 
     app = QApplication(guiargs)
+
+    # Add the project updates.
+    UpdateManager.updates.append(ProjectV2Update())
 
     # Define the shell.
     editor_tool = ProjectEditorTool(model_policy='one')

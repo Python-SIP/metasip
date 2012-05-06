@@ -20,7 +20,7 @@ from dip.ui import (Action, IAction, Application, Dialog, IDialog,
         DialogController, IEditor, Label, OptionList, StorageLocationEditor,
         IStorageLocationEditor, VBox)
 
-from .i_schema import ISchema
+from .interfaces import ISchema
 
 
 class _DialogController(DialogController):

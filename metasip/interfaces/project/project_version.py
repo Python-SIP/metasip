@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
-#   0   The original undocumented version.
+#   2   Currently a test version.
+#
 #   1   The first documented version.
-ProjectVersion = 1
+#
+#   0   The original undocumented version.
+ProjectVersion = 2

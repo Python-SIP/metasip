@@ -14,7 +14,7 @@ from dip.io import IFilterHints
 from dip.model import implements, Model
 from dip.ui import IDisplay
 
-from .. import ISchema
+from ..interfaces import ISchema
 
 
 @implements(ISchema, IDisplay, IFilterHints)

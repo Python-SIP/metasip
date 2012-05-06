@@ -44,9 +44,7 @@ class ProjectCodec(Model):
             is the storage location where the encoded model is being read from.
             It is mainly used for error reporting.
         :return:
-            the decoded model.  This may be the original model populated from
-            the storage location, or it may be a different model (of an
-            appropriate type) created from the storage location.
+            the decoded model.  ``None`` is returned if the user cancelled.
         """
 
         # Note that we ignore the source iterator and assume that the location
@@ -55,11 +53,11 @@ class ProjectCodec(Model):
         model.name = str(location)
 
         try:
-            ProjectParser().parse(model)
+            ok = ProjectParser().parse(model)
         except Exception as e:
             raise StorageError(str(e), location)
 
-        return model
+        return model if ok else None
 
     def encode(self, model, location):
         """ A model is encoded as a byte stream.

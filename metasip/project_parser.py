@@ -14,11 +14,14 @@ from xml.etree import ElementTree
 
 from PyQt4.QtGui import QApplication, QProgressDialog
 
+from dip.shell import IDirty
+
 from .interfaces.project import ProjectVersion
 from .Project import (Argument, Class, Constructor, Destructor, Enum,
         EnumValue, Function, ManualCode, Method, Namespace, OpaqueClass,
         OperatorCast, OperatorFunction, OperatorMethod, Project, Typedef,
         Variable)
+from .update_manager import UpdateManager
 
 
 class ProjectParser:
@@ -29,6 +32,8 @@ class ProjectParser:
 
         :param project:
             is the project.
+        :return:
+            True if the project was parsed or False if the user cancelled.
         """
 
         # Load the file.
@@ -49,6 +54,16 @@ class ProjectParser:
         if version > ProjectVersion:
             raise Exception(
                     "The project was created with a later version of MetaSIP")
+
+        if version < ProjectVersion:
+            if QApplication.instance() is None:
+                raise Exception(
+                        "The project was created with an earlier version of MetaSIP")
+
+            if not UpdateManager.update(root, ProjectVersion):
+                return False
+
+            IDirty(project).dirty = True
 
         # Create a progress dialog if there is a GUI.
         if QApplication.instance() is not None:
@@ -81,6 +96,8 @@ class ProjectParser:
                 self.add_literal(project, child)
             elif child.tag == 'Module':
                 self.add_module(project, child)
+
+        return True
 
     def add_argument(self, callable, elem):
         """ Add an element defining an argument to a callable. """
