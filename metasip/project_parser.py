@@ -99,7 +99,7 @@ class ProjectParser:
             elif child.tag == 'Module':
                 self.add_module(project, child)
 
-        project.workingversion = self.version(project,
+        project.workingversion = self.version_from_name(project,
                 root.get('workingversion'))
 
         return True
@@ -114,7 +114,7 @@ class ProjectParser:
 
         callable.args.append(arg)
 
-    def add_class(self, scope, elem):
+    def add_class(self, project, scope, elem):
         """ Add an element defining a class to a scope. """
 
         cls = Class(name=elem.get('name'), container=scope,
@@ -124,24 +124,24 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Constructor':
-                self.add_constructor(cls, child)
+                self.add_constructor(project, cls, child)
             elif child.tag == 'Destructor':
-                self.add_destructor(cls, child)
+                self.add_destructor(project, cls, child)
             elif child.tag == 'Literal':
                 self.add_literal(cls, child)
             elif child.tag == 'Method':
-                self.add_method(cls, child)
+                self.add_method(project, cls, child)
             elif child.tag == 'OperatorCast':
-                self.add_operator_cast(cls, child)
+                self.add_operator_cast(project, cls, child)
             elif child.tag == 'OperatorMethod':
-                self.add_operator_method(cls, child)
+                self.add_operator_method(project, cls, child)
             else:
-                self.add_code(cls, child)
+                self.add_code(project, cls, child)
 
         scope.content.append(cls)
 
@@ -149,25 +149,25 @@ class ProjectParser:
             self._progress.setValue(self._progress.value() + 1)
             QApplication.processEvents()
 
-    def add_code(self, scope, elem):
+    def add_code(self, project, scope, elem):
         """ Add an element defining scoped code to a scope. """
 
         if elem.tag == 'Class':
-            self.add_class(scope, elem)
+            self.add_class(project, scope, elem)
         elif elem.tag == 'Enum':
-            self.add_enum(scope, elem)
+            self.add_enum(project, scope, elem)
         elif elem.tag == 'ManualCode':
-            self.add_manual_code(scope, elem)
+            self.add_manual_code(project, scope, elem)
         elif elem.tag == 'Namespace':
-            self.add_namespace(scope, elem)
+            self.add_namespace(project, scope, elem)
         elif elem.tag == 'OpaqueClass':
-            self.add_opaque_class(scope, elem)
+            self.add_opaque_class(project, scope, elem)
         elif elem.tag == 'Typedef':
-            self.add_typedef(scope, elem)
+            self.add_typedef(project, scope, elem)
         elif elem.tag == 'Variable':
-            self.add_variable(scope, elem)
+            self.add_variable(project, scope, elem)
 
-    def add_constructor(self, cls, elem):
+    def add_constructor(self, project, cls, elem):
         """ Add an element defining a constructor to a class. """
 
         cn = Constructor(name=elem.get('name'), container=cls,
@@ -177,7 +177,8 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -187,7 +188,7 @@ class ProjectParser:
 
         cls.content.append(cn)
 
-    def add_destructor(self, cls, elem):
+    def add_destructor(self, project, cls, elem):
         """ Add an element defining a destructor to a class. """
 
         ds = Destructor(name=elem.get('name'), container=cls,
@@ -196,7 +197,8 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Literal':
@@ -204,7 +206,7 @@ class ProjectParser:
 
         cls.content.append(ds)
 
-    def add_enum(self, scope, elem):
+    def add_enum(self, project, scope, elem):
         """ Add an element defining an enum to a scope. """
 
         en = Enum(name=elem.get('name'), container=scope,
@@ -212,24 +214,26 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'EnumValue':
-                self.add_enum_value(en, child)
+                self.add_enum_value(project, en, child)
 
         scope.content.append(en)
 
-    def add_enum_value(self, en, elem):
+    def add_enum_value(self, project, en, elem):
         """ Add an element defining an enum value to an enum. """
 
         ev = EnumValue(name=elem.get('name'), annos=elem.get('annos', ''),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                status=elem.get('status', ''),
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         en.content.append(ev)
 
-    def add_function(self, hf, elem):
+    def add_function(self, project, hf, elem):
         """ Add an element defining a function to a header file. """
 
         fn = Function(name=elem.get('name'), container=hf,
@@ -238,7 +242,8 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -258,27 +263,28 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'HeaderFile':
-                self.add_header_file(hdir, child)
+                self.add_header_file(project, hdir, child)
 
         project.headers.append(hdir)
 
-    def add_header_file(self, hdir, elem):
+    def add_header_file(self, project, hdir, elem):
         """ Add an element defining a header file to a header directory. """
 
         hf = HeaderFile(project=hdir.project, id=int(elem.get('id')),
                 name=elem.get('name'), md5=elem.get('md5'),
                 parse=elem.get('parse', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Function':
-                self.add_function(hf, child)
+                self.add_function(project, hf, child)
             elif child.tag == 'Literal':
                 self.add_literal(hf, child)
             elif child.tag == 'OperatorFunction':
-                self.add_operator_function(hf, child)
+                self.add_operator_function(project, hf, child)
             else:
-                self.add_code(hf, child)
+                self.add_code(project, hf, child)
 
         hdir.content.append(hf)
 
@@ -287,15 +293,16 @@ class ProjectParser:
 
         setattr(model, elem.get('type'), elem.text.strip())
 
-    def add_manual_code(self, scope, elem):
+    def add_manual_code(self, project, scope, elem):
         """ Add an element defining manual code to a scope. """
 
         mc = ManualCode(precis=elem.get('precis'), container=scope,
                 access=elem.get('access', ''),
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                status=elem.get('status', ''),
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Literal':
@@ -303,7 +310,7 @@ class ProjectParser:
 
         scope.content.append(mc)
 
-    def add_method(self, cls, elem):
+    def add_method(self, project, cls, elem):
         """ Add an element defining a method to a class. """
 
         mt = Method(name=elem.get('name'), container=cls,
@@ -316,7 +323,8 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -354,28 +362,29 @@ class ProjectParser:
                     mod.content.append(hf)
                     return
 
-    def add_namespace(self, scope, elem):
+    def add_namespace(self, project, scope, elem):
         """ Add an element defining a namespace to a scope. """
 
         ns = Namespace(name=elem.get('name'), container=scope,
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
-                status=elem.get('status', ''), sgen=elem.get('sgen', ''),
-                egen=elem.get('egen', ''))
+                status=elem.get('status', ''),
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Function':
-                self.add_function(ns, child)
+                self.add_function(project, ns, child)
             elif child.tag == 'Literal':
                 self.add_literal(ns, child)
             elif child.tag == 'OperatorFunction':
-                self.add_operator_function(ns, child)
+                self.add_operator_function(project, ns, child)
             else:
-                self.add_code(ns, child)
+                self.add_code(project, ns, child)
 
         scope.content.append(ns)
 
-    def add_opaque_class(self, scope, elem):
+    def add_opaque_class(self, project, scope, elem):
         """ Add an element defining an opaque class to a scope. """
 
         oc = OpaqueClass(name=elem.get('name'), container=scope,
@@ -383,11 +392,12 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         scope.content.append(oc)
 
-    def add_operator_cast(self, cls, elem):
+    def add_operator_cast(self, project, cls, elem):
         """ Add an element defining an operator cast to a class. """
 
         oc = OperatorCast(name=elem.get('name'), container=cls,
@@ -396,7 +406,8 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -406,7 +417,7 @@ class ProjectParser:
 
         cls.content.append(oc)
 
-    def add_operator_function(self, hf, elem):
+    def add_operator_function(self, project, hf, elem):
         """ Add an element defining an operator function to a header file. """
 
         fn = OperatorFunction(name=elem.get('name'), container=hf,
@@ -415,7 +426,8 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -425,7 +437,7 @@ class ProjectParser:
 
         hf.content.append(fn)
 
-    def add_operator_method(self, cls, elem):
+    def add_operator_method(self, project, cls, elem):
         """ Add an element defining an operator method to a class. """
 
         mt = OperatorMethod(name=elem.get('name'), container=cls,
@@ -437,7 +449,8 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -447,7 +460,7 @@ class ProjectParser:
 
         cls.content.append(mt)
 
-    def add_typedef(self, scope, elem):
+    def add_typedef(self, project, scope, elem):
         """ Add an element defining a typedef to a scope. """
 
         td = Typedef(name=elem.get('name'), container=scope,
@@ -455,11 +468,12 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         scope.content.append(td)
 
-    def add_variable(self, scope, elem):
+    def add_variable(self, project, scope, elem):
         """ Add an element defining a variable to a scope. """
 
         var = Variable(name=elem.get('name'), container=scope,
@@ -469,7 +483,8 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
+                startversion=self.startversion(project, elem),
+                endversion=self.endversion(project, elem))
 
         for child in elem:
             if child.tag == 'Literal':
@@ -485,8 +500,24 @@ class ProjectParser:
 
         project.versions.append(vers)
 
+    @classmethod
+    def startversion(cls, project, elem):
+        """ Return the start version from an element. """
+
+        name = elem.get('startversion')
+
+        return None if name is None else cls.version_from_name(project, name)
+
+    @classmethod
+    def endversion(cls, project, elem):
+        """ Return the end version from an element. """
+
+        name = elem.get('endversion')
+
+        return None if name is None else cls.version_from_name(project, name)
+
     @staticmethod
-    def version(project, name):
+    def version_from_name(project, name):
         """ Return the version with the given name. """
 
         for vers in project.versions:

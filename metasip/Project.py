@@ -61,12 +61,6 @@ class VersionedItem(Model):
     workflow or versions.
     """
 
-    def isCurrent(self):
-        """
-        Returns True if the element is current.
-        """
-        return (self.egen == '')
-
     def sip(self, f, hf, latest_sip):
         """
         Write the code to a SIP file.  This only calls the method for each
@@ -81,7 +75,7 @@ class VersionedItem(Model):
             if c.status:
                 continue
 
-            vrange = self.get_project().versionRange(c.sgen, c.egen)
+            vrange = version_range(c)
 
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
@@ -111,11 +105,11 @@ class VersionedItem(Model):
         if self.status != '':
             xml.append('status="{0}"'.format(self.status))
 
-        if self.sgen != '':
-            xml.append('sgen="{0}"'.format(self.sgen))
+        if self.startversion is not None:
+            xml.append('startversion="{0}"'.format(self.startversion.name))
 
-        if not self.isCurrent():
-            xml.append('egen="{0}"'.format(self.egen))
+        if self.endversion is not None:
+            xml.append('endversion="{0}"'.format(self.endversion.name))
 
         return xml
 
@@ -201,6 +195,27 @@ class Project(Model):
 
     # The filename of the project.
     name = Str()
+
+    def is_working(self, api_item):
+        """ Return True if an API item is valid for the working version. """
+
+        # It's valid is there are no explicit versions.
+        if self.workingversion.name == '':
+            return True
+
+        working_index = self.versions.index(self.workingversion)
+
+        # Check any lower bound.
+        if api_item.startversion is not None:
+            if self.versions.index(api_item.startversion) > working_index:
+                return False
+
+        # Check any upper bound.
+        if api_item.endversion is not None:
+            if self.versions.index(api_item.endversion) <= working_index:
+                return False
+
+        return True
 
     def nameArgumentsFromConventions(self, prj_item, update):
         """
@@ -541,24 +556,6 @@ class Project(Model):
 
         self.ignorednamespaces.append(ns)
         IDirty(self).dirty = True
-
-    def versionRange(self, sgen, egen):
-        """
-        Return the version string corresponding to a range of generations.
-
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        if sgen == '':
-            if egen == '':
-                return ""
-
-            return "- " + self.versions[int(egen) - 1].name
-
-        if egen == '':
-            return self.versions[int(sgen) - 1].name + " -"
-
-        return self.versions[int(sgen) - 1].name + " - " + self.versions[int(egen) - 1].name
 
     def save(self, saveas=None):
         """
@@ -981,8 +978,8 @@ class HeaderDirectory(Model):
 
         # Go though each existing code item.
         for dsi in dsc.content:
-            # Ignore anything that isn't current.
-            if not dsi.isCurrent():
+            # Ignore anything that isn't part of the working version.
+            if not self.project.is_working(dsi):
                 continue
 
             # Manual code is sticky.
@@ -992,25 +989,25 @@ class HeaderDirectory(Model):
             # Go through each potentially new code item.
             for ssi in ssc:
                 if type(dsi) is type(ssi) and dsi.signature() == ssi.signature():
+                    # Discard the new code item.
+                    ssc.remove(ssi)
+
+                    # Merge any child code.
+                    if isinstance(dsi, (Class, Namespace)):
+                        self._mergeCode(dsi, ssi.content)
+
                     break
             else:
-                ssi = None
-
-            if ssi is None:
                 # The existing one no longer exists.
+                # FIXME: If the working version is within the range then we may
+                #        need to split it.
                 dsi.egen = generation
-            else:
-                # Discard the new code item.
-                ssc.remove(ssi)
-
-                # Merge any child code.
-                if isinstance(dsi, (Class, Namespace)):
-                    self._mergeCode(dsi, ssi.content)
 
         # Anything left in the source code is new.
         for ssi in ssc:
-            ssi.sgen = generation
-
+            # FIXME: Need to see if there is something in the version following
+            #        the working version we can use.
+            ssi.startversion = self.project.workingversion
             dsc.content.append(ssi)
 
     def scan(self, sd):
@@ -1054,7 +1051,7 @@ class HeaderDirectory(Model):
         # missing.
         generation = str(len(self.project.versions))
         for hf in saved:
-            if hf.isCurrent():
+            if hf.egen == '':
                 Logger.log("%s is no longer in the header directory" % hf.name)
 
                 # If it is unknown then just forget about it.
@@ -1137,7 +1134,7 @@ class HeaderDirectory(Model):
         # See if we already know about the file.
         for hf in self.content:
             if hf.name == hfile:
-                if hf.isCurrent():
+                if hf.egen == '':
                     if hf.md5 != sig:
                         hf.md5 = sig
                         hf.parse = "needed"
@@ -1180,9 +1177,9 @@ class HeaderFile(VersionedItem):
                 continue
 
             if isinstance(c, Function) or isinstance(c, OperatorFunction) or isinstance(c, Variable) or isinstance(c, Enum):
-                vrange = self.project.versionRange(self.sgen, self.egen)
+                vrange = version_range(self)
 
-                if vrange:
+                if vrange != '':
                     f.write("%%If (%s)\n" % vrange, False)
 
                 f.write(
@@ -1505,7 +1502,7 @@ class Class(Code, Access):
                     f.write(astr + ":\n")
                     f += 1
 
-            vrange = self.get_project().versionRange(c.sgen, c.egen)
+            vrange = version_range(c)
 
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
@@ -1820,7 +1817,7 @@ class Enum(Code, Access):
             if e.status != '':
                 continue
 
-            vrange = self.get_project().versionRange(e.sgen, e.egen)
+            vrange = version_range(e)
 
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
@@ -2954,6 +2951,23 @@ def _attrsAsString(item):
     attrs = item.xmlAttributes()
 
     return ' ' + ' '.join(attrs) if len(attrs) != 0 else ''
+
+
+def version_range(api_item):
+    """ Return the version string corresponding to a range of versions of an
+    API item.
+    """
+
+    if api_item.startversion is None:
+        if api_item.endversion is None:
+            return ""
+
+        return "- " + api_item.endversion.name
+
+    if api_item.endversion is None:
+        return api_item.startversion.name + " -"
+
+    return api_item.startversion.name + " - " + api_item.endversion.name
 
 
 def escape(s):

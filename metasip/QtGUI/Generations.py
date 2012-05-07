@@ -10,59 +10,50 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module handles a code item's generations. """
-
-
 from PyQt4.QtGui import QDialog
 
 from .Designer.GenerationsBase import Ui_GenerationsBase
 
 
 class GenerationsDialog(QDialog, Ui_GenerationsBase):
-    """
-    This class implements the dialog for generations.
-    """
-    def __init__(self, prj, sgen, egen, parent):
+    """ This class implements the dialog for versions. """
+
+    def __init__(self, prj, api_item, parent):
         """
         Initialise the dialog.
 
         prj is the containing project.
-        sgen is the current start generation.
-        egen is the current end generation.
+        api_item is the API item.
         parent is the parent widget.
         """
-        super(GenerationsDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setupUi(self)
 
         # Initialise the dialog.
-        self.sgen.addItem("First")
+        self.sgen.addItem("First", None)
 
-        for v in prj.versions:
-            self.sgen.addItem(v)
-            self.egen.addItem(v)
+        start_index = 0
+        end_index = len(prj.versions)
 
-        self.egen.addItem("Latest")
+        for i, v in enumerate(prj.versions):
+            self.sgen.addItem(v.name, v)
+            if v is api_item.startversion:
+                start_index = i + 1
 
-        self.sgen.setCurrentIndex(int(sgen))
+            self.egen.addItem(v.name, v)
+            if v is api_item.endversion:
+                end_index = i
 
-        if egen == '':
-            last = self.egen.count()
-        else:
-            last = int(egen)
+        self.egen.addItem("Latest", None)
 
-        self.egen.setCurrentIndex(last - 1)
+        self.sgen.setCurrentIndex(start_index)
+        self.egen.setCurrentIndex(end_index)
 
     def fields(self):
-        """
-        Return a tuple of the dialog fields.
-        """
-        sgen = self.sgen.currentIndex()
-        egen = self.egen.currentIndex() + 1
+        """ Return a tuple of the dialog fields. """
 
-        if egen == self.egen.count():
-            egen = ''
-        else:
-            egen = str(egen)
+        start_index = self.sgen.currentIndex()
+        end_index = self.egen.currentIndex()
 
-        return (str(sgen), egen)
+        return (self.itemData(start_index), self.itemData(end_index))

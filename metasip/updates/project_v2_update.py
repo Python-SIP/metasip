@@ -71,9 +71,25 @@ class ProjectV2Update(Model):
             vname = view.currentText()
             versions = root.get('versions', '').split()
 
-            # Reverse so we insert them at the start.
-            versions.reverse()
+        # Convert generation numbers to version names.
+        for elem in root.iter():
+            sgen = elem.get('sgen')
+            if sgen is not None:
+                #elem.set('startversion', versions[int(sgen) - 1])
+                try:
+                    elem.set('startversion', versions[int(sgen) - 1])
+                except IndexError:
+                    print(sgen, versions)
+                    raise
+                del elem.attrib['sgen']
 
+            egen = elem.get('egen')
+            if egen is not None:
+                elem.set('endversion', versions[int(egen) - 1])
+                del elem.attrib['egen']
+
+        # Create sub-elements for each version.
+        versions.reverse()
         for vers in versions:
             attrib = {'name': vers}
 

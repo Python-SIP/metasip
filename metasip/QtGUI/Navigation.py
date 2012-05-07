@@ -22,7 +22,8 @@ from dip.shell import IDirty
 
 from ..Project import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
-        ManualCode, OpaqueClass, OperatorCast, Namespace, HeaderDirectory)
+        ManualCode, OpaqueClass, OperatorCast, Namespace, HeaderDirectory,
+        version_range)
 from ..GccXML import GccXMLParser as CppParser
 
 from .ExternalEditor import ExternalEditor
@@ -460,7 +461,7 @@ class _SimpleItem(QTreeWidgetItem):
         self.drawName()
         self.drawAccess()
         self.drawStatus()
-        self.drawGenerations()
+        self.drawVersions()
 
     def drawName(self):
         """ Draw the name column of the item. """
@@ -501,17 +502,16 @@ class _SimpleItem(QTreeWidgetItem):
 
         return None
 
-    def drawGenerations(self):
-        """ Draw the generations column of the item. """
+    def drawVersions(self):
+        """ Draw the versions column of the item. """
 
-        g = self.getGenerations()
+        api_item = self.getVersionedItem()
 
-        if g:
-            (sgen, egen) = g
-            self.setText(3, self.pane.gui.project.versionRange(sgen, egen))
+        if api_item is not None:
+            self.setText(3, version_range(api_item))
 
-    def getGenerations(self):
-        """ Return the value of the generations of the item. """
+    def getVersionedItem(self):
+        """ Return the API item for the versions column. """
 
         return None
 
@@ -1222,11 +1222,10 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         if hf.parse or self.isExpanded():
             parent.setExpanded(True)
 
-    def getGenerations(self):
-        """
-        Return the value of the generations column.
-        """
-        return (self.headerfile.sgen, self.headerfile.egen)
+    def getVersionedItem(self):
+        """ Return the API item for the versions column. """
+
+        return self.headerfile
 
     def getStatus(self):
         """
@@ -1301,8 +1300,8 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         self._targets = slist[:]
         self._targets.append(self)
 
-        versions = ("Versions...", self._generationsSlot,
-                len(self.pane.gui.project.versions) != 0)
+        versions = ("Versions...", self._versionsSlot,
+                self.pane.gui.project.versions[0].name != '')
 
         if slist:
             return [versions]
@@ -1326,20 +1325,20 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
                 None,
                 versions]
 
-    def _generationsSlot(self):
-        """
-        Slot to handle the generations.
-        """
-        dlg = GenerationsDialog(self.pane.gui.project, self.headerfile.sgen, self.headerfile.egen, self.pane)
+    def _versionsSlot(self):
+        """ Slot to handle the versions. """
+
+        dlg = GenerationsDialog(self.pane.gui.project, self.headerfile,
+                self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (sgen, egen) = dlg.fields()
+            (startversion, endversion) = dlg.fields()
 
             for itm in self._targets:
-                itm.headerfile.sgen = sgen
-                itm.headerfile.egen = egen
+                itm.headerfile.startversion = startversion
+                itm.headerfile.endversion = endversion
 
-                itm.drawGenerations()
+                itm.drawVersions()
 
             self.set_dirty()
 
@@ -1718,11 +1717,10 @@ class _CodeItem(_SimpleItem, _DropSite):
 
         return ", ".join(status)
 
-    def getGenerations(self):
-        """
-        Return the value of the generations column.
-        """
-        return (self.code.sgen, self.code.egen)
+    def getVersionedItem(self):
+        """ Return the API item for the versions column. """
+
+        return self.code
 
     def droppable(self, source):
         """
@@ -1784,7 +1782,8 @@ class _CodeItem(_SimpleItem, _DropSite):
 
         if slist:
             menu.append(None)
-            menu.append(("Versions...", self._generationsSlot, len(self.pane.gui.project.versions) != 0))
+            menu.append(("Versions...", self._versionsSlot,
+                    self.pane.gui.project.versions[0] != ''))
 
             return menu
 
@@ -1964,8 +1963,8 @@ class _CodeItem(_SimpleItem, _DropSite):
 
         # Add the extra menu items.
         menu.append(None)
-        menu.append(("Versions...", self._generationsSlot,
-                len(self.pane.gui.project.versions) != 0))
+        menu.append(("Versions...", self._versionsSlot,
+                self.pane.gui.project.versions[0] != ''))
         menu.append(("Platform Tags...", self._platformTagsSlot,
                 len(self.pane.gui.project.platforms) != 0))
         menu.append(("Feature Tags...", self._featureTagsSlot,
@@ -2490,20 +2489,19 @@ class _CodeItem(_SimpleItem, _DropSite):
 
         del self._editors["vcc"]
 
-    def _generationsSlot(self):
-        """
-        Slot to handle the generations.
-        """
-        dlg = GenerationsDialog(self.pane.gui.project, self.code.sgen, self.code.egen, self.pane)
+    def _versionsSlot(self):
+        """ Slot to handle the versions. """
+
+        dlg = GenerationsDialog(self.pane.gui.project, self.code, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (sgen, egen) = dlg.fields()
+            (startversion, endversion) = dlg.fields()
 
             for itm in self._targets:
-                itm.code.sgen = sgen
-                itm.code.egen = egen
+                itm.code.startversion = startversion
+                itm.code.endversion = endversion
 
-                itm.drawGenerations()
+                itm.drawVersions()
 
             self.set_dirty()
 

@@ -13,15 +13,17 @@
 # The current project file format version number.
 #
 # History:
-#   2   Implemented by MetaSIP v1.2.
+#   2   Implemented by metasip v1.2.
 #       - removed the outputdir attribute from the Project element
 #       - replaced the versions attribute of the Project element to the new
 #         Version sub-element
 #       - added the workingversion attribute to the Project element
 #       - moved the inputdir and webxmldir attributes of the Project element to
 #         the Version sub-element identified by the workingversion attribute
+#       - replaced all sgen and egen attributes with startversion and
+#         endversion attributes
 #
-#   1   Implemented prior to MetaSIP v1.0.
+#   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
 ProjectVersion = 2
