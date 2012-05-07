@@ -611,27 +611,13 @@ class _ProjectItem(_FixedItem):
         if slist:
             return None
 
-        return [("Generate Output...", self._generateSlot),
-                ("Baseline Version...", self._baselineSlot),
+        return [("Baseline Version...", self._baselineSlot),
                 ("Add Platform Tag...", self._platformSlot),
                 ("Add Feature Tag...", self._featureSlot),
                 ("Add External Module...", self._externalmoduleSlot),
                 ("Add Ignored Namespace...", self._ignorednamespaceSlot),
                 ("Properties...", self._propertiesSlot)]
 
-
-    def _generateSlot(self):
-        """
-        Handle the generation of the project's .sip files.
-        """
-        od = _getOutputDirectory(self.pane)
-
-        if od:
-            for idx in range(self._mods.childCount()):
-                itm = self._mods.child(idx)
-
-                if not _generateModule(self.pane, itm.module, od):
-                    break
 
     def _baselineSlot(self):
         """
@@ -916,7 +902,6 @@ class _ModuleItem(_FixedItem, _DropSite):
 
         return [("Parse Updated Headers...", self._parseUpdatedHeadersSlot, update),
                 ("Update argument names from WebXML", self._updateFromWebXML),
-                ("Generate Output...", self._generateSlot),
                 ("Properties...", self._propertiesSlot)]
 
     def _updateFromWebXML(self):
@@ -934,15 +919,6 @@ class _ModuleItem(_FixedItem, _DropSite):
             (mod.outputdirsuffix, mod.imports, mod.directives, mod.version) = dlg.fields()
 
             self.set_dirty()
-
-    def _generateSlot(self):
-        """
-        Handle the generation of the module's .sip files.
-        """
-        od = _getOutputDirectory(self.pane)
-
-        if od:
-            _generateModule(self.pane, self.module, od)
 
     def _parseUpdatedHeadersSlot(self):
         """
@@ -2729,36 +2705,3 @@ class _CodeItem(_SimpleItem, _DropSite):
             self.code.access = new
             self.set_dirty()
             self.drawAccess()
-
-
-def _getOutputDirectory(pane):
-    """
-    Return the name of the output directory.
-
-    pane is the main navigation pane.
-    """
-    dn = QFileDialog.getExistingDirectory(pane, "Output Directory",
-            pane.gui.project.outputdir)
-
-    return str(dn)
-
-
-def _generateModule(pane, mod, od):
-    """
-    Generate a module and handle any errors.  Return True if there was no
-    error.
-
-    pane is the main navigation pane.
-    mod is the module instance.
-    od is the name of the output directory.
-    """
-    prj = pane.gui.project
-
-    if prj.generateModule(mod, od):
-        return True
-
-    QMessageBox.critical(pane, "Generate Output", prj.diagnostic,
-                         QMessageBox.Ok|QMessageBox.Default,
-                         QMessageBox.NoButton)
-
-    return False

@@ -86,7 +86,6 @@ class ProjectParser:
         project.ignorednamespaces = root.get('ignorednamespaces', '').split()
         project.inputdir = root.get('inputdir')
         project.webxmldir = root.get('webxmldir', '')
-        project.outputdir = root.get('outputdir')
         project.versions = root.get('versions', '').split()
 
         for child in root:

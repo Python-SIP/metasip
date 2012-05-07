@@ -614,7 +614,7 @@ class Project(Model):
 
         # Write the project using the current version.
         f.write('<?xml version="1.0"?>\n')
-        f.write('<Project version="%u" rootmodule="%s"%s%s%s%s%s%s inputdir="%s" webxmldir="%s" outputdir="%s">\n' % (ProjectVersion, self.rootmodule, vers, plat, feat, xmod, xf, ins, self.inputdir, self.webxmldir, self.outputdir))
+        f.write('<Project version="%u" rootmodule="%s"%s%s%s%s%s%s inputdir="%s" webxmldir="%s">\n' % (ProjectVersion, self.rootmodule, vers, plat, feat, xmod, xf, ins, self.inputdir, self.webxmldir))
 
         if self.sipcomments != '':
             _writeLiteralXML(f, "sipcomments", self.sipcomments)
@@ -701,19 +701,15 @@ class Project(Model):
 
         return os.path.basename(root)
 
-    def generateModule(self, mod, od, saveod=True, latest_sip=True):
+    def generateModule(self, mod, od, latest_sip=True):
         """
         Generate the output for a module.  Return True if there was no error.
 
         mod is the module instance.
         od is the root of the output directory.
-        saveod is True if od should be saved in the project.
         """
         # Remember the root directory used.
         od = os.path.abspath(od)
-
-        if saveod and self.outputdir != od:
-            self.outputdir = od
 
         # Generate each applicable header file.
         hfnames = []

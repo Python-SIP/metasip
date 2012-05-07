@@ -43,10 +43,6 @@ class IProject(Interface):
     # The list of Python modules.
     modules = List(IModule)
 
-    # The name of the root directory where all generated .sip files will be
-    # placed.
-    outputdir = Str()
-
     # The list of platforms.
     platforms = List(Str())
 

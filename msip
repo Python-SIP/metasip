@@ -86,7 +86,7 @@ def generate(prjname, gendir, latest_sip):
 
     # Generate each module.
     for mod in prj.modules:
-        if not prj.generateModule(mod, gendir, False, latest_sip=latest_sip):
+        if not prj.generateModule(mod, gendir, latest_sip=latest_sip):
             fatal(prj.diagnostic)
 
     # No error if we have got this far.

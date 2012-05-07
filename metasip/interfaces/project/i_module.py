@@ -34,7 +34,7 @@ class IModule(Interface):
     # The name of the module.
     name = Str()
 
-    # The optional suffix added to IProject.outputdir to create the full name
+    # The optional suffix added to the output directory to create the full name
     # of the directory where the generated .sip files will be placed.
     outputdirsuffix = Str()
 

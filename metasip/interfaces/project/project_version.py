@@ -13,9 +13,10 @@
 # The current project file format version number.
 #
 # History:
-#   2   Currently a test version.
+#   2   Implemented by MetaSIP v1.2.
+#       - removed the outputdir attribute from the Project element
 #
-#   1   The first documented version.
+#   1   Implemented prior to MetaSIP v1.0.
 #
 #   0   The original undocumented version.
 ProjectVersion = 2

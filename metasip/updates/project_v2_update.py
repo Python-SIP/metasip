@@ -60,9 +60,10 @@ class ProjectV2Update(Model):
             is the view returned by create_view().
         """
 
+        print("Updating to v2:", version)
         if view is not None:
             version = view.currentText()
 
-            print("Updating to v2:", version)
+        del root.attrib['outputdir']
 
         root.set('version', str(self.updates_to))
