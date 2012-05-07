@@ -710,7 +710,9 @@ class _ProjectItem(_FixedItem):
         dlg = ProjectPropertiesDialog(prj, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            (prj.rootmodule, prj.inputdir, prj.webxmldir, prj.platforms, prj.features, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
+            version = prj.workingversion
+
+            (prj.rootmodule, version.inputdir, version.webxmldir, prj.platforms, prj.features, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
 
             self.set_dirty()
 
@@ -1067,7 +1069,7 @@ class _HeaderDirectoryItem(_FixedItem):
             return None
 
         # Only enable the scan if the main project directory has been set.
-        scan = (self.pane.gui.project.inputdir != "")
+        scan = (self.pane.gui.project.workingversion.inputdir != "")
 
         return [("Scan Header Directory", self._scanHeaderDirectorySlot, scan),
                 ("Properties...", self._propertiesSlot)]
@@ -1076,7 +1078,9 @@ class _HeaderDirectoryItem(_FixedItem):
         """
         Handle scanning the header directory.
         """
-        sd = os.path.join(os.path.expanduser(self.pane.gui.project.inputdir),
+        sd = os.path.join(
+                os.path.expanduser(
+                        self.pane.gui.project.workingversion.inputdir),
                 self._hdir.inputdirsuffix)
 
         self._hdir.scan(sd)

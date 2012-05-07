@@ -38,6 +38,7 @@ from .i_operator_method import IOperatorMethod
 from .i_project import IProject
 from .i_typedef import ITypedef
 from .i_variable import IVariable
+from .i_version import IVersion
 from .i_version_range import IVersionRange
 from .i_workflow import IWorkflow
 

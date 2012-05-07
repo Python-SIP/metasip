@@ -10,10 +10,11 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Int, Interface, List, Str
+from dip.model import Instance, Int, Interface, List, Str
 
 from .i_header_directory import IHeaderDirectory
 from .i_module import IModule
+from .i_version import IVersion
 from .project_version import ProjectVersion
 
 
@@ -36,10 +37,6 @@ class IProject(Interface):
     # The list of namespaces to ignore.
     ignorednamespaces = List(Str())
 
-    # The name of the root directory hierachy containing the header
-    # directories.  Any leading ~ is honoured.
-    inputdir = Str()
-
     # The list of Python modules.
     modules = List(IModule)
 
@@ -55,8 +52,9 @@ class IProject(Interface):
     # The version number of the project format.
     version = Int(ProjectVersion)
 
-    # The ordered list of versions.
-    versions = List(Str())
+    # The ordered list of versions.  There will be at least one (whose name
+    # will be an empty string if no versions have been explicitly defined).
+    versions = List(IVersion)
 
-    # The name of the directory containing the WebXML source files.
-    webxmldir = Str()
+    # The version being worked on.
+    workingversion = Instance(IVersion)

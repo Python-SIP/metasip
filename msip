@@ -107,6 +107,7 @@ def launchGUI(prjname, guiargs):
     from PyQt4.QtCore import QSettings
     from PyQt4.QtGui import QApplication, QMessageBox
 
+    from dip.io import StorageError
     from dip.shell import IShell
     from dip.shell.shells.main_window import MainWindowShell
     from dip.shell.tools.dirty import DirtyTool
@@ -115,7 +116,7 @@ def launchGUI(prjname, guiargs):
 
     from metasip import (LoggerTool, ProjectEditorTool, ProjectFactory,
             SchemaValidatorTool, UpdateManager)
-    from metasip.schemas import ProjectV1Schema
+    from metasip.schemas import ProjectV1Schema, ProjectV2Schema
     from metasip.updates import ProjectV2Update
 
     app = QApplication(guiargs)
@@ -131,7 +132,8 @@ def launchGUI(prjname, guiargs):
                     lambda: ModelManagerTool(
                             model_factories=[ProjectFactory()]),
                     lambda: editor_tool,
-                    lambda: SchemaValidatorTool(schemas=[ProjectV1Schema()])],
+                    lambda: SchemaValidatorTool(
+                            schemas=[ProjectV1Schema(), ProjectV2Schema()])],
             window_title_template="[view][*]")
 
     # Create the shell.
@@ -142,7 +144,7 @@ def launchGUI(prjname, guiargs):
         try:
             IShell(ui).open('metasip.tools.project_editor', prjname,
                     'metasip.formats.project')
-        except Exception as e:
+        except StorageError as e:
             msg_box = QMessageBox(QMessageBox.Warning, "Open",
                     "There was an error opening {0}.".format(prjname),
                     detailedText=str(e))

@@ -24,7 +24,7 @@ from .interfaces.project import (ProjectVersion, IArgument, IClass,
         IConstructor, IDestructor, IEnum, IEnumValue, IFunction,
         IHeaderDirectory, IHeaderFile, IManualCode, IMethod, IModule,
         INamespace, IOpaqueClass, IOperatorCast, IOperatorFunction,
-        IOperatorMethod, IProject, ITypedef, IVariable)
+        IOperatorMethod, IProject, ITypedef, IVariable, IVersion)
 
 
 class Annotations(Model):
@@ -49,6 +49,11 @@ class Annotations(Model):
             xml.append('annos="{0}"'.format(escape(self.annos)))
 
         return xml
+
+
+@implements(IVersion)
+class Version(Model):
+    """ This class implements a version. """
 
 
 class VersionedItem(Model):
@@ -548,12 +553,12 @@ class Project(Model):
             if egen == '':
                 return ""
 
-            return "- " + self.versions[int(egen) - 1]
+            return "- " + self.versions[int(egen) - 1].name
 
         if egen == '':
-            return self.versions[int(sgen) - 1] + " -"
+            return self.versions[int(sgen) - 1].name + " -"
 
-        return self.versions[int(sgen) - 1] + " - " + self.versions[int(egen) - 1]
+        return self.versions[int(sgen) - 1].name + " - " + self.versions[int(egen) - 1].name
 
     def save(self, saveas=None):
         """
@@ -572,12 +577,6 @@ class Project(Model):
 
         if f is None:
             return False
-
-        # Handle the list of versions.
-        if len(self.versions) != 0:
-            vers = ' versions="{0}"'.format(' '.join(self.versions))
-        else:
-            vers = ''
 
         # Handle the platforms.
         if len(self.platforms) != 0:
@@ -612,14 +611,23 @@ class Project(Model):
         else:
             ins = ''
 
-        # Write the project using the current version.
+        # Write the project using the current format version.
         f.write('<?xml version="1.0"?>\n')
-        f.write('<Project version="%u" rootmodule="%s"%s%s%s%s%s%s inputdir="%s" webxmldir="%s">\n' % (ProjectVersion, self.rootmodule, vers, plat, feat, xmod, xf, ins, self.inputdir, self.webxmldir))
-
-        if self.sipcomments != '':
-            _writeLiteralXML(f, "sipcomments", self.sipcomments)
+        f.write('<Project version="%u" rootmodule="%s"%s%s%s%s%s workingversion="%s">\n' % (ProjectVersion, self.rootmodule, plat, feat, xmod, xf, ins, self.workingversion.name))
 
         f += 1
+
+        # Write the versions.
+        for vers in self.versions:
+            webxml = ' webxmldir="{0}"'.format(vers.webxmldir) if vers.webxmldir != '' else ''
+
+            f.write(
+                    '<Version name="{0}" inputdir="{1}"{2}/>\n'.format(
+                            vers.name, vers.inputdir, webxml))
+
+        # Write the literals.
+        if self.sipcomments != '':
+            _writeLiteralXML(f, 'sipcomments', self.sipcomments)
 
         # Give each header file a unique ID, ignoring any current one.  The ID
         # is only used when the project file is written and read.  It is
@@ -830,36 +838,26 @@ class Project(Model):
 
         return f
 
-    def newModule(self, name, odirsuff="", version="", imports=""):
+    def newModule(self, name):
         """
         Add a new module to the project.
 
         name is the name of the module.
-        odirsuff is the optional output directory suffix.
-        version is the module version number.
-        imports is the optional space separated list of imported modules.
         """
-        mod = Module(name=name, outputdirsuffix=odirsuff, version=version,
-                imports=imports.split())
+        mod = Module(name=name)
         self.modules.append(mod)
 
         IDirty(self).dirty = True
 
         return mod
 
-    def newHeaderDirectory(self, name, pargs="", inputdirsuffix="", filefilter=""):
+    def newHeaderDirectory(self, name):
         """
         Add a new header directory to the project and return it.
 
         name is the descriptive name of the header directory.
-        pargs is the optional string of parser arguments.
-        inputdirsuffix when joined to the inputdir gives the absolute name of
-        the header directory.
-        filefilter is the optional pattern used to select only those files of
-        interest.
         """
-        hdir = HeaderDirectory(project=self, name=name, parserargs=pargs,
-                inputdirsuffix=inputdirsuffix, filefilter=filefilter)
+        hdir = HeaderDirectory(project=self, name=name)
         self.headers.append(hdir)
 
         IDirty(self).dirty = True
@@ -959,27 +957,6 @@ class HeaderDirectory(Model):
 
     # The project.
     project = Instance(IProject)
-
-    def newHeaderFile(self, id, name, md5, parse, status, sgen, egen=''):
-        """
-        Add a new header file to the project and return it.
-
-        id is the ID.
-        name is the path name of the header file excluding the header
-        directory.
-        md5 is the file's MD5 signature.
-        parse is the file parse status.
-        status is the file status.
-        sgen is the start generation.
-        egen is the end generation.
-        """
-        hf = HeaderFile(project=self.project, id=id, name=name, md5=md5,
-                parse=parse, status=status, sgen=sgen, egen=egen)
-        self.content.append(hf)
-
-        IDirty(self.project).dirty = True
-
-        return hf
 
     def addParsedHeaderFile(self, hf, phf):
         """
@@ -1170,8 +1147,14 @@ class HeaderDirectory(Model):
                 break
 
         # It is a new file, or the reappearence of an old one.
-        return self.newHeaderFile('', hfile, sig, 'needed', 'unknown',
-                str(len(self.project.versions)))
+        hf = HeaderFile(project=self.project, name=hfile, md5=sig,
+                parse='needed', status='unknown',
+                sgen=str(len(self.project.versions)))
+        self.content.append(hf)
+
+        IDirty(self.project).dirty = True
+
+        return hf
 
 
 @implements(IHeaderFile)

@@ -52,12 +52,7 @@ class ProjectCodec(Model):
 
         model.name = str(location)
 
-        try:
-            ok = ProjectParser().parse(model)
-        except Exception as e:
-            raise StorageError(str(e), location)
-
-        return model if ok else None
+        return model if ProjectParser().parse(model) else None
 
     def encode(self, model, location):
         """ A model is encoded as a byte stream.

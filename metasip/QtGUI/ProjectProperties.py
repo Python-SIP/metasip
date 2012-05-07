@@ -31,8 +31,8 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
 
         # Initialise the dialog.
         self.rootModule.setText(prj.rootmodule)
-        self.srcRootDir.setText(prj.inputdir)
-        self.webXmlRootDir.setText(prj.webxmldir)
+        self.srcRootDir.setText(prj.workingversion.inputdir)
+        self.webXmlRootDir.setText(prj.workingversion.webxmldir)
 
         for p in prj.platforms:
             self.platformTags.addItem(p)

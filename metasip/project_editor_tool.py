@@ -69,7 +69,7 @@ class ProjectEditorTool(BaseManagedModelTool):
 
         from .WebXML import WebXMLParser
 
-        webxml_files = glob.glob(os.path.join(self.project.webxmldir, '*.xml'))
+        webxml_files = glob.glob(os.path.join(self.project.workingversion.webxmldir, '*.xml'))
         progress = QProgressDialog(self)
         progress.setWindowTitle("Parsing WebXML Files")
         progress.setModal(True)

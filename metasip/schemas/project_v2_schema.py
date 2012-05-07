@@ -18,7 +18,7 @@ from ..interfaces import ISchema
 
 
 @implements(ISchema, IDisplay, IFilterHints)
-class ProjectV1Schema(Model):
+class ProjectV2Schema(Model):
     """ The ProjectV2Schema class validates an XML file against the project v2
     schema.
     """

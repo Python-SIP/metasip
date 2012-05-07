@@ -533,22 +533,25 @@
     </xsd:complexType>
 
     <xsd:complexType name="ProjectType">
-        <xsd:choice minOccurs="0" maxOccurs="unbounded">
-            <xsd:element name="HeaderDirectory" type="HeaderDirectoryType"/>
-            <xsd:element name="Literal" type="ProjectLiterals"/>
-            <xsd:element name="Module" type="ModuleType"/>
-        </xsd:choice>
+        <xsd:sequence>
+            <xsd:element name="Version" type="VersionType"
+                    maxOccurs="unbounded"/>
+            <xsd:element name="Literal" type="ProjectLiterals" minOccurs="0"
+                    maxOccurs="unbounded"/>
+            <xsd:element name="HeaderDirectory" type="HeaderDirectoryType"
+                    minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="Module" type="ModuleType" minOccurs="0"
+                    maxOccurs="unbounded"/>
+        </xsd:sequence>
         <xsd:attribute name="externalfeatures" type="FeaturesType"/>
         <xsd:attribute name="externalmodules" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="ignorednamespaces" type="xsd:string"/>
-        <xsd:attribute name="inputdir" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
         <xsd:attribute name="rootmodule" type="xsd:string"/>
         <xsd:attribute name="version" type="xsd:nonNegativeInteger" fixed="2"
                 use="required"/>
-        <xsd:attribute name="versions" type="xsd:string"/>
-        <xsd:attribute name="webxmldir" type="xsd:string"/>
+        <xsd:attribute name="workingversion" type="xsd:string" use="required"/>
     </xsd:complexType>
 
     <xsd:simpleType name="StatusType">
@@ -600,6 +603,12 @@
         <xsd:attribute name="status" type="StatusType"/>
         <xsd:attribute name="static" type="xsd:boolean" default="0"/>
         <xsd:attribute name="type" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="VersionType">
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="inputdir" type="xsd:string" use="required"/>
+        <xsd:attribute name="webxmldir" type="xsd:string"/>
     </xsd:complexType>
 
 </xsd:schema>

@@ -922,7 +922,7 @@ class GccXMLParser(ParserBase):
         hf is the header file instance.
         """
         # Check the input directory exists.
-        input_dir = os.path.expanduser(prj.inputdir)
+        input_dir = os.path.expanduser(prj.workingversion.inputdir)
 
         if not os.path.isdir(input_dir):
             self.diagnostic = "%s directory does not exist" % input_dir

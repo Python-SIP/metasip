@@ -15,6 +15,11 @@
 # History:
 #   2   Implemented by MetaSIP v1.2.
 #       - removed the outputdir attribute from the Project element
+#       - replaced the versions attribute of the Project element to the new
+#         Version sub-element
+#       - added the workingversion attribute to the Project element
+#       - moved the inputdir and webxmldir attributes of the Project element to
+#         the Version sub-element identified by the workingversion attribute
 #
 #   1   Implemented prior to MetaSIP v1.0.
 #

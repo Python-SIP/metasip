@@ -10,6 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from xml.etree import ElementTree
+
 from dip.model import implements, Model
 
 from PyQt4.QtGui import QComboBox
@@ -60,10 +62,42 @@ class ProjectV2Update(Model):
             is the view returned by create_view().
         """
 
-        print("Updating to v2:", version)
-        if view is not None:
-            version = view.currentText()
+        # Get the versions and what will become the workflow version.
+        if view is None:
+            # No versions have been explicitly defined.
+            vname = ''
+            versions = [vname]
+        else:
+            vname = view.currentText()
+            versions = root.get('versions', '').split()
 
+            # Reverse so we insert them at the start.
+            versions.reverse()
+
+        for vers in versions:
+            attrib = {'name': vers}
+
+            if vers == vname:
+                attrib['inputdir'] = root.get('inputdir')
+
+                webxmldir = root.get('webxmldir')
+                if webxmldir is not None:
+                    attrib['webxmldir'] = webxmldir
+            else:
+                attrib['inputdir'] = ''
+
+            root.insert(0, ElementTree.Element('Version', attrib))
+
+        root.set('workingversion', vname)
+
+        # Removed old root attributes.
+        del root.attrib['inputdir']
         del root.attrib['outputdir']
+        del root.attrib['versions']
+
+        try:
+            del root.attrib['webxmldir']
+        except KeyError:
+            pass
 
         root.set('version', str(self.updates_to))

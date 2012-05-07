@@ -14,13 +14,14 @@ from xml.etree import ElementTree
 
 from PyQt4.QtGui import QApplication, QProgressDialog
 
+from dip.io import FormatError
 from dip.shell import IDirty
 
 from .interfaces.project import ProjectVersion
 from .Project import (Argument, Class, Constructor, Destructor, Enum,
-        EnumValue, Function, ManualCode, Method, Namespace, OpaqueClass,
-        OperatorCast, OperatorFunction, OperatorMethod, Project, Typedef,
-        Variable)
+        EnumValue, Function, HeaderDirectory, HeaderFile, ManualCode, Method,
+        Module, Namespace, OpaqueClass, OperatorCast, OperatorFunction,
+        OperatorMethod, Project, Typedef, Variable, Version)
 from .update_manager import UpdateManager
 
 
@@ -45,20 +46,23 @@ class ProjectParser:
         version = root.get('version')
 
         if root.tag != 'Project' or version is None:
-            raise Exception(
-                    "The file doesn't appear to be a valid MetaSIP project")
+            raise FormatError(
+                    "The file doesn't appear to be a valid metasip project",
+                    project.name)
 
         # Check the version.
         version = int(version)
 
         if version > ProjectVersion:
-            raise Exception(
-                    "The project was created with a later version of MetaSIP")
+            raise FormatError(
+                    "The project was created with a later version of metasip",
+                    project.name)
 
         if version < ProjectVersion:
             if QApplication.instance() is None:
-                raise Exception(
-                        "The project was created with an earlier version of MetaSIP")
+                raise FormatError(
+                        "The project was created with an earlier version of "
+                        "metasip", project.name)
 
             if not UpdateManager.update(root, ProjectVersion):
                 return False
@@ -84,17 +88,19 @@ class ProjectParser:
         project.externalmodules = root.get('externalmodules', '').split()
         project.externalfeatures = root.get('externalfeatures', '').split()
         project.ignorednamespaces = root.get('ignorednamespaces', '').split()
-        project.inputdir = root.get('inputdir')
-        project.webxmldir = root.get('webxmldir', '')
-        project.versions = root.get('versions', '').split()
 
         for child in root:
-            if child.tag == 'HeaderDirectory':
-                self.add_header_directory(project, child)
+            if child.tag == 'Version':
+                self.add_version(project, child)
             elif child.tag == 'Literal':
                 self.add_literal(project, child)
+            elif child.tag == 'HeaderDirectory':
+                self.add_header_directory(project, child)
             elif child.tag == 'Module':
                 self.add_module(project, child)
+
+        project.workingversion = self.version(project,
+                root.get('workingversion'))
 
         return True
 
@@ -245,20 +251,24 @@ class ProjectParser:
     def add_header_directory(self, project, elem):
         """ Add an element defining a header directory to a project. """
 
-        hdir = project.newHeaderDirectory(elem.get('name'),
-                elem.get('parserargs'), elem.get('inputdirsuffix'),
-                elem.get('filefilter'))
+        hdir = HeaderDirectory(project=project, name=elem.get('name'),
+                parserargs=elem.get('parserargs'),
+                inputdirsuffix=elem.get('inputdirsuffix'),
+                filefilter=elem.get('filefilter'))
 
         for child in elem:
             if child.tag == 'HeaderFile':
                 self.add_header_file(hdir, child)
 
+        project.headers.append(hdir)
+
     def add_header_file(self, hdir, elem):
         """ Add an element defining a header file to a header directory. """
 
-        hf = hdir.newHeaderFile(int(elem.get('id')), elem.get('name'),
-                elem.get('md5'), elem.get('parse', ''), elem.get('status', ''),
-                elem.get('sgen', ''), elem.get('egen', ''))
+        hf = HeaderFile(project=hdir.project, id=int(elem.get('id')),
+                name=elem.get('name'), md5=elem.get('md5'),
+                parse=elem.get('parse', ''), status=elem.get('status', ''),
+                sgen=elem.get('sgen', ''), egen=elem.get('egen', ''))
 
         for child in elem:
             if child.tag == 'Function':
@@ -269,6 +279,8 @@ class ProjectParser:
                 self.add_operator_function(hf, child)
             else:
                 self.add_code(hf, child)
+
+        hdir.content.append(hf)
 
     def add_literal(self, model, elem):
         """ Add an element defining some literal text to a model. """
@@ -317,15 +329,18 @@ class ProjectParser:
     def add_module(self, project, elem):
         """ Add an element defining a module to a project. """
 
-        mod = project.newModule(elem.get('name'),
-                elem.get('outputdirsuffix', ''), elem.get('version', ''),
-                elem.get('imports', ''))
+        mod = Module(name=elem.get('name'),
+                outputdirsuffix=elem.get('outputdirsuffix', ''),
+                version=elem.get('version', ''),
+                imports=elem.get('imports', '').split())
 
         for child in elem:
             if child.tag == 'Literal':
                 self.add_literal(mod, child)
             elif child.tag == 'ModuleHeaderFile':
                 self.add_module_header_file(project, mod, child)
+
+        project.modules.append(mod)
 
     def add_module_header_file(self, project, mod, elem):
         """ Add an element defining a module header file to a module. """
@@ -461,3 +476,22 @@ class ProjectParser:
                 self.add_literal(var, child)
 
         scope.content.append(var)
+
+    def add_version(self, project, elem):
+        """ Add an element defining a version to a project. """
+
+        vers = Version(name=elem.get('name'), inputdir=elem.get('inputdir'),
+                webxmldir=elem.get('webxmldir', ''))
+
+        project.versions.append(vers)
+
+    @staticmethod
+    def version(project, name):
+        """ Return the version with the given name. """
+
+        for vers in project.versions:
+            if vers.name == name:
+                return vers
+
+        # This should never happen.
+        raise FormatError("unknown version '{0}'".format(name), project.name)

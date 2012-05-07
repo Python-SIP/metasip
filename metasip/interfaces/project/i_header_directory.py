@@ -26,7 +26,7 @@ class IHeaderDirectory(Interface):
     # The optional glob-like filter to apply to file names.
     filefilter = Str()
 
-    # The suffix added to IProject.inputdir to create the full name of the
+    # The suffix added to the input dirextory to create the full name of the
     # directory.
     inputdirsuffix = Str()
 
