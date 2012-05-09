@@ -16,8 +16,8 @@ from .i_version import IVersion
 
 
 class IVersionRange(Interface):
-    """ The IVersionRange interface is implemented by API items that are
-    subject to version control.
+    """ The IVersionRange interface is implemented by models that represent a
+    range of versions.
     """
 
     # The end version.

@@ -13,11 +13,11 @@
 from dip.model import Enum, Int, Str
 
 from .i_code_container import ICodeContainer
-from .i_version_range import IVersionRange
+from .i_versioned import IVersioned
 from .i_workflow import IWorkflow
 
 
-class IHeaderFile(ICodeContainer, IVersionRange, IWorkflow):
+class IHeaderFile(ICodeContainer, IVersioned, IWorkflow):
     """ The IHeaderFile interface is implemented by models that represent a
     C/C++ .h file.
     """

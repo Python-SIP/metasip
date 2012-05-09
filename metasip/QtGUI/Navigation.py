@@ -508,7 +508,8 @@ class _SimpleItem(QTreeWidgetItem):
         api_item = self.getVersionedItem()
 
         if api_item is not None:
-            self.setText(3, version_range(api_item))
+            ranges = [version_range(r) for r in api_item.versions]
+            self.setText(3, ", ".join(ranges))
 
     def getVersionedItem(self):
         """ Return the API item for the versions column. """
@@ -1301,7 +1302,8 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         self._targets.append(self)
 
         versions = ("Versions...", self._versionsSlot,
-                self.pane.gui.project.versions[0].name != '')
+                (self.pane.gui.project.versions[0].name != '' and
+                len(self.headerfile.versions) <= 1))
 
         if slist:
             return [versions]
@@ -1335,9 +1337,8 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
             (startversion, endversion) = dlg.fields()
 
             for itm in self._targets:
-                itm.headerfile.startversion = startversion
-                itm.headerfile.endversion = endversion
-
+                itm.headerfile.versions = [VersionRange(
+                        startversion=startversion, endversion=endversion)]
                 itm.drawVersions()
 
             self.set_dirty()
@@ -1783,7 +1784,8 @@ class _CodeItem(_SimpleItem, _DropSite):
         if slist:
             menu.append(None)
             menu.append(("Versions...", self._versionsSlot,
-                    self.pane.gui.project.versions[0] != ''))
+                    (self.pane.gui.project.versions[0] != '' and
+                    len(self.code.versions) <= 1)))
 
             return menu
 
@@ -2498,9 +2500,8 @@ class _CodeItem(_SimpleItem, _DropSite):
             (startversion, endversion) = dlg.fields()
 
             for itm in self._targets:
-                itm.code.startversion = startversion
-                itm.code.endversion = endversion
-
+                itm.code.versions = [VersionRange(startversion=startversion,
+                        endversion=endversion)]
                 itm.drawVersions()
 
             self.set_dirty()

@@ -70,14 +70,13 @@
         <xsd:attribute name="access" type="AccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
         <xsd:attribute name="bases" type="xsd:string"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
         <xsd:attribute name="pybases" type="xsd:string"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
         <xsd:attribute name="struct" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:group name="CodeGroup">
@@ -114,14 +113,13 @@
         </xsd:choice>
         <xsd:attribute name="access" type="AccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="explicit" type="xsd:boolean" default="0"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
         <xsd:attribute name="pyargs" type="xsd:string"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="DestructorLiterals">
@@ -145,13 +143,12 @@
         </xsd:choice>
         <xsd:attribute name="access" type="AccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
         <xsd:attribute name="virtual" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="EnumType">
@@ -160,20 +157,18 @@
         </xsd:choice>
         <xsd:attribute name="access" type="AccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="EnumValueType">
         <xsd:attribute name="annos" type="AnnosType"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:simpleType name="ExtendedAccessType">
@@ -211,15 +206,14 @@
             <xsd:element name="Literal" type="FunctionLiterals"/>
         </xsd:choice>
         <xsd:attribute name="annos" type="AnnosType"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
         <xsd:attribute name="pyargs" type="xsd:string"/>
         <xsd:attribute name="pytype" type="xsd:string"/>
         <xsd:attribute name="rtype" type="xsd:string" use="required"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="HeaderDirectoryType">
@@ -258,13 +252,12 @@
             <xsd:element name="Literal" type="HeaderFileLiterals"/>
             <xsd:element name="OperatorFunction" type="OperatorFunctionType"/>
         </xsd:choice>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="id" type="IdType" use="required"/>
         <xsd:attribute name="md5" type="xsd:string" use="required"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="parse" type="ParseType"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:simpleType name="IdType">
@@ -292,12 +285,11 @@
             <xsd:element name="Literal" type="ManualCodeLiterals"/>
         </xsd:choice>
         <xsd:attribute name="access" type="ExtendedAccessType"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
         <xsd:attribute name="precis" type="xsd:string" use="required"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="MethodLiterals">
@@ -325,16 +317,15 @@
         <xsd:attribute name="access" type="ExtendedAccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
         <xsd:attribute name="const" type="xsd:boolean" default="0"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
         <xsd:attribute name="pyargs" type="xsd:string"/>
         <xsd:attribute name="pytype" type="xsd:string"/>
         <xsd:attribute name="rtype" type="xsd:string"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="static" type="xsd:boolean" default="0"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
         <xsd:attribute name="virtual" type="xsd:boolean" default="0"/>
     </xsd:complexType>
 
@@ -388,23 +379,21 @@
             <xsd:element name="Function" type="FunctionType"/>
             <xsd:element name="OperatorFunction" type="OperatorFunctionType"/>
         </xsd:choice>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="OpaqueClassType">
         <xsd:attribute name="access" type="AccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="OperatorCastLiterals">
@@ -429,12 +418,11 @@
         <xsd:attribute name="access" type="AccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
         <xsd:attribute name="const" type="xsd:boolean" default="0"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="OperatorFunctionLiterals">
@@ -457,15 +445,14 @@
             <xsd:element name="Literal" type="OperatorFunctionLiterals"/>
         </xsd:choice>
         <xsd:attribute name="annos" type="AnnosType"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
         <xsd:attribute name="pyargs" type="xsd:string"/>
         <xsd:attribute name="pytype" type="xsd:string"/>
         <xsd:attribute name="rtype" type="xsd:string" use="required"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="OperatorMethodLiterals">
@@ -492,15 +479,14 @@
         <xsd:attribute name="access" type="AccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
         <xsd:attribute name="const" type="xsd:boolean" default="0"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
         <xsd:attribute name="pyargs" type="xsd:string"/>
         <xsd:attribute name="pytype" type="xsd:string"/>
         <xsd:attribute name="rtype" type="xsd:string" use="required"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
         <xsd:attribute name="virtual" type="xsd:boolean" default="0"/>
     </xsd:complexType>
 
@@ -560,13 +546,12 @@
 
     <xsd:complexType name="TypedefType">
         <xsd:attribute name="annos" type="AnnosType"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
         <xsd:attribute name="type" type="xsd:string" use="required"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="VariableLiterals">
@@ -591,13 +576,12 @@
         </xsd:choice>
         <xsd:attribute name="access" type="AccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
-        <xsd:attribute name="endversion" type="xsd:string"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>
-        <xsd:attribute name="startversion" type="xsd:string"/>
         <xsd:attribute name="status" type="StatusType"/>
         <xsd:attribute name="static" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
         <xsd:attribute name="type" type="xsd:string" use="required"/>
     </xsd:complexType>
 

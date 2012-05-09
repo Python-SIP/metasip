@@ -13,11 +13,11 @@
 from dip.model import Instance, List, Str
 
 from .i_annos import IAnnos
-from .i_version_range import IVersionRange
+from .i_versioned import IVersioned
 from .i_workflow import IWorkflow
 
 
-class ICode(IAnnos, IVersionRange, IWorkflow):
+class ICode(IAnnos, IVersioned, IWorkflow):
     """ The ICode interface is implemented by API items that can be annotated,
     are subject to version control and a workflow.
     """

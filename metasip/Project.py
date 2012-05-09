@@ -24,7 +24,8 @@ from .interfaces.project import (ProjectVersion, IArgument, IClass,
         IConstructor, IDestructor, IEnum, IEnumValue, IFunction,
         IHeaderDirectory, IHeaderFile, IManualCode, IMethod, IModule,
         INamespace, IOpaqueClass, IOperatorCast, IOperatorFunction,
-        IOperatorMethod, IProject, ITypedef, IVariable, IVersion)
+        IOperatorMethod, IProject, ITypedef, IVariable, IVersion,
+        IVersionRange)
 
 
 class Annotations(Model):
@@ -56,6 +57,11 @@ class Version(Model):
     """ This class implements a version. """
 
 
+@implements(IVersionRange)
+class VersionRange(Model):
+    """ This class implements a range of versions. """
+
+
 class VersionedItem(Model):
     """ This class is a base class for all project elements that is subject to
     workflow or versions.
@@ -75,7 +81,7 @@ class VersionedItem(Model):
             if c.status:
                 continue
 
-            vrange = version_range(c)
+            vrange = _sip_versions(c)
 
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
@@ -105,11 +111,9 @@ class VersionedItem(Model):
         if self.status != '':
             xml.append('status="{0}"'.format(self.status))
 
-        if self.startversion is not None:
-            xml.append('startversion="{0}"'.format(self.startversion.name))
-
-        if self.endversion is not None:
-            xml.append('endversion="{0}"'.format(self.endversion.name))
+        if len(self.versions) != 0:
+            ranges = [version_range(r).replace(' ', '') for r in self.versions]
+            xml.append('versions="{0}"'.format(' '.join(ranges)))
 
         return xml
 
@@ -195,27 +199,6 @@ class Project(Model):
 
     # The filename of the project.
     name = Str()
-
-    def is_working(self, api_item):
-        """ Return True if an API item is valid for the working version. """
-
-        # It's valid is there are no explicit versions.
-        if self.workingversion.name == '':
-            return True
-
-        working_index = self.versions.index(self.workingversion)
-
-        # Check any lower bound.
-        if api_item.startversion is not None:
-            if self.versions.index(api_item.startversion) > working_index:
-                return False
-
-        # Check any upper bound.
-        if api_item.endversion is not None:
-            if self.versions.index(api_item.endversion) <= working_index:
-                return False
-
-        return True
 
     def nameArgumentsFromConventions(self, prj_item, update):
         """
@@ -974,21 +957,18 @@ class HeaderDirectory(Model):
         dsc is the destination code instance.
         ssc is the list of parsed source code items.
         """
-        generation = str(len(self.project.versions))
-
         # Go though each existing code item.
         for dsi in dsc.content:
-            # Ignore anything that isn't part of the working version.
-            if not self.project.is_working(dsi):
-                continue
-
-            # Manual code is sticky.
+            # Manual code is always retained.
             if isinstance(dsi, ManualCode):
                 continue
 
             # Go through each potentially new code item.
             for ssi in ssc:
                 if type(dsi) is type(ssi) and dsi.signature() == ssi.signature():
+                    # Make sure the versions include the working version.
+                    self._update_with_working_version(dsi, True)
+
                     # Discard the new code item.
                     ssc.remove(ssi)
 
@@ -998,17 +978,111 @@ class HeaderDirectory(Model):
 
                     break
             else:
-                # The existing one no longer exists.
-                # FIXME: If the working version is within the range then we may
-                #        need to split it.
-                dsi.egen = generation
+                # The existing one doesn't exist in the working version.
+                if not self._update_with_working_version(dsi, False):
+                    dsc.remove(dsi)
 
         # Anything left in the source code is new.
         for ssi in ssc:
-            # FIXME: Need to see if there is something in the version following
-            #        the working version we can use.
-            ssi.startversion = self.project.workingversion
+            prj = self.project
+            workingversion = prj.workingversion
+
+            working_idx = prj.versions.index(workingversion)
+
+            # If the working version is the first then assume that the new
+            # item will appear in earlier versions, otherwise it is restricted
+            # to this version.
+            startversion = None if working_idx == 0 else workingversion
+
+            # If the working version is the latest then assume that the new
+            # item will appear in later versions, otherwise it is restricted to
+            # this version.
+            try:
+                endversion = prj.versions[working_idx + 1]
+            except IndexError:
+                endversion = None
+
+            if startversion is not None or endversion is not None:
+                ssi.versions.append(
+                        VersionRange(startversion=startversion,
+                                endversion=endversion))
+
             dsc.content.append(ssi)
+
+    def _update_with_working_version(self, api_item, add_working):
+        """ Update a list of version ranges to include or exclude the working
+        version.  Return True if the item is still present in some version as a
+        result.
+        """
+
+        prj_versions = self.project.versions
+
+        # Construct a list of bools corresponding to the list of versions.
+        if len(api_item.versions) == 0:
+            if add_working:
+                # Take a shortcut when the item is present in all versions.
+                return True
+
+            vlist = [True for v in prj_versions]
+        else:
+            vlist = [False for v in prj_versions]
+
+            for r in api_item.versions:
+                if r.startversion is None:
+                    start_idx = 0
+                else:
+                    start_idx = prj_versions.index(r.startversion)
+
+                if r.endversion is None:
+                    end_idx = len(prj_versions)
+                else:
+                    end_idx = prj_versions.index(r.endversion)
+
+                for i in range(start_idx, end_idx):
+                    vlist[i] = True
+
+        # Update appropriately using the working version.  First take a
+        # shortcut to see if anything has changed.
+        working_idx = prj_versions.index(self.project.workingversion)
+
+        if vlist[working_idx] == add_working:
+            return True
+
+        vlist[working_idx] = add_working
+
+        # See if the item is valid for all versions.
+        if all(vlist):
+            api_item.versions = []
+            return True
+
+        # See if the item is valid for no versions.
+        for v in vlist:
+            if v:
+                break
+        else:
+            return False
+
+        # Construct the new list of versions.
+        api_item.versions = []
+        vers = None
+
+        for idx, v in enumerate(vlist):
+            if v:
+                # Start a new version range if there isn't one currently.
+                if vers is None:
+                    vers = VersionRange()
+
+                    if idx != 0:
+                        vers.startversion = prj_versions[idx]
+            elif vers is not None:
+                vers.endversion = prj_versions[idx]
+                api_item.versions.append(vers)
+                vers = None
+
+        if vers is not None:
+            api_item.versions.append(vers)
+
+        return True
 
     def scan(self, sd):
         """ Scan a header directory and process it's contents.
@@ -1177,7 +1251,7 @@ class HeaderFile(VersionedItem):
                 continue
 
             if isinstance(c, Function) or isinstance(c, OperatorFunction) or isinstance(c, Variable) or isinstance(c, Enum):
-                vrange = version_range(self)
+                vrange = _sip_versions(self)
 
                 if vrange != '':
                     f.write("%%If (%s)\n" % vrange, False)
@@ -1502,7 +1576,7 @@ class Class(Code, Access):
                     f.write(astr + ":\n")
                     f += 1
 
-            vrange = version_range(c)
+            vrange = _sip_versions(c)
 
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
@@ -1817,7 +1891,7 @@ class Enum(Code, Access):
             if e.status != '':
                 continue
 
-            vrange = version_range(e)
+            vrange = _sip_versions(e)
 
             if vrange != '':
                 f.write("%%If (%s)\n" % vrange, False)
@@ -2953,21 +3027,31 @@ def _attrsAsString(item):
     return ' ' + ' '.join(attrs) if len(attrs) != 0 else ''
 
 
-def version_range(api_item):
+def _sip_versions(api_item):
     """ Return the version string corresponding to a range of versions of an
     API item.
     """
 
-    if api_item.startversion is None:
-        if api_item.endversion is None:
-            return ""
+    if len(api_item.versions) == 0:
+        return ""
 
-        return "- " + api_item.endversion.name
+    # At the moment we don't support generating multiple version ranges.
+    if len(api_item.versions) > 1:
+        raise NotImplementedError("multiple version ranges not yet supported")
 
-    if api_item.endversion is None:
-        return api_item.startversion.name + " -"
+    return version_range(api_item.versions[0])
 
-    return api_item.startversion.name + " - " + api_item.endversion.name
+
+def version_range(version_range):
+    """ Return a version range converted to a string. """
+
+    if version_range.startversion is None:
+        return "- " + version_range.endversion.name
+
+    if version_range.endversion is None:
+        return version_range.startversion.name + " -"
+
+    return version_range.startversion.name + " - " + version_range.endversion.name
 
 
 def escape(s):

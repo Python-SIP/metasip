@@ -71,22 +71,24 @@ class ProjectV2Update(Model):
             vname = view.currentText()
             versions = root.get('versions', '').split()
 
-        # Convert generation numbers to version names.
+        # Convert generation numbers to version ranges.
         for elem in root.iter():
             sgen = elem.get('sgen')
-            if sgen is not None:
-                #elem.set('startversion', versions[int(sgen) - 1])
-                try:
-                    elem.set('startversion', versions[int(sgen) - 1])
-                except IndexError:
-                    print(sgen, versions)
-                    raise
+            if sgen is None:
+                sname = ''
+            else:
+                sname = versions[int(sgen) - 1]
                 del elem.attrib['sgen']
 
             egen = elem.get('egen')
-            if egen is not None:
-                elem.set('endversion', versions[int(egen) - 1])
+            if egen is None:
+                ename = ''
+            else:
+                ename = versions[int(egen) - 1]
                 del elem.attrib['egen']
+
+            if sname != '' or ename != '':
+                elem.set('versions', '{0}-{1}'.format(sname, ename))
 
         # Create sub-elements for each version.
         versions.reverse()

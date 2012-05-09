@@ -26,6 +26,7 @@ class GenerationsDialog(QDialog, Ui_GenerationsBase):
         api_item is the API item.
         parent is the parent widget.
         """
+        # FIXME: Support multiple version ranges.
         super().__init__(parent)
 
         self.setupUi(self)
@@ -36,13 +37,21 @@ class GenerationsDialog(QDialog, Ui_GenerationsBase):
         start_index = 0
         end_index = len(prj.versions)
 
+        if len(api_item.versions) == 0:
+            api_start = None
+            api_end = None
+        else:
+            vers = api_item.versions[0]
+            api_start = vers.startversion
+            api_end = vers.endversion
+
         for i, v in enumerate(prj.versions):
             self.sgen.addItem(v.name, v)
-            if v is api_item.startversion:
+            if v is api_start:
                 start_index = i + 1
 
             self.egen.addItem(v.name, v)
-            if v is api_item.endversion:
+            if v is api_end:
                 end_index = i
 
         self.egen.addItem("Latest", None)

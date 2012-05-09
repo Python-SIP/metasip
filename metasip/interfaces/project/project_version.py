@@ -20,8 +20,7 @@
 #       - added the workingversion attribute to the Project element
 #       - moved the inputdir and webxmldir attributes of the Project element to
 #         the Version sub-element identified by the workingversion attribute
-#       - replaced all sgen and egen attributes with startversion and
-#         endversion attributes
+#       - replaced all sgen and egen attributes with versions attributes
 #
 #   1   Implemented prior to metasip v1.0.
 #

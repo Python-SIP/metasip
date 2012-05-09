@@ -13,11 +13,11 @@
 from dip.model import Str
 
 from .i_annos import IAnnos
-from .i_version_range import IVersionRange
+from .i_versioned import IVersioned
 from .i_workflow import IWorkflow
 
 
-class IEnumValue(IAnnos, IVersionRange, IWorkflow):
+class IEnumValue(IAnnos, IVersioned, IWorkflow):
     """ The IEnumValue interface is implemented by models representing an enum
     value.
     """

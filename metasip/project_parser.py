@@ -21,7 +21,7 @@ from .interfaces.project import ProjectVersion
 from .Project import (Argument, Class, Constructor, Destructor, Enum,
         EnumValue, Function, HeaderDirectory, HeaderFile, ManualCode, Method,
         Module, Namespace, OpaqueClass, OperatorCast, OperatorFunction,
-        OperatorMethod, Project, Typedef, Variable, Version)
+        OperatorMethod, Project, Typedef, Variable, Version, VersionRange)
 from .update_manager import UpdateManager
 
 
@@ -124,8 +124,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Constructor':
@@ -177,8 +176,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -197,8 +195,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Literal':
@@ -214,8 +211,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'EnumValue':
@@ -228,8 +224,7 @@ class ProjectParser:
 
         ev = EnumValue(name=elem.get('name'), annos=elem.get('annos', ''),
                 status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         en.content.append(ev)
 
@@ -242,8 +237,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -273,8 +267,7 @@ class ProjectParser:
         hf = HeaderFile(project=hdir.project, id=int(elem.get('id')),
                 name=elem.get('name'), md5=elem.get('md5'),
                 parse=elem.get('parse', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Function':
@@ -301,8 +294,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Literal':
@@ -323,8 +315,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -369,8 +360,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Function':
@@ -392,8 +382,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         scope.content.append(oc)
 
@@ -406,8 +395,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -426,8 +414,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -449,8 +436,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Argument':
@@ -468,8 +454,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         scope.content.append(td)
 
@@ -483,8 +468,7 @@ class ProjectParser:
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
                 annos=elem.get('annos', ''), status=elem.get('status', ''),
-                startversion=self.startversion(project, elem),
-                endversion=self.endversion(project, elem))
+                versions=self.get_versions(project, elem))
 
         for child in elem:
             if child.tag == 'Literal':
@@ -501,20 +485,27 @@ class ProjectParser:
         project.versions.append(vers)
 
     @classmethod
-    def startversion(cls, project, elem):
-        """ Return the start version from an element. """
+    def get_versions(cls, project, elem):
+        """ Return the list of version ranges from an element. """
 
-        name = elem.get('startversion')
+        versions = []
 
-        return None if name is None else cls.version_from_name(project, name)
+        vstr = elem.get('versions')
 
-    @classmethod
-    def endversion(cls, project, elem):
-        """ Return the end version from an element. """
+        if vstr is not None:
+            for r in vstr.split():
+                vers = VersionRange()
+                sname, ename = r.split('-')
 
-        name = elem.get('endversion')
+                if sname != '':
+                    vers.startversion = cls.version_from_name(project, sname)
 
-        return None if name is None else cls.version_from_name(project, name)
+                if ename != '':
+                    vers.endversion = cls.version_from_name(project, ename)
+
+                versions.append(vers)
+
+        return versions
 
     @staticmethod
     def version_from_name(project, name):

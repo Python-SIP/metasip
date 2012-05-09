@@ -39,6 +39,7 @@ from .i_project import IProject
 from .i_typedef import ITypedef
 from .i_variable import IVariable
 from .i_version import IVersion
+from .i_versioned import IVersioned
 from .i_version_range import IVersionRange
 from .i_workflow import IWorkflow
 
