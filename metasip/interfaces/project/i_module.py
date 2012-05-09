@@ -12,7 +12,7 @@
 
 from dip.model import Interface, List, Str
 
-from .i_header_file import IHeaderFile
+from .i_sip_file import ISipFile
 
 
 class IModule(Interface):
@@ -20,9 +20,8 @@ class IModule(Interface):
     module.
     """
 
-    # The list of header files declaring API items included in the module.  A
-    # .sip file will be generated for each one.
-    content = List(IHeaderFile)
+    # The list of .sip files defining API items included in the module.
+    content = List(ISipFile)
 
     # The SIP directives to be included at the start of the main .sip file for
     # the module.

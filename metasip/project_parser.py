@@ -19,9 +19,10 @@ from dip.shell import IDirty
 
 from .interfaces.project import ProjectVersion
 from .Project import (Argument, Class, Constructor, Destructor, Enum,
-        EnumValue, Function, HeaderDirectory, HeaderFile, ManualCode, Method,
-        Module, Namespace, OpaqueClass, OperatorCast, OperatorFunction,
-        OperatorMethod, Project, Typedef, Variable, Version, VersionRange)
+        EnumValue, Function, HeaderDirectory, HeaderFile, HeaderFileVersion,
+        ManualCode, Method, Module, Namespace, OpaqueClass, OperatorCast,
+        OperatorFunction, OperatorMethod, Project, SipFile, Typedef, Variable,
+        Version, VersionRange)
 from .update_manager import UpdateManager
 
 
@@ -71,8 +72,8 @@ class ProjectParser:
 
         # Create a progress dialog if there is a GUI.
         if QApplication.instance() is not None:
-            # Progress will be reported against classes.
-            nr_steps = len(root.findall('.//Class'))
+            # Progress will be reported against .sip files.
+            nr_steps = len(root.findall('.//SipFile'))
 
             self._progress = QProgressDialog("Loading...", None, 0, nr_steps)
             self._progress.setWindowTitle(project.name)
@@ -143,10 +144,6 @@ class ProjectParser:
                 self.add_code(project, cls, child)
 
         scope.content.append(cls)
-
-        if self._progress is not None:
-            self._progress.setValue(self._progress.value() + 1)
-            QApplication.processEvents()
 
     def add_code(self, project, scope, elem):
         """ Add an element defining scoped code to a scope. """
@@ -264,22 +261,24 @@ class ProjectParser:
     def add_header_file(self, project, hdir, elem):
         """ Add an element defining a header file to a header directory. """
 
-        hf = HeaderFile(project=hdir.project, id=int(elem.get('id')),
-                name=elem.get('name'), md5=elem.get('md5'),
-                parse=elem.get('parse', ''), status=elem.get('status', ''),
-                versions=self.get_versions(project, elem))
+        hf = HeaderFile(project=hdir.project, name=elem.get('name'),
+                module=elem.get('module', ''),
+                ignored=bool(int(elem.get('ignored', '0'))))
 
         for child in elem:
-            if child.tag == 'Function':
-                self.add_function(project, hf, child)
-            elif child.tag == 'Literal':
-                self.add_literal(hf, child)
-            elif child.tag == 'OperatorFunction':
-                self.add_operator_function(project, hf, child)
-            else:
-                self.add_code(project, hf, child)
+            if child.tag == 'HeaderFileVersion':
+                self.add_header_file_version(project, hf, child)
 
         hdir.content.append(hf)
+
+    def add_header_file_version(self, project, hf, elem):
+        """ Add an element defining a header file version to a header file. """
+
+        hfv = HeaderFileVersion(md5=elem.get('md5'),
+                parse=bool(int(elem.get('parse', '0'))),
+                version=elem.get('version'))
+
+        hf.content.append(hfv)
 
     def add_literal(self, model, elem):
         """ Add an element defining some literal text to a model. """
@@ -336,22 +335,10 @@ class ProjectParser:
         for child in elem:
             if child.tag == 'Literal':
                 self.add_literal(mod, child)
-            elif child.tag == 'ModuleHeaderFile':
-                self.add_module_header_file(project, mod, child)
+            elif child.tag == 'SipFile':
+                self.add_sip_file(project, mod, child)
 
         project.modules.append(mod)
-
-    def add_module_header_file(self, project, mod, elem):
-        """ Add an element defining a module header file to a module. """
-
-        id = int(elem.get('id'))
-
-        # Find the corresponding header file.
-        for hdir in project.headers:
-            for hf in hdir.content:
-                if hf.id == id:
-                    mod.content.append(hf)
-                    return
 
     def add_namespace(self, project, scope, elem):
         """ Add an element defining a namespace to a scope. """
@@ -445,6 +432,27 @@ class ProjectParser:
                 self.add_literal(mt, child)
 
         cls.content.append(mt)
+
+    def add_sip_file(self, project, mod, elem):
+        """ Add an element defining a .sip file to a module. """
+
+        sf = SipFile(project=project, name=elem.get('name'))
+
+        for child in elem:
+            if child.tag == 'Function':
+                self.add_function(project, sf, child)
+            elif child.tag == 'Literal':
+                self.add_literal(sf, child)
+            elif child.tag == 'OperatorFunction':
+                self.add_operator_function(project, sf, child)
+            else:
+                self.add_code(project, sf, child)
+
+        mod.content.append(sf)
+
+        if self._progress is not None:
+            self._progress.setValue(self._progress.value() + 1)
+            QApplication.processEvents()
 
     def add_typedef(self, project, scope, elem):
         """ Add an element defining a typedef to a scope. """

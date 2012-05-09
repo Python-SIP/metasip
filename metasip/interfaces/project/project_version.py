@@ -21,6 +21,12 @@
 #       - moved the inputdir and webxmldir attributes of the Project element to
 #         the Version sub-element identified by the workingversion attribute
 #       - replaced all sgen and egen attributes with versions attributes
+#       - replaced the ModuleHeaderFile element with the SipFile element
+#       - moved appropriate attributes from the HeaderFile element to the
+#         SipFile element
+#       - added HeaderFileVersion as a sub-element of the HeaderFile element
+#         moved appropriate attributes from the HeaderFile element to the
+#         HeaderFileVersion sub-element
 #
 #   1   Implemented prior to metasip v1.0.
 #

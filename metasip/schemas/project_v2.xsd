@@ -226,43 +226,21 @@
         <xsd:attribute name="parserargs" type="xsd:string" use="required"/>
     </xsd:complexType>
 
-    <xsd:complexType name="HeaderFileLiterals">
-        <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
-                <xsd:attribute name="type">
-                    <xsd:simpleType>
-                        <xsd:restriction base="xsd:string">
-                            <xsd:enumeration value="exportedheadercode"/>
-                            <xsd:enumeration value="initcode"/>
-                            <xsd:enumeration value="modulecode"/>
-                            <xsd:enumeration value="moduleheadercode"/>
-                            <xsd:enumeration value="postinitcode"/>
-                            <xsd:enumeration value="preinitcode"/>
-                        </xsd:restriction>
-                    </xsd:simpleType>
-                </xsd:attribute>
-            </xsd:extension>
-        </xsd:simpleContent>
-    </xsd:complexType>
-
     <xsd:complexType name="HeaderFileType">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
-            <xsd:group ref="CodeGroup"/>
-            <xsd:element name="Function" type="FunctionType"/>
-            <xsd:element name="Literal" type="HeaderFileLiterals"/>
-            <xsd:element name="OperatorFunction" type="OperatorFunctionType"/>
+            <xsd:element name="HeaderFileVersion"
+                    type="HeaderFileVersionType"/>
         </xsd:choice>
-        <xsd:attribute name="id" type="IdType" use="required"/>
-        <xsd:attribute name="md5" type="xsd:string" use="required"/>
+        <xsd:attribute name="ignored" type="xsd:boolean"/>
+        <xsd:attribute name="module" type="xsd:string"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
-        <xsd:attribute name="parse" type="ParseType"/>
-        <xsd:attribute name="status" type="StatusType"/>
-        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
-    <xsd:simpleType name="IdType">
-        <xsd:restriction base="xsd:nonNegativeInteger"/>
-    </xsd:simpleType>
+    <xsd:complexType name="HeaderFileVersionType">
+        <xsd:attribute name="md5" type="xsd:string" use="required"/>
+        <xsd:attribute name="parse" type="xsd:boolean"/>
+        <xsd:attribute name="version" type="xsd:string" use="required"/>
+    </xsd:complexType>
 
     <xsd:complexType name="ManualCodeLiterals">
         <xsd:simpleContent>
@@ -346,16 +324,12 @@
     <xsd:complexType name="ModuleType">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="Literal" type="ModuleLiterals"/>
-            <xsd:element name="ModuleHeaderFile" type="ModuleHeaderFileType"/>
+            <xsd:element name="SipFile" type="SipFileType"/>
         </xsd:choice>
         <xsd:attribute name="imports" type="xsd:string"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="outputdirsuffix" type="xsd:string"/>
         <xsd:attribute name="version" type="xsd:nonNegativeInteger"/>
-    </xsd:complexType>
-
-    <xsd:complexType name="ModuleHeaderFileType">
-        <xsd:attribute name="id" type="IdType" use="required"/>
     </xsd:complexType>
 
     <xsd:complexType name="NamespaceLiterals">
@@ -490,12 +464,6 @@
         <xsd:attribute name="virtual" type="xsd:boolean" default="0"/>
     </xsd:complexType>
 
-    <xsd:simpleType name="ParseType">
-        <xsd:restriction base="xsd:string">
-            <xsd:enumeration value="needed"/>
-        </xsd:restriction>
-    </xsd:simpleType>
-
     <xsd:simpleType name="PlatformsType">
         <xsd:restriction base="xsd:string"/>
     </xsd:simpleType>
@@ -534,6 +502,35 @@
         <xsd:attribute name="version" type="xsd:nonNegativeInteger" fixed="2"
                 use="required"/>
         <xsd:attribute name="workingversion" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="SipFileLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="exportedheadercode"/>
+                            <xsd:enumeration value="initcode"/>
+                            <xsd:enumeration value="modulecode"/>
+                            <xsd:enumeration value="moduleheadercode"/>
+                            <xsd:enumeration value="postinitcode"/>
+                            <xsd:enumeration value="preinitcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SipFileType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:group ref="CodeGroup"/>
+            <xsd:element name="Function" type="FunctionType"/>
+            <xsd:element name="Literal" type="SipFileLiterals"/>
+            <xsd:element name="OperatorFunction" type="OperatorFunctionType"/>
+        </xsd:choice>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
     </xsd:complexType>
 
     <xsd:simpleType name="StatusType">

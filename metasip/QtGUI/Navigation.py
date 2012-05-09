@@ -106,9 +106,8 @@ class NavigationPane(QTreeWidget):
     def draw(self):
         """ Draw the current project. """
 
-        # Progress will be reported against known header files (plus one for
-        # the unknown and ignored header files) so count them all.
-        nr_steps = 1
+        # Progress will be reported against .sip files so count them all.
+        nr_steps = 0
         for module in self.gui.project.modules:
             nr_steps += len(module.content)
 
@@ -560,11 +559,6 @@ class _ProjectItem(_FixedItem):
 
         super(_ProjectItem, self).__init__(parent)
 
-        self._mods = _ModuleGroupItem(self, "Modules")
-        self._hdrs = _HeaderDirectoryGroupItem(self, "Header Directories")
-
-        self._mods.setExpanded(True)
-        self._hdrs.setExpanded(True)
         self.setExpanded(True)
 
     def getName(self):
@@ -589,19 +583,15 @@ class _ProjectItem(_FixedItem):
 
         self.refreshProjectName()
 
-        so_far = self._mods.draw(progress)
-        self._hdrs.draw()
-        so_far += 1
-
-        # This will terminate the progress dialog.
-        progress.setValue(so_far)
+        so_far = 0
+        for mod in self.pane.gui.project.modules:
+            _ModuleItem(self, mod, progress, so_far)
+            so_far += len(mod.content)
 
     def clearProject(self):
-        """
-        Clear the item ready for another project.
-        """
-        self._mods.takeChildren()
-        self._hdrs.takeChildren()
+        """ Clear the item ready for another project. """
+
+        self.takeChildren()
 
     def getMenu(self, slist):
         """
@@ -613,6 +603,7 @@ class _ProjectItem(_FixedItem):
             return None
 
         return [("Baseline Version...", self._baselineSlot),
+                ("Add Module...", self._addModuleSlot),
                 ("Add Platform Tag...", self._platformSlot),
                 ("Add Feature Tag...", self._featureSlot),
                 ("Add External Module...", self._externalmoduleSlot),
@@ -636,6 +627,23 @@ class _ProjectItem(_FixedItem):
             if vers:
                 # Add the version to the project
                 self.pane.gui.project.addVersion(vers)
+
+    def _addModuleSlot(self):
+        """ Handle adding a module to the project. """
+
+        # Get the name of the module.
+        (mname, ok) = QInputDialog.getText(self.pane, "Add Module",
+                "Module name")
+
+        if ok:
+            mname = str(mname).strip()
+
+            # TODO - check the name is valid (eg. no embedded spaces) and not
+            # already in use.
+            if mname:
+                # Add the module to the project and the GUI.
+                mod = self.pane.gui.project.newModule(mname)
+                _ModuleItem(self, mod)
 
     def _platformSlot(self):
         """
@@ -718,74 +726,6 @@ class _ProjectItem(_FixedItem):
             self.set_dirty()
 
 
-class _ModuleGroupItem(_FixedItem):
-    """
-    This class implements a navigation item that represents a module group.
-    """
-    def __init__(self, parent, text):
-        """
-        Initialise the item instance.
-
-        parent is the parent.
-        text is the text to use.
-        """
-        self._text = text
-
-        _FixedItem.__init__(self, parent)
-
-    def getName(self):
-        """
-        Return the value of the name column.
-        """
-        return self._text
-
-    def draw(self, progress):
-        """ Draw the current project.
-
-        :param progress:
-            is the progress dialog to update.
-        :return:
-            the updated count of processed items.
-        """
-
-        so_far = 0
-
-        for mod in self.pane.gui.project.modules:
-            _ModuleItem(self, mod, progress, so_far)
-            so_far += len(mod.content)
-
-        return so_far
-
-    def getMenu(self, slist):
-        """
-        Return the item's context menu.
-
-        slist is a list of siblings of the item that is also selected.
-        """
-        if slist:
-            return None
-
-        return [("Add Module...", self._addModuleSlot)]
-
-    def _addModuleSlot(self):
-        """
-        Handle adding a module to the project.
-        """
-        # Get the name of the module.
-        (mname, ok) = QInputDialog.getText(self.pane, "Add Module",
-                "Module name")
-
-        if ok:
-            mname = str(mname).strip()
-
-            # TODO - check the name is valid (eg. no embedded spaces) and not
-            # already in use.
-            if mname:
-                # Add the module to the project and the GUI.
-                mod = self.pane.gui.project.newModule(mname)
-                _ModuleItem(self, mod)
-
-
 class _ModuleItem(_FixedItem, _DropSite):
     """
     This class implements a navigation item that represents a module.
@@ -807,7 +747,7 @@ class _ModuleItem(_FixedItem, _DropSite):
         _FixedItem.__init__(self, parent)
         _DropSite.__init__(self)
 
-        self._drawHeaders(progress, so_far)
+        self._drawSipFiles(progress, so_far)
 
         self.pane.headerDirectoryScanned.connect(self._refresh)
 
@@ -828,16 +768,15 @@ class _ModuleItem(_FixedItem, _DropSite):
             if self.child(idx).headerfile in hdir:
                 # We remove everything - it's easier.
                 self.takeChildren()
-                self._drawHeaders()
+                self._drawSipFiles()
 
                 break
 
-    def _drawHeaders(self, progress=None, so_far=0):
-        """
-        Draw the header files group for the module.
-        """
-        for hf in self.module.content:
-            _ModuleHeaderFileItem(self, hf)
+    def _drawSipFiles(self, progress=None, so_far=0):
+        """ Draw the .sip files for the module. """
+
+        for sf in self.module.content:
+            _SipFileItem(self, sf)
 
             if progress is not None:
                 so_far += 1
@@ -874,7 +813,7 @@ class _ModuleItem(_FixedItem, _DropSite):
         hf.status = ''
         self.module.insert(at, hf)
 
-        _ModuleHeaderFileItem(self, hf, after)
+        _SipFileItem(self, sf, after)
 
         self.set_dirty()
 
@@ -1197,22 +1136,24 @@ class _HeaderFileItem(_SimpleItem):
         return self.headerfile.name
 
 
-class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
+class _SipFileItem(_SimpleItem, _DropSite):
     """
     This class implements a navigation item that represents a header file in a
     particular module.
     """
-    def __init__(self, parent, hf, after=None):
+    def __init__(self, parent, sf, after=None):
         """
         Initialise the item instance.
 
         parent is the parent.
-        hf is the header file instance.
+        sf is the .sip file instance.
         after is the sibling after which this should be placed.  If it is None
         then it should be placed at the end.  If it is the parent then it
         should be placed at the start.
         """
-        _HeaderFileItem.__init__(self, parent, hf, after)
+        self.sipfile = sf
+
+        _SimpleItem.__init__(self, parent, after)
         _DropSite.__init__(self)
 
         self._targets = []
@@ -1220,30 +1161,19 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
 
         self._draw()
 
-        if hf.parse or self.isExpanded():
+        if self.isExpanded():
             parent.setExpanded(True)
 
-    def getVersionedItem(self):
-        """ Return the API item for the versions column. """
+    def getName(self):
+        """ Return the value of the name column. """
 
-        return self.headerfile
-
-    def getStatus(self):
-        """
-        Return the value of the status column.
-        """
-        if self.headerfile.parse == "needed":
-            text = "Needs parsing"
-        else:
-            text = ""
-
-        return text
+        return self.sipfile.name
 
     def _draw(self):
         """
         Draw the current project.
         """
-        for cd in self.headerfile.content:
+        for cd in self.sipfile.content:
             _CodeItem(self, cd)
 
         self.drawStatus()
@@ -1276,17 +1206,17 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
 
         # Handle the move of child code.
         cd = source.code
-        hf = self.headerfile
+        sf = self.sipfile
 
-        hf.remove(cd)
+        sf.remove(cd)
         self.removeChild(source)
 
         if after is None:
             at = 0
         else:
-            at = hf.index(after.code) + 1
+            at = sf.index(after.code) + 1
 
-        hf.insert(at, cd)
+        sf.insert(at, cd)
         self.insertChild(at, source)
 
         self.set_dirty()
@@ -1303,7 +1233,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
 
         versions = ("Versions...", self._versionsSlot,
                 (self.pane.gui.project.versions[0].name != '' and
-                len(self.headerfile.versions) <= 1))
+                len(self.sipfile.versions) <= 1))
 
         if slist:
             return [versions]
@@ -1330,7 +1260,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
     def _versionsSlot(self):
         """ Slot to handle the versions. """
 
-        dlg = GenerationsDialog(self.pane.gui.project, self.headerfile,
+        dlg = GenerationsDialog(self.pane.gui.project, self.sipfile,
                 self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
@@ -1346,12 +1276,12 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
     def _nameFromConventions(self):
         """ Apply the argument naming conventions to all unnamed arguments. """
 
-        self.pane.nameArgumentsFromConventions(self.headerfile)
+        self.pane.nameArgumentsFromConventions(self.sipfile)
 
     def _acceptNames(self):
         """ Accept all argument names. """
 
-        self.pane.acceptArgumentNames(self.headerfile)
+        self.pane.acceptArgumentNames(self.sipfile)
 
     def _addManualCode(self):
         """
@@ -1365,7 +1295,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
             if precis:
                 mc = ManualCode(precis=precis)
 
-                self.headerfile.insert(0, mc)
+                self.sipfile.insert(0, mc)
 
                 _CodeItem(self, mc, self)
 
@@ -1377,7 +1307,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._exportedHeaderCodeDone)
-        ed.edit(self.headerfile.exportedheadercode, "%ExportedHeaderCode: " + self.getName())
+        ed.edit(self.sipfile.exportedheadercode, "%ExportedHeaderCode: " + self.getName())
         self._editors["ehc"] = ed
 
     def _exportedHeaderCodeDone(self, text_changed, text):
@@ -1388,7 +1318,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         text is the code.
         """
         if text_changed:
-            self.headerfile.exportedheadercode = text
+            self.sipfile.exportedheadercode = text
             self.set_dirty()
 
         del self._editors["ehc"]
@@ -1399,7 +1329,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._moduleHeaderCodeDone)
-        ed.edit(self.headerfile.moduleheadercode, "%ModuleHeaderCode: " + self.getName())
+        ed.edit(self.sipfile.moduleheadercode, "%ModuleHeaderCode: " + self.getName())
         self._editors["mhc"] = ed
 
     def _moduleHeaderCodeDone(self, text_changed, text):
@@ -1410,7 +1340,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         text is the code.
         """
         if text_changed:
-            self.headerfile.moduleheadercode = text
+            self.sipfile.moduleheadercode = text
             self.set_dirty()
 
         del self._editors["mhc"]
@@ -1421,7 +1351,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._moduleCodeDone)
-        ed.edit(self.headerfile.modulecode, "%ModuleCode: " + self.getName())
+        ed.edit(self.sipfile.modulecode, "%ModuleCode: " + self.getName())
         self._editors["moc"] = ed
 
     def _moduleCodeDone(self, text_changed, text):
@@ -1432,7 +1362,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         text is the code.
         """
         if text_changed:
-            self.headerfile.modulecode = text
+            self.sipfile.modulecode = text
             self.set_dirty()
 
         del self._editors["moc"]
@@ -1443,7 +1373,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._preInitCodeDone)
-        ed.edit(self.headerfile.preinitcode, "%PreInitialisationCode: " + self.getName())
+        ed.edit(self.sipfile.preinitcode, "%PreInitialisationCode: " + self.getName())
         self._editors["pric"] = ed
 
     def _preInitCodeDone(self, text_changed, text):
@@ -1454,7 +1384,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         text is the code.
         """
         if text_changed:
-            self.headerfile.preinitcode = text
+            self.sipfile.preinitcode = text
             self.set_dirty()
 
         del self._editors["pric"]
@@ -1465,7 +1395,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._initCodeDone)
-        ed.edit(self.headerfile.initcode, "%InitialisationCode: " + self.getName())
+        ed.edit(self.sipfile.initcode, "%InitialisationCode: " + self.getName())
         self._editors["ic"] = ed
 
     def _initCodeDone(self, text_changed, text):
@@ -1476,7 +1406,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         text is the code.
         """
         if text_changed:
-            self.headerfile.initcode = text
+            self.sipfile.initcode = text
             self.set_dirty()
 
         del self._editors["ic"]
@@ -1487,7 +1417,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._postInitCodeDone)
-        ed.edit(self.headerfile.postinitcode, "%PostInitialisationCode: " + self.getName())
+        ed.edit(self.sipfile.postinitcode, "%PostInitialisationCode: " + self.getName())
         self._editors["poic"] = ed
 
     def _postInitCodeDone(self, text_changed, text):
@@ -1498,7 +1428,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         text is the code.
         """
         if text_changed:
-            self.headerfile.postinitcode = text
+            self.sipfile.postinitcode = text
             self.set_dirty()
 
         del self._editors["poic"]
@@ -1509,11 +1439,11 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
         was no error.
         """
         gui = self.pane.gui
-        hdir = gui.project.findHeaderDirectory(self.headerfile)
+        hdir = gui.project.findHeaderDirectory(self.sipfile)
 
         parser = CppParser()
 
-        phf = parser.parse(gui.project, hdir, self.headerfile)
+        phf = parser.parse(gui.project, hdir, self.sipfile)
 
         if phf is None:
             QMessageBox.critical(self.pane, "Parse Header File",
@@ -1523,7 +1453,7 @@ class _ModuleHeaderFileItem(_HeaderFileItem, _DropSite):
 
             return False
 
-        hdir.addParsedHeaderFile(self.headerfile, phf)
+        hdir.addParsedHeaderFile(self.sipfile, phf)
 
         # Update the display.
         self.takeChildren()

@@ -10,45 +10,25 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Enum, Int, Str
+from dip.model import Bool, Interface, List, Str
 
-from .i_code_container import ICodeContainer
-from .i_versioned import IVersioned
-from .i_workflow import IWorkflow
+from .i_header_file_version import IHeaderFileVersion
 
 
-class IHeaderFile(ICodeContainer, IVersioned, IWorkflow):
+class IHeaderFile(Interface):
     """ The IHeaderFile interface is implemented by models that represent a
     C/C++ .h file.
     """
 
-    # The optional %ExportedHeaderCode.
-    exportedheadercode = Str()
+    # This is set if the header file is being ignored, i.e. it will never be
+    # assigned to a module.
+    ignored = Bool(False)
 
-    # The identifier of the header file.
-    id = Int()
+    # The name of the optional module that the header file is assigned to.
+    module = Str()
 
-    # The optional %InitialisationCode.
-    initcode = Str()
-
-    # The MD5 signature of the header file excluding any initial comments.
-    md5 = Str()
-
-    # The optional %ModuleCode.
-    modulecode = Str()
-
-    # The optional %ModuleHeaderCode.
-    moduleheadercode = Str()
-
-    # The name of the header file.
+    # The basename of the header file.
     name = Str()
 
-    # This specifies if the header file needs parsing.
-    # FIXME: Change to Bool.
-    parse = Enum('', 'needed')
-
-    # The optional %PostInitialisationCode.
-    postinitcode = Str()
-
-    # The optional %PreInitialisationCode.
-    preinitcode = Str()
+    # The individual versions of the header file.
+    versions = List(IHeaderFileVersion)

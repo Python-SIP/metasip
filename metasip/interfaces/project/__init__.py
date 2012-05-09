@@ -27,6 +27,7 @@ from .i_extended_access import IExtendedAccess
 from .i_function import IFunction
 from .i_header_directory import IHeaderDirectory
 from .i_header_file import IHeaderFile
+from .i_header_file_version import IHeaderFileVersion
 from .i_manual_code import IManualCode
 from .i_method import IMethod
 from .i_module import IModule
@@ -36,6 +37,7 @@ from .i_operator_cast import IOperatorCast
 from .i_operator_function import IOperatorFunction
 from .i_operator_method import IOperatorMethod
 from .i_project import IProject
+from .i_sip_file import ISipFile
 from .i_typedef import ITypedef
 from .i_variable import IVariable
 from .i_version import IVersion

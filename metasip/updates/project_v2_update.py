@@ -65,10 +65,10 @@ class ProjectV2Update(Model):
         # Get the versions and what will become the workflow version.
         if view is None:
             # No versions have been explicitly defined.
-            vname = ''
-            versions = [vname]
+            working_version = ''
+            versions = [working_version]
         else:
-            vname = view.currentText()
+            working_version = view.currentText()
             versions = root.get('versions', '').split()
 
         # Convert generation numbers to version ranges.
@@ -90,12 +90,86 @@ class ProjectV2Update(Model):
             if sname != '' or ename != '':
                 elem.set('versions', '{0}-{1}'.format(sname, ename))
 
+        # Get the HeaderFile elements.
+        header_files = root.findall('HeaderDirectory/HeaderFile')
+
+        # Replace ModuleHeaderFile elements with SipFile Elements.
+        for module in root.iterfind('Module'):
+            module_name = module.get('name')
+            module_header_files = module.findall('ModuleHeaderFile')
+
+            for mhf in module_header_files:
+                # Get the id and then remove it.
+                hf_id = mhf.get('id')
+                module.remove(mhf)
+
+                # Find the header file.
+                for hf in header_files:
+                    if hf.get('id') == hf_id:
+                        # Create the SipFile element.
+                        sf = ElementTree.SubElement(module, 'SipFile',
+                                name=hf.get('name'))
+
+                        # Copy all the HeaderFile sub-elements to the SipFile.
+                        for elem in hf:
+                            sf.append(elem)
+
+                        # Remember the name of the module that the header file
+                        # is assigned to.
+                        hf.set('module', module_name)
+
+        # Create a HeaderFileVersion for every HeaderFile that has been
+        # assigned to a module.
+        for header_file_directory in root.iterfind('HeaderFileDirectory'):
+            for hf in list(header_file_directory):
+                # This is no longer needed.
+                del hf.attrib['id']
+
+                is_ignored = (hf.get('status', '') == 'ignored')
+                del hf.attrib['status']
+
+                # If the version of the header file has an upper bound then (if
+                # it is not being ignored) assume that this is the version the
+                # rest of the data refers to - otherwise use the working
+                # version.  Note that we are ignoring the (unlikely) case where
+                # the working version is prior to the starting version of a
+                # header file.
+                hf_versions = hg.get('versions')
+                del hf.attrib['versions']
+
+                if hf_versions is None or hf_versions.endswith('-'):
+                    use_version = working_version
+                elif is_ignored:
+                    # The header file is being ignored and is no longer present
+                    # so just discard it.
+                    header_file_directory.remove(hf)
+                    continue
+                else:
+                    use_version = hf_versions.split['-'][1]
+
+                # Remove any existing elements as they will have been copied to
+                # a SipFile element.
+                for elem in list(hf):
+                    hf.remove(elem)
+
+                hfv = ElementTree.SubElement(hf, 'HeaderFileVersion',
+                        md5=hf.get('md5'), version=use_version)
+                del hf.attrib['md5']
+
+                if hf.get('parse', '') == 'needed':
+                    hfv.set('parse', '1')
+
+                del hf.attrib['parse']
+
+                if is_ignored:
+                    hf.set('ignored', '1')
+
         # Create sub-elements for each version.
         versions.reverse()
         for vers in versions:
             attrib = {'name': vers}
 
-            if vers == vname:
+            if vers == working_version:
                 attrib['inputdir'] = root.get('inputdir')
 
                 webxmldir = root.get('webxmldir')
@@ -106,7 +180,7 @@ class ProjectV2Update(Model):
 
             root.insert(0, ElementTree.Element('Version', attrib))
 
-        root.set('workingversion', vname)
+        root.set('workingversion', working_version)
 
         # Removed old root attributes.
         del root.attrib['inputdir']

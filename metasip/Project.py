@@ -22,10 +22,10 @@ from dip.shell import IDirty
 from .logger import Logger
 from .interfaces.project import (ProjectVersion, IArgument, IClass,
         IConstructor, IDestructor, IEnum, IEnumValue, IFunction,
-        IHeaderDirectory, IHeaderFile, IManualCode, IMethod, IModule,
-        INamespace, IOpaqueClass, IOperatorCast, IOperatorFunction,
-        IOperatorMethod, IProject, ITypedef, IVariable, IVersion,
-        IVersionRange)
+        IHeaderDirectory, IHeaderFile, IHeaderFileVersion, IManualCode,
+        IMethod, IModule, INamespace, IOpaqueClass, IOperatorCast,
+        IOperatorFunction, IOperatorMethod, IProject, ISipFile, ITypedef,
+        IVariable, IVersion, IVersioned, IVersionRange)
 
 
 class Annotations(Model):
@@ -62,6 +62,7 @@ class VersionRange(Model):
     """ This class implements a range of versions. """
 
 
+@implements(IVersioned)
 class VersionedItem(Model):
     """ This class is a base class for all project elements that is subject to
     workflow or versions.
@@ -120,11 +121,11 @@ class VersionedItem(Model):
     def get_project(self):
         """ Return the project instance. """
 
-        hf = self
-        while not isinstance(hf, HeaderFile):
-            hf = hf.container
+        sf = self
+        while not isinstance(sf, SipFile):
+            sf = sf.container
 
-        return hf.project
+        return sf.project
 
     def expand_type(self, typ, name="", ignore_namespaces=False):
         """
@@ -469,7 +470,7 @@ class Project(Model):
         """
         names = []
 
-        while type(item) is not HeaderFile:
+        while type(item) is not SipFile:
             names.insert(0, item.name)
             item = item.container
 
@@ -483,7 +484,7 @@ class Project(Model):
         """
         ptype = type(part)
 
-        if ptype is HeaderFile:
+        if ptype is SipFile:
             for sub in part:
                 for callable in self._get_unnamed_callables(sub):
                     yield callable
@@ -1218,7 +1219,7 @@ class HeaderDirectory(Model):
                 break
 
         # It is a new file, or the reappearence of an old one.
-        hf = HeaderFile(project=self.project, name=hfile, md5=sig,
+        hf = HeaderFile(name=hfile, md5=sig,
                 parse='needed', status='unknown',
                 sgen=str(len(self.project.versions)))
         self.content.append(hf)
@@ -1226,6 +1227,19 @@ class HeaderDirectory(Model):
         IDirty(self.project).dirty = True
 
         return hf
+
+
+@implements(ISipFile)
+class SipFile(Model):
+    """ This class represents a .sip file. """
+
+    # The project.
+    project = Instance(IProject)
+
+
+@implements(IHeaderFileVersion)
+class HeaderFileVersion(Model):
+    """ This class represents a version of a project header file. """
 
 
 @implements(IHeaderFile)
