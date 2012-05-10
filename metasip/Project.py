@@ -165,6 +165,78 @@ class Project(Model):
     # The filename of the project.
     name = Str()
 
+    def vmap_create(self, initial):
+        """ Return a version map with each entry set to an initial value. """
+
+        return [initial for v in self.versions]
+
+    def vmap_or_version_ranges(self, vmap, version_ranges):
+        """ Update a version map with a list of version ranges.  Return True if
+        the map becomes unconditionally True.
+        """
+
+        if len(version_ranges) == 0:
+            vmap[:] = self.vmap_create(True)
+            return True
+
+        for version_range in version_ranges:
+            if version_range.startversion is None:
+                start_idx = 0
+            else:
+                start_idx = self.versions.index(version_range.startversion)
+
+            if version_range.endversion is None:
+                end_idx = len(self.versions)
+            else:
+                end_idx = self.versions.index(version_range.endversion)
+
+            for i in range(start_idx, end_idx):
+                vmap[i] = True
+
+            if all(vmap):
+                return True
+
+        return False
+
+    def vmap_to_version_ranges(self, vmap):
+        """ Convert a version map to a list of version ranges.  An empty list
+        means it is unconditionally True, None means it is unconditionally
+        False.
+        """
+
+        # See if the item is valid for all versions.
+        if all(vmap):
+            return []
+
+        # See if the item is valid for no versions.
+        for v in vmap:
+            if v:
+                break
+        else:
+            return None
+
+        # Construct the new list of version ranges.
+        version_ranges = []
+        vrange = None
+
+        for idx, v in enumerate(vmap):
+            if v:
+                # Start a new version range if there isn't one currently.
+                if vrange is None:
+                    vrange = VersionRange()
+
+                    if idx != 0:
+                        vrange.startversion = self.versions[idx]
+            elif vrange is not None:
+                vrange.endversion = self.versions[idx]
+                version_ranges.append(vrange)
+                vrange = None
+
+        if vrange is not None:
+            version_ranges.append(vrange)
+
+        return version_ranges
+
     def nameArgumentsFromConventions(self, prj_item, update):
         """
         Name the arguments of all callables contained in a part of the project
@@ -973,72 +1045,33 @@ class HeaderDirectory(Model):
         result.
         """
 
-        prj_versions = self.project.versions
-
-        # Construct a list of bools corresponding to the list of versions.
+        # Construct the existing list of version ranges to a version map.
         if len(api_item.versions) == 0:
             if add_working:
                 # Take a shortcut when the item is present in all versions.
                 return True
 
-            vlist = [True for v in prj_versions]
+            vmap = self.project.vmap_create(True)
         else:
-            vlist = [False for v in prj_versions]
+            vmap = self.project.vmap_create(False)
+            self.project.vmap_or_version_ranges(vmap, version_range)
 
-            for r in api_item.versions:
-                if r.startversion is None:
-                    start_idx = 0
-                else:
-                    start_idx = prj_versions.index(r.startversion)
+        # Update the version map appropriately using the working version.
+        # First take a shortcut to see if anything has changed.
+        working_idx = self.project.versions.index(self.project.workingversion)
 
-                if r.endversion is None:
-                    end_idx = len(prj_versions)
-                else:
-                    end_idx = prj_versions.index(r.endversion)
-
-                for i in range(start_idx, end_idx):
-                    vlist[i] = True
-
-        # Update appropriately using the working version.  First take a
-        # shortcut to see if anything has changed.
-        working_idx = prj_versions.index(self.project.workingversion)
-
-        if vlist[working_idx] == add_working:
+        if vmap[working_idx] == add_working:
             return True
 
-        vlist[working_idx] = add_working
+        vmap[working_idx] = add_working
 
-        # See if the item is valid for all versions.
-        if all(vlist):
-            api_item.versions = []
-            return True
+        # Convert the version map back to a list of version ranges.
+        versions = self.project.vmap_to_version_ranges(vmap)
 
-        # See if the item is valid for no versions.
-        for v in vlist:
-            if v:
-                break
-        else:
+        if versions is None:
             return False
 
-        # Construct the new list of versions.
-        api_item.versions = []
-        vers = None
-
-        for idx, v in enumerate(vlist):
-            if v:
-                # Start a new version range if there isn't one currently.
-                if vers is None:
-                    vers = VersionRange()
-
-                    if idx != 0:
-                        vers.startversion = prj_versions[idx]
-            elif vers is not None:
-                vers.endversion = prj_versions[idx]
-                api_item.versions.append(vers)
-                vers = None
-
-        if vers is not None:
-            api_item.versions.append(vers)
+        api_item.versions = versions
 
         return True
 
@@ -1197,16 +1230,36 @@ class SipFile(Model):
         """ Write the .sip file. """
 
         # See if we need a %ModuleCode directive for things which will be
-        # implemented at the module level.
+        # implemented at the module level.  At the same time find the version
+        # ranges that cover all the API items.
+        vmap = self.project.vmap_create(False)
+        need_header = False
+
         for api_item in self.content:
             if api_item.status != '':
                 continue
 
-            if isinstance(api_item, (Function, OperatorFunction, Variable, Enum)):
-                vrange = _sip_versions(api_item)
+            if vmap is not None and self.project.vmap_or_version_ranges(vmap, api_item.versions):
+                vmap = None
+                if need_header:
+                    break
 
-                if vrange != '':
-                    f.write("%%If (%s)\n" % vrange, False)
+            if isinstance(api_item, (Function, OperatorFunction, Variable, Enum)):
+                need_header = True
+                if vmap is None:
+                    break
+
+        if need_header:
+            if vmap is None:
+                need = [VersionRange()]
+            else:
+                need = self.project.vmap_to_version_ranges(vmap)
+
+            for vrange in need:
+                vrange_str = version_range(vrange)
+
+                if vrange_str != '':
+                    f.write("%%If (%s)\n" % vrange_str, False)
 
                 f.write(
 """%%ModuleCode
@@ -1214,12 +1267,10 @@ class SipFile(Model):
 %%End
 """ % self.name)
 
-                if vrange:
+                if vrange_str != '':
                     f.write("%End\n", False)
 
-                f.blank()
-
-                break
+            f.blank()
 
         for api_item in self.content:
             if api_item.status == '':
@@ -3045,6 +3096,9 @@ def version_range(version_range):
     """ Return a version range converted to a string. """
 
     if version_range.startversion is None:
+        if version_range.endversion is None:
+            return ""
+
         return "- " + version_range.endversion.name
 
     if version_range.endversion is None:
