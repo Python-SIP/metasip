@@ -276,9 +276,9 @@ class ProjectParser:
 
         hfv = HeaderFileVersion(md5=elem.get('md5'),
                 parse=bool(int(elem.get('parse', '0'))),
-                version=elem.get('version'))
+                version=self.version_from_name(project, elem.get('version')))
 
-        hf.content.append(hfv)
+        hf.versions.append(hfv)
 
     def add_literal(self, model, elem):
         """ Add an element defining some literal text to a model. """

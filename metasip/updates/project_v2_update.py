@@ -120,13 +120,17 @@ class ProjectV2Update(Model):
 
         # Create a HeaderFileVersion for every HeaderFile that has been
         # assigned to a module.
-        for header_file_directory in root.iterfind('HeaderFileDirectory'):
-            for hf in list(header_file_directory):
+        for header_directory in root.iterfind('HeaderDirectory'):
+            for hf in header_directory:
                 # This is no longer needed.
                 del hf.attrib['id']
 
-                is_ignored = (hf.get('status', '') == 'ignored')
-                del hf.attrib['status']
+                status = hf.get('status')
+                if status is None:
+                    is_ignored = False
+                else:
+                    is_ignored = (status == 'ignored')
+                    del hf.attrib['status']
 
                 # If the version of the header file has an upper bound then (if
                 # it is not being ignored) assume that this is the version the
@@ -134,18 +138,20 @@ class ProjectV2Update(Model):
                 # version.  Note that we are ignoring the (unlikely) case where
                 # the working version is prior to the starting version of a
                 # header file.
-                hf_versions = hg.get('versions')
-                del hf.attrib['versions']
+                hf_versions = hf.get('versions')
+
+                if hf_versions is not None:
+                    del hf.attrib['versions']
 
                 if hf_versions is None or hf_versions.endswith('-'):
                     use_version = working_version
                 elif is_ignored:
                     # The header file is being ignored and is no longer present
                     # so just discard it.
-                    header_file_directory.remove(hf)
+                    header_directory.remove(hf)
                     continue
                 else:
-                    use_version = hf_versions.split['-'][1]
+                    use_version = hf_versions.split('-')[1]
 
                 # Remove any existing elements as they will have been copied to
                 # a SipFile element.
@@ -158,8 +164,7 @@ class ProjectV2Update(Model):
 
                 if hf.get('parse', '') == 'needed':
                     hfv.set('parse', '1')
-
-                del hf.attrib['parse']
+                    del hf.attrib['parse']
 
                 if is_ignored:
                     hf.set('ignored', '1')

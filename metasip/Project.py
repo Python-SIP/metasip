@@ -610,19 +610,12 @@ class Project(Model):
         if self.sipcomments != '':
             _writeLiteralXML(f, 'sipcomments', self.sipcomments)
 
-        # Give each header file a unique ID, ignoring any current one.  The ID
-        # is only used when the project file is written and read.  It is
-        # undefined at all other times.
-        hfid = 0
-
         for hdir in self.headers:
-            f.write('<HeaderDirectory name="%s" parserargs="%s" inputdirsuffix="%s" filefilter="%s">\n' % (hdir.name, hdir.parserargs, hdir.inputdirsuffix, hdir.filefilter))
+            f.write('<HeaderDirectory name="{0}" parserargs="{1}" inputdirsuffix="{2}" filefilter="{3}">\n'.format(hdir.name, hdir.parserargs, hdir.inputdirsuffix, hdir.filefilter))
             f += 1
 
             for hf in hdir.content:
-                hf.id = hfid
                 hf.xml(f)
-                hfid += 1
 
             f -= 1
             f.write('</HeaderDirectory>\n')
@@ -646,8 +639,8 @@ class Project(Model):
             if mod.directives != '':
                 _writeLiteralXML(f, "directives", mod.directives)
 
-            for hf in mod.content:
-                f.write('<ModuleHeaderFile id="%u"/>\n' % hf.id)
+            for sf in mod.content:
+                sf.xml(f)
 
             f -= 1
             f.write('</Module>\n')
@@ -1236,14 +1229,67 @@ class SipFile(Model):
     # The project.
     project = Instance(IProject)
 
+    def xml(self, f):
+        """ Write the .sip file to an XML file. """
+
+        f.write('<SipFile%s>\n' % _attrsAsString(self))
+
+        f += 1
+        for c in self.content:
+            c.xml(f)
+        f -= 1
+
+        if self.exportedheadercode:
+            _writeLiteralXML(f, "exportedheadercode", self.exportedheadercode)
+
+        if self.moduleheadercode:
+            _writeLiteralXML(f, "moduleheadercode", self.moduleheadercode)
+
+        if self.modulecode:
+            _writeLiteralXML(f, "modulecode", self.modulecode)
+
+        if self.preinitcode:
+            _writeLiteralXML(f, "preinitcode", self.preinitcode)
+
+        if self.initcode:
+            _writeLiteralXML(f, "initcode", self.initcode)
+
+        if self.postinitcode:
+            _writeLiteralXML(f, "postinitcode", self.postinitcode)
+
+        f.write('</SipFile>\n')
+
+    def xmlAttributes(self):
+        """ Return the XML attributes as a list. """
+
+        return ['name="{0}"'.format(self.name)]
+
 
 @implements(IHeaderFileVersion)
 class HeaderFileVersion(Model):
     """ This class represents a version of a project header file. """
 
+    def xml(self, f):
+        """ Write the header file version to an XML file. """
+
+        f.write('<HeaderFileVersion%s/>\n' % _attrsAsString(self))
+
+    def xmlAttributes(self):
+        """ Return the XML attributes as a list. """
+
+        xml = []
+
+        xml.append('md5="{0}"'.format(self.md5))
+        xml.append('version="{0}"'.format(self.version.name))
+
+        if self.parse:
+            xml.append('parse="1"')
+
+        return xml
+
 
 @implements(IHeaderFile)
-class HeaderFile(VersionedItem):
+class HeaderFile(Model):
     """ This class represents a project header file. """
 
     # The project.
@@ -1311,41 +1357,24 @@ class HeaderFile(VersionedItem):
         f.write('<HeaderFile%s>\n' % _attrsAsString(self))
 
         f += 1
-        for c in self.content:
-            c.xml(f)
+        for v in self.versions:
+            v.xml(f)
         f -= 1
-
-        if self.exportedheadercode:
-            _writeLiteralXML(f, "exportedheadercode", self.exportedheadercode)
-
-        if self.moduleheadercode:
-            _writeLiteralXML(f, "moduleheadercode", self.moduleheadercode)
-
-        if self.modulecode:
-            _writeLiteralXML(f, "modulecode", self.modulecode)
-
-        if self.preinitcode:
-            _writeLiteralXML(f, "preinitcode", self.preinitcode)
-
-        if self.initcode:
-            _writeLiteralXML(f, "initcode", self.initcode)
-
-        if self.postinitcode:
-            _writeLiteralXML(f, "postinitcode", self.postinitcode)
 
         f.write('</HeaderFile>\n')
 
     def xmlAttributes(self):
         """ Return the XML attributes as a list. """
 
-        xml = super().xmlAttributes()
+        xml = []
 
-        xml.append('id="{0}"'.format(self.id))
         xml.append('name="{0}"'.format(self.name))
-        xml.append('md5="{0}"'.format(self.md5))
 
-        if self.parse != '':
-            xml.append('parse="{0}"'.format(self.parse))
+        if self.module != '':
+            xml.append('module="{0}"'.format(self.module))
+
+        if self.ignored:
+            xml.append('ignored="1"')
 
         return xml
 
