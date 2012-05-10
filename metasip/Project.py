@@ -68,42 +68,6 @@ class VersionedItem(Model):
     workflow or versions.
     """
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the code to a SIP file.  This only calls the method for each
-        child code.  This method should be reimplemented to write the code
-        specific data.  Note that this is in this class only because it is the
-        common super-class of the classes that call it.
-
-        f is the file.
-        hf is the corresponding header file instance.
-        """
-        for c in self.content:
-            if c.status:
-                continue
-
-            vrange = _sip_versions(c)
-
-            if vrange != '':
-                f.write("%%If (%s)\n" % vrange, False)
-
-            if len(c.platforms) != 0:
-                f.write("%%If (%s)\n" % " || ".join(c.platforms), False)
-
-            if len(c.features) != 0:
-                f.write("%%If (%s)\n" % " || ".join(c.features), False)
-
-            c.sip(f, hf, latest_sip)
-
-            if len(c.features) != 0:
-                f.write("%End\n", False)
-
-            if len(c.platforms) != 0:
-                f.write("%End\n", False)
-
-            if vrange != '':
-                f.write("%End\n", False)
-
     def xmlAttributes(self):
         """ Return the XML attributes as a list. """
 
@@ -693,21 +657,21 @@ class Project(Model):
         # Remember the root directory used.
         od = os.path.abspath(od)
 
-        # Generate each applicable header file.
-        hfnames = []
-        for hf in mod.content:
-            f = self._createSIPFile(od, mod, hf)
+        # Generate each applicable .sip file.
+        sfnames = []
+        for sf in mod.content:
+            f = self._createSipFile(od, mod, sf)
 
             if f is None:
                 return False
 
             Logger.log("Generating %s" % f.name)
-            hf.sip(f, latest_sip)
-            hfnames.append(os.path.basename(f.name))
+            sf.sip(f, latest_sip)
+            sfnames.append(os.path.basename(f.name))
 
             f.close()
 
-        f = self._createSIPFile(od, mod)
+        f = self._createSipFile(od, mod)
 
         if f is None:
             return False
@@ -745,7 +709,7 @@ class Project(Model):
             # level modules (ie. those that don't import anything).
 
             if len(self.versions) != 0:
-                f.write("%%Timeline {%s}\n\n" % ' '.join(self.versions))
+                f.write("%%Timeline {%s}\n\n" % ' '.join([v.name for v in self.versions]))
 
             if len(self.platforms) != 0:
                 f.write("%%Platforms {%s}\n\n" % ' '.join(self.platforms))
@@ -760,29 +724,29 @@ class Project(Model):
             f.write(mod.directives)
             f.write("\n\n")
 
-        for inc in hfnames:
+        for inc in sfnames:
             f.write("%%Include %s\n" % inc)
 
         f.close()
 
         return True
 
-    def _createSIPFile(self, od, mod, hf=None):
+    def _createSipFile(self, od, mod, sf=None):
         """
-        Return a boilerplate SIP file.
+        Return a boilerplate .sip file.
 
         od is the root of the output directory.
         mod is the module instance.
-        hf is the header file instance.
+        sf is the .sip file instance.
         """
         # Work out the name of the file.
         if mod.outputdirsuffix:
             od = os.path.join(od, mod.outputdirsuffix)
 
-        if hf is None:
+        if sf is None:
             fname = mod.name + "mod"
         else:
-            (fname, ext) = os.path.splitext(os.path.basename(hf.name))
+            (fname, ext) = os.path.splitext(os.path.basename(sf.name))
 
         fname += ".sip"
 
@@ -1229,6 +1193,58 @@ class SipFile(Model):
     # The project.
     project = Instance(IProject)
 
+    def sip(self, f, latest_sip):
+        """ Write the .sip file. """
+
+        # See if we need a %ModuleCode directive for things which will be
+        # implemented at the module level.
+        for api_item in self.content:
+            if api_item.status != '':
+                continue
+
+            if isinstance(api_item, (Function, OperatorFunction, Variable, Enum)):
+                vrange = _sip_versions(api_item)
+
+                if vrange != '':
+                    f.write("%%If (%s)\n" % vrange, False)
+
+                f.write(
+"""%%ModuleCode
+#include <%s>
+%%End
+""" % self.name)
+
+                if vrange:
+                    f.write("%End\n", False)
+
+                f.blank()
+
+                break
+
+        for api_item in self.content:
+            if api_item.status == '':
+                api_item.sip(f, self, latest_sip)
+
+        f.blank()
+
+        if self.exportedheadercode:
+            _writeCodeSIP(f, "%ExportedHeaderCode", self.exportedheadercode, False)
+
+        if self.moduleheadercode:
+            _writeCodeSIP(f, "%ModuleHeaderCode", self.moduleheadercode, False)
+
+        if self.modulecode:
+            _writeCodeSIP(f, "%ModuleCode", self.modulecode, False)
+
+        if self.preinitcode:
+            _writeCodeSIP(f, "%PreInitialisationCode", self.preinitcode, False)
+
+        if self.initcode:
+            _writeCodeSIP(f, "%InitialisationCode", self.initcode, False)
+
+        if self.postinitcode:
+            _writeCodeSIP(f, "%PostInitialisationCode", self.postinitcode, False)
+
     def xml(self, f):
         """ Write the .sip file to an XML file. """
 
@@ -1294,62 +1310,6 @@ class HeaderFile(Model):
 
     # The project.
     project = Instance(IProject)
-
-    def sip(self, f, latest_sip):
-        """
-        Write the header file to a SIP file.
-
-        f is the output file.
-        """
-        if self.status != '':
-            return 
-
-        # See if we need a %ModuleCode directive for things which will be
-        # implemented at the module level.
-        for c in self.content:
-            if c.status != '':
-                continue
-
-            if isinstance(c, Function) or isinstance(c, OperatorFunction) or isinstance(c, Variable) or isinstance(c, Enum):
-                vrange = _sip_versions(self)
-
-                if vrange != '':
-                    f.write("%%If (%s)\n" % vrange, False)
-
-                f.write(
-"""%%ModuleCode
-#include <%s>
-%%End
-""" % self.name)
-
-                if vrange:
-                    f.write("%End\n", False)
-
-                f.blank()
-
-                break
-
-        super().sip(f, self, latest_sip)
-
-        f.blank()
-
-        if self.exportedheadercode:
-            _writeCodeSIP(f, "%ExportedHeaderCode", self.exportedheadercode, False)
-
-        if self.moduleheadercode:
-            _writeCodeSIP(f, "%ModuleHeaderCode", self.moduleheadercode, False)
-
-        if self.modulecode:
-            _writeCodeSIP(f, "%ModuleCode", self.modulecode, False)
-
-        if self.preinitcode:
-            _writeCodeSIP(f, "%PreInitialisationCode", self.preinitcode, False)
-
-        if self.initcode:
-            _writeCodeSIP(f, "%InitialisationCode", self.initcode, False)
-
-        if self.postinitcode:
-            _writeCodeSIP(f, "%PostInitialisationCode", self.postinitcode, False)
 
     def xml(self, f):
         """ Write the header file to an XML file. """
@@ -1503,15 +1463,10 @@ class Class(Code, Access):
 
         return s
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the class to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the class to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
-        if self.status != '':
-            return 
+        closure = _sip_start_version(f, self)
 
         f.blank()
 
@@ -1552,7 +1507,7 @@ class Class(Code, Access):
         if self.typeheadercode:
             f.write(self.typeheadercode + "\n", False)
         else:
-            f.write("#include <%s>\n" % hf.name, False)
+            f.write("#include <%s>\n" % sf.name, False)
 
         f.write("%End\n", False)
 
@@ -1601,14 +1556,14 @@ class Class(Code, Access):
         else:
             access = "private"
 
-        for c in self.content:
-            if c.status != '':
+        for api_item in self.content:
+            if api_item.status != '':
                 continue
 
-            if isinstance(c, Access):
-                if access != c.access:
+            if isinstance(api_item, Access):
+                if access != api_item.access:
                     f -= 1
-                    access = c.access
+                    access = api_item.access
 
                     if access != '':
                         astr = access
@@ -1619,32 +1574,14 @@ class Class(Code, Access):
                     f.write(astr + ":\n")
                     f += 1
 
-            vrange = _sip_versions(c)
-
-            if vrange != '':
-                f.write("%%If (%s)\n" % vrange, False)
-
-            if len(c.platforms) != 0:
-                f.write("%%If (%s)\n" % " || ".join(c.platforms), False)
-
-            if len(c.features) != 0:
-                f.write("%%If (%s)\n" % " || ".join(c.features), False)
-
-            c.sip(f, hf, latest_sip)
-
-            if len(c.features) != 0:
-                f.write("%End\n", False)
-
-            if len(c.platforms) != 0:
-                f.write("%End\n", False)
-
-            if vrange != '':
-                f.write("%End\n", False)
+            api_item.sip(f, sf, latest_sip)
 
         f -= 1
         f.write("};\n")
 
         f.blank()
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the class to an XML file. """
@@ -1755,13 +1692,9 @@ class Callable(Code):
 
         return s
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the callable to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the callable to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
         # Note that we don't include a separate C++ signature.  This is handled
         # where needed by sub-classes.
 
@@ -1792,19 +1725,13 @@ class Callable(Code):
         return s
 
     def sipDocstring(self, f):
-        """
-        Write any docstring to a SIP file.
+        """ Write any docstring to a .sip file. """
 
-        f is the file.
-        """
         _writeDocstringSIP(f, self.docstring)
 
     def sipMethcode(self, f):
-        """
-        Write any method code to a SIP file.
+        """ Write any method code to a .sip file. """
 
-        f is the file.
-        """
         _writeMethCodeSIP(f, self.methcode)
 
     def xmlAttributes(self):
@@ -1826,19 +1753,13 @@ class Callable(Code):
         return xml
 
     def xmlDocstring(self, f):
-        """
-        Write any docstring to an XML file.
+        """ Write any docstring to an XML file. """
 
-        f is the file.
-        """
         _writeDocstringXML(f, self.docstring)
 
     def xmlMethcode(self, f):
-        """
-        Write any method code to an XML file.
+        """ Write any method code to an XML file. """
 
-        f is the file.
-        """
         _writeMethCodeXML(f, self.methcode)
 
     def hasPyArgs(self):
@@ -1871,9 +1792,8 @@ class EnumValue(VersionedItem, Annotations):
         return self.name
 
     def sip(self, latest_sip):
-        """
-        Return the enum value suitable for writing to a SIP file.
-        """
+        """ Return the enum value suitable for writing to a .sip file. """
+
         return self.name + self.sipAnnos()
 
     def xml(self, f):
@@ -1913,13 +1833,11 @@ class Enum(Code, Access):
 
         return s
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the enum to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the enum to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
+        closure = _sip_start_version(f, self)
+
         f.blank()
 
         f.write("enum")
@@ -1947,6 +1865,8 @@ class Enum(Code, Access):
         f -= 1
         f.write("};\n")
         f.blank()
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the enum to an XML file. """
@@ -2011,17 +1931,15 @@ class Constructor(ClassCallable):
 
         return s
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the constructor to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the constructor to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
+        closure = _sip_start_version(f, self)
+
         if self.explicit:
             f.write("explicit ")
 
-        super().sip(f, hf, latest_sip)
+        super().sip(f, sf, latest_sip)
 
         if self.pyargs != '' or self.hasPyArgs():
             f.write(" [(%s)]" % ", ".join([a.user(self) for a in self.args]))
@@ -2030,6 +1948,8 @@ class Constructor(ClassCallable):
 
         self.sipDocstring(f)
         self.sipMethcode(f)
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the constructor to an XML file. """
@@ -2084,13 +2004,11 @@ class Destructor(Code, Access):
 
         return s
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the destructor to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the destructor to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
+        closure = _sip_start_version(f, self)
+
         if self.virtual:
             f.write("virtual ")
 
@@ -2098,6 +2016,8 @@ class Destructor(Code, Access):
 
         _writeMethCodeSIP(f, self.methcode)
         _writeVirtCodeSIP(f, self.virtcode)
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the destructor to an XML file. """
@@ -2149,16 +2069,14 @@ class OperatorCast(ClassCallable):
 
         return s
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the operator cast to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the operator cast to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
+        closure = _sip_start_version(f, self)
+
         f.write("operator ")
 
-        super().sip(f, hf, latest_sip)
+        super().sip(f, sf, latest_sip)
 
         if self.const:
             f.write(" const")
@@ -2166,6 +2084,8 @@ class OperatorCast(ClassCallable):
         f.write(";\n")
 
         self.sipMethcode(f)
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the operator cast to an XML file. """
@@ -2255,13 +2175,11 @@ class Method(ClassCallable):
 
         return s
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the method to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the method to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
+        closure = _sip_start_version(f, self)
+
         # We can't use the super class version because we might need to stick
         # some text in the middle of it.
         s = ""
@@ -2295,6 +2213,8 @@ class Method(ClassCallable):
         self.sipDocstring(f)
         self.sipMethcode(f)
         _writeVirtCodeSIP(f, self.virtcode)
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the method to an XML file. """
@@ -2388,13 +2308,11 @@ class OperatorMethod(ClassCallable):
 
         return s
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the operator to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the operator method to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
+        closure = _sip_start_version(f, self)
+
         s = ""
 
         if self.virtual:
@@ -2422,6 +2340,8 @@ class OperatorMethod(ClassCallable):
 
         self.sipMethcode(f)
         _writeVirtCodeSIP(f, self.virtcode)
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the operator to an XML file. """
@@ -2461,17 +2381,18 @@ class OperatorMethod(ClassCallable):
 class Function(Callable):
     """ This class represents a function. """
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the destructor to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the function to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
-        super().sip(f, hf, latest_sip)
+        closure = _sip_start_version(f, self)
+
+        super().sip(f, sf, latest_sip)
         f.write(";\n")
+
         self.sipDocstring(f)
         self.sipMethcode(f)
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the function to an XML file. """
@@ -2518,13 +2439,11 @@ class OperatorFunction(Callable):
 
         return s
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the operator to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the operator function to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
+        closure = _sip_start_version(f, self)
+
         f.write(self.returnType(ignore_namespaces=True) + "operator" + self.name)
 
         if self.pyargs != '':
@@ -2537,6 +2456,8 @@ class OperatorFunction(Callable):
         f.write(";\n")
 
         self.sipMethcode(f)
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the operator to an XML file. """
@@ -2575,13 +2496,11 @@ class Variable(Code, Access):
 
         return s
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the variable to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the variable to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
+        closure = _sip_start_version(f, self)
+
         s = self.expand_type(self.type, self.name, ignore_namespaces=True)
 
         if self.static:
@@ -2621,6 +2540,8 @@ class Variable(Code, Access):
                 f.write("}")
 
             f.write(";\n", indent=False)
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the variable to an XML file. """
@@ -2666,14 +2587,12 @@ class Typedef(Code):
         """
         return "typedef " + self.expand_type(self.type, self.name) + self.sipAnnos()
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the code to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the typedef to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
+        closure = _sip_start_version(f, self)
         f.write("typedef " + self.expand_type(self.type, self.name, ignore_namespaces=True) + self.sipAnnos() + ";\n")
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the typedef to an XML file. """
@@ -2701,42 +2620,43 @@ class Namespace(Code):
         """
         return "namespace " + self.name
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the code to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the namespace to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
-        if self.status:
-            return 
+        ignore = (self.name in sf.project.ignorednamespaces)
 
-        if self.name in self.get_project().ignorednamespaces:
-            super().sip(f, hf, latest_sip)
-            return
+        closure = _sip_start_version(f, self)
 
-        f.blank()
+        if not ignore:
+            f.blank()
 
-        f.write("namespace " + self.name + "\n{\n")
+            f.write("namespace " + self.name + "\n{\n")
 
-        f.write("%TypeHeaderCode\n", False)
+            f.write("%TypeHeaderCode\n", False)
 
-        if self.typeheadercode:
-            f.write(self.typeheadercode + "\n", False)
-        else:
-            f.write("#include <%s>\n" % hf.name, False)
+            if self.typeheadercode:
+                f.write(self.typeheadercode + "\n", False)
+            else:
+                f.write("#include <%s>\n" % sf.name, False)
 
-        f.write("%End\n", False)
+            f.write("%End\n", False)
 
-        f.blank()
+            f.blank()
 
-        f += 1
-        super().sip(f, hf, latest_sip)
-        f -= 1
+            f += 1
 
-        f.write("};\n")
+        for api_item in self.content:
+            if api_item.status == '':
+                api_item.sip(f, sf, latest_sip);
 
-        f.blank()
+        if not ignore:
+            f -= 1
+
+            f.write("};\n")
+
+            f.blank()
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the namespace to an XML file. """
@@ -2777,14 +2697,12 @@ class OpaqueClass(Code, Access):
         """
         return "class " + self.name + self.sipAnnos()
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the code to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the opaque class to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
+        closure = _sip_start_version(f, self);
         f.write("class " + self.name + self.sipAnnos() + ";\n")
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the opaque class to an XML file. """
@@ -2818,14 +2736,12 @@ class ManualCode(Code, Access):
         """
         return self.precis
 
-    def sip(self, f, hf, latest_sip):
-        """
-        Write the code to a SIP file.
+    def sip(self, f, sf, latest_sip):
+        """ Write the code to a .sip file. """
 
-        f is the file.
-        hf is the corresponding header file instance.
-        """
-        if self.body:
+        closure = _sip_start_version(f, self)
+
+        if self.body != '':
             f.write("// " + self.precis + "\n" + self.body + "\n", False)
         elif self.precis.startswith('%'):
             f.write(self.precis + "\n", False)
@@ -2834,6 +2750,8 @@ class ManualCode(Code, Access):
 
         _writeDocstringSIP(f, self.docstring)
         _writeMethCodeSIP(f, self.methcode)
+
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the manual code to an XML file. """
@@ -3068,6 +2986,44 @@ def _attrsAsString(item):
     attrs = item.xmlAttributes()
 
     return ' ' + ' '.join(attrs) if len(attrs) != 0 else ''
+
+
+def _sip_start_version(f, api_item):
+    """ Write the start of the version tests for an API item.  Return a closure
+    to be passed to the corresponding call to _sip_end_version().
+    """
+
+    v_end = p_end = f_end = False
+
+    vrange = _sip_versions(api_item)
+    if vrange != '':
+        f.write("%%If (%s)\n" % vrange, False)
+        v_end = True
+
+    if len(api_item.platforms) != 0:
+        f.write("%%If (%s)\n" % " || ".join(api_item.platforms), False)
+        p_end = True
+
+    if len(api_item.features) != 0:
+        f.write("%%If (%s)\n" % " || ".join(api_item.features), False)
+        f_end = True
+
+    return (v_end, p_end, f_end)
+
+
+def _sip_end_version(f, closure):
+    """ Write the end of the version tests for an API item. """
+
+    (v_end, p_end, f_end) = closure
+
+    if f_end:
+        f.write("%End\n", False)
+
+    if p_end:
+        f.write("%End\n", False)
+
+    if v_end:
+        f.write("%End\n", False)
 
 
 def _sip_versions(api_item):
