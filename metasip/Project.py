@@ -165,6 +165,19 @@ class Project(Model):
     # The filename of the project.
     name = Str()
 
+    @IProject.versions.default
+    def versions(self):
+        """ Invoked to return the default list of versions. """
+
+        # This is instead fo any explicit versions.
+        return [Version()]
+
+    @IProject.workingversion.default
+    def workingversion(self):
+        """ Invoked to return the default working version. """
+
+        return self.versions[0]
+
     def vmap_create(self, initial):
         """ Return a version map with each entry set to an initial value. """
 
