@@ -115,7 +115,7 @@ def launchGUI(prjname, guiargs):
     from dip.shell.tools.quit import QuitTool
 
     from metasip import (LoggerTool, ProjectEditorTool, ProjectFactory,
-            ScannerTool, SchemaValidatorTool, UpdateManager)
+            ScannerTool, SchemaValidatorTool, UpdateManager, VersionsTool)
     from metasip.schemas import ProjectV1Schema, ProjectV2Schema
     from metasip.updates import ProjectV2Update
 
@@ -134,7 +134,8 @@ def launchGUI(prjname, guiargs):
                     lambda: editor_tool,
                     ScannerTool,
                     lambda: SchemaValidatorTool(
-                            schemas=[ProjectV1Schema(), ProjectV2Schema()])],
+                            schemas=[ProjectV1Schema(), ProjectV2Schema()]),
+                    VersionsTool],
             window_title_template="[view][*]")
 
     # Create the shell.

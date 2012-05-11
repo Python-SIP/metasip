@@ -19,6 +19,7 @@ from .project_codec import ProjectCodec
 from .scanner_tool import ScannerTool
 from .schema_validator_tool import SchemaValidatorTool
 from .update_manager import UpdateManager
+from .versions_tool import VersionsTool
 
 # Make sure the adapters get registered.
 from . import project_adapters
