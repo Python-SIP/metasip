@@ -567,6 +567,13 @@ class _ProjectItem(_FixedItem):
         """
         return self._prjname
 
+    def drawVersions(self):
+        """ Draw the versions column of the item. """
+
+        working_version = self.pane.gui.project.workingversion
+        self.setText(3,
+                "" if working_version is None else working_version.name)
+
     def refreshProjectName(self):
         """
         Return the value of the name column.
