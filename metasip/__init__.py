@@ -16,6 +16,7 @@ from .Project import Project
 from .project_editor_tool import ProjectEditorTool
 from .project_factory import ProjectFactory
 from .project_codec import ProjectCodec
+from .scanner_tool import ScannerTool
 from .schema_validator_tool import SchemaValidatorTool
 from .update_manager import UpdateManager
 
