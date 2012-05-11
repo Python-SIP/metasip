@@ -13,10 +13,13 @@
 from PyQt4.QtGui import QLabel
 
 from dip.model import implements, observe
-from dip.shell import IModelSubscriber, SimpleViewTool
+from dip.publish import ISubscriber
+from dip.shell import SimpleViewTool
+
+from .interfaces.project import IProject
 
 
-@implements(IModelSubscriber)
+@implements(ISubscriber)
 class ScannerTool(SimpleViewTool):
     """ The ScannerTool implements a tool for handling the scanning of a
     project's header directories.
@@ -34,6 +37,9 @@ class ScannerTool(SimpleViewTool):
     # The tool's name.
     name = "Scanner"
 
+    # The type of models we subscribe to.
+    subscription_type = IProject
+
     # The collection of actions that the tool's action will be placed in.
     within = 'dip.ui.collections.tools'
 
@@ -44,8 +50,8 @@ class ScannerTool(SimpleViewTool):
         # Create the view.
         return QLabel("No header directories have been defined")
 
-    @observe('published_model')
-    def __published_model_changed(self, change):
-        """ Invoked when the published model changes. """
+    @observe('subscription')
+    def __subscription_changed(self, change):
+        """ Invoked when the subscription changes. """
 
-        print("Model:", change.new)
+        print(change.new.model, "is", change.new.event)

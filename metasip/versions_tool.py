@@ -11,13 +11,14 @@
 
 
 from dip.model import implements, Model, observe
-from dip.shell import IModelSubscriber, ITool
+from dip.publish import ISubscriber
+from dip.shell import ITool
 from dip.ui import Action, IAction
 
 from .interfaces.project import IProject
 
 
-@implements(ITool, IModelSubscriber)
+@implements(ITool, ISubscriber)
 class VersionsTool(Model):
     """ The VersionsTool implements a tool for handling a project's explicit
     versions.
@@ -26,15 +27,18 @@ class VersionsTool(Model):
     # The tool's identifier.
     id = 'metasip.tools.versions'
 
+    # The type of models we subscribe to.
+    subscription_type = IProject
+
     # The action.
     versions_action = Action(id='metasip.actions.versions', enabled=False,
             text="Versions...", within='dip.ui.collections.edit')
 
-    @observe('published_model')
-    def __published_model_changed(self, change):
-        """ Invoked when the published model changes. """
+    @observe('subscription')
+    def __subscription_changed(self, change):
+        """ Invoked when the subscription changes. """
 
-        IAction(self.versions_action).enabled = isinstance(change.new, IProject)
+        IAction(self.versions_action).enabled = (change.new.event == 'dip.events.active')
 
     @versions_action.triggered
     def versions_action(self):
