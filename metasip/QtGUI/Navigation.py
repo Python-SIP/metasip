@@ -602,31 +602,13 @@ class _ProjectItem(_FixedItem):
         if slist:
             return None
 
-        return [("Baseline Version...", self._baselineSlot),
-                ("Add Module...", self._addModuleSlot),
+        return [("Add Module...", self._addModuleSlot),
                 ("Add Platform Tag...", self._platformSlot),
                 ("Add Feature Tag...", self._featureSlot),
                 ("Add External Module...", self._externalmoduleSlot),
                 ("Add Ignored Namespace...", self._ignorednamespaceSlot),
                 ("Properties...", self._propertiesSlot)]
 
-
-    def _baselineSlot(self):
-        """
-        Handle baselining a version.
-        """
-        # Get the name of the new version.
-        (vers, ok) = QInputDialog.getText(self.pane, "Baseline Version",
-                "Version name")
-
-        if ok:
-            vers = str(vers).strip()
-
-            # TODO - check the version is valid (eg. no embedded spaces) and
-            # not already in use.
-            if vers:
-                # Add the version to the project
-                self.pane.gui.project.addVersion(vers)
 
     def _addModuleSlot(self):
         """ Handle adding a module to the project. """

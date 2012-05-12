@@ -536,12 +536,6 @@ class Project(Model):
                     for callable in self._get_unnamed_callables(sub):
                         yield callable
 
-    def addVersion(self, vers):
-        """ Add a new version to the project. """
-
-        self.versions.append(vers)
-        IDirty(self).dirty = True
-
     def addPlatform(self, plat):
         """ Add a new platform to the project. """
 
