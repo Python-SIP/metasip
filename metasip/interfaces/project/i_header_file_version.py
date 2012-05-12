@@ -10,9 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Bool, Instance, Interface, Str
-
-from .i_version import IVersion
+from dip.model import Bool, Interface, Str
 
 
 class IHeaderFileVersion(Interface):
@@ -27,4 +25,4 @@ class IHeaderFileVersion(Interface):
     parse = Bool(True)
 
     # The version of the header file.
-    version = Instance(IVersion)
+    version = Str()

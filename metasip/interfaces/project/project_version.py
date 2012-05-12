@@ -14,12 +14,8 @@
 #
 # History:
 #   2   Implemented by metasip v1.2.
-#       - removed the outputdir attribute from the Project element
-#       - replaced the versions attribute of the Project element to the new
-#         Version sub-element
-#       - added the workingversion attribute to the Project element
-#       - moved the inputdir and webxmldir attributes of the Project element to
-#         the Version sub-element identified by the workingversion attribute
+#       - removed the inputdir, outputdir and webxmldir attributes from the
+#         Project element
 #       - replaced all sgen and egen attributes with versions attributes
 #       - replaced the ModuleHeaderFile element with the SipFile element
 #       - moved appropriate attributes from the HeaderFile element to the

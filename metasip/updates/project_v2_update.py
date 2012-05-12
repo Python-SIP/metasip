@@ -62,14 +62,9 @@ class ProjectV2Update(Model):
             is the view returned by create_view().
         """
 
-        # Get the versions and what will become the workflow version.
-        if view is None:
-            # No versions have been explicitly defined.
-            working_version = ''
-            versions = [working_version]
-        else:
-            working_version = view.currentText()
-            versions = root.get('versions', '').split()
+        # Get the versions.
+        versions = root.get('versions', '').split()
+        working_version = '' if view is None else view.currentText()
 
         # Convert generation numbers to version ranges.
         for elem in root.iter():
@@ -169,28 +164,9 @@ class ProjectV2Update(Model):
                 if is_ignored:
                     hf.set('ignored', '1')
 
-        # Create sub-elements for each version.
-        versions.reverse()
-        for vers in versions:
-            attrib = {'name': vers}
-
-            if vers == working_version:
-                attrib['inputdir'] = root.get('inputdir')
-
-                webxmldir = root.get('webxmldir')
-                if webxmldir is not None:
-                    attrib['webxmldir'] = webxmldir
-            else:
-                attrib['inputdir'] = ''
-
-            root.insert(0, ElementTree.Element('Version', attrib))
-
-        root.set('workingversion', working_version)
-
         # Removed old root attributes.
         del root.attrib['inputdir']
         del root.attrib['outputdir']
-        del root.attrib['versions']
 
         try:
             del root.attrib['webxmldir']

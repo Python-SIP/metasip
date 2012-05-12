@@ -22,7 +22,7 @@ from .Project import (Argument, Class, Constructor, Destructor, Enum,
         EnumValue, Function, HeaderDirectory, HeaderFile, HeaderFileVersion,
         ManualCode, Method, Module, Namespace, OpaqueClass, OperatorCast,
         OperatorFunction, OperatorMethod, Project, SipFile, Typedef, Variable,
-        Version, VersionRange)
+        VersionRange)
 from .update_manager import UpdateManager
 
 
@@ -84,6 +84,7 @@ class ProjectParser:
         # Read the project.
         project.version = version
         project.rootmodule = root.get('rootmodule', '')
+        project.versions = root.get('versions', '').split()
         project.platforms = root.get('platforms', '').split()
         project.features = root.get('features', '').split()
         project.externalmodules = root.get('externalmodules', '').split()
@@ -91,17 +92,12 @@ class ProjectParser:
         project.ignorednamespaces = root.get('ignorednamespaces', '').split()
 
         for child in root:
-            if child.tag == 'Version':
-                self.add_version(project, child)
-            elif child.tag == 'Literal':
+            if child.tag == 'Literal':
                 self.add_literal(project, child)
             elif child.tag == 'HeaderDirectory':
                 self.add_header_directory(project, child)
             elif child.tag == 'Module':
                 self.add_module(project, child)
-
-        project.workingversion = self.version_from_name(project,
-                root.get('workingversion'))
 
         return True
 
@@ -276,7 +272,7 @@ class ProjectParser:
 
         hfv = HeaderFileVersion(md5=elem.get('md5'),
                 parse=bool(int(elem.get('parse', '0'))),
-                version=self.version_from_name(project, elem.get('version')))
+                version=elem.get('version'))
 
         hf.versions.append(hfv)
 
@@ -484,14 +480,6 @@ class ProjectParser:
 
         scope.content.append(var)
 
-    def add_version(self, project, elem):
-        """ Add an element defining a version to a project. """
-
-        vers = Version(name=elem.get('name'), inputdir=elem.get('inputdir'),
-                webxmldir=elem.get('webxmldir', ''))
-
-        project.versions.append(vers)
-
     @classmethod
     def get_versions(cls, project, elem):
         """ Return the list of version ranges from an element. """
@@ -503,25 +491,7 @@ class ProjectParser:
         if vstr is not None:
             for r in vstr.split():
                 vers = VersionRange()
-                sname, ename = r.split('-')
-
-                if sname != '':
-                    vers.startversion = cls.version_from_name(project, sname)
-
-                if ename != '':
-                    vers.endversion = cls.version_from_name(project, ename)
-
+                vers.startversion, vers.endversion = r.split('-')
                 versions.append(vers)
 
         return versions
-
-    @staticmethod
-    def version_from_name(project, name):
-        """ Return the version with the given name. """
-
-        for vers in project.versions:
-            if vers.name == name:
-                return vers
-
-        # This should never happen.
-        raise FormatError("unknown version '{0}'".format(name), project.name)

@@ -25,7 +25,7 @@ from .interfaces.project import (ProjectVersion, IArgument, IClass,
         IHeaderDirectory, IHeaderFile, IHeaderFileVersion, IManualCode,
         IMethod, IModule, INamespace, IOpaqueClass, IOperatorCast,
         IOperatorFunction, IOperatorMethod, IProject, ISipFile, ITypedef,
-        IVariable, IVersion, IVersioned, IVersionRange)
+        IVariable, IVersioned, IVersionRange)
 
 
 class Annotations(Model):
@@ -50,11 +50,6 @@ class Annotations(Model):
             xml.append('annos="{0}"'.format(escape(self.annos)))
 
         return xml
-
-
-@implements(IVersion)
-class Version(Model):
-    """ This class implements a version. """
 
 
 @implements(IVersionRange)
@@ -164,19 +159,6 @@ class Project(Model):
 
     # The filename of the project.
     name = Str()
-
-    @IProject.versions.default
-    def versions(self):
-        """ Invoked to return the default list of versions. """
-
-        # This is instead fo any explicit versions.
-        return [Version()]
-
-    @IProject.workingversion.default
-    def workingversion(self):
-        """ Invoked to return the default working version. """
-
-        return self.versions[0]
 
     def vmap_create(self, initial):
         """ Return a version map with each entry set to an initial value. """
@@ -608,6 +590,12 @@ class Project(Model):
         if f is None:
             return False
 
+        # Handle the versions.
+        if len(self.versions) != 0:
+            vers = ' versions="{0}"'.format(' '.join(self.versions))
+        else:
+            vers = ''
+
         # Handle the platforms.
         if len(self.platforms) != 0:
             plat = ' platforms="{0}"'.format(' '.join(self.platforms))
@@ -643,17 +631,9 @@ class Project(Model):
 
         # Write the project using the current format version.
         f.write('<?xml version="1.0"?>\n')
-        f.write('<Project version="%u" rootmodule="%s"%s%s%s%s%s workingversion="%s">\n' % (ProjectVersion, self.rootmodule, plat, feat, xmod, xf, ins, self.workingversion.name))
+        f.write('<Project version="%u" rootmodule="%s"%s%s%s%s%s%s>\n' % (ProjectVersion, self.rootmodule, vers, plat, feat, xmod, xf, ins))
 
         f += 1
-
-        # Write the versions.
-        for vers in self.versions:
-            webxml = ' webxmldir="{0}"'.format(vers.webxmldir) if vers.webxmldir != '' else ''
-
-            f.write(
-                    '<Version name="{0}" inputdir="{1}"{2}/>\n'.format(
-                            vers.name, vers.inputdir, webxml))
 
         # Write the literals.
         if self.sipcomments != '':
@@ -794,7 +774,7 @@ class Project(Model):
             # level modules (ie. those that don't import anything).
 
             if len(self.versions) != 0:
-                f.write("%%Timeline {%s}\n\n" % ' '.join([v.name for v in self.versions]))
+                f.write("%%Timeline {%s}\n\n" % ' '.join(self.versions))
 
             if len(self.platforms) != 0:
                 f.write("%%Platforms {%s}\n\n" % ' '.join(self.platforms))
@@ -1360,7 +1340,7 @@ class HeaderFileVersion(Model):
         xml = []
 
         xml.append('md5="{0}"'.format(self.md5))
-        xml.append('version="{0}"'.format(self.version.name))
+        xml.append('version="{0}"'.format(self.version))
 
         if self.parse:
             xml.append('parse="1"')
@@ -3108,16 +3088,16 @@ def _sip_versions(api_item):
 def version_range(version_range):
     """ Return a version range converted to a string. """
 
-    if version_range.startversion is None:
-        if version_range.endversion is None:
+    if version_range.startversion == '':
+        if version_range.endversion == '':
             return ""
 
-        return "- " + version_range.endversion.name
+        return "- " + version_range.endversion
 
-    if version_range.endversion is None:
-        return version_range.startversion.name + " -"
+    if version_range.endversion == '':
+        return version_range.startversion + " -"
 
-    return version_range.startversion.name + " - " + version_range.endversion.name
+    return version_range.startversion + " - " + version_range.endversion
 
 
 def escape(s):

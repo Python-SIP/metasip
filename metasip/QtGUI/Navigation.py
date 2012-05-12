@@ -567,11 +567,6 @@ class _ProjectItem(_FixedItem):
         """
         return self._prjname
 
-    def drawVersions(self):
-        """ Draw the versions column of the item. """
-
-        self.setText(3, self.pane.gui.project.workingversion.name)
-
     def refreshProjectName(self):
         """
         Return the value of the name column.
@@ -724,9 +719,7 @@ class _ProjectItem(_FixedItem):
         dlg = ProjectPropertiesDialog(prj, self.pane)
 
         if dlg.exec_() == QDialog.Accepted:
-            version = prj.workingversion
-
-            (prj.rootmodule, version.inputdir, version.webxmldir, prj.platforms, prj.features, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
+            (prj.rootmodule, prj.platforms, prj.features, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
 
             self.set_dirty()
 
@@ -1013,20 +1006,16 @@ class _HeaderDirectoryItem(_FixedItem):
         if slist:
             return None
 
-        # Only enable the scan if the main project directory has been set.
-        scan = (self.pane.gui.project.workingversion.inputdir != "")
-
-        return [("Scan Header Directory", self._scanHeaderDirectorySlot, scan),
+        return [("Scan Header Directory", self._scanHeaderDirectorySlot),
                 ("Properties...", self._propertiesSlot)]
 
     def _scanHeaderDirectorySlot(self):
         """
         Handle scanning the header directory.
         """
-        sd = os.path.join(
-                os.path.expanduser(
-                        self.pane.gui.project.workingversion.inputdir),
-                self._hdir.inputdirsuffix)
+        # FIXME: Ask the user for the name of the root input directory.
+        #        Default to the value they used last time in this session.
+        sd = os.path.join(input_dir, self._hdir.inputdirsuffix)
 
         self._hdir.scan(sd)
         self.pane.headerDirectoryScanned.emit(self._hdir)
@@ -1448,7 +1437,9 @@ class _SipFileItem(_SimpleItem, _DropSite):
 
         parser = CppParser()
 
-        phf = parser.parse(gui.project, hdir, self.sipfile)
+        # FIXME: Ask the user for the name of the root input directory.
+        #        Default to the value they used last time in this session.
+        phf = parser.parse(input_dir, hdir, self.sipfile)
 
         if phf is None:
             QMessageBox.critical(self.pane, "Parse Header File",

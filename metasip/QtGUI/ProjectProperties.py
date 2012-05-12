@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt4.QtGui import QDialog, QFileDialog
+from PyQt4.QtGui import QDialog
 
 from .Designer.ProjectPropertiesBase import Ui_ProjectPropertiesBase
 
@@ -31,8 +31,6 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
 
         # Initialise the dialog.
         self.rootModule.setText(prj.rootmodule)
-        self.srcRootDir.setText(prj.workingversion.inputdir)
-        self.webXmlRootDir.setText(prj.workingversion.webxmldir)
 
         for p in prj.platforms:
             self.platformTags.addItem(p)
@@ -67,15 +65,10 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         if prj.sipcomments:
             self.sipFileComments.setPlainText(prj.sipcomments + "\n")
 
-        self.browseSrcRootDir.clicked.connect(self._browse_src)
-        self.browseWebXmlRootDir.clicked.connect(self._browse_webxml)
-
     def fields(self):
         """ Return a tuple of the dialog fields. """
 
         rootmodule = self.rootModule.text().strip()
-        srcrootdir = self.srcRootDir.text().strip()
-        webxmlrootdir = self.webXmlRootDir.text().strip()
         sipcomments = self.sipFileComments.toPlainText().strip()
 
         pl = [self.platformTags.itemText(i)
@@ -93,8 +86,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         ns = [self.ignoredNamespaces.itemText(i)
                 for i in range(self.ignoredNamespaces.count())]
 
-        return (rootmodule, srcrootdir, webxmlrootdir, pl, fl, xfl, ml, ns,
-                sipcomments)
+        return (rootmodule, pl, fl, xfl, ml, ns, sipcomments)
 
     def _removePlatTag(self):
         """
@@ -145,23 +137,3 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         if idx >= 0:
             self.ignoredNamespaces.removeItem(idx)
             self.buttonRemoveNamespace.setEnabled(self.ignoredNamespaces.count())
-
-    def _browse_src(self):
-        """
-        Handle the Browse source directory button.
-        """
-        d = QFileDialog.getExistingDirectory(self, "Source Root Directory",
-                self.srcRootDir.text())
-
-        if not d.isNull():
-            self.srcRootDir.setText(d)
-
-    def _browse_webxml(self):
-        """
-        Handle the Browse WebXML directory button.
-        """
-        d = QFileDialog.getExistingDirectory(self, "WebXML Root Directory",
-                self.webXmlRootDir.text())
-
-        if not d.isNull():
-            self.webXmlRootDir.setText(d)

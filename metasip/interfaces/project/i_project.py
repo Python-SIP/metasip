@@ -14,7 +14,6 @@ from dip.model import Instance, Int, Interface, List, Str
 
 from .i_header_directory import IHeaderDirectory
 from .i_module import IModule
-from .i_version import IVersion
 from .project_version import ProjectVersion
 
 
@@ -52,9 +51,5 @@ class IProject(Interface):
     # The version number of the project format.
     version = Int(ProjectVersion)
 
-    # The ordered list of versions.  There will be at least one (whose name
-    # will be an empty string if no versions have been explicitly defined).
-    versions = List(IVersion)
-
-    # The version being worked on.
-    workingversion = Instance(IVersion)
+    # The ordered list of versions.
+    versions = List(Str())

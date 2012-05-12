@@ -69,6 +69,7 @@ class ProjectEditorTool(BaseManagedModelTool):
 
         from .WebXML import WebXMLParser
 
+        # FIXME: Ask the user for the WebXML directory.
         webxml_files = glob.glob(os.path.join(self.project.workingversion.webxmldir, '*.xml'))
         progress = QProgressDialog(self)
         progress.setWindowTitle("Parsing WebXML Files")

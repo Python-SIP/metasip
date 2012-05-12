@@ -484,8 +484,6 @@
 
     <xsd:complexType name="ProjectType">
         <xsd:sequence>
-            <xsd:element name="Version" type="VersionType"
-                    maxOccurs="unbounded"/>
             <xsd:element name="Literal" type="ProjectLiterals" minOccurs="0"
                     maxOccurs="unbounded"/>
             <xsd:element name="HeaderDirectory" type="HeaderDirectoryType"
@@ -501,7 +499,7 @@
         <xsd:attribute name="rootmodule" type="xsd:string"/>
         <xsd:attribute name="version" type="xsd:nonNegativeInteger" fixed="2"
                 use="required"/>
-        <xsd:attribute name="workingversion" type="xsd:string" use="required"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="SipFileLiterals">
@@ -580,12 +578,6 @@
         <xsd:attribute name="static" type="xsd:boolean" default="0"/>
         <xsd:attribute name="versions" type="xsd:string"/>
         <xsd:attribute name="type" type="xsd:string" use="required"/>
-    </xsd:complexType>
-
-    <xsd:complexType name="VersionType">
-        <xsd:attribute name="name" type="xsd:string" use="required"/>
-        <xsd:attribute name="inputdir" type="xsd:string" use="required"/>
-        <xsd:attribute name="webxmldir" type="xsd:string"/>
     </xsd:complexType>
 
 </xsd:schema>

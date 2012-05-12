@@ -10,9 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Instance, Interface
-
-from .i_version import IVersion
+from dip.model import Interface, Str
 
 
 class IVersionRange(Interface):
@@ -21,7 +19,7 @@ class IVersionRange(Interface):
     """
 
     # The end version.
-    endversion = Instance(IVersion)
+    endversion = Str()
 
-    # The start generation.
-    startversion = Instance(IVersion)
+    # The start version.
+    startversion = Str()

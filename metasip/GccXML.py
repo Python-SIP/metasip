@@ -912,18 +912,16 @@ class GccXMLParser(ParserBase):
                 "arraytype":        _PointerType,
                 "cvqualifiedtype":  _CvQualifiedType}
 
-    def parse(self, prj, hdir, hf):
+    def parse(self, input_dir, hdir, hf):
         """
         Parse a file and return the parsed file instance or None if there was
         an error.
 
-        prj is the project.
+        input_dir is the root input directory.
         hdir is the header directory instance.
         hf is the header file instance.
         """
         # Check the input directory exists.
-        input_dir = os.path.expanduser(prj.workingversion.inputdir)
-
         if not os.path.isdir(input_dir):
             self.diagnostic = "%s directory does not exist" % input_dir
             Logger.log(self.diagnostic)
