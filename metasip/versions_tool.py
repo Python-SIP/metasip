@@ -12,8 +12,8 @@
 
 from dip.model import implements, Model, observe
 from dip.publish import ISubscriber
-from dip.shell import ITool
-from dip.ui import Action, IAction
+from dip.shell import IDirty, ITool
+from dip.ui import Action, IAction, Application, Dialog, IDialog
 
 from .interfaces.project import IProject
 
@@ -23,6 +23,9 @@ class VersionsTool(Model):
     """ The VersionsTool implements a tool for handling a project's explicit
     versions.
     """
+
+    # The versions dialog.
+    dialog = Dialog('versions', window_title="Versions")
 
     # The tool's identifier.
     id = 'metasip.tools.versions'
@@ -44,4 +47,41 @@ class VersionsTool(Model):
     def versions_action(self):
         """ Invoked when the versions action is triggered. """
 
-        print("Doing versions")
+        project = self.subscription.model
+        model = dict(versions=project.versions)
+
+        # FIXME: Validate any new entries making sure they are unique and
+        #        contain no spaces or hyphens.
+        dlg = self.dialog(model)
+
+        if IDialog(dlg).execute():
+            # At the moment we only support adding new versions.
+            old_versions = project.versions
+            new_versions = model['versions']
+
+            new_so_far = 0
+            ok = True
+            for i, new in enumerate(new_versions):
+                try:
+                    old_i = old_versions.index(new)
+
+                    if old_i != i + new_so_far:
+                        # It's an old version in a different position.
+                        ok = False
+                        break
+                except ValueError:
+                    # It's a new version.
+                    new_so_far += 1
+
+            if ok:
+                # Check that nothing has been deleted.
+                if len(old_versions) + new_so_far != len(new_versions):
+                    ok = False
+
+            if ok:
+                project.versions = new_versions
+                IDirty(project).dirty = True
+            else:
+                Application.warning("Versions",
+                        "At the moment only adding new versions is supported",
+                        self.shell)
