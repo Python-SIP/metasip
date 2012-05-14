@@ -14,7 +14,7 @@ from dip.model import implements, List, Model, observe, Str, Trigger
 from dip.publish import ISubscriber
 from dip.shell import SimpleViewTool
 
-from .interfaces.project import IProject
+from ...interfaces.project import IProject
 
 
 @implements(ISubscriber)

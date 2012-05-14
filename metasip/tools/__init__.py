@@ -8,14 +8,3 @@
 #
 # This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-
-
-from .logger import Logger
-from .Project import Project
-from .project_editor_tool import ProjectEditorTool
-from .project_factory import ProjectFactory
-from .project_codec import ProjectCodec
-from .update_manager import UpdateManager
-
-# Make sure the adapters get registered.
-from . import project_adapters

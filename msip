@@ -114,9 +114,12 @@ def launchGUI(prjname, guiargs):
     from dip.shell.tools.model_manager import ModelManagerTool
     from dip.shell.tools.quit import QuitTool
 
-    from metasip import (LoggerTool, ProjectEditorTool, ProjectFactory,
-            ScannerTool, SchemaValidatorTool, UpdateManager, VersionsTool)
+    from metasip import ProjectEditorTool, ProjectFactory, UpdateManager
     from metasip.schemas import ProjectV1Schema, ProjectV2Schema
+    from metasip.tools.logger import LoggerTool
+    from metasip.tools.scanner import ScannerTool
+    from metasip.tools.schema_validator import SchemaValidatorTool
+    from metasip.tools.versions import VersionsTool
     from metasip.updates import ProjectV2Update
 
     app = QApplication(guiargs)

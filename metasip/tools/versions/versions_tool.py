@@ -15,7 +15,7 @@ from dip.publish import ISubscriber
 from dip.shell import IDirty, ITool
 from dip.ui import Action, IAction, Application, Dialog, IDialog
 
-from .interfaces.project import IProject
+from ...interfaces.project import IProject
 
 
 @implements(ITool, ISubscriber)

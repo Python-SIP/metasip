@@ -14,7 +14,7 @@ from PyQt4.QtGui import QAbstractSlider, QApplication, QPlainTextEdit
 
 from dip.shell import SimpleViewTool
 
-from .logger import Logger
+from ... import Logger
 
 
 class LoggerTool(SimpleViewTool):
