@@ -10,9 +10,10 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import implements, List, Model, observe, Str, Trigger
+from dip.model import implements, observe
 from dip.publish import ISubscriber
 from dip.shell import SimpleViewTool
+from dip.ui import IViewBinding
 
 from ...interfaces.project import IProject
 
@@ -46,21 +47,25 @@ class ScannerTool(SimpleViewTool):
         """ Invoked to create the tool's view. """
 
         from dip.ui import (ComboBox, FilesystemLocationEditor, Form, Grid,
-                GroupBox, Label, PushButton, Splitter, Stretch, VBox,
-                ViewStack)
+                GroupBox, Label, MessageArea, PushButton, Splitter, Stretch,
+                VBox, ViewStack)
+
+        from .scanner_controller import ScannerController
+        from .scanner_model import ScannerModel
 
         # The view factory.
         view_factory = ViewStack(
                 VBox(
                     Label('no_project_text'),
-                    Stretch()),
+                    Stretch(),
+                    id='metasip.scanner.no_project'),
                 Splitter(
-                    ViewStack(),
+                    ViewStack(id='metasip.scanner.project_views'),
                     VBox(
                         Form(
-                            ComboBox('working_version', options='versions',
-                                    visible=False),
-                            FilesystemLocationEditor('source_directory')),
+                            ComboBox('working_version', visible=False),
+                            FilesystemLocationEditor('source_directory',
+                                    mode='directory', required=True)),
                         GroupBox(
                             VBox(
                                 Form('header_directory_suffix', 'file_filter',
@@ -73,40 +78,25 @@ class ScannerTool(SimpleViewTool):
                             PushButton('new', label="New..."),
                             PushButton('delete', enabled=False),
                             nr_columns=2),
-                        Stretch())))
+                        Stretch(),
+                        MessageArea()),
+                    id='metasip.scanner.splitter'),
+                controller_factory=ScannerController)
 
         # Create the view.
-        return view_factory(ScannerModel())
+        return view_factory(ScannerModel(), top_level=False)
 
     @observe('subscription')
     def __subscription_changed(self, change):
         """ Invoked when the subscription changes. """
 
-        print(change.new.model, "is", change.new.event)
+        event = change.new.event
+        project = change.new.model
+        controller = IViewBinding(self.view).controller
 
-
-class ScannerModel(Model):
-
-    delete = Trigger()
-
-    no_project_text = Str("There is no project to scan.")
-
-    file_filter = Str()
-
-    header_directory_suffix = Str()
-
-    new = Trigger()
-
-    parser_arguments = Str()
-
-    restart = Trigger()
-
-    scan = Trigger()
-
-    source_directory = Str()
-
-    update = Trigger()
-
-    versions = List(Str())
-
-    working_version = Str(None, allow_none=True)
+        if event == 'dip.events.opened':
+            controller.open_project(project)
+        elif event == 'dip.events.closed':
+            controller.close_project(project)
+        elif event == 'dip.events.active':
+            controller.activate_project(project)
