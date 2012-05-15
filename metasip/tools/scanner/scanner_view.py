@@ -10,7 +10,10 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt4.QtGui import QTreeWidget
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QTreeWidget, QTreeWidgetItem
+
+from dip.model import observe
 
 
 class ScannerView(QTreeWidget):
@@ -34,7 +37,7 @@ class ScannerView(QTreeWidget):
 
         self.set_working_version()
 
-        # FIXME: Observe the project's name.
+        ProjectItem(project, self)
 
     def set_working_version(self):
         """ Set the working version. """
@@ -43,3 +46,62 @@ class ScannerView(QTreeWidget):
             self.working_version = self.project.versions[-1]
         except IndexError:
             self.working_version = None
+
+
+class ProjectItem(QTreeWidgetItem):
+    """ ProjectItem is an internal class that represents a project in the
+    scanner tool GUI.
+    """
+
+    def __init__(self, project, parent):
+        """ Initialise the item. """
+
+        super().__init__(parent)
+
+        self._project = project
+
+        self.setText(0, project.descriptive_name())
+        observe('name', project,
+                lambda c: self.setText(0, c.model.descriptive_name()))
+
+        self.setExpanded(True)
+
+        for header_directory in project.headers:
+            HeaderDirectoryItem(header_directory, self)
+
+        self.sortChildren(0, Qt.AscendingOrder)
+
+
+class HeaderDirectoryItem(QTreeWidgetItem):
+    """ HeaderDirectoryItem is an internal class that represents a header
+    directory in the scanner tool GUI.
+    """
+
+    def __init__(self, header_directory, parent):
+        """ Initialise the item. """
+
+        super().__init__(parent)
+
+        self._header_directory = header_directory
+
+        self.setText(0, header_directory.name)
+
+        for header_file in header_directory.content:
+            HeaderFileItem(header_file, self)
+
+        self.sortChildren(0, Qt.AscendingOrder)
+
+
+class HeaderFileItem(QTreeWidgetItem):
+    """ HeaderFileItem is an internal class that represents a header file in
+    the scanner tool GUI.
+    """
+
+    def __init__(self, header_file, parent):
+        """ Initialise the item. """
+
+        super().__init__(parent)
+
+        self._header_file = header_file
+
+        self.setText(0, header_file.name)

@@ -78,11 +78,11 @@ class ScannerController(Controller):
     def validate(self):
         """ Reimplemented to update the state of the view after a change. """
 
+        super().validate()
+
         # This is called very early.
         if self.current_project_ui is None:
             return
-
-        super().validate()
 
         # Scan is enabled if there is a valid source directory.
         ieditor = IEditor(self.source_directory_editor)

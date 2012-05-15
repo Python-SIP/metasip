@@ -18,6 +18,7 @@ from PyQt4.QtGui import (QApplication, QDialog, QDrag, QFileDialog,
         QInputDialog, QMenu, QMessageBox, QProgressDialog, QTreeWidget,
         QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout)
 
+from dip.model import observe
 from dip.shell import IDirty
 
 from ..Project import (Class, Constructor, Destructor, Method, Function,
@@ -117,12 +118,6 @@ class NavigationPane(QTreeWidget):
         progress.setValue(0)
 
         self._navroot.draw(progress)
-
-    def refreshProjectName(self):
-        """
-        Draw the current project name.
-        """
-        self._navroot.refreshProjectName()
 
     def clearProject(self):
         """
@@ -550,14 +545,14 @@ class _ProjectItem(_FixedItem):
     """ This class implements a navigation item that represents a project. """
 
     def __init__(self, parent):
-        """
-        Initialise the item instance.
+        """ Initialise the item. """
 
-        parent is the parent.
-        """
-        self._prjname = ""
+        project = parent.gui.project
 
-        super(_ProjectItem, self).__init__(parent)
+        self._prjname = project.descriptive_name()
+        observe('name', parent.gui.project, self.__project_name_changed)
+
+        super().__init__(parent)
 
         self.setExpanded(True)
 
@@ -567,11 +562,10 @@ class _ProjectItem(_FixedItem):
         """
         return self._prjname
 
-    def refreshProjectName(self):
-        """
-        Return the value of the name column.
-        """
-        self._prjname = self.pane.gui.project.descriptiveName()
+    def __project_name_changed(self, change):
+        """ Invoked when the name of the project changes. """
+
+        self._prjname = change.model.descriptive_name()
         self.drawName()
 
     def draw(self, progress):
@@ -581,7 +575,7 @@ class _ProjectItem(_FixedItem):
             is the progress dialog to update.
         """
 
-        self.refreshProjectName()
+        self.drawName()
 
         so_far = 0
         for mod in self.pane.gui.project.modules:

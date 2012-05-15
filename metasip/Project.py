@@ -690,10 +690,9 @@ class Project(Model):
 
         return True
 
-    def descriptiveName(self):
-        """
-        Return the descriptive name of the project.
-        """
+    def descriptive_name(self):
+        """ Return the descriptive name of the project. """
+
         if self.name == '':
             return "Untitled"
 

@@ -37,6 +37,3 @@ class ProjectIManagedModelAdapter(Adapter):
         """ Invoked when the location changes. """
 
         self.adaptee.name = str(change.new)
-
-        if len(self.views) != 0:
-            self.views[0].refreshProjectName()
