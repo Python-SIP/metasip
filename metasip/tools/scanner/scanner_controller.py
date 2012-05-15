@@ -89,6 +89,10 @@ class ScannerController(Controller):
         self.current_project_ui.source_directory = ieditor.value
         IView(self.scan_editor).enabled = (ieditor.invalid_reason == '')
 
+        # Update the working version.
+        self.current_project_ui.set_working_version(
+                IEditor(self.working_version_editor).value)
+
     def _find_view(self, project):
         """ Find the project specific part of the GUI for a project. """
 
@@ -136,9 +140,9 @@ class ScannerController(Controller):
 
         if project == self.current_project:
             # See if the current working version has been removed.
-            if self.current_project_ui.working_version in change.old:
+            if self.current_project_ui.get_working_version() in change.old:
                 # FIXME: What else needs to happen when removing a version?
-                self.current_project_ui.set_working_version()
+                self.current_project_ui.reset_working_version()
 
             self._update_versions()
 
@@ -148,6 +152,6 @@ class ScannerController(Controller):
         self.model.working_version = None
         IOptionSelector(self.working_version_editor).options = reversed(
                 self.current_project.versions)
-        self.model.working_version = self.current_project_ui.working_version
+        self.model.working_version = self.current_project_ui.get_working_version()
         IView(self.working_version_editor).visible = (
                 len(self.current_project.versions) != 0)

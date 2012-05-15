@@ -11,7 +11,7 @@
 
 
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QTreeWidget, QTreeWidgetItem
+from PyQt4.QtGui import QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator
 
 from dip.model import observe
 
@@ -35,20 +35,56 @@ class ScannerView(QTreeWidget):
         self.project = project
         self.source_directory = ''
 
-        self.set_working_version()
+        self.reset_working_version()
 
         ProjectItem(project, self)
 
-    def set_working_version(self):
+    def get_working_version(self):
+        """ Get the working version. """
+
+        return self._working_version
+
+    def set_working_version(self, working_version):
         """ Set the working version. """
 
+        if self._working_version != working_version:
+            self._working_version = working_version
+
+            for itm in self._items():
+                itm.update_working_version()
+
+    def reset_working_version(self):
+        """ Reset the working version. """
+
         try:
-            self.working_version = self.project.versions[-1]
+            self._working_version = self.project.versions[-1]
         except IndexError:
-            self.working_version = None
+            self._working_version = None
+
+    def _items(self):
+        """ A generator for all the items in the tree. """
+
+        it = QTreeWidgetItemIterator(self)
+
+        value = it.value()
+        while value is not None:
+            yield value
+            it += 1
+            value = it.value()
 
 
-class ProjectItem(QTreeWidgetItem):
+class ScannerItem(QTreeWidgetItem):
+    """ ScannerItem is an internal base class for all items in the scanner tool
+    tree.
+    """
+
+    def update_working_version(self):
+        """ Update in the light of the working versions.  This default
+        implementation does nothing.
+        """
+
+
+class ProjectItem(ScannerItem):
     """ ProjectItem is an internal class that represents a project in the
     scanner tool GUI.
     """
@@ -72,7 +108,7 @@ class ProjectItem(QTreeWidgetItem):
         self.sortChildren(0, Qt.AscendingOrder)
 
 
-class HeaderDirectoryItem(QTreeWidgetItem):
+class HeaderDirectoryItem(ScannerItem):
     """ HeaderDirectoryItem is an internal class that represents a header
     directory in the scanner tool GUI.
     """
@@ -92,7 +128,7 @@ class HeaderDirectoryItem(QTreeWidgetItem):
         self.sortChildren(0, Qt.AscendingOrder)
 
 
-class HeaderFileItem(QTreeWidgetItem):
+class HeaderFileItem(ScannerItem):
     """ HeaderFileItem is an internal class that represents a header file in
     the scanner tool GUI.
     """
@@ -104,4 +140,35 @@ class HeaderFileItem(QTreeWidgetItem):
 
         self._header_file = header_file
 
+        self.update_working_version()
+
+        # Draw the rest of the item.
         self.setText(0, header_file.name)
+        self.setText(2, header_file.module)
+
+    def update_working_version(self):
+        """ Update in the light of the working versions. """
+
+        # Get the working version of the file, if any.
+        working_version = self.treeWidget().get_working_version()
+
+        if working_version is None:
+            working_file = self._header_file.versions[0]
+        else:
+            for working_file in self._header_file.versions:
+                if working_file.version == working_version:
+                    break
+            else:
+                working_file = None
+
+        self.setHidden(working_file is None)
+
+        # Determine the status.
+        if self._header_file.ignored:
+            status = "Ignored"
+        elif working_file is not None and working_file.parse:
+            status = "Needs parsing"
+        else:
+            status = ''
+
+        self.setText(1, status)
