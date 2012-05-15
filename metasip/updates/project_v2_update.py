@@ -146,7 +146,8 @@ class ProjectV2Update(Model):
                     header_directory.remove(hf)
                     continue
                 else:
-                    use_version = hf_versions.split('-')[1]
+                    upper_version = hf_versions.split('-')[1]
+                    use_version = versions[versions.index(upper_version) - 1]
 
                 # Remove any existing elements as they will have been copied to
                 # a SipFile element.
