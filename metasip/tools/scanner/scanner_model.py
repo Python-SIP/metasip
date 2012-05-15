@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Model, Str, Trigger
+from dip.model import Bool, Model, Str, Trigger
 
 
 class ScannerModel(Model):
@@ -31,6 +31,12 @@ class ScannerModel(Model):
     # of the current header directory.
     header_directory_suffix = Str()
 
+    # Set if a header file is ignored.
+    ignored = Bool()
+
+    # The module that a header file is assigned to.
+    module = Str()
+
     # Pulled to create a new header directory.
     new = Trigger()
 
@@ -50,7 +56,10 @@ class ScannerModel(Model):
 
     # Pulled to update the project with the modified file filter, header
     # directory suffix and parser arguments.
-    update = Trigger()
+    update_directory = Trigger()
+
+    # Pulled to update the project with the modified module and ignored.
+    update_file = Trigger()
 
     # The working version if any versions have been defined.
     working_version = Str(None, allow_none=True)

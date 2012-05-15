@@ -70,8 +70,14 @@ class ScannerTool(SimpleViewTool):
                             VBox(
                                 Form('header_directory_suffix', 'file_filter',
                                         'parser_arguments'),
-                                'update'),
-                                title="Properties"),
+                                PushButton('update_directory',
+                                        label="Update")),
+                            id='metasip.scanner.directory_props'),
+                        GroupBox(
+                            VBox(
+                                Form('module', 'ignored'),
+                                PushButton('update_file', label="Update")),
+                            id='metasip.scanner.file_props'),
                         Grid(
                             PushButton('scan', enabled=False),
                             PushButton('restart', label="Restart Workflow"),

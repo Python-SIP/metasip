@@ -21,17 +21,19 @@ class ScannerView(QTreeWidget):
     part of the scanner tool GUI.
     """
 
-    def __init__(self, project):
-        """ Initialise the view.
+    # The column numbers.
+    (NAME, STATUS, MODULE) = range(3)
 
-        :param project:
-            is the project.
-        """
+    def __init__(self, controller, project):
+        """ Initialise the view. """
 
         super().__init__()
 
         self.setHeaderLabels(["Name", "Status", "Module"])
 
+        self.itemSelectionChanged.connect(self.refresh_selection)
+
+        self._controller = controller
         self.project = project
         self.source_directory = ''
 
@@ -61,6 +63,12 @@ class ScannerView(QTreeWidget):
         except IndexError:
             self._working_version = None
 
+    def refresh_selection(self):
+        """ Invoked when the item selection changes. """
+
+        self._controller.selection(
+                [itm.get_project_item() for itm in self.selectedItems()])
+
     def _items(self):
         """ A generator for all the items in the tree. """
 
@@ -83,6 +91,11 @@ class ScannerItem(QTreeWidgetItem):
         implementation does nothing.
         """
 
+    def get_project_item(self):
+        """ Return the item's corresponding project item. """
+
+        raise NotImplementedError
+
 
 class ProjectItem(ScannerItem):
     """ ProjectItem is an internal class that represents a project in the
@@ -96,16 +109,22 @@ class ProjectItem(ScannerItem):
 
         self._project = project
 
-        self.setText(0, project.descriptive_name())
+        self.setText(ScannerView.NAME, project.descriptive_name())
         observe('name', project,
-                lambda c: self.setText(0, c.model.descriptive_name()))
+                lambda c: self.setText(ScannerView.NAME,
+                        c.model.descriptive_name()))
 
         self.setExpanded(True)
 
         for header_directory in project.headers:
             HeaderDirectoryItem(header_directory, self)
 
-        self.sortChildren(0, Qt.AscendingOrder)
+        self.sortChildren(ScannerView.NAME, Qt.AscendingOrder)
+
+    def get_project_item(self):
+        """ Return the item's corresponding project item. """
+
+        return self._project
 
 
 class HeaderDirectoryItem(ScannerItem):
@@ -120,12 +139,27 @@ class HeaderDirectoryItem(ScannerItem):
 
         self._header_directory = header_directory
 
-        self.setText(0, header_directory.name)
+        self.setText(ScannerView.NAME, header_directory.name)
+
+        expand = False
 
         for header_file in header_directory.content:
-            HeaderFileItem(header_file, self)
+            itm = HeaderFileItem(header_file, self)
 
-        self.sortChildren(0, Qt.AscendingOrder)
+            # Expand the header directory if there is at least one non-ignored
+            # file that needs something doing.
+            if not header_file.ignored and itm.text(ScannerView.STATUS) != '':
+                expand = True
+
+        self.sortChildren(ScannerView.NAME, Qt.AscendingOrder)
+
+        if expand:
+            self.setExpanded(True)
+
+    def get_project_item(self):
+        """ Return the item's corresponding project item. """
+
+        return self._header_directory
 
 
 class HeaderFileItem(ScannerItem):
@@ -143,8 +177,8 @@ class HeaderFileItem(ScannerItem):
         self.update_working_version()
 
         # Draw the rest of the item.
-        self.setText(0, header_file.name)
-        self.setText(2, header_file.module)
+        self.setText(ScannerView.NAME, header_file.name)
+        self.setText(ScannerView.MODULE, header_file.module)
 
     def update_working_version(self):
         """ Update in the light of the working versions. """
@@ -171,4 +205,9 @@ class HeaderFileItem(ScannerItem):
         else:
             status = ''
 
-        self.setText(1, status)
+        self.setText(ScannerView.STATUS, status)
+
+    def get_project_item(self):
+        """ Return the item's corresponding project item. """
+
+        return self._header_file

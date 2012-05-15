@@ -11,9 +11,11 @@
 
 
 from dip.model import Instance, observe
-from dip.ui import Controller, IEditor, IOptionSelector, IView, IViewStack
+from dip.ui import (Controller, IEditor, IGroupBox, IOptionSelector, IView,
+        IViewStack)
 
 from ...interfaces.project import IProject
+from ...Project import HeaderDirectory, HeaderFile, Project
 
 from .scanner_view import ScannerView
 
@@ -44,6 +46,9 @@ class ScannerController(Controller):
         # Configure the source directory.
         self.model.source_directory = project_ui.source_directory
 
+        # Configure from the selection.
+        project_ui.refresh_selection()
+
     def close_project(self, project):
         """ Close a project. """
 
@@ -69,7 +74,7 @@ class ScannerController(Controller):
             IViewStack(self.view).current_view = self.splitter_view
 
         # Create the project specific part of the GUI.
-        view = ScannerView(project)
+        view = ScannerView(self, project)
         IViewStack(self.project_views_view).views.append(view)
 
         # Observe any changes to the versions.
@@ -92,6 +97,42 @@ class ScannerController(Controller):
         # Update the working version.
         self.current_project_ui.set_working_version(
                 IEditor(self.working_version_editor).value)
+
+    def selection(self, selected_items):
+        """ This is called by the project specific view when the selected items
+        changes.
+        """
+
+        # We don't handle multiple selections.
+        selection = selected_items[0] if len(selected_items) == 1 else None
+
+        directory_name = file_name = ''
+
+        if isinstance(selection, Project):
+            pass
+        elif isinstance(selection, HeaderDirectory):
+            directory_name = selection.name
+        elif isinstance(selection, HeaderFile):
+            directory_name = self.current_project.findHeaderDirectory(selection).name
+            file_name = selection.name
+
+        # Configure the header directory properties.
+        directory_props = IGroupBox(self.directory_props_view)
+        if directory_name != '':
+            directory_props.enabled = True
+            directory_props.title = "{0} Properties".format(directory_name)
+        else:
+            directory_props.enabled = False
+            directory_props.title = "Header Directory Properties"
+
+        # Configure the header file properties.
+        file_props = IGroupBox(self.file_props_view)
+        if file_name != '':
+            file_props.enabled = True
+            file_props.title = "{0} Properties".format(file_name)
+        else:
+            file_props.enabled = False
+            file_props.title = "Header File Properties"
 
     def _find_view(self, project):
         """ Find the project specific part of the GUI for a project. """
@@ -127,11 +168,17 @@ class ScannerController(Controller):
 
         print("Doing Scan")
 
-    @observe('model.update')
-    def __on_update_triggered(self, change):
-        """ Invoked when the Update button is triggered. """
+    @observe('model.update_directory')
+    def __on_update_directory_triggered(self, change):
+        """ Invoked when the Update header directory button is triggered. """
 
-        print("Doing Update")
+        print("Doing Update header directory")
+
+    @observe('model.update_file')
+    def __on_update_file_triggered(self, change):
+        """ Invoked when the Update header file button is triggered. """
+
+        print("Doing Update header file")
 
     def __on_versions_changed(self, change):
         """ Invoked when the list of project versions changes. """
