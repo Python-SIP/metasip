@@ -32,9 +32,14 @@ class ScannerView(QTreeWidget):
         self.project = project
         self.source_directory = ''
 
-        try:
-            self.working_version = project.versions[-1]
-        except IndexError:
-            self.working_version = None
+        self.set_working_version()
 
         # FIXME: Observe the project's name.
+
+    def set_working_version(self):
+        """ Set the working version. """
+
+        try:
+            self.working_version = self.project.versions[-1]
+        except IndexError:
+            self.working_version = None

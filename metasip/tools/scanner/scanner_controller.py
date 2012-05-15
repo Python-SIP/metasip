@@ -11,7 +11,7 @@
 
 
 from dip.model import Instance, observe
-from dip.ui import Controller, IOptionSelector, IView, IViewStack
+from dip.ui import Controller, IEditor, IOptionSelector, IView, IViewStack
 
 from ...interfaces.project import IProject
 
@@ -35,27 +35,22 @@ class ScannerController(Controller):
         self.current_project = project
         self.current_project_ui = project_ui = self._find_view(project)
 
-        model = self.model
-
         # Make sure the project's view is current.
         IViewStack(self.project_views_view).current_view = project_ui
 
         # Configure the versions.
-        model.working_version = None
-        IOptionSelector(self.working_version_editor).options = reversed(
-                project.versions)
-        model.working_version = project_ui.working_version
-        IView(self.working_version_editor).visible = (len(project.versions) != 0)
-
-        # FIXME: Observe project.versions and update the visibility.
+        self._update_versions()
 
         # Configure the source directory.
-        model.source_directory = project_ui.source_directory
+        self.model.source_directory = project_ui.source_directory
 
     def close_project(self, project):
         """ Close a project. """
 
         project_views = IViewStack(self.project_views_view).views
+
+        # Remove the observers.
+        observe('versions', project, self.__on_versions_changed, remove=True)
 
         # Remove the project specific part of the GUI.
         del project_views[self._find_view(project)]
@@ -77,6 +72,23 @@ class ScannerController(Controller):
         view = ScannerView(project)
         IViewStack(self.project_views_view).views.append(view)
 
+        # Observe any changes to the versions.
+        observe('versions', project, self.__on_versions_changed)
+
+    def validate(self):
+        """ Reimplemented to update the state of the view after a change. """
+
+        # This is called very early.
+        if self.current_project_ui is None:
+            return
+
+        super().validate()
+
+        # Scan is enabled if there is a valid source directory.
+        ieditor = IEditor(self.source_directory_editor)
+        self.current_project_ui.source_directory = ieditor.value
+        IView(self.scan_editor).enabled = (ieditor.invalid_reason == '')
+
     def _find_view(self, project):
         """ Find the project specific part of the GUI for a project. """
 
@@ -88,41 +100,54 @@ class ScannerController(Controller):
         return None
 
     @observe('model.delete')
-    def _on_delete_triggered(self, change):
+    def __on_delete_triggered(self, change):
         """ Invoked when the Delete button is triggered. """
 
         print("Doing Delete")
 
     @observe('model.new')
-    def _on_new_triggered(self, change):
+    def __on_new_triggered(self, change):
         """ Invoked when the New button is triggered. """
 
         print("Doing New...")
 
     @observe('model.restart')
-    def _on_restart_triggered(self, change):
+    def __on_restart_triggered(self, change):
         """ Invoked when the Restart Workflow button is triggered. """
 
         print("Doing Restart Workflow")
 
     @observe('model.scan')
-    def _on_scan_triggered(self, change):
+    def __on_scan_triggered(self, change):
         """ Invoked when the Scan button is triggered. """
 
         print("Doing Scan")
 
-    @observe('model.source_directory')
-    def _on_source_directory_changed(self, change):
-        """ Invoked when the source directory changes. """
-
-        print("ZZZZZZZZZZ")
-        source_directory = change.new
-
-        self.current_project_ui.source_directory = source_directory
-        IView(self.scan_editor).enabled = (source_directory != '')
-
     @observe('model.update')
-    def _on_update_triggered(self, change):
+    def __on_update_triggered(self, change):
         """ Invoked when the Update button is triggered. """
 
         print("Doing Update")
+
+    def __on_versions_changed(self, change):
+        """ Invoked when the list of project versions changes. """
+
+        project = change.model
+
+        if project == self.current_project:
+            # See if the current working version has been removed.
+            if self.current_project_ui.working_version in change.old:
+                # FIXME: What else needs to happen when removing a version?
+                self.current_project_ui.set_working_version()
+
+            self._update_versions()
+
+    def _update_versions(self):
+        """ Update the GUI from the current project's list of versions. """
+
+        self.model.working_version = None
+        IOptionSelector(self.working_version_editor).options = reversed(
+                self.current_project.versions)
+        self.model.working_version = self.current_project_ui.working_version
+        IView(self.working_version_editor).visible = (
+                len(self.current_project.versions) != 0)
