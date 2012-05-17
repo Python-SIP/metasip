@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Bool, Model, Str, Trigger
+from dip.model import Bool, Instance, Model, Str, Trigger
 
 
 class ScannerModel(Model):
@@ -27,9 +27,15 @@ class ScannerModel(Model):
     # The file filter to use when scanning the current header directory.
     file_filter = Str()
 
+    # The name of the header directory.
+    header_directory_name = Str()
+
     # The suffix to be appended to the source directory to create the full name
     # of the current header directory.
-    header_directory_suffix = Str()
+    suffix = Str()
+
+    # The name of the header file.
+    header_file_name = Str()
 
     # Set if a header file is ignored.
     ignored = Bool()
@@ -40,12 +46,15 @@ class ScannerModel(Model):
     # Pulled to create a new header directory.
     new = Trigger()
 
+    # Pulled to parse the current header file.
+    parse = Trigger()
+
     # The arguments to pass to the C++ parser when parsing a file in the
     # current header directory..
     parser_arguments = Str()
 
     # Pulled to mark all header directories as needing to be scanned.
-    restart = Trigger()
+    reset = Trigger()
 
     # Pulled to scan the current header directory.
     scan = Trigger()

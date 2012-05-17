@@ -46,9 +46,9 @@ class ScannerTool(SimpleViewTool):
     def view(self):
         """ Invoked to create the tool's view. """
 
-        from dip.ui import (ComboBox, FilesystemLocationEditor, Form, Grid,
-                GroupBox, Label, MessageArea, PushButton, Splitter, Stretch,
-                VBox, ViewStack)
+        from dip.ui import (ComboBox, FilesystemLocationEditor, Form, GroupBox,
+                HBox, Label, MessageArea, PushButton, Splitter, Stretch, VBox,
+                ViewStack)
 
         from .scanner_controller import ScannerController
         from .scanner_model import ScannerModel
@@ -63,27 +63,45 @@ class ScannerTool(SimpleViewTool):
                     ViewStack(id='metasip.scanner.project_views'),
                     VBox(
                         Form(
-                            ComboBox('working_version', visible=False),
-                            FilesystemLocationEditor('source_directory',
-                                    mode='directory', required=True)),
+                            ComboBox('working_version', visible=False)),
                         GroupBox(
                             VBox(
-                                Form('header_directory_suffix', 'file_filter',
-                                        'parser_arguments'),
+                                Form(
+                                    FilesystemLocationEditor(
+                                            'source_directory',
+                                            mode='directory')),
+                                HBox(
+                                    PushButton('scan', enabled=False),
+                                    PushButton('reset',
+                                            label="Reset Workflow"))),
+                            title="Scan"),
+                        GroupBox(
+                            VBox(
+                                Form(
+                                    Label('header_directory_name',
+                                            label="Name"),
+                                    'suffix',
+                                    'file_filter',
+                                    'parser_arguments'),
                                 PushButton('update_directory',
                                         label="Update")),
+                            title="Header Directory",
                             id='metasip.scanner.directory_props'),
                         GroupBox(
                             VBox(
-                                Form('module', 'ignored'),
-                                PushButton('update_file', label="Update")),
+                                Form(
+                                    Label('header_file_name', label="Name"),
+                                    'module',
+                                    'ignored'),
+                                HBox(
+                                    PushButton('parse'),
+                                    PushButton('update_file',
+                                            label="Update"))),
+                            title="Header File",
                             id='metasip.scanner.file_props'),
-                        Grid(
-                            PushButton('scan', enabled=False),
-                            PushButton('restart', label="Restart Workflow"),
+                        HBox(
                             PushButton('new', label="New..."),
-                            PushButton('delete', enabled=False),
-                            nr_columns=2),
+                            PushButton('delete', enabled=False)),
                         Stretch(),
                         MessageArea()),
                     id='metasip.scanner.splitter'),

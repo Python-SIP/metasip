@@ -11,10 +11,11 @@
 
 
 from dip.model import Instance, observe
+from dip.shell import IDirty
 from dip.ui import (Controller, IEditor, IGroupBox, IOptionSelector, IView,
         IViewStack)
 
-from ...interfaces.project import IProject
+from ...interfaces.project import IHeaderDirectory, IHeaderFile, IProject
 from ...Project import HeaderDirectory, HeaderFile, Project
 
 from .scanner_view import ScannerView
@@ -24,6 +25,12 @@ class ScannerController(Controller):
     """ The ScannerController implements the controller for the scanner tool
     GUI.
     """
+
+    # The current header directory.
+    current_header_directory = Instance(IHeaderDirectory)
+
+    # The current header file.
+    current_header_file = Instance(IHeaderFile)
 
     # The current project.
     current_project = Instance(IProject)
@@ -89,14 +96,51 @@ class ScannerController(Controller):
         if self.current_project_ui is None:
             return
 
-        # Scan is enabled if there is a valid source directory.
-        ieditor = IEditor(self.source_directory_editor)
-        self.current_project_ui.source_directory = ieditor.value
-        IView(self.scan_editor).enabled = (ieditor.invalid_reason == '')
+        # The Scan is enabled if there is a valid source directory.
+        source_directory = IEditor(self.source_directory_editor).value.strip()
+        self.current_project_ui.source_directory = source_directory
+        IView(self.scan_editor).enabled = (source_directory != '')
 
         # Update the working version.
         self.current_project_ui.set_working_version(
                 IEditor(self.working_version_editor).value)
+
+        # The assigned module and Parse button are disabled if the header file
+        # is ignored.
+        module_editor = IEditor(self.module_editor)
+        if IEditor(self.ignored_editor).value:
+            module_editor.enabled = False
+            module_editor.value = ''
+            IView(self.parse_editor).enabled = False
+        else:
+            module_editor.enabled = True
+            IView(self.parse_editor).enabled = True
+
+        # The file Update is enabled if the assigned module is valid.
+        # FIXME: Use a sub-controller?  Or need a way of updating the invalid
+        #        reason for an editor (ie. adding additional validation).
+
+    def validate_view(self):
+        """ Validate the data in the view.
+
+        :return:
+            a string explaining why the view is invalid.
+        """
+
+        invalid_reason = super().validate_view()
+
+        if invalid_reason == '' and self.current_project is not None:
+            # Check any assigned module is valid.
+            ieditor = IEditor(self.module_editor)
+            module = ieditor.value.strip() 
+            if module != '':
+                for m in self.current_project.modules:
+                    if m.name == module:
+                        break
+                else:
+                    invalid_reason = "{0}: {1} has not been defined as a Python module".format(ieditor.label, module)
+
+        return invalid_reason
 
     def selection(self, selected_items):
         """ This is called by the project specific view when the selected items
@@ -106,33 +150,47 @@ class ScannerController(Controller):
         # We don't handle multiple selections.
         selection = selected_items[0] if len(selected_items) == 1 else None
 
-        directory_name = file_name = ''
-
-        if isinstance(selection, Project):
-            pass
-        elif isinstance(selection, HeaderDirectory):
-            directory_name = selection.name
-        elif isinstance(selection, HeaderFile):
-            directory_name = self.current_project.findHeaderDirectory(selection).name
-            file_name = selection.name
-
-        # Configure the header directory properties.
-        directory_props = IGroupBox(self.directory_props_view)
-        if directory_name != '':
-            directory_props.enabled = True
-            directory_props.title = "{0} Properties".format(directory_name)
+        if isinstance(selection, HeaderFile):
+            header_file = selection
+            header_directory = self.current_project.findHeaderDirectory(
+                    selection)
         else:
-            directory_props.enabled = False
-            directory_props.title = "Header Directory Properties"
+            header_file = None
 
-        # Configure the header file properties.
-        file_props = IGroupBox(self.file_props_view)
-        if file_name != '':
-            file_props.enabled = True
-            file_props.title = "{0} Properties".format(file_name)
+            if isinstance(selection, HeaderDirectory):
+                header_directory = selection
+            else:
+                header_directory = None
+
+        model = self.model
+
+        if header_directory is not None:
+            self.current_header_directory = header_directory
+            model.header_directory_name = header_directory.name
+            model.file_filter = header_directory.filefilter
+            model.suffix = header_directory.inputdirsuffix
+            model.parser_arguments = header_directory.parserargs
+            IGroupBox(self.directory_props_view).enabled = True
         else:
-            file_props.enabled = False
-            file_props.title = "Header File Properties"
+            self.current_header_directory = None
+            model.header_directory_name = ''
+            model.file_filter = ''
+            model.suffix = ''
+            model.parser_arguments = ''
+            IGroupBox(self.directory_props_view).enabled = False
+
+        if header_file is not None:
+            self.current_header_file = header_file
+            model.header_file_name = header_file.name
+            model.ignored = header_file.ignored
+            model.module = header_file.module
+            IGroupBox(self.file_props_view).enabled = True
+        else:
+            self.current_header_file = None
+            model.header_file_name = ''
+            model.ignored = False
+            model.module = ''
+            IGroupBox(self.file_props_view).enabled = False
 
     def _find_view(self, project):
         """ Find the project specific part of the GUI for a project. """
@@ -156,11 +214,17 @@ class ScannerController(Controller):
 
         print("Doing New...")
 
-    @observe('model.restart')
-    def __on_restart_triggered(self, change):
-        """ Invoked when the Restart Workflow button is triggered. """
+    @observe('model.parse')
+    def __on_parse_triggered(self, change):
+        """ Invoked when the Parse button is triggered. """
 
-        print("Doing Restart Workflow")
+        print("Doing Parse")
+
+    @observe('model.reset')
+    def __on_reset_triggered(self, change):
+        """ Invoked when the Reset Workflow button is triggered. """
+
+        print("Doing Reset Workflow")
 
     @observe('model.scan')
     def __on_scan_triggered(self, change):
@@ -172,7 +236,14 @@ class ScannerController(Controller):
     def __on_update_directory_triggered(self, change):
         """ Invoked when the Update header directory button is triggered. """
 
-        print("Doing Update header directory")
+        header_directory = self.current_header_directory
+        model = self.model
+
+        header_directory.filefilter = model.file_filter
+        header_directory.inputdirsuffix = model.suffix
+        header_directory.parserargs = model.parser_arguments
+
+        IDirty(self.current_project).dirty = True
 
     @observe('model.update_file')
     def __on_update_file_triggered(self, change):

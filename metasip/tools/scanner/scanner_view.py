@@ -22,14 +22,14 @@ class ScannerView(QTreeWidget):
     """
 
     # The column numbers.
-    (NAME, STATUS, MODULE) = range(3)
+    (NAME, STATUS) = range(2)
 
     def __init__(self, controller, project):
         """ Initialise the view. """
 
         super().__init__()
 
-        self.setHeaderLabels(["Name", "Status", "Module"])
+        self.setHeaderLabels(["Name", "Status"])
 
         self.itemSelectionChanged.connect(self.refresh_selection)
 
@@ -178,7 +178,6 @@ class HeaderFileItem(ScannerItem):
 
         # Draw the rest of the item.
         self.setText(ScannerView.NAME, header_file.name)
-        self.setText(ScannerView.MODULE, header_file.module)
 
     def update_working_version(self):
         """ Update in the light of the working versions. """

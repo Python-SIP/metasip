@@ -69,7 +69,7 @@ class UpdateManager(Model):
         if need_wizard:
             from PyQt4.QtGui import QLabel
 
-            from dip.pui import Label, Wizard, WizardPage
+            from dip.pui import Wizard, WizardPage
             from dip.ui import IWizard
 
             intro = WizardPage(
