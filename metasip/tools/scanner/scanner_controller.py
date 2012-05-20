@@ -12,8 +12,7 @@
 
 from dip.model import Instance, observe
 from dip.shell import IDirty
-from dip.ui import (Controller, IEditor, IGroupBox, IOptionSelector, IView,
-        IViewStack)
+from dip.ui import Controller, IGroupBox, IOptionSelector, IView, IViewStack
 
 from ...interfaces.project import IHeaderDirectory, IHeaderFile, IProject
 from ...Project import HeaderDirectory, HeaderFile, Project
@@ -87,60 +86,46 @@ class ScannerController(Controller):
         # Observe any changes to the versions.
         observe('versions', project, self.__on_versions_changed)
 
-    def validate(self):
+    def update_view(self):
         """ Reimplemented to update the state of the view after a change. """
-
-        super().validate()
 
         # This is called very early.
         if self.current_project_ui is None:
             return
 
+        model = self.model
+
         # The Scan is enabled if there is a valid source directory.
-        source_directory = IEditor(self.source_directory_editor).value.strip()
-        self.current_project_ui.source_directory = source_directory
-        IView(self.scan_editor).enabled = (source_directory != '')
+        if self.is_valid(self.source_directory_editor):
+            self.current_project_ui.source_directory = model.source_directory
+            IView(self.scan_editor).enabled = (model.source_directory != '')
 
         # Update the working version.
-        self.current_project_ui.set_working_version(
-                IEditor(self.working_version_editor).value)
+        self.current_project_ui.set_working_version(model.working_version)
 
-        # The assigned module and Parse button are disabled if the header file
-        # is ignored.
-        module_editor = IEditor(self.module_editor)
-        if IEditor(self.ignored_editor).value:
-            module_editor.enabled = False
-            module_editor.value = ''
-            IView(self.parse_editor).enabled = False
+        # Configure the state of the file Update and Parse buttons and the
+        # assigned module editor.
+        module_enabled = False
+        parse_enabled = False
+        update_enabled = False
+
+        if model.ignored:
+            model.module = ''
+            update_enabled = True
         else:
-            module_editor.enabled = True
-            IView(self.parse_editor).enabled = True
+            module_enabled = True
 
-        # The file Update is enabled if the assigned module is valid.
-        # FIXME: Use a sub-controller?  Or need a way of updating the invalid
-        #        reason for an editor (ie. adding additional validation).
+            if self.is_valid(self.module_editor):
+                update_enabled = True
 
-    def validate_view(self):
-        """ Validate the data in the view.
+                if model.module != '':
+                    parse_enabled = True
 
-        :return:
-            a string explaining why the view is invalid.
-        """
+        IView(self.module_editor).enabled = module_enabled
+        IView(self.parse_editor).enabled = parse_enabled
+        IView(self.update_file_editor).enabled = update_enabled
 
-        invalid_reason = super().validate_view()
-
-        if invalid_reason == '' and self.current_project is not None:
-            # Check any assigned module is valid.
-            ieditor = IEditor(self.module_editor)
-            module = ieditor.value.strip() 
-            if module != '':
-                for m in self.current_project.modules:
-                    if m.name == module:
-                        break
-                else:
-                    invalid_reason = "{0}: {1} has not been defined as a Python module".format(ieditor.label, module)
-
-        return invalid_reason
+        super().update_view()
 
     def selection(self, selected_items):
         """ This is called by the project specific view when the selected items

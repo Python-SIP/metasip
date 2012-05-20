@@ -47,9 +47,10 @@ class ScannerTool(SimpleViewTool):
         """ Invoked to create the tool's view. """
 
         from dip.ui import (ComboBox, FilesystemLocationEditor, Form, GroupBox,
-                HBox, Label, MessageArea, PushButton, Splitter, Stretch, VBox,
-                ViewStack)
+                HBox, Label, LineEditor, MessageArea, PushButton, Splitter,
+                Stretch, VBox, ViewStack)
 
+        from .module_validator import ModuleValidator
         from .scanner_controller import ScannerController
         from .scanner_model import ScannerModel
 
@@ -91,7 +92,8 @@ class ScannerTool(SimpleViewTool):
                             VBox(
                                 Form(
                                     Label('header_file_name', label="Name"),
-                                    'module',
+                                    LineEditor('module',
+                                            validator=ModuleValidator()),
                                     'ignored'),
                                 HBox(
                                     PushButton('parse'),
