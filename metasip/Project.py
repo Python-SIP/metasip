@@ -857,18 +857,22 @@ class Project(Model):
 
         return mod
 
-    def newHeaderDirectory(self, name):
-        """
-        Add a new header directory to the project and return it.
+    def new_header_directory(self, name, working_version):
+        """ Add a new header directory to the project.
 
-        name is the descriptive name of the header directory.
+        :param name:
+            is the descriptive name of the header directory.
+        :param working_version:
+            is the current working version or ``None`` if there are no explicit
+            versions defined.
         """
-        hdir = HeaderDirectory(project=self, name=name)
+
+        scan = [''] if working_version is None else [working_version]
+
+        hdir = HeaderDirectory(project=self, name=name, scan=scan)
         self.headers.append(hdir)
 
         IDirty(self).dirty = True
-
-        return hdir
 
     def findHeaderDirectory(self, target):
         """

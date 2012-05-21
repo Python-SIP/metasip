@@ -10,9 +10,12 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from PyQt4.QtGui import QInputDialog
+
 from dip.model import Instance, observe
 from dip.shell import IDirty
-from dip.ui import Controller, IGroupBox, IOptionSelector, IView, IViewStack
+from dip.ui import (Application, Controller, IGroupBox, IOptionSelector, IView,
+        IViewStack)
 
 from ...interfaces.project import IHeaderDirectory, IHeaderFile, IProject
 from ...Project import HeaderDirectory, HeaderFile, Project
@@ -202,7 +205,27 @@ class ScannerController(Controller):
     def __on_new_triggered(self, change):
         """ Invoked when the New button is triggered. """
 
-        print("Doing New...")
+        project = self.current_project
+
+        window_title = "New Header Directory"
+
+        # Get the name of the header directory.
+        (hname, ok) = QInputDialog.getText(self.new_editor, window_title,
+                "Descriptive name")
+
+        if ok:
+            hname = hname.strip()
+
+            if hname == '':
+                Application.warning(window_title,
+                        "The name of a header directory must not be blank.",
+                        self.new_editor)
+            elif hname in [hdir.name for hdir in project.headers]:
+                Application.warning(window_title,
+                        "'{0}' is already used as the name of a header directory.".format(hname),
+                        self.new_editor)
+            else:
+                project.new_header_directory(hname, self.model.working_version)
 
     @observe('model.parse')
     def __on_parse_triggered(self, change):

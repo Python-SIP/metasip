@@ -113,11 +113,12 @@ class ProjectItem(ScannerItem):
         observe('name', project,
                 lambda c: self.setText(ScannerView.NAME,
                         c.model.descriptive_name()))
+        observe('headers', project, self.__on_headers_changed)
 
         self.setExpanded(True)
 
-        for header_directory in project.headers:
-            HeaderDirectoryItem(header_directory, self)
+        for hdir in project.headers:
+            HeaderDirectoryItem(hdir, self)
 
         self.sortChildren(ScannerView.NAME, Qt.AscendingOrder)
 
@@ -125,6 +126,21 @@ class ProjectItem(ScannerItem):
         """ Return the item's corresponding project item. """
 
         return self._project
+
+    def __on_headers_changed(self, change):
+        """ Invoked when the list of header directories changes. """
+
+        for hdir in change.old:
+            for idx in range(self.childCount()):
+                itm = self.child(idx)
+                if itm.get_project_item() is hdir:
+                    self.removeChild(itm)
+                    break
+
+        for hdir in change.new:
+            HeaderDirectoryItem(hdir, self)
+
+        self.sortChildren(ScannerView.NAME, Qt.AscendingOrder)
 
 
 class HeaderDirectoryItem(ScannerItem):
