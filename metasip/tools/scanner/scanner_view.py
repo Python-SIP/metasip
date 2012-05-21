@@ -139,7 +139,8 @@ class HeaderDirectoryItem(ScannerItem):
 
         self._header_directory = header_directory
 
-        self.update_working_version()
+        self._draw_status()
+        observe('scan', header_directory, lambda c: self._draw_status())
 
         self.setText(ScannerView.NAME, header_directory.name)
 
@@ -161,17 +162,24 @@ class HeaderDirectoryItem(ScannerItem):
     def update_working_version(self):
         """ Update in the light of the working version. """
 
-        # Get the working version of the file, if any.
-        working_version = self.treeWidget().get_working_version()
-
-        self.setText(ScannerView.STATUS,
-                "Needs scanning" if working_version in self._header_directory.scan else "")
+        self._draw_status()
 
     def get_project_item(self):
         """ Return the item's corresponding project item. """
 
         return self._header_directory
 
+    def _draw_status(self):
+        """ Draw the status column. """
+
+        working_version = self.treeWidget().get_working_version()
+        if working_version is None:
+            needs_scanning = (len(self._header_directory.scan) != 0)
+        else:
+            needs_scanning = (working_version in self._header_directory.scan)
+
+        self.setText(ScannerView.STATUS,
+                "Needs scanning" if needs_scanning else "")
 
 class HeaderFileItem(ScannerItem):
     """ HeaderFileItem is an internal class that represents a header file in

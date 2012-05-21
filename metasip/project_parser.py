@@ -243,11 +243,18 @@ class ProjectParser:
     def add_header_directory(self, project, elem):
         """ Add an element defining a header directory to a project. """
 
+        scan = elem.get('scan')
+        if scan is None:
+            scan = []
+        elif scan == '':
+            scan = ['']
+        else:
+            scan = scan.split()
+
         hdir = HeaderDirectory(project=project, name=elem.get('name'),
                 parserargs=elem.get('parserargs'),
                 inputdirsuffix=elem.get('inputdirsuffix'),
-                filefilter=elem.get('filefilter'),
-                scan=elem.get('scan', '').split())
+                filefilter=elem.get('filefilter'), scan=scan)
 
         for child in elem:
             if child.tag == 'HeaderFile':

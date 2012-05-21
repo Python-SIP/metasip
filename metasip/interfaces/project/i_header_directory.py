@@ -36,5 +36,7 @@ class IHeaderDirectory(Interface):
     # The optional additional arguments passed to the external C++ parser.
     parserargs = Str()
 
-    # The versions for which the header directory needs scanning.
+    # The versions for which the header directory needs scanning.  A single
+    # empty string means that no explicit versions have been defined but the
+    # header directory needs scanning.
     scan = List(Str())

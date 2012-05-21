@@ -49,8 +49,9 @@ class ScannerController(Controller):
         # Configure the versions.
         self._update_versions()
 
-        # Configure the source directory.
+        # Configure the Scan group.
         self.model.source_directory = project_ui.source_directory
+        self._update_scan_group()
 
         # Configure from the selection.
         project_ui.refresh_selection()
@@ -61,6 +62,7 @@ class ScannerController(Controller):
         project_views = IViewStack(self.project_views_view).views
 
         # Remove the observers.
+        observe('headers', project, self.__on_headers_changed, remove=True)
         observe('versions', project, self.__on_versions_changed, remove=True)
 
         # Remove the project specific part of the GUI.
@@ -83,7 +85,8 @@ class ScannerController(Controller):
         view = ScannerView(self, project)
         IViewStack(self.project_views_view).views.append(view)
 
-        # Observe any changes to the versions.
+        # Observe any changes to the header directories and versions.
+        observe('headers', project, self.__on_headers_changed)
         observe('versions', project, self.__on_versions_changed)
 
     def update_view(self):
@@ -155,7 +158,7 @@ class ScannerController(Controller):
             model.file_filter = header_directory.filefilter
             model.suffix = header_directory.inputdirsuffix
             model.parser_arguments = header_directory.parserargs
-            IGroupBox(self.directory_props_view).enabled = True
+            IGroupBox(self.directory_group_view).enabled = True
             IView(self.delete_editor).enabled = True
         else:
             self.current_header_directory = None
@@ -163,7 +166,7 @@ class ScannerController(Controller):
             model.file_filter = ''
             model.suffix = ''
             model.parser_arguments = ''
-            IGroupBox(self.directory_props_view).enabled = False
+            IGroupBox(self.directory_group_view).enabled = False
             IView(self.delete_editor).enabled = False
 
         if header_file is not None:
@@ -171,13 +174,13 @@ class ScannerController(Controller):
             model.header_file_name = header_file.name
             model.ignored = header_file.ignored
             model.module = header_file.module
-            IGroupBox(self.file_props_view).enabled = True
+            IGroupBox(self.file_group_view).enabled = True
         else:
             self.current_header_file = None
             model.header_file_name = ''
             model.ignored = False
             model.module = ''
-            IGroupBox(self.file_props_view).enabled = False
+            IGroupBox(self.file_group_view).enabled = False
 
     def _find_view(self, project):
         """ Find the project specific part of the GUI for a project. """
@@ -211,7 +214,16 @@ class ScannerController(Controller):
     def __on_reset_triggered(self, change):
         """ Invoked when the Reset Workflow button is triggered. """
 
-        print("Doing Reset Workflow")
+        project = self.current_project
+        working_version = self.model.working_version
+
+        for hdir in project.headers:
+            if working_version is None:
+                hdir.scan = ['']
+            elif working_version not in hdir.scan:
+                hdir.scan.append(working_version)
+
+        IDirty(project).dirty = True
 
     @observe('model.scan')
     def __on_scan_triggered(self, change):
@@ -223,12 +235,12 @@ class ScannerController(Controller):
     def __on_update_directory_triggered(self, change):
         """ Invoked when the Update header directory button is triggered. """
 
-        header_directory = self.current_header_directory
+        hdir = self.current_header_directory
         model = self.model
 
-        header_directory.filefilter = model.file_filter
-        header_directory.inputdirsuffix = model.suffix
-        header_directory.parserargs = model.parser_arguments
+        hdir.filefilter = model.file_filter
+        hdir.inputdirsuffix = model.suffix
+        hdir.parserargs = model.parser_arguments
 
         IDirty(self.current_project).dirty = True
 
@@ -238,18 +250,26 @@ class ScannerController(Controller):
 
         print("Doing Update header file")
 
+    def __on_headers_changed(self, change):
+        """ Invoked when the list of project header directories changes. """
+
+        if change.model is self.current_project:
+            self._update_scan_group()
+
     def __on_versions_changed(self, change):
         """ Invoked when the list of project versions changes. """
 
-        project = change.model
-
-        if project == self.current_project:
+        if change.model is self.current_project:
             # See if the current working version has been removed.
-            if self.current_project_ui.get_working_version() in change.old:
-                # FIXME: What else needs to happen when removing a version?
+            if self.model.working_version in change.old:
                 self.current_project_ui.reset_working_version()
 
             self._update_versions()
+
+    def _update_scan_group(self):
+        """ Update the state of the Scan view. """
+
+        IView(self.scan_group_view).enabled = (len(self.current_project.headers) != 0)
 
     def _update_versions(self):
         """ Update the GUI from the current project's list of versions. """

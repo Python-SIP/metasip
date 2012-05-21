@@ -75,7 +75,7 @@ class ScannerTool(SimpleViewTool):
                                     PushButton('scan', enabled=False),
                                     PushButton('reset',
                                             label="Reset Workflow"))),
-                            title="Scan"),
+                            title="Scan", id='metasip.scanner.scan_group'),
                         GroupBox(
                             VBox(
                                 Form(
@@ -87,7 +87,7 @@ class ScannerTool(SimpleViewTool):
                                 PushButton('update_directory',
                                         label="Update")),
                             title="Header Directory",
-                            id='metasip.scanner.directory_props'),
+                            id='metasip.scanner.directory_group'),
                         GroupBox(
                             VBox(
                                 Form(
@@ -100,7 +100,7 @@ class ScannerTool(SimpleViewTool):
                                     PushButton('update_file',
                                             label="Update"))),
                             title="Header File",
-                            id='metasip.scanner.file_props'),
+                            id='metasip.scanner.file_group'),
                         HBox(
                             PushButton('new', label="New..."),
                             PushButton('delete', enabled=False)),

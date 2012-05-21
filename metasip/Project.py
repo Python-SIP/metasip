@@ -635,11 +635,16 @@ class Project(Model):
 
         for hdir in self.headers:
             if len(hdir.scan) != 0:
-                scan = ' scan="{0}"'.format(' '.join(hdir.scan))
+                if hdir.scan[0] == '':
+                    scan_versions = []
+                else:
+                    scan_versions = hdir.scan
+
+                scan = ' scan="{0}"'.format(' '.join(scan_versions))
             else:
                 scan = ''
 
-            f.write('<HeaderDirectory name="{0}" parserargs="{1}" inputdirsuffix="{2}" filefilter="{3}{4}">\n'.format(hdir.name, hdir.parserargs, hdir.inputdirsuffix, hdir.filefilter, scan))
+            f.write('<HeaderDirectory name="{0}" parserargs="{1}" inputdirsuffix="{2}" filefilter="{3}"{4}>\n'.format(hdir.name, hdir.parserargs, hdir.inputdirsuffix, hdir.filefilter, scan))
             f += 1
 
             for hf in hdir.content:
