@@ -199,7 +199,19 @@ class ScannerController(Controller):
     def __on_delete_triggered(self, change):
         """ Invoked when the Delete button is triggered. """
 
-        print("Doing Delete")
+        project = self.current_project
+
+        window_title = "Delete Header Directory"
+
+        hdir = self.current_header_directory
+
+        if len(hdir.content) != 0:
+            Application.warning(window_title,
+                    "Deleting a scanned header directory is not yet supported.",
+                    self.delete_editor)
+        else:
+            project.headers.remove(hdir)
+            IDirty(project).dirty = True
 
     @observe('model.new')
     def __on_new_triggered(self, change):
