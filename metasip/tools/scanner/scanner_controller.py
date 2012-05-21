@@ -156,6 +156,7 @@ class ScannerController(Controller):
             model.suffix = header_directory.inputdirsuffix
             model.parser_arguments = header_directory.parserargs
             IGroupBox(self.directory_props_view).enabled = True
+            IView(self.delete_editor).enabled = True
         else:
             self.current_header_directory = None
             model.header_directory_name = ''
@@ -163,6 +164,7 @@ class ScannerController(Controller):
             model.suffix = ''
             model.parser_arguments = ''
             IGroupBox(self.directory_props_view).enabled = False
+            IView(self.delete_editor).enabled = False
 
         if header_file is not None:
             self.current_header_file = header_file

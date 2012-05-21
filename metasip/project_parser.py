@@ -246,7 +246,8 @@ class ProjectParser:
         hdir = HeaderDirectory(project=project, name=elem.get('name'),
                 parserargs=elem.get('parserargs'),
                 inputdirsuffix=elem.get('inputdirsuffix'),
-                filefilter=elem.get('filefilter'))
+                filefilter=elem.get('filefilter'),
+                scan=elem.get('scan', '').split())
 
         for child in elem:
             if child.tag == 'HeaderFile':

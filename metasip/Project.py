@@ -634,7 +634,12 @@ class Project(Model):
             _writeLiteralXML(f, 'sipcomments', self.sipcomments)
 
         for hdir in self.headers:
-            f.write('<HeaderDirectory name="{0}" parserargs="{1}" inputdirsuffix="{2}" filefilter="{3}">\n'.format(hdir.name, hdir.parserargs, hdir.inputdirsuffix, hdir.filefilter))
+            if len(hdir.scan) != 0:
+                scan = ' scan="{0}"'.format(' '.join(hdir.scan))
+            else:
+                scan = ''
+
+            f.write('<HeaderDirectory name="{0}" parserargs="{1}" inputdirsuffix="{2}" filefilter="{3}{4}">\n'.format(hdir.name, hdir.parserargs, hdir.inputdirsuffix, hdir.filefilter, scan))
             f += 1
 
             for hf in hdir.content:
@@ -1061,7 +1066,7 @@ class HeaderDirectory(Model):
 
         return True
 
-    def scan(self, sd):
+    def scan_directory(self, sd):
         """ Scan a header directory and process it's contents.
 
         :param sd:

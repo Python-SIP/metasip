@@ -139,6 +139,8 @@ class HeaderDirectoryItem(ScannerItem):
 
         self._header_directory = header_directory
 
+        self.update_working_version()
+
         self.setText(ScannerView.NAME, header_directory.name)
 
         expand = False
@@ -155,6 +157,15 @@ class HeaderDirectoryItem(ScannerItem):
 
         if expand:
             self.setExpanded(True)
+
+    def update_working_version(self):
+        """ Update in the light of the working version. """
+
+        # Get the working version of the file, if any.
+        working_version = self.treeWidget().get_working_version()
+
+        self.setText(ScannerView.STATUS,
+                "Needs scanning" if working_version in self._header_directory.scan else "")
 
     def get_project_item(self):
         """ Return the item's corresponding project item. """
@@ -180,7 +191,7 @@ class HeaderFileItem(ScannerItem):
         self.setText(ScannerView.NAME, header_file.name)
 
     def update_working_version(self):
-        """ Update in the light of the working versions. """
+        """ Update in the light of the working version. """
 
         # Get the working version of the file, if any.
         working_version = self.treeWidget().get_working_version()

@@ -224,6 +224,7 @@
         <xsd:attribute name="inputdirsuffix" type="xsd:string" use="required"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="parserargs" type="xsd:string" use="required"/>
+        <xsd:attribute name="scan" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="HeaderFileType">
