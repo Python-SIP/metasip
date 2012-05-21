@@ -283,7 +283,13 @@ class ScannerController(Controller):
     def __on_update_file_triggered(self, change):
         """ Invoked when the Update header file button is triggered. """
 
-        print("Doing Update header file")
+        hfile = self.current_header_file
+        model = self.model
+
+        hfile.ignored = model.ignored
+        hfile.module = model.module
+
+        IDirty(self.current_project).dirty = True
 
     def __on_headers_changed(self, change):
         """ Invoked when the list of project header directories changes. """
