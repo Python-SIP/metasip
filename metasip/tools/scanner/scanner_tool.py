@@ -71,10 +71,7 @@ class ScannerTool(SimpleViewTool):
                                     FilesystemLocationEditor(
                                             'source_directory',
                                             mode='directory')),
-                                HBox(
-                                    PushButton('scan', enabled=False),
-                                    PushButton('reset',
-                                            label="Reset Workflow"))),
+                                PushButton('reset', label="Reset Workflow")),
                             title="Scan", id='metasip.scanner.scan_group'),
                         GroupBox(
                             VBox(
@@ -84,8 +81,10 @@ class ScannerTool(SimpleViewTool):
                                     'suffix',
                                     'file_filter',
                                     'parser_arguments'),
-                                PushButton('update_directory',
-                                        label="Update")),
+                                HBox(
+                                    PushButton('scan'),
+                                    PushButton('update_directory',
+                                            label="Update"))),
                             title="Header Directory",
                             id='metasip.scanner.directory_group'),
                         GroupBox(

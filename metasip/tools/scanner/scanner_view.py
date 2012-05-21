@@ -96,6 +96,11 @@ class ScannerItem(QTreeWidgetItem):
 
         raise NotImplementedError
 
+    def sort(self):
+        """ Sort the item's children. """
+
+        self.sortChildren(ScannerView.NAME, Qt.AscendingOrder)
+
 
 class ProjectItem(ScannerItem):
     """ ProjectItem is an internal class that represents a project in the
@@ -113,14 +118,15 @@ class ProjectItem(ScannerItem):
         observe('name', project,
                 lambda c: self.setText(ScannerView.NAME,
                         c.model.descriptive_name()))
-        observe('headers', project, self.__on_headers_changed)
 
         self.setExpanded(True)
 
         for hdir in project.headers:
             HeaderDirectoryItem(hdir, self)
 
-        self.sortChildren(ScannerView.NAME, Qt.AscendingOrder)
+        observe('headers', project, self.__on_headers_changed)
+
+        self.sort()
 
     def get_project_item(self):
         """ Return the item's corresponding project item. """
@@ -140,7 +146,7 @@ class ProjectItem(ScannerItem):
         for hdir in change.new:
             HeaderDirectoryItem(hdir, self)
 
-        self.sortChildren(ScannerView.NAME, Qt.AscendingOrder)
+        self.sort()
 
 
 class HeaderDirectoryItem(ScannerItem):
@@ -170,7 +176,9 @@ class HeaderDirectoryItem(ScannerItem):
             if not header_file.ignored and itm.text(ScannerView.STATUS) != '':
                 expand = True
 
-        self.sortChildren(ScannerView.NAME, Qt.AscendingOrder)
+        observe('content', header_directory, self.__on_content_changed)
+
+        self.sort()
 
         if expand:
             self.setExpanded(True)
@@ -197,6 +205,22 @@ class HeaderDirectoryItem(ScannerItem):
         self.setText(ScannerView.STATUS,
                 "Needs scanning" if needs_scanning else "")
 
+    def __on_content_changed(self, change):
+        """ Invoked when the list of header files changes. """
+
+        for hfile in change.old:
+            for idx in range(self.childCount()):
+                itm = self.child(idx)
+                if itm.get_project_item() is hfile:
+                    self.removeChild(itm)
+                    break
+
+        for hfile in change.new:
+            HeaderFileItem(hfile, self)
+
+        self.sort()
+
+
 class HeaderFileItem(ScannerItem):
     """ HeaderFileItem is an internal class that represents a header file in
     the scanner tool GUI.
@@ -209,13 +233,32 @@ class HeaderFileItem(ScannerItem):
 
         self._header_file = header_file
 
-        self.update_working_version()
+        self._draw_status()
+
+        # Make the necessary observations so that we can keep the status up to
+        # date.
+        observe('ignored', header_file, self.__on_ignored_changed)
+        observe('module', header_file, self.__on_module_changed)
+        observe('versions', header_file, self.__on_versions_changed)
+
+        for hfile_version in header_file.versions:
+            observe('parse', hfile_version, self.__on_parse_changed)
 
         # Draw the rest of the item.
         self.setText(ScannerView.NAME, header_file.name)
 
     def update_working_version(self):
         """ Update in the light of the working version. """
+
+        self._draw_status()
+
+    def get_project_item(self):
+        """ Return the item's corresponding project item. """
+
+        return self._header_file
+
+    def _draw_status(self):
+        """ Draw the status column. """
 
         # Get the working version of the file, if any.
         working_version = self.treeWidget().get_working_version()
@@ -234,6 +277,8 @@ class HeaderFileItem(ScannerItem):
         # Determine the status.
         if self._header_file.ignored:
             status = "Ignored"
+        elif self._header_file.module == '':
+            status = "Needs assigning"
         elif working_file is not None and working_file.parse:
             status = "Needs parsing"
         else:
@@ -241,7 +286,27 @@ class HeaderFileItem(ScannerItem):
 
         self.setText(ScannerView.STATUS, status)
 
-    def get_project_item(self):
-        """ Return the item's corresponding project item. """
+    def __on_ignored_changed(self, change):
+        """ Invoked when a header file's ignored state changes. """
 
-        return self._header_file
+        self._draw_status()
+
+    def __on_module_changed(self, change):
+        """ Invoked when a header file's assigned module changes. """
+
+        self._draw_status()
+
+    def __on_versions_changed(self, change):
+        """ Invoked when a header file's list of versions changes. """
+
+        for hfile_version in change.old:
+            observe('parse', hfile_version, self.__on_parse_changed,
+                    remove=True)
+
+        for hfile_version in change.new:
+            observe('parse', hfile_version, self.__on_parse_changed)
+
+    def __on_parse_changed(self, change):
+        """ Invoked when a header file version's parse state changes. """
+
+        self._draw_status()

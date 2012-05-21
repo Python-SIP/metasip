@@ -16,7 +16,7 @@ import time
 import fnmatch
 from xml.sax import saxutils
 
-from dip.model import implements, Instance, Model, Str
+from dip.model import implements, Instance, Model, observe, Str
 from dip.shell import IDirty
 
 from .logger import Logger
@@ -857,23 +857,6 @@ class Project(Model):
 
         return mod
 
-    def new_header_directory(self, name, working_version):
-        """ Add a new header directory to the project.
-
-        :param name:
-            is the descriptive name of the header directory.
-        :param working_version:
-            is the current working version or ``None`` if there are no explicit
-            versions defined.
-        """
-
-        scan = [''] if working_version is None else [working_version]
-
-        hdir = HeaderDirectory(project=self, name=name, scan=scan)
-        self.headers.append(hdir)
-
-        IDirty(self).dirty = True
-
     def findHeaderDirectory(self, target):
         """
         Return the header directory instance of a header file.
@@ -887,6 +870,22 @@ class Project(Model):
 
         # This should never happen.
         return None
+
+    @observe('versions')
+    def __on_versions_changed(self, change):
+        """ Invoked when the list of versions changes. """
+
+        # FIXME: Add support for removing versions.
+
+        # See if the first explicit version has just been defined.
+        if len(self.versions) - (len(change.new) - len(change.old)) == 0:
+            version = self.versions[0]
+
+            # Update the version on all header file versions.
+            for hdir in self.headers:
+                for hfile in hdir.content:
+                    # There will only be one version defined.
+                    hfile.versions[0].version = version
 
 
 class Code(VersionedItem, Annotations):
