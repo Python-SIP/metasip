@@ -56,6 +56,7 @@ class ScannerController(Controller):
 
         # Configure the versions.
         self._update_versions()
+        self.model.working_version = project_ui.working_version
 
         # Configure the Scan group.
         self.model.source_directory = project_ui.source_directory
@@ -494,11 +495,9 @@ class ScannerController(Controller):
     def __on_versions_changed(self, change):
         """ Invoked when the list of project versions changes. """
 
-        if change.model is self.current_project:
-            # See if the current working version has been removed.
-            if self.model.working_version in change.old:
-                self.current_project_ui.reset_working_version()
+        # FIXME: This code assumes that versions will only ever be appended.
 
+        if change.model is self.current_project:
             self._update_versions()
 
     def _update_scan_group(self):
@@ -516,12 +515,11 @@ class ScannerController(Controller):
     def _update_versions(self):
         """ Update the GUI from the current project's list of versions. """
 
-        self.model.working_version = None
-        IOptionSelector(self.working_version_editor).options = reversed(
-                self.current_project.versions)
-        self.model.working_version = self.current_project_ui.get_working_version()
-        IView(self.working_version_editor).visible = (
-                len(self.current_project.versions) != 0)
+        versions = self.current_project.versions
+        ioptionselector = IOptionSelector(self.working_version_editor)
+
+        ioptionselector.options = reversed(versions)
+        ioptionselector.visible = (len(versions) != 0)
 
     def _working_version_as_string(self):
         """ Return the working version as a string.  This will be an empty

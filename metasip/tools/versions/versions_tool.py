@@ -55,7 +55,7 @@ class VersionsTool(Model):
         dlg = self.dialog(model)
 
         if IDialog(dlg).execute():
-            # At the moment we only support adding new versions.
+            # At the moment we only support adding new versions one at a time.
             old_versions = project.versions
             new_versions = model['versions']
 
@@ -78,10 +78,14 @@ class VersionsTool(Model):
                 if len(old_versions) + new_so_far != len(new_versions):
                     ok = False
 
+                # Check that only one has been added.
+                if new_so_far != 1:
+                    ok = False
+
             if ok:
-                project.versions = new_versions
+                project.versions.append(new_versions[-1])
                 IDirty(project).dirty = True
             else:
                 Application.warning("Versions",
-                        "At the moment only adding new versions is supported",
+                        "At the moment only adding new versions one at a time is supported",
                         self.shell)

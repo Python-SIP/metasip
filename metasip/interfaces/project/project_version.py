@@ -23,6 +23,7 @@
 #       - added HeaderFileVersion as a sub-element of the HeaderFile element
 #         moved appropriate attributes from the HeaderFile element to the
 #         HeaderFileVersion sub-element
+#       - added the scan attribute of the HeaderDirectory element
 #
 #   1   Implemented prior to metasip v1.0.
 #

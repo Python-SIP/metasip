@@ -37,31 +37,21 @@ class ScannerView(QTreeWidget):
         self.project = project
         self.source_directory = ''
 
-        self.reset_working_version()
+        try:
+            self.working_version = project.versions[-1]
+        except IndexError:
+            self.working_version = None
 
         ProjectItem(project, self)
-
-    def get_working_version(self):
-        """ Get the working version. """
-
-        return self._working_version
 
     def set_working_version(self, working_version):
         """ Set the working version. """
 
-        if self._working_version != working_version:
-            self._working_version = working_version
+        if self.working_version != working_version:
+            self.working_version = working_version
 
             for itm in self._items():
                 itm.update_working_version()
-
-    def reset_working_version(self):
-        """ Reset the working version. """
-
-        try:
-            self._working_version = self.project.versions[-1]
-        except IndexError:
-            self._working_version = None
 
     def refresh_selection(self):
         """ Invoked when the item selection changes. """
@@ -196,7 +186,7 @@ class HeaderDirectoryItem(ScannerItem):
     def _draw_status(self):
         """ Draw the status column. """
 
-        working_version = self.treeWidget().get_working_version()
+        working_version = self.treeWidget().working_version
         if working_version is None:
             needs_scanning = (len(self._header_directory.scan) != 0)
         else:
@@ -261,7 +251,7 @@ class HeaderFileItem(ScannerItem):
         """ Draw the status column. """
 
         # Get the working version of the file, if any.
-        working_version = self.treeWidget().get_working_version()
+        working_version = self.treeWidget().working_version
 
         if working_version is None:
             working_file = self._header_file.versions[0]

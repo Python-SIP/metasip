@@ -875,17 +875,37 @@ class Project(Model):
     def __on_versions_changed(self, change):
         """ Invoked when the list of versions changes. """
 
-        # FIXME: Add support for removing versions.
+        # FIXME: This code assumes that versions will only ever be appended to.
+        new_version = self.versions[-1]
 
         # See if the first explicit version has just been defined.
-        if len(self.versions) - (len(change.new) - len(change.old)) == 0:
-            version = self.versions[0]
-
+        if len(self.versions) == 1:
             # Update the version on all header file versions.
             for hdir in self.headers:
                 for hfile in hdir.content:
                     # There will only be one version defined.
-                    hfile.versions[0].version = version
+                    hfile.versions[0].version = new_version
+        else:
+            # Create new versions of each header file based on the previous
+            # version.
+            prev_version = self.versions[-2]
+
+            for hdir in self.headers:
+                scan = False
+
+                for hfile in hdir.content:
+                    for hfile_version in hfile.versions:
+                        if hfile_version.version == prev_version:
+                            hfv = HeaderFileVersion(md5=hfile_version.md5,
+                                    parse=False, version=new_version)
+                            hfile.versions.append(hfv)
+
+                            # The header directory needs scanning.
+                            scan = True
+                            break
+
+                if scan:
+                    hdir.scan.append(new_version)
 
 
 class Code(VersionedItem, Annotations):
