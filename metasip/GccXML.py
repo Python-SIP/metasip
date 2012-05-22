@@ -929,12 +929,12 @@ class GccXMLParser(ParserBase):
             return None
 
         self._pathname = os.path.join(input_dir, hdir.inputdirsuffix, hf.name)
-        iname = os.path.join(tempfile.gettempdir(), os.path.basename(hf.name) + ".tmp")
+        iname = os.path.join(tempfile.gettempdir(), hf.name + '.tmp')
 
-        argv = ["gccxml"]
+        argv = ['gccxml']
         argv.append(hdir.parserargs)
         argv.append(self._pathname)
-        argv.append("-fxml=" + iname)
+        argv.append('-fxml=' + iname)
 
         # We use shell=True and a string argv for OS/X - but I don't understand
         # why it's needed.
@@ -997,8 +997,6 @@ class GccXMLParser(ParserBase):
 
         if not rc:
             return None
-
-        hf.parse = ""
 
         # Now convert it to the internal format.
         phf = []

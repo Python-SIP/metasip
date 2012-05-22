@@ -23,7 +23,8 @@ from dip.ui import (Application, Controller, IGroupBox, IOptionSelector, IView,
 
 from ...interfaces.project import IHeaderDirectory, IHeaderFile, IProject
 from ...logger import Logger
-from ...Project import HeaderDirectory, HeaderFile, HeaderFileVersion, Project
+from ...Project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
+        Project, SipFile)
 
 from .scanner_view import ScannerView
 
@@ -111,7 +112,7 @@ class ScannerController(Controller):
         if self.is_valid(self.source_directory_editor):
             self.current_project_ui.source_directory = model.source_directory
 
-        self._update_scan_editor()
+        self._update_from_source_directory()
 
         # Update the working version.
         self.current_project_ui.set_working_version(model.working_version)
@@ -131,7 +132,7 @@ class ScannerController(Controller):
             if self.is_valid(self.module_editor):
                 update_enabled = True
 
-                if model.module != '' and len(self.current_header_files) == 1:
+                if model.source_directory != '' and model.module != '' and len(self.current_header_files) == 1:
                     parse_enabled = True
 
         IView(self.module_editor).enabled = module_enabled
@@ -224,7 +225,7 @@ class ScannerController(Controller):
             model.module = ''
             IGroupBox(self.file_group_view).enabled = False
 
-        self._update_scan_editor()
+        self._update_from_source_directory()
 
     def _find_view(self, project):
         """ Find the project specific part of the GUI for a project. """
@@ -298,7 +299,47 @@ class ScannerController(Controller):
     def __on_parse_triggered(self, change):
         """ Invoked when the Parse button is triggered. """
 
-        print("Doing Parse")
+        from ...GccXML import GccXMLParser
+
+        hdir = self.current_header_directory
+        hfile = self.current_header_files[0]
+
+        parser = GccXMLParser()
+
+        phf = parser.parse(self.model.source_directory, hdir, hfile)
+
+        if phf is None:
+            Application.warning("Parse", parser.diagnostic, self.parser_editor)
+        else:
+            project = self.current_project
+            working_version = self._working_version_as_string()
+
+            # Find the corresponding .sip file creating it if is a new header
+            # file.
+            # FIXME: Assuming we ultimately want to be able to create a
+            #        complete project without parsing .h files then we will
+            #        need the ability (in the main editor) to manually create
+            #        a SipFile instance.
+            for mod in project.modules:
+                if mod.name == hfile.module:
+                    for sfile in mod.content:
+                        if sfile.name == hfile.name:
+                            break
+                    else:
+                        sfile = SipFile(name=hfile.name)
+                        mod.content.append(sfile)
+
+                    hdir.merge_code(sfile, phf, working_version)
+
+                    break
+
+            # The file version no longer needs parsing.
+            for hfile_version in hfile.versions:
+                if hfile_version.version == working_version:
+                    hfile_version.parse = False
+                    break
+
+            IDirty(project).dirty = True
 
     @observe('model.reset_workflow')
     def __on_reset_workflow_triggered(self, change):
@@ -531,12 +572,16 @@ class ScannerController(Controller):
         IView(self.scan_form_view).enabled = enabled
         IView(self.reset_workflow_editor).enabled = enabled
 
-    def _update_scan_editor(self):
-        """ Update the state of the Scan button. """
+    def _update_from_source_directory(self):
+        """ Update the Gui from the source directory. """
 
-        scan_enabled = (self.model.source_directory != '' and self.current_header_directory is not None)
+        model = self.model
 
+        scan_enabled = (model.source_directory != '' and self.current_header_directory is not None)
         IView(self.scan_editor).enabled = scan_enabled
+
+        parse_enabled = (model.source_directory != '' and model.module != '' and len(self.current_header_files) == 1)
+        IView(self.parse_editor).enabled = parse_enabled
 
     def _update_from_versions(self):
         """ Update the GUI from the current project's list of versions. """

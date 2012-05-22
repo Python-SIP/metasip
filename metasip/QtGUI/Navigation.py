@@ -10,13 +10,10 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-import sys
-import os
-
 from PyQt4.QtCore import QByteArray, QMimeData, Qt
-from PyQt4.QtGui import (QApplication, QDialog, QDrag, QFileDialog,
-        QInputDialog, QMenu, QMessageBox, QProgressDialog, QTreeWidget,
-        QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout)
+from PyQt4.QtGui import (QApplication, QDialog, QDrag, QInputDialog, QMenu,
+        QMessageBox, QProgressDialog, QTreeWidget, QTreeWidgetItem,
+        QTreeWidgetItemIterator, QVBoxLayout)
 
 from dip.model import observe
 from dip.shell import IDirty
@@ -24,7 +21,6 @@ from dip.shell import IDirty
 from ..Project import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
         ManualCode, OpaqueClass, OperatorCast, Namespace, version_range)
-from ..GccXML import GccXMLParser as CppParser
 
 from .ExternalEditor import ExternalEditor
 from .ArgProperties import ArgPropertiesDialog
@@ -759,15 +755,7 @@ class _ModuleItem(_FixedItem):
         if slist:
             return None
 
-        # See if any need updating.
-        update = False
-        for idx in range(self.childCount()):
-            if self.child(idx).headerfile.parse == 'needed':
-                update = True
-                break
-
-        return [("Parse Updated Headers...", self._parseUpdatedHeadersSlot, update),
-                ("Update argument names from WebXML", self._updateFromWebXML),
+        return [("Update argument names from WebXML", self._updateFromWebXML),
                 ("Properties...", self._propertiesSlot)]
 
     def _updateFromWebXML(self):
@@ -785,17 +773,6 @@ class _ModuleItem(_FixedItem):
             (mod.outputdirsuffix, mod.imports, mod.directives, mod.version) = dlg.fields()
 
             self.set_dirty()
-
-    def _parseUpdatedHeadersSlot(self):
-        """
-        Handle parsing any updated headers.
-        """
-        for idx in range(self.childCount()):
-            itm = self.child(idx)
-
-            if itm.headerfile.parse == "needed":
-                if not itm.parseHeaderFile():
-                    return
 
 
 class _SipFileItem(_SimpleItem, _DropSite):
@@ -883,9 +860,7 @@ class _SipFileItem(_SimpleItem, _DropSite):
         if slist:
             return None
 
-        return [("Parse Header...", self.parseHeaderFile),
-                None,
-                ("Hide Ignored", self._hideIgnoredSlot),
+        return [("Hide Ignored", self._hideIgnoredSlot),
                 ("Show Ignored", self._showIgnoredSlot),
                 None,
                 ("Add manual code...", self._addManualCode),
@@ -1059,36 +1034,6 @@ class _SipFileItem(_SimpleItem, _DropSite):
             self.set_dirty()
 
         del self._editors["poic"]
-
-    def parseHeaderFile(self):
-        """
-        Parse a header file and add it to the project.  Return True if there
-        was no error.
-        """
-        gui = self.pane.gui
-        hdir = gui.project.findHeaderDirectory(self.sipfile)
-
-        parser = CppParser()
-
-        # FIXME: Ask the user for the name of the root input directory.
-        #        Default to the value they used last time in this session.
-        phf = parser.parse(input_dir, hdir, self.sipfile)
-
-        if phf is None:
-            QMessageBox.critical(self.pane, "Parse Header File",
-                                 parser.diagnostic,
-                                 QMessageBox.Ok|QMessageBox.Default,
-                                 QMessageBox.NoButton)
-
-            return False
-
-        hdir.addParsedHeaderFile(self.sipfile, phf)
-
-        # Update the display.
-        self.takeChildren()
-        self._draw()
-
-        return True
 
     def _hideIgnoredSlot(self):
         """

@@ -987,25 +987,9 @@ class HeaderDirectory(Model):
     # The project.
     project = Instance(IProject)
 
-    def addParsedHeaderFile(self, hf, phf):
-        """
-        Add a parsed header file to the project.
+    def merge_code(self, dsc, ssc, working_version):
+        """ Merge source code into destination code. """
 
-        hf is the header file instance.
-        phf is the parsed header file.
-        """
-        self._mergeCode(hf, phf)
-
-        # Assume something has changed.
-        IDirty(self.project).dirty = True
-
-    def _mergeCode(self, dsc, ssc):
-        """
-        Merge source code into destination code.
-
-        dsc is the destination code instance.
-        ssc is the list of parsed source code items.
-        """
         # Go though each existing code item.
         for dsi in dsc.content:
             # Manual code is always retained.
@@ -1016,41 +1000,51 @@ class HeaderDirectory(Model):
             for ssi in ssc:
                 if type(dsi) is type(ssi) and dsi.signature() == ssi.signature():
                     # Make sure the versions include the working version.
-                    self._update_with_working_version(dsi, True)
+                    if working_version != '':
+                        self._update_with_working_version(dsi, working_version,
+                                True)
 
                     # Discard the new code item.
                     ssc.remove(ssi)
 
                     # Merge any child code.
                     if isinstance(dsi, (Class, Namespace)):
-                        self._mergeCode(dsi, ssi.content)
+                        self.merge_code(dsi, ssi.content, working_version)
 
                     break
             else:
                 # The existing one doesn't exist in the working version.
-                if not self._update_with_working_version(dsi, False):
+                if working_version == '':
+                    # Forget about it because there are no other versions that
+                    # might refer to it.
+                    dsc.remove(dsi)
+                elif not self._update_with_working_version(dsi, working_version, False):
+                    # Forget about it because there are no other versions that
+                    # refer to it.
                     dsc.remove(dsi)
 
         # Anything left in the source code is new.
-        for ssi in ssc:
-            prj = self.project
-            workingversion = prj.workingversion
 
-            working_idx = prj.versions.index(workingversion)
+        if working_version == '':
+            startversion = endversion = None
+        else:
+            versions = self.project.versions
+            working_idx = versions.index(working_version)
 
-            # If the working version is the first then assume that the new
-            # item will appear in earlier versions, otherwise it is restricted
-            # to this version.
-            startversion = None if working_idx == 0 else workingversion
+            # If the working version is the first then assume that the new item
+            # will appear in earlier versions, otherwise it is restricted to
+            # this version.
+            startversion = None if working_idx == 0 else working_version
 
             # If the working version is the latest then assume that the new
             # item will appear in later versions, otherwise it is restricted to
             # this version.
             try:
-                endversion = prj.versions[working_idx + 1]
+                endversion = versions[working_idx + 1]
             except IndexError:
                 endversion = None
 
+        for ssi in ssc:
             if startversion is not None or endversion is not None:
                 ssi.versions.append(
                         VersionRange(startversion=startversion,
@@ -1058,7 +1052,7 @@ class HeaderDirectory(Model):
 
             dsc.content.append(ssi)
 
-    def _update_with_working_version(self, api_item, add_working):
+    def _update_with_working_version(self, api_item, working_version, add_working):
         """ Update a list of version ranges to include or exclude the working
         version.  Return True if the item is still present in some version as a
         result.
@@ -1077,7 +1071,7 @@ class HeaderDirectory(Model):
 
         # Update the version map appropriately using the working version.
         # First take a shortcut to see if anything has changed.
-        working_idx = self.project.versions.index(self.project.workingversion)
+        working_idx = self.project.versions.index(working_version)
 
         if vmap[working_idx] == add_working:
             return True
@@ -1093,149 +1087,6 @@ class HeaderDirectory(Model):
         api_item.versions = versions
 
         return True
-
-    def scan_directory(self, sd):
-        """ Scan a header directory and process it's contents.
-
-        :param sd:
-            is the name of the directory to scan.
-        """
-
-        sd = os.path.abspath(sd)
-        sdlen = len(sd) + len(os.path.sep)
-
-        # Save the files that were in the directory.
-        saved = self[:]
-
-        Logger.log("Scanning header directory %s" % sd)
-
-        for (root, dirs, files) in os.walk(sd):
-            for f in files:
-                hpath = os.path.join(root, f)
-                hfile = hpath[sdlen:]
-
-                # Apply any file name filter.
-                if self.filefilter:
-                    if not fnmatch.fnmatch(hfile, self.filefilter):
-                        continue
-
-                if os.access(hpath, os.R_OK):
-                    hf = self._scanHeaderFile(hpath, hfile)
-
-                    for shf in saved:
-                        if shf.name == hf.name:
-                            saved.remove(shf)
-                            break
-
-                    Logger.log("Scanned %s" % hfile)
-                else:
-                    Logger.log("Skipping unreadable header file %s" % hfile)
-
-        # Anything left in the known list has gone missing or was already
-        # missing.
-        generation = str(len(self.project.versions))
-        for hf in saved:
-            if hf.egen == '':
-                Logger.log("%s is no longer in the header directory" % hf.name)
-
-                # If it is unknown then just forget about it.
-                if hf.status == "unknown":
-                    self.content.remove(hf)
-                else:
-                    hf.egen = generation
-
-        # Assume something has changed.
-        IDirty(self.project).dirty = True
-
-    def _scanHeaderFile(self, hpath, hfile):
-        """
-        Scan a header file and return the header file instance.
-
-        hpath is the full pathname of the header file.
-        hfile is the pathname relative to the header directory.
-        """
-        # Calculate the MD5 signature ignoring any comments.  Note that nested
-        # C style comments aren't handled very well.
-        m = hashlib.md5()
-
-        f = open(hpath, "r")
-        src = f.read()
-        f.close()
-
-        lnr = 1
-        state = "copy"
-        copy = ""
-        idx = 0
-
-        for ch in src:
-            # Get the previous character.
-            if idx > 0:
-                prev = src[idx - 1]
-            else:
-                prev = ""
-
-            idx += 1
-
-            # Line numbers must be accurate.
-            if ch == "\n":
-                lnr += 1
-
-            # Handle the end of a C style comment.
-            if state == "ccmnt":
-                if ch == "/" and prev == "*":
-                    state = "copy"
-
-                continue
-
-            # Handle the end of a C++ style comment.
-            if state == "cppcmnt":
-                if ch == "\n":
-                    state = "copy"
-
-                continue
-
-            # We must be in the copy state.
-
-            if ch == "*" and prev == "/":
-                # The start of a C style comment.
-                state = "ccmnt"
-                continue
-
-            if ch == "/" and prev == "/":
-                # The start of a C++ style comment.
-                state = "cppcmnt"
-                continue
-
-            # At this point we know the previous character wasn't part of a
-            # comment.
-            if prev:
-                m.update(prev.encode(f.encoding))
-
-        # Note that we didn't add the last character, but it would normally be
-        # a newline.
-        sig = m.hexdigest()
-
-        # See if we already know about the file.
-        for hf in self.content:
-            if hf.name == hfile:
-                if hf.egen == '':
-                    if hf.md5 != sig:
-                        hf.md5 = sig
-                        hf.parse = "needed"
-
-                    return hf
-
-                break
-
-        # It is a new file, or the reappearence of an old one.
-        hf = HeaderFile(name=hfile, md5=sig,
-                parse='needed', status='unknown',
-                sgen=str(len(self.project.versions)))
-        self.content.append(hf)
-
-        IDirty(self.project).dirty = True
-
-        return hf
 
 
 @implements(ISipFile)
