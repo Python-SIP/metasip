@@ -18,7 +18,6 @@ FORMS = \
 	VariablePropertiesBase.py \
 	EnumPropertiesBase.py \
 	EnumValuePropertiesBase.py \
-	HeaderDirectoryPropertiesBase.py \
 	ModulePropertiesBase.py \
 	ProjectPropertiesBase.py \
 	PlatformPickerBase.py \

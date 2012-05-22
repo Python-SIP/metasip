@@ -13,7 +13,7 @@
 import sys
 import os
 
-from PyQt4.QtCore import pyqtSignal, QByteArray, QMimeData, Qt
+from PyQt4.QtCore import QByteArray, QMimeData, Qt
 from PyQt4.QtGui import (QApplication, QDialog, QDrag, QFileDialog,
         QInputDialog, QMenu, QMessageBox, QProgressDialog, QTreeWidget,
         QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout)
@@ -23,8 +23,7 @@ from dip.shell import IDirty
 
 from ..Project import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
-        ManualCode, OpaqueClass, OperatorCast, Namespace, HeaderDirectory,
-        version_range)
+        ManualCode, OpaqueClass, OperatorCast, Namespace, version_range)
 from ..GccXML import GccXMLParser as CppParser
 
 from .ExternalEditor import ExternalEditor
@@ -35,7 +34,6 @@ from .OpaqueClassProperties import OpaqueClassPropertiesDialog
 from .VariableProperties import VariablePropertiesDialog
 from .EnumProperties import EnumPropertiesDialog
 from .EnumValueProperties import EnumValuePropertiesDialog
-from .HeaderDirectoryProperties import HeaderDirectoryPropertiesDialog
 from .ModuleProperties import ModulePropertiesDialog
 from .ProjectProperties import ProjectPropertiesDialog
 from .PlatformPicker import PlatformPickerDialog
@@ -48,8 +46,6 @@ class NavigationPane(QTreeWidget):
     """ This class represents a navigation pane in the GUI. """
 
     MIME_FORMAT = 'application/x-item'
-
-    headerDirectoryScanned = pyqtSignal(HeaderDirectory)
 
     def __init__(self, gui, parent=None):
         """
@@ -700,7 +696,7 @@ class _ProjectItem(_FixedItem):
             self.set_dirty()
 
 
-class _ModuleItem(_FixedItem, _DropSite):
+class _ModuleItem(_FixedItem):
     """
     This class implements a navigation item that represents a module.
     """
@@ -718,12 +714,9 @@ class _ModuleItem(_FixedItem, _DropSite):
         """
         self.module = mod
 
-        _FixedItem.__init__(self, parent)
-        _DropSite.__init__(self)
+        super().__init__(parent)
 
         self._drawSipFiles(progress, so_far)
-
-        self.pane.headerDirectoryScanned.connect(self._refresh)
 
     def getName(self):
         """
@@ -756,49 +749,6 @@ class _ModuleItem(_FixedItem, _DropSite):
                 so_far += 1
                 progress.setValue(so_far)
                 QApplication.processEvents()
-
-    def droppable(self, source):
-        """
-        Determine if an item can be dropped.
-        """
-        # Any header file can be dropped here.
-        return isinstance(source, _HeaderFileItem)
-
-    def drop(self, source, after=None):
-        """
-        Handle the item being dropped here.
-
-        source is the item being dropped.
-        after is the optional child on which the item was actually dropped.
-        """
-        # Remove the item from its old parent (either a _HeaderFileGroupItem or
-        # a _ModuleItem).
-        source.parent().removeHeaderFileItem(source)
-
-        # Create a new item and add it to this one.
-        if after is None:
-            at = 0
-            after = self
-        else:
-            at = self.module.index(after.headerfile) + 1
-
-        hf = source.headerfile
-
-        hf.status = ''
-        self.module.insert(at, hf)
-
-        _SipFileItem(self, sf, after)
-
-        self.set_dirty()
-
-    def removeHeaderFileItem(self, itm):
-        """
-        Remove a header file item.
-
-        itm is the item to remove.
-        """
-        self.module.remove(itm.headerfile)
-        self.removeChild(itm)
 
     def getMenu(self, slist):
         """
@@ -848,264 +798,6 @@ class _ModuleItem(_FixedItem, _DropSite):
                     return
 
 
-class _HeaderDirectoryGroupItem(_FixedItem):
-    """
-    This class implements a navigation item that represents a header directory
-    group.
-    """
-    def __init__(self, parent, text):
-        """
-        Initialise the item instance.
-
-        parent is the parent.
-        text is the text to use.
-        """
-        self._text = text
-
-        _FixedItem.__init__(self, parent)
-
-    def getName(self):
-        """
-        Return the value of the name column.
-        """
-        return self._text
-
-    def draw(self):
-        """ Draw the current project. """
-
-        for hdir in self.pane.gui.project.headers:
-            _HeaderDirectoryItem(self, hdir).draw()
-
-    def getMenu(self, slist):
-        """
-        Return the item's context menu.
-
-        slist is a list of siblings of the item that is also selected.
-        """
-        if slist:
-            return None
-
-        return [("Add Header Directory...", self._addHeaderDirectorySlot)]
-
-    def _addHeaderDirectorySlot(self):
-        """
-        Handle adding a header file directory to the project.
-        """
-        # Get the name of the header directory.
-        (hname, ok) = QInputDialog.getText(self.pane, "Add Header directory",
-                "Descriptive name")
-
-        if ok:
-            hname = str(hname).strip()
-
-            # TODO - check the name is not already in use.
-            if hname:
-                # Add the header directory to the project and the GUI.
-                hdir = self.pane.gui.project.newHeaderDirectory(hname)
-                _HeaderDirectoryItem(self, hdir)
-
-
-class _HeaderDirectoryItem(_FixedItem):
-    """
-    This class implements a navigation item that represents a header file
-    directory.
-    """
-    def __init__(self, parent, hdir):
-        """
-        Initialise the item instance.
-
-        parent is the parent.
-        hdir is the header directory instance.
-        """
-        self._hdir = hdir
-
-        _FixedItem.__init__(self, parent)
-
-        self._unknown = _HeaderFileGroupItem(self, hdir, "unknown", "Unknown")
-        self._ignored = _HeaderFileGroupItem(self, hdir, "ignored", "Ignored")
-
-        # Open the unknown branch if it contains anything.
-        for hf in hdir.content:
-            if hf.status == "unknown":
-                self._unknown.setExpanded(True)
-                self.setExpanded(True)
-                break
-
-        self.pane.headerDirectoryScanned.connect(self._refresh)
-
-    def getName(self):
-        """
-        Return the value of the name column.
-        """
-        return self._hdir.name
-
-    def draw(self):
-        """
-        Draw the current project.
-        """
-        sortunknown = False
-        sortignored = False
-
-        for hf in self._hdir.content:
-            if hf.status == "unknown":
-                _HeaderFileItem(self._unknown, hf)
-                sortunknown = True
-            elif hf.status == "ignored":
-                _HeaderFileItem(self._ignored, hf)
-                sortignored = True
-
-        if sortunknown:
-            self._unknown.sortChildren(0, Qt.AscendingOrder)
-            self._unknown.setExpanded(True)
-            self.setExpanded(True)
-
-        if sortignored:
-            self._ignored.sortChildren(0, Qt.AscendingOrder)
-
-    def _refresh(self, hdir):
-        """
-        Draw the parts of the project affected by a change in header files.
-
-        hdir is the header directory instance to refresh.
-        """
-        if hdir is self._hdir:
-            self._unknown.takeChildren()
-            self._ignored.takeChildren()
-            self.draw()
-
-    def getMenu(self, slist):
-        """
-        Return the item's context menu.
-
-        slist is a list of siblings of the item that is also selected.
-        """
-        if slist:
-            return None
-
-        return [("Scan Header Directory", self._scanHeaderDirectorySlot),
-                ("Properties...", self._propertiesSlot)]
-
-    def _scanHeaderDirectorySlot(self):
-        """
-        Handle scanning the header directory.
-        """
-        # FIXME: Ask the user for the name of the root input directory.
-        #        Default to the value they used last time in this session.
-        sd = os.path.join(input_dir, self._hdir.inputdirsuffix)
-
-        self._hdir.scan(sd)
-        self.pane.headerDirectoryScanned.emit(self._hdir)
-
-    def _propertiesSlot(self):
-        """
-        Handle the header directory's properties.
-        """
-        hdir = self._hdir
-        dlg = HeaderDirectoryPropertiesDialog(hdir, self.pane)
-
-        if dlg.exec_() == QDialog.Accepted:
-            (hdir.inputdirsuffix, hdir.filefilter, hdir.parserargs) = dlg.fields()
-
-            self.set_dirty()
-
-
-class _HeaderFileGroupItem(_FixedItem, _DropSite):
-    """
-    This class implements a navigation item that represents a header file
-    group.
-    """
-    def __init__(self, parent, hdir, status, text):
-        """
-        Initialise the item instance.
-
-        parent is the parent.
-        hdir is the header directory.
-        status is the header file status being applied.
-        text is the item text.
-        """
-        self._text = text
-
-        _FixedItem.__init__(self, parent)
-        _DropSite.__init__(self)
-
-        self._hdir = hdir
-        self._status = status
-
-    def getName(self):
-        """
-        Return the value of the name column.
-        """
-        return self._text
-
-    def droppable(self, source):
-        """
-        Determine if an item can be dropped here.
-        """
-        if not isinstance(source, _HeaderFileItem):
-            return False
-
-        hf = source.headerfile
-
-        # The header file must be part of the header directory.
-        if hf not in self._hdir:
-            return False
-
-        # A header file cannot be moved within the same group.
-        if hf.status == self._status:
-            return False
-
-        return True
-
-    def drop(self, source):
-        """
-        Handle the item being dropped here.
-        """
-        hf = source.headerfile
-
-        source.parent().removeHeaderFileItem(source)
-
-        hf.status = self._status
-
-        _HeaderFileItem(self, hf)
-        self.sortChildren(0, Qt.AscendingOrder)
-
-        self.set_dirty()
-
-    def removeHeaderFileItem(self, itm):
-        """
-        Remove a header file item.
-
-        itm is the item to remove.
-        """
-        self.removeChild(itm)
-
-
-class _HeaderFileItem(_SimpleItem):
-    """
-    This class implements a navigation item that represents a header file.
-    """
-    def __init__(self, parent, hf, after=None):
-        """
-        Initialise the item instance.
-
-        parent is the parent.
-        hf is the header file instance.
-        after is the sibling after which this should be placed.  If it is None
-        then it should be placed at the end.  If it is the parent then it
-        should be placed at the start.
-        droptypes is the list of types of item that can be dropped.
-        """
-        self.headerfile = hf
-
-        super(_HeaderFileItem, self).__init__(parent, after)
-
-    def getName(self):
-        """
-        Return the value of the name column.
-        """
-        return self.headerfile.name
-
-
 class _SipFileItem(_SimpleItem, _DropSite):
     """
     This class implements a navigation item that represents a header file in a
@@ -1152,10 +844,6 @@ class _SipFileItem(_SimpleItem, _DropSite):
         """
         Determine if an item can be dropped here.
         """
-        # Header files are handled by the parent.
-        if isinstance(source, _HeaderFileItem):
-            return self.parent().droppable(source)
-
         if not isinstance(source, _CodeItem):
             return False
 
@@ -1169,11 +857,6 @@ class _SipFileItem(_SimpleItem, _DropSite):
         source is the item being dropped.
         after is the optional child on which the item was dropped.
         """
-        # Header files are handled by the parent.
-        if isinstance(source, _HeaderFileItem):
-            self.parent().drop(source, self)
-            return
-
         # Handle the move of child code.
         cd = source.code
         sf = self.sipfile
@@ -1197,16 +880,8 @@ class _SipFileItem(_SimpleItem, _DropSite):
 
         slist is a list of siblings of the item that is also selected.
         """
-        # Save the list of targets for the menu action, including this one.
-        self._targets = slist[:]
-        self._targets.append(self)
-
-        versions = ("Versions...", self._versionsSlot,
-                (self.pane.gui.project.versions[0].name != '' and
-                len(self.sipfile.versions) <= 1))
-
         if slist:
-            return [versions]
+            return None
 
         return [("Parse Header...", self.parseHeaderFile),
                 None,
@@ -1223,25 +898,7 @@ class _SipFileItem(_SimpleItem, _DropSite):
                 ("%PostInitialisationCode", self._postInitCodeSlot, ("poic" not in self._editors)),
                 None,
                 ("Apply argument naming conventions...", self._nameFromConventions),
-                ("Accept argument names", self._acceptNames),
-                None,
-                versions]
-
-    def _versionsSlot(self):
-        """ Slot to handle the versions. """
-
-        dlg = GenerationsDialog(self.pane.gui.project, self.sipfile,
-                self.pane)
-
-        if dlg.exec_() == QDialog.Accepted:
-            (startversion, endversion) = dlg.fields()
-
-            for itm in self._targets:
-                itm.headerfile.versions = [VersionRange(
-                        startversion=startversion, endversion=endversion)]
-                itm.drawVersions()
-
-            self.set_dirty()
+                ("Accept argument names", self._acceptNames)]
 
     def _nameFromConventions(self):
         """ Apply the argument naming conventions to all unnamed arguments. """
@@ -1686,7 +1343,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         if slist:
             menu.append(None)
             menu.append(("Versions...", self._versionsSlot,
-                    (self.pane.gui.project.versions[0] != '' and
+                    (len(self.pane.gui.project.versions) != 0 and
                     len(self.code.versions) <= 1)))
 
             return menu
@@ -1868,7 +1525,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         # Add the extra menu items.
         menu.append(None)
         menu.append(("Versions...", self._versionsSlot,
-                self.pane.gui.project.versions[0] != ''))
+                len(self.pane.gui.project.versions) != 0))
         menu.append(("Platform Tags...", self._platformTagsSlot,
                 len(self.pane.gui.project.platforms) != 0))
         menu.append(("Feature Tags...", self._featureTagsSlot,
