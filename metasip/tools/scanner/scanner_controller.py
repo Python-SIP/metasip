@@ -16,7 +16,7 @@ import os
 
 from PyQt4.QtGui import QInputDialog
 
-from dip.model import Instance, observe
+from dip.model import Instance, List, observe
 from dip.shell import IDirty
 from dip.ui import (Application, Controller, IGroupBox, IOptionSelector, IView,
         IViewStack)
@@ -36,8 +36,8 @@ class ScannerController(Controller):
     # The current header directory.
     current_header_directory = Instance(IHeaderDirectory)
 
-    # The current header file.
-    current_header_file = Instance(IHeaderFile)
+    # The current header files.
+    current_header_files = List(IHeaderFile)
 
     # The current project.
     current_project = Instance(IProject)
@@ -131,7 +131,7 @@ class ScannerController(Controller):
             if self.is_valid(self.module_editor):
                 update_enabled = True
 
-                if model.module != '':
+                if model.module != '' and len(self.current_header_files) == 1:
                     parse_enabled = True
 
         IView(self.module_editor).enabled = module_enabled
@@ -145,20 +145,34 @@ class ScannerController(Controller):
         changes.
         """
 
-        # We don't handle multiple selections.
-        selection = selected_items[0] if len(selected_items) == 1 else None
+        # Only multiple header files within the same directory are allowed.
+        header_directory = None
+        header_files = []
 
-        if isinstance(selection, HeaderFile):
-            header_file = selection
-            header_directory = self.current_project.findHeaderDirectory(
-                    selection)
-        else:
-            header_file = None
+        if len(selected_items) == 1:
+            selection = selected_items[0]
 
-            if isinstance(selection, HeaderDirectory):
+            if isinstance(selection, HeaderFile):
+                header_files = [selection]
+                header_directory = self.current_project.findHeaderDirectory(
+                        selection)
+            elif isinstance(selection, HeaderDirectory):
                 header_directory = selection
+
+        elif len(selected_items) > 1:
+            hdir = None
+
+            for selection in selected_items:
+                if not isinstance(selection, HeaderFile):
+                    break
+
+                if hdir is None:
+                    hdir = self.current_project.findHeaderDirectory(selection)
+                elif hdir is not self.current_project.findHeaderDirectory(selection):
+                    break
             else:
-                header_directory = None
+                header_files = selected_items
+                header_directory = hdir
 
         model = self.model
 
@@ -179,14 +193,32 @@ class ScannerController(Controller):
             IGroupBox(self.directory_group_view).enabled = False
             IView(self.delete_editor).enabled = False
 
-        if header_file is not None:
-            self.current_header_file = header_file
-            model.header_file_name = header_file.name
-            model.ignored = header_file.ignored
-            model.module = header_file.module
+        if len(header_files) != 0:
+            # Create an amalgamation of the selected header files.
+            hfile = header_files[0]
+            names = [hfile.name]
+            ignored = hfile.ignored
+            module = hfile.module
+
+            if len(header_files) > 1:
+                names.append("...")
+
+            for hfile in header_files[1:]:
+                # If the files have different values then fall back to the
+                # defaults.
+                if ignored != hfile.ignored:
+                    ignored = False
+
+                if module != hfile.module:
+                    module = ''
+
+            self.current_header_files = header_files
+            model.header_file_name = (", ").join(names)
+            model.ignored = ignored
+            model.module = module
             IGroupBox(self.file_group_view).enabled = True
         else:
-            self.current_header_file = None
+            self.current_header_files = []
             model.header_file_name = ''
             model.ignored = False
             model.module = ''
@@ -467,36 +499,11 @@ class ScannerController(Controller):
     def __on_update_file_triggered(self, change):
         """ Invoked when the Update header file button is triggered. """
 
-        hfile = self.current_header_file
         model = self.model
 
-        hfile.ignored = model.ignored
-        hfile.module = model.module
-
-        IDirty(self.current_project).dirty = True
-
-    @observe('model.update_directory')
-    def __on_update_directory_triggered(self, change):
-        """ Invoked when the Update header directory button is triggered. """
-
-        hdir = self.current_header_directory
-        model = self.model
-
-        hdir.filefilter = model.file_filter
-        hdir.inputdirsuffix = model.suffix
-        hdir.parserargs = model.parser_arguments
-
-        IDirty(self.current_project).dirty = True
-
-    @observe('model.update_file')
-    def __on_update_file_triggered(self, change):
-        """ Invoked when the Update header file button is triggered. """
-
-        hfile = self.current_header_file
-        model = self.model
-
-        hfile.ignored = model.ignored
-        hfile.module = model.module
+        for hfile in self.current_header_files:
+            hfile.ignored = model.ignored
+            hfile.module = model.module
 
         IDirty(self.current_project).dirty = True
 

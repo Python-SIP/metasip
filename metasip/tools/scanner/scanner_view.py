@@ -31,6 +31,7 @@ class ScannerView(QTreeWidget):
 
         self.setHeaderLabels(["Name", "Status"])
 
+        self.setSelectionMode(self.ExtendedSelection)
         self.itemSelectionChanged.connect(self.refresh_selection)
 
         self._controller = controller
