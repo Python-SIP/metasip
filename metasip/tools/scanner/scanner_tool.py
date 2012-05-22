@@ -64,15 +64,10 @@ class ScannerTool(SimpleViewTool):
                     ViewStack(id='metasip.scanner.project_views'),
                     VBox(
                         Form(
-                            ComboBox('working_version', visible=False)),
-                        GroupBox(
-                            VBox(
-                                Form(
-                                    FilesystemLocationEditor(
-                                            'source_directory',
-                                            mode='directory')),
-                                PushButton('reset', label="Reset Workflow")),
-                            title="Scan", id='metasip.scanner.scan_group'),
+                            ComboBox('working_version', visible=False),
+                            FilesystemLocationEditor('source_directory',
+                                    mode='directory'),
+                            id='metasip.scanner.scan_form'),
                         GroupBox(
                             VBox(
                                 Form(
@@ -102,7 +97,9 @@ class ScannerTool(SimpleViewTool):
                             id='metasip.scanner.file_group'),
                         HBox(
                             PushButton('new', label="New..."),
-                            PushButton('delete', enabled=False)),
+                            PushButton('delete', enabled=False),
+                            PushButton('reset', label="Reset Workflow",
+                                    enabled=False)),
                         Stretch(),
                         MessageArea()),
                     id='metasip.scanner.splitter'),

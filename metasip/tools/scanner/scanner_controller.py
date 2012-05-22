@@ -55,12 +55,12 @@ class ScannerController(Controller):
         IViewStack(self.project_views_view).current_view = project_ui
 
         # Configure the versions.
-        self._update_versions()
+        self._update_from_versions()
         self.model.working_version = project_ui.working_version
 
-        # Configure the Scan group.
+        # Configure the Scan form.
         self.model.source_directory = project_ui.source_directory
-        self._update_scan_group()
+        self._update_from_headers()
 
         # Configure from the selection.
         project_ui.refresh_selection()
@@ -490,7 +490,7 @@ class ScannerController(Controller):
         """ Invoked when the list of project header directories changes. """
 
         if change.model is self.current_project:
-            self._update_scan_group()
+            self._update_from_headers()
 
     def __on_versions_changed(self, change):
         """ Invoked when the list of project versions changes. """
@@ -498,12 +498,17 @@ class ScannerController(Controller):
         # FIXME: This code assumes that versions will only ever be appended.
 
         if change.model is self.current_project:
-            self._update_versions()
+            self._update_from_versions()
 
-    def _update_scan_group(self):
-        """ Update the state of the Scan view. """
+    def _update_from_headers(self):
+        """ Update the GUI from the current project's list of header
+        directories.
+        """
 
-        IView(self.scan_group_view).enabled = (len(self.current_project.headers) != 0)
+        enabled = (len(self.current_project.headers) != 0)
+
+        IView(self.scan_form_view).enabled = enabled
+        IView(self.reset_editor).enabled = enabled
 
     def _update_scan_editor(self):
         """ Update the state of the Scan button. """
@@ -512,7 +517,7 @@ class ScannerController(Controller):
 
         IView(self.scan_editor).enabled = scan_enabled
 
-    def _update_versions(self):
+    def _update_from_versions(self):
         """ Update the GUI from the current project's list of versions. """
 
         versions = self.current_project.versions
