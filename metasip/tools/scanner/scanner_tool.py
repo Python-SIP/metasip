@@ -46,9 +46,9 @@ class ScannerTool(SimpleViewTool):
     def view(self):
         """ Invoked to create the tool's view. """
 
-        from dip.ui import (ComboBox, FilesystemLocationEditor, Form, GroupBox,
-                HBox, Label, LineEditor, MessageArea, PushButton, Splitter,
-                Stretch, VBox, ViewStack)
+        from dip.ui import (ComboBox, FilesystemLocationEditor, Form, Grid,
+                GroupBox, HBox, Label, LineEditor, MessageArea, PushButton,
+                Splitter, Stretch, VBox, ViewStack)
 
         from .module_validator import ModuleValidator
         from .scanner_controller import ScannerController
@@ -76,10 +76,13 @@ class ScannerTool(SimpleViewTool):
                                     'suffix',
                                     'file_filter',
                                     'parser_arguments'),
-                                HBox(
+                                Grid(
                                     PushButton('scan'),
                                     PushButton('update_directory',
-                                            label="Update"))),
+                                            label="Update"),
+                                    PushButton('hide_ignored'),
+                                    PushButton('show_ignored'),
+                                    nr_columns=2)),
                             title="Header Directory",
                             id='metasip.scanner.directory_group'),
                         GroupBox(
@@ -98,8 +101,7 @@ class ScannerTool(SimpleViewTool):
                         HBox(
                             PushButton('new', label="New..."),
                             PushButton('delete', enabled=False),
-                            PushButton('reset', label="Reset Workflow",
-                                    enabled=False)),
+                            PushButton('reset_workflow', enabled=False)),
                         Stretch(),
                         MessageArea()),
                     id='metasip.scanner.splitter'),

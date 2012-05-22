@@ -37,6 +37,9 @@ class ScannerModel(Model):
     # The name of the header file.
     header_file_name = Str()
 
+    # Pulled to hide any ignored files.
+    hide_ignored = Trigger()
+
     # Set if a header file is ignored.
     ignored = Bool()
 
@@ -54,10 +57,13 @@ class ScannerModel(Model):
     parser_arguments = Str()
 
     # Pulled to mark all header directories as needing to be scanned.
-    reset = Trigger()
+    reset_workflow = Trigger()
 
     # Pulled to scan the current header directory.
     scan = Trigger()
+
+    # Pulled to show any ignored files.
+    show_ignored = Trigger()
 
     # The name of the root directory containing all the header file
     # directories.

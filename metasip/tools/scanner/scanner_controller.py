@@ -222,6 +222,13 @@ class ScannerController(Controller):
             project.headers.remove(hdir)
             IDirty(project).dirty = True
 
+    @observe('model.hide_ignored')
+    def __on_hide_ignored_triggered(self, change):
+        """ Invoked when the Hide Ignored button is triggered. """
+
+        self.current_project_ui.hide_ignored(self.current_header_directory,
+                hide=True)
+
     @observe('model.new')
     def __on_new_triggered(self, change):
         """ Invoked when the New button is triggered. """
@@ -261,8 +268,8 @@ class ScannerController(Controller):
 
         print("Doing Parse")
 
-    @observe('model.reset')
-    def __on_reset_triggered(self, change):
+    @observe('model.reset_workflow')
+    def __on_reset_workflow_triggered(self, change):
         """ Invoked when the Reset Workflow button is triggered. """
 
         project = self.current_project
@@ -436,6 +443,13 @@ class ScannerController(Controller):
 
         return hfile
 
+    @observe('model.show_ignored')
+    def __on_show_ignored_triggered(self, change):
+        """ Invoked when the Show Ignored button is triggered. """
+
+        self.current_project_ui.hide_ignored(self.current_header_directory,
+                hide=False)
+
     @observe('model.update_directory')
     def __on_update_directory_triggered(self, change):
         """ Invoked when the Update header directory button is triggered. """
@@ -508,7 +522,7 @@ class ScannerController(Controller):
         enabled = (len(self.current_project.headers) != 0)
 
         IView(self.scan_form_view).enabled = enabled
-        IView(self.reset_editor).enabled = enabled
+        IView(self.reset_workflow_editor).enabled = enabled
 
     def _update_scan_editor(self):
         """ Update the state of the Scan button. """

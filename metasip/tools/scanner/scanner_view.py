@@ -44,6 +44,19 @@ class ScannerView(QTreeWidget):
 
         ProjectItem(project, self)
 
+    def hide_ignored(self, header_directory, hide):
+        """ Show or hide all the ignored files in a header directory. """
+
+        for itm in self._items():
+            if itm.get_project_item() is header_directory:
+                for hfile_idx in range(itm.childCount()):
+                    hfile_itm = itm.child(hfile_idx)
+
+                    if hfile_itm.text(ScannerView.STATUS) == "Ignored":
+                        hfile_itm.setHidden(hide)
+
+                break
+
     def set_working_version(self, working_version):
         """ Set the working version. """
 
@@ -161,9 +174,9 @@ class HeaderDirectoryItem(ScannerItem):
         for header_file in header_directory.content:
             itm = HeaderFileItem(header_file, self)
 
-            # Expand the header directory if there is at least one non-ignored
-            # file that needs something doing.
-            if not header_file.ignored and itm.text(ScannerView.STATUS) != '':
+            # Expand the header directory if there is at least one visible file
+            # that needs something doing.
+            if not itm.isHidden() and itm.text(ScannerView.STATUS) != '':
                 expand = True
 
         observe('content', header_directory, self.__on_content_changed)
@@ -262,11 +275,12 @@ class HeaderFileItem(ScannerItem):
             else:
                 working_file = None
 
-        self.setHidden(working_file is None)
+        hidden = (working_file is None)
 
         # Determine the status.
         if self._header_file.ignored:
             status = "Ignored"
+            hidden = True
         elif self._header_file.module == '':
             status = "Needs assigning"
         elif working_file is not None and working_file.parse:
@@ -275,6 +289,8 @@ class HeaderFileItem(ScannerItem):
             status = ''
 
         self.setText(ScannerView.STATUS, status)
+
+        self.setHidden(hidden)
 
     def __on_ignored_changed(self, change):
         """ Invoked when a header file's ignored state changes. """
