@@ -21,7 +21,8 @@ from dip.shell import IDirty
 from dip.ui import (Application, Controller, IGroupBox, IOptionSelector, IView,
         IViewStack)
 
-from ...interfaces.project import IHeaderDirectory, IHeaderFile, IProject
+from ...interfaces.project import (ICodeContainer, IHeaderDirectory,
+        IHeaderFile, IProject)
 from ...logger import Logger
 from ...Project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
         Project, SipFile)
@@ -288,9 +289,7 @@ class ScannerController(Controller):
             else:
                 working_version = self._working_version_as_string()
 
-                hdir = HeaderDirectory(project=project, name=hname,
-                        scan=[working_version])
-
+                hdir = HeaderDirectory(name=hname, scan=[working_version])
                 project.headers.append(hdir)
 
                 IDirty(project).dirty = True
@@ -312,7 +311,6 @@ class ScannerController(Controller):
             Application.warning("Parse", parser.diagnostic, self.parser_editor)
         else:
             project = self.current_project
-            working_version = self._working_version_as_string()
 
             # Find the corresponding .sip file creating it if is a new header
             # file.
@@ -329,17 +327,123 @@ class ScannerController(Controller):
                         sfile = SipFile(name=hfile.name)
                         mod.content.append(sfile)
 
-                    hdir.merge_code(sfile, phf, working_version)
+                    self._merge_code(sfile, phf)
 
                     break
 
             # The file version no longer needs parsing.
+            working_version = self._working_version_as_string()
+
             for hfile_version in hfile.versions:
                 if hfile_version.version == working_version:
                     hfile_version.parse = False
                     break
 
             IDirty(project).dirty = True
+
+    def merge_code(self, dsc, ssc):
+        """ Merge source code into destination code. """
+
+        working_version = self.model.working_version
+
+        # Go though each existing code item.
+        for dsi in dsc.content:
+            # Manual code is always retained.
+            if isinstance(dsi, ManualCode):
+                continue
+
+            # Go through each potentially new code item.
+            for ssi in ssc:
+                if type(dsi) is type(ssi) and dsi.signature() == ssi.signature():
+                    # Make sure the versions include the working version.
+                    if working_version is not None:
+                        self._update_with_working_version(dsi, True)
+
+                    # Discard the new code item.
+                    ssc.remove(ssi)
+
+                    # Merge any child code.
+                    if isinstance(dsi, ICodeContainer):
+                        self._merge_code(dsi, ssi.content)
+
+                    break
+            else:
+                # The existing one doesn't exist in the working version.
+                if working_version is None:
+                    # Forget about it because there are no other versions that
+                    # might refer to it.
+                    dsc.remove(dsi)
+                elif not self._update_with_working_version(dsi, False):
+                    # Forget about it because there are no other versions that
+                    # refer to it.
+                    dsc.remove(dsi)
+
+        # Anything left in the source code is new.
+
+        if working_version is None:
+            startversion = endversion = None
+        else:
+            versions = self.current_project.versions
+            working_idx = versions.index(working_version)
+
+            # If the working version is the first then assume that the new item
+            # will appear in earlier versions, otherwise it is restricted to
+            # this version.
+            startversion = None if working_idx == 0 else working_version
+
+            # If the working version is the latest then assume that the new
+            # item will appear in later versions, otherwise it is restricted to
+            # this version.
+            try:
+                endversion = versions[working_idx + 1]
+            except IndexError:
+                endversion = None
+
+        for ssi in ssc:
+            if startversion is not None or endversion is not None:
+                ssi.versions.append(
+                        VersionRange(startversion=startversion,
+                                endversion=endversion))
+
+            dsc.content.append(ssi)
+
+    def _update_with_working_version(self, api_item, add_working):
+        """ Update a list of version ranges to include or exclude the working
+        version.  Return True if the item is still present in some version as a
+        result.
+        """
+
+        project = self.current_project
+
+        # Construct the existing list of version ranges to a version map.
+        if len(api_item.versions) == 0:
+            if add_working:
+                # Take a shortcut when the item is present in all versions.
+                return True
+
+            vmap = project.vmap_create(True)
+        else:
+            vmap = project.vmap_create(False)
+            project.vmap_or_version_ranges(vmap, version_range)
+
+        # Update the version map appropriately using the working version.
+        # First take a shortcut to see if anything has changed.
+        working_idx = project.versions.index(self.model.working_version)
+
+        if vmap[working_idx] == add_working:
+            return True
+
+        vmap[working_idx] = add_working
+
+        # Convert the version map back to a list of version ranges.
+        versions = project.vmap_to_version_ranges(vmap)
+
+        if versions is None:
+            return False
+
+        api_item.versions = versions
+
+        return True
 
     @observe('model.reset_workflow')
     def __on_reset_workflow_triggered(self, change):

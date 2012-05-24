@@ -251,7 +251,7 @@ class ProjectParser:
         else:
             scan = scan.split()
 
-        hdir = HeaderDirectory(project=project, name=elem.get('name'),
+        hdir = HeaderDirectory(name=elem.get('name'),
                 parserargs=elem.get('parserargs'),
                 inputdirsuffix=elem.get('inputdirsuffix'),
                 filefilter=elem.get('filefilter'), scan=scan)
@@ -265,7 +265,7 @@ class ProjectParser:
     def add_header_file(self, project, hdir, elem):
         """ Add an element defining a header file to a header directory. """
 
-        hf = HeaderFile(project=hdir.project, name=elem.get('name'),
+        hf = HeaderFile(project=project, name=elem.get('name'),
                 module=elem.get('module', ''),
                 ignored=bool(int(elem.get('ignored', '0'))))
 
