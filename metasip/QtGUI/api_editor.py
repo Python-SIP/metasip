@@ -414,6 +414,16 @@ class _EditorItem(QTreeWidgetItem):
 
         return None
 
+    def set_dirty(self):
+        """ Mark the project as having been modified. """
+
+        self.treeWidget().set_dirty()
+
+    def sort(self):
+        """ Sort the modules. """
+
+        self.sortChildren(ApiEditor.NAME, Qt.AscendingOrder)
+
 
 class _SimpleItem(_EditorItem):
     """
@@ -437,11 +447,6 @@ class _SimpleItem(_EditorItem):
             super().__init__(parent, after)
 
         self.drawAll()
-
-    def set_dirty(self):
-        """ Mark the project as having been modified. """
-
-        self.treeWidget().set_dirty()
 
     def drawAll(self):
         """ Draw all columns of the item. """
@@ -558,7 +563,7 @@ class _ProjectItem(_EditorItem):
 
         observe('modules', project, self.__on_modules_changed)
 
-        self._sort()
+        self.sort()
 
     def getMenu(self, slist):
         """
@@ -602,7 +607,7 @@ class _ProjectItem(_EditorItem):
                 # Add the module to the project.
                 mod = Module(name=mname)
                 project.modules.append(mod)
-                IDirty(project).dirty = True
+                self.set_dirty()
 
     def _externalmoduleSlot(self):
         """ Handle adding a new external module. """
@@ -628,7 +633,7 @@ class _ProjectItem(_EditorItem):
             else:
                 # Add the external module to the project.
                 project.externalmodules.append(xm)
-                IDirty(project).dirty = True
+                self.set_dirty()
 
     def _platformSlot(self):
         """ Handle adding a new platform tag. """
@@ -654,7 +659,7 @@ class _ProjectItem(_EditorItem):
             else:
                 # Add the platform to the project.
                 project.platforms.append(plat)
-                IDirty(project).dirty = True
+                self.set_dirty()
 
     def _featureSlot(self):
         """ Handle adding a new feature tag. """
@@ -680,7 +685,7 @@ class _ProjectItem(_EditorItem):
             else:
                 # Add the feature to the project.
                 project.features.append(feat)
-                IDirty(project).dirty = True
+                self.set_dirty()
 
     def _externalfeatureSlot(self):
         """ Handle adding a new external feature. """
@@ -706,7 +711,7 @@ class _ProjectItem(_EditorItem):
             else:
                 # Add the external feature to the project.
                 project.externalfeatures.append(xf)
-                IDirty(project).dirty = True
+                self.set_dirty()
 
     def _ignorednamespaceSlot(self):
         """ Handle adding a new ignored namespace. """
@@ -732,7 +737,7 @@ class _ProjectItem(_EditorItem):
             else:
                 # Add the ignored namespace to the project.
                 project.ignorednamespaces.append(ns)
-                IDirty(project).dirty = True
+                self.set_dirty()
 
     def _propertiesSlot(self):
         """
@@ -759,22 +764,16 @@ class _ProjectItem(_EditorItem):
         for mod in change.new:
             _ModuleItem(mod, self)
 
-        self._sort()
-
-    def _sort(self):
-        """ Sort the modules. """
-
-        self.sortChildren(ApiEditor.NAME, Qt.AscendingOrder)
+        self.sort()
 
 
-class _ModuleItem(_FixedItem):
-    """
-    This class implements a navigation item that represents a module.
-    """
-    def __init__(self, mod, parent, progress=None, so_far=0):
+class _ModuleItem(_EditorItem):
+    """ This class implements an editor item that represents a module. """
+
+    def __init__(self, module, parent, progress=None, so_far=0):
         """ Initialise the item instance.
 
-        :param mod:
+        :param module:
             is the module instance.
         :param parent:
             is the parent.
@@ -784,43 +783,23 @@ class _ModuleItem(_FixedItem):
             is the optional count of items processed so far.
         """
 
-        self.module = mod
-
         super().__init__(parent)
 
-        self._drawSipFiles(progress, so_far)
+        self.module = module
 
-    def getName(self):
-        """
-        Return the value of the name column.
-        """
-        return self.module.name
+        self.setText(ApiEditor.NAME, module.name)
 
-    def _refresh(self, hdir):
-        """
-        Draw the parts of the project affected by a change in header files.
-
-        hdir is the header directory instance to refresh.
-        """
-        # See if we have any header files in the directory.
-        for idx in range(self.childCount()):
-            if self.child(idx).headerfile in hdir:
-                # We remove everything - it's easier.
-                self.takeChildren()
-                self._drawSipFiles()
-
-                break
-
-    def _drawSipFiles(self, progress=None, so_far=0):
-        """ Draw the .sip files for the module. """
-
-        for sf in self.module.content:
-            _SipFileItem(self, sf)
+        for sf in module.content:
+            _SipFileItem(sf, self)
 
             if progress is not None:
                 so_far += 1
                 progress.setValue(so_far)
                 QApplication.processEvents()
+
+        observe('content', module, self.__on_content_changed)
+
+        self.sort()
 
     def getMenu(self, slist):
         """
@@ -851,18 +830,33 @@ class _ModuleItem(_FixedItem):
 
             self.set_dirty()
 
+    def __on_content_changed(self, change):
+        """ Invoked when the content changes. """
+
+        for sf in change.old:
+            for idx in range(self.childCount()):
+                itm = self.child(idx)
+                if itm.sipfile is sf:
+                    self.removeChild(itm)
+                    break
+
+        for sf in change.new:
+            _SipFileItem(sf, self)
+
+        self.sort()
+
 
 class _SipFileItem(_SimpleItem, _DropSite):
     """
     This class implements a navigation item that represents a header file in a
     particular module.
     """
-    def __init__(self, parent, sf, after=None):
+    def __init__(self, sf, parent, after=None):
         """
         Initialise the item instance.
 
-        parent is the parent.
         sf is the .sip file instance.
+        parent is the parent.
         after is the sibling after which this should be placed.  If it is None
         then it should be placed at the end.  If it is the parent then it
         should be placed at the start.

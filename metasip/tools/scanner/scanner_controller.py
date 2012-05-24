@@ -340,7 +340,7 @@ class ScannerController(Controller):
 
             IDirty(project).dirty = True
 
-    def merge_code(self, dsc, ssc):
+    def _merge_code(self, dsc, ssc):
         """ Merge source code into destination code. """
 
         working_version = self.model.working_version
