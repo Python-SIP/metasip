@@ -268,7 +268,6 @@ class ScannerController(Controller):
         """ Invoked when the New button is triggered. """
 
         project = self.current_project
-
         window_title = "New Header Directory"
 
         # Get the name of the header directory.

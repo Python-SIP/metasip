@@ -19,7 +19,7 @@ from dip.model import Dict, implements, Instance
 from dip.shell import BaseManagedModelTool, IManagedModelTool
 from dip.ui import IDisplay
 
-from .Project import Project
+from .interfaces.project import IProject
 
 
 @implements(IManagedModelTool, IDisplay)
@@ -32,31 +32,23 @@ class ProjectEditorTool(BaseManagedModelTool):
     # The tool's name used in model manager dialogs and wizards.
     name = "MetaSIP project editor"
 
-    # The project being edited.
-    project = Instance(Project)
-
     # The dictionary of lists of argument names indexed by the C++ signature.
     webxml = Dict()
 
     def create_views(self, model):
         """ Create the views for editing a model. """
 
-        from .QtGUI import Navigation
-
-        self.project = model
+        from .QtGUI import api_editor
 
         # Create the view.
-        view = Navigation.NavigationPane(self)
-
-        # Display the project.
-        view.draw()
+        view = api_editor.ApiEditor(model)
 
         return [view]
 
     def handles(self, model):
         """ Check that the tool can handle a model. """
 
-        return isinstance(model, Project)
+        return isinstance(model, IProject)
 
     def loadWebXML(self):
         """ Load, if not already done, and return the WebXML data. """

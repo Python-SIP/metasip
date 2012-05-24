@@ -17,10 +17,12 @@ from PyQt4.QtGui import (QApplication, QDialog, QDrag, QInputDialog, QMenu,
 
 from dip.model import observe
 from dip.shell import IDirty
+from dip.ui import Application
 
 from ..Project import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
-        ManualCode, OpaqueClass, OperatorCast, Namespace, version_range)
+        ManualCode, Module, OpaqueClass, OperatorCast, Namespace,
+        version_range)
 
 from .ExternalEditor import ExternalEditor
 from .ArgProperties import ArgPropertiesDialog
@@ -38,19 +40,24 @@ from .ManualCode import ManualCodeDialog
 from .Generations import GenerationsDialog
 
 
-class NavigationPane(QTreeWidget):
-    """ This class represents a navigation pane in the GUI. """
+class ApiEditor(QTreeWidget):
+    """ This class implements the main API editor. """
 
     MIME_FORMAT = 'application/x-item'
 
-    def __init__(self, gui, parent=None):
-        """
-        Initialise the navigation pane instance.
+    # The column numbers.
+    (NAME, ACCESS, STATUS, VERSIONS) = range(4)
 
-        gui is the GUI instance.
-        parent is the optional parent widget.
+    def __init__(self, project):
+        """ Initialise the editor.
+
+        :param project:
+            is the project.
         """
-        super().__init__(parent)
+
+        super().__init__()
+
+        self.project = project
 
         # Tweak the tree widget.
         self.setHeaderLabels(["Name", "Access", "Status", "Versions"])
@@ -60,16 +67,14 @@ class NavigationPane(QTreeWidget):
         self.setDropIndicatorShown(True)
         self.setDragDropMode(self.InternalMove)
 
-        self.gui = gui
         self.dragged = None
 
-        # Create the (initially empty) project item.
-        self._navroot = _ProjectItem(self)
+        _ProjectItem(project, self)
 
     def set_dirty(self):
         """ Mark the project as having been modified. """
 
-        IDirty(self.gui.project).dirty = True
+        IDirty(self.project).dirty = True
 
     def loadGUILayout(self, settings):
         """
@@ -95,27 +100,6 @@ class NavigationPane(QTreeWidget):
         """
         colws = [str(self.columnWidth(c)) for c in range(self.columnCount())]
         settings.setValue('widths', ' '.join(colws))
-
-    def draw(self):
-        """ Draw the current project. """
-
-        # Progress will be reported against .sip files so count them all.
-        nr_steps = 0
-        for module in self.gui.project.modules:
-            nr_steps += len(module.content)
-
-        # Display the progress dialog.
-        progress = QProgressDialog( "Processing...", None, 0, nr_steps)
-        progress.setWindowTitle(self.gui.project.name)
-        progress.setValue(0)
-
-        self._navroot.draw(progress)
-
-    def clearProject(self):
-        """
-        Clear a navigation pane so it is ready for a new project.
-        """
-        self._navroot.clearProject()
 
     def contextMenuEvent(self, ev):
         """
@@ -173,7 +157,7 @@ class NavigationPane(QTreeWidget):
                 ev.accept()
                 return
 
-        super(NavigationPane, self).contextMenuEvent(ev)
+        super().contextMenuEvent(ev)
 
     def startDrag(self, actions):
         """
@@ -293,7 +277,7 @@ class NavigationPane(QTreeWidget):
 
         prj_item is the part of the project.
         """
-        updated_args = self.gui.project.acceptArgumentNames(prj_item)
+        updated_args = self.project.acceptArgumentNames(prj_item)
         self._updateArgs(updated_args)
 
         if len(updated_args) != 0:
@@ -315,7 +299,7 @@ class NavigationPane(QTreeWidget):
         if btn == QMessageBox.Cancel:
             return
 
-        invalid, updated_args = self.gui.project.nameArgumentsFromConventions(
+        invalid, updated_args = self.project.nameArgumentsFromConventions(
                 prj_item, update=(btn == QMessageBox.Yes))
 
         self._updateArgs(updated_args)
@@ -333,7 +317,8 @@ class NavigationPane(QTreeWidget):
 
         module is the module.
         """
-        undocumented, updated_args = self.gui.project.updateArgumentsFromWebXML(
+        # FIXME: This is very broken.
+        undocumented, updated_args = self.project.updateArgumentsFromWebXML(
                 self.gui, module)
 
         # Update the affected names.
@@ -412,7 +397,25 @@ class _DropSite(object):
         raise NotImplementedError
 
 
-class _SimpleItem(QTreeWidgetItem):
+class _EditorItem(QTreeWidgetItem):
+    """ This class represents a simple item in the API editor. """
+
+    def getMenu(self, slist):
+        """ Return the list of context menu options or None if the item doesn't
+        have a context menu.  Each element is a tuple of the text of the
+        option, the bound method that handles the option, and a flag that is
+        True if the option should be enabled.
+
+        :param slist:
+            is a list of siblings of the item that is also selected.
+        :return:
+            this implementation always returns ``None``.
+        """
+
+        return None
+
+
+class _SimpleItem(_EditorItem):
     """
     This class represents a simple item (ie. no context menu) in the navigation
     pane.
@@ -427,19 +430,18 @@ class _SimpleItem(QTreeWidgetItem):
         should be placed at the start.
         """
         if after is parent:
-            super(_SimpleItem, self).__init__(parent, None)
+            super().__init__(parent, None)
         elif after is None:
-            super(_SimpleItem, self).__init__(parent)
+            super().__init__(parent)
         else:
-            super(_SimpleItem, self).__init__(parent, after)
+            super().__init__(parent, after)
 
-        self.pane = self.treeWidget()
         self.drawAll()
 
     def set_dirty(self):
         """ Mark the project as having been modified. """
 
-        self.pane.set_dirty()
+        self.treeWidget().set_dirty()
 
     def drawAll(self):
         """ Draw all columns of the item. """
@@ -455,7 +457,7 @@ class _SimpleItem(QTreeWidgetItem):
         n = self.getName()
 
         if n:
-            self.setText(0, n)
+            self.setText(ApiEditor.NAME, n)
 
     def getName(self):
         """ Return the value of the name of the item. """
@@ -468,7 +470,7 @@ class _SimpleItem(QTreeWidgetItem):
         a = self.getAccess()
 
         if a is not None:
-            self.setText(1, a)
+            self.setText(ApiEditor.ACCESS, a)
 
     def getAccess(self):
         """ Return the value of the access of the item. """
@@ -481,7 +483,7 @@ class _SimpleItem(QTreeWidgetItem):
         s = self.getStatus()
 
         if s is not None:
-            self.setText(2, s)
+            self.setText(ApiEditor.STATUS, s)
 
     def getStatus(self):
         """ Return the value of the status of the item. """
@@ -495,22 +497,11 @@ class _SimpleItem(QTreeWidgetItem):
 
         if api_item is not None:
             ranges = [version_range(r) for r in api_item.versions]
-            self.setText(3, ", ".join(ranges))
+            self.setText(ApiEditor.VERSIONS, ", ".join(ranges))
 
     def getVersionedItem(self):
         """ Return the API item for the versions column. """
 
-        return None
-
-    def getMenu(self, slist):
-        """
-        Return the list of context menu options or None if the item doesn't
-        have a context menu.  Each element is a tuple of the text of the
-        option, the bound method that handles the option, and a flag that is
-        True if the option should be enabled.
-
-        slist is a list of siblings of the item that is also selected.
-        """
         return None
 
 
@@ -528,56 +519,46 @@ class _FixedItem(_SimpleItem):
         then it should be placed at the end.  If it is the parent then it
         should be placed at the start.
         """
-        super(_FixedItem, self).__init__(parent, after)
+        super().__init__(parent, after)
 
         self.setFlags(Qt.ItemIsEnabled)
 
 
-class _ProjectItem(_FixedItem):
+class _ProjectItem(_EditorItem):
     """ This class implements a navigation item that represents a project. """
 
-    def __init__(self, parent):
+    def __init__(self, project, parent):
         """ Initialise the item. """
-
-        project = parent.gui.project
-
-        self._prjname = project.descriptive_name()
-        observe('name', parent.gui.project, self.__project_name_changed)
 
         super().__init__(parent)
 
+        self._project = project
+
+        self.setText(ApiEditor.NAME, project.descriptive_name())
+        observe('name', project,
+                lambda c: self.setText(ApiEditor.NAME,
+                        c.model.descriptive_name()))
+
         self.setExpanded(True)
 
-    def getName(self):
-        """
-        Return the value of the name column.
-        """
-        return self._prjname
+        # Progress will be reported against .sip files so count them all.
+        nr_steps = 0
+        for module in project.modules:
+            nr_steps += len(module.content)
 
-    def __project_name_changed(self, change):
-        """ Invoked when the name of the project changes. """
-
-        self._prjname = change.model.descriptive_name()
-        self.drawName()
-
-    def draw(self, progress):
-        """ Draw the current project.
-
-        :param progress:
-            is the progress dialog to update.
-        """
-
-        self.drawName()
+        # Display the progress dialog.
+        progress = QProgressDialog( "Processing...", None, 0, nr_steps)
+        progress.setWindowTitle(project.name)
+        progress.setValue(0)
 
         so_far = 0
-        for mod in self.pane.gui.project.modules:
-            _ModuleItem(self, mod, progress, so_far)
+        for mod in project.modules:
+            _ModuleItem(mod, self, progress, so_far)
             so_far += len(mod.content)
 
-    def clearProject(self):
-        """ Clear the item ready for another project. """
+        observe('modules', project, self.__on_modules_changed)
 
-        self.takeChildren()
+        self._sort()
 
     def getMenu(self, slist):
         """
@@ -589,125 +570,220 @@ class _ProjectItem(_FixedItem):
             return None
 
         return [("Add Module...", self._addModuleSlot),
+                ("Add External Module...", self._externalmoduleSlot),
                 ("Add Platform Tag...", self._platformSlot),
                 ("Add Feature Tag...", self._featureSlot),
-                ("Add External Module...", self._externalmoduleSlot),
+                ("Add External Feature...", self._externalfeatureSlot),
                 ("Add Ignored Namespace...", self._ignorednamespaceSlot),
                 ("Properties...", self._propertiesSlot)]
-
 
     def _addModuleSlot(self):
         """ Handle adding a module to the project. """
 
+        project = self._project
+        window_title = "Add Module"
+
         # Get the name of the module.
-        (mname, ok) = QInputDialog.getText(self.pane, "Add Module",
+        (mname, ok) = QInputDialog.getText(self.treeWidget(), window_title,
                 "Module name")
 
         if ok:
-            mname = str(mname).strip()
+            mname = mname.strip()
 
-            # TODO - check the name is valid (eg. no embedded spaces) and not
-            # already in use.
-            if mname:
-                # Add the module to the project and the GUI.
-                mod = self.pane.gui.project.newModule(mname)
-                _ModuleItem(self, mod)
+            if mname == '':
+                Application.warning(window_title,
+                        "The name of the module must not be blank.",
+                        self.treeWidget())
+            elif mname in [mod.name for mod in project.modules]:
+                Application.warning(window_title,
+                        "'{0}' is already used as the name of a module.".format(mname),
+                        self.treeWidget())
+            else:
+                # Add the module to the project.
+                mod = Module(name=mname)
+                project.modules.append(mod)
+                IDirty(project).dirty = True
+
+    def _externalmoduleSlot(self):
+        """ Handle adding a new external module. """
+
+        project = self._project
+        window_title = "Add External Module"
+
+        # Get the name of the new external module.
+        (xm, ok) = QInputDialog.getText(self.treeWidget(), window_title,
+                "External module")
+
+        if ok:
+            xm = xm.strip()
+
+            if xm == '':
+                Application.warning(window_title,
+                        "The name of the external module must not be blank.",
+                        self.treeWidget())
+            elif xm in project.externalmodules:
+                Application.warning(window_title,
+                        "'{0}' is already used as the name of an external module.".format(xm),
+                        self.treeWidget())
+            else:
+                # Add the external module to the project.
+                project.externalmodules.append(xm)
+                IDirty(project).dirty = True
 
     def _platformSlot(self):
-        """
-        Handle adding a new platform tag.
-        """
+        """ Handle adding a new platform tag. """
+
+        project = self._project
+        window_title = "Add Platform Tag"
+
         # Get the name of the new platform.
-        (plat, ok) = QInputDialog.getText(self.pane, "Platform Tag",
+        (plat, ok) = QInputDialog.getText(self.treeWidget(), window_title,
                 "Platform tag")
 
         if ok:
-            plat = str(plat).strip()
+            plat = plat.strip()
 
-            # TODO - check the platform is valid (eg. no embedded spaces) and
-            # not already in use.
-            if plat:
-                # Add the platform to the project
-                self.pane.gui.project.addPlatform(plat)
+            if plat == '':
+                Application.warning(window_title,
+                        "The name of the platform must not be blank.",
+                        self.treeWidget())
+            elif plat in project.platforms:
+                Application.warning(window_title,
+                        "'{0}' is already used as the name of a platform.".format(plat),
+                        self.treeWidget())
+            else:
+                # Add the platform to the project.
+                project.platforms.append(plat)
+                IDirty(project).dirty = True
 
     def _featureSlot(self):
-        """
-        Handle adding a new feature tag.
-        """
+        """ Handle adding a new feature tag. """
+
+        project = self._project
+        window_title = "Add Feature Tag"
+
         # Get the name of the new feature.
-        (feat, ok) = QInputDialog.getText(self.pane, "Feature Tag",
+        (feat, ok) = QInputDialog.getText(self.treeWidget(), window_title,
                 "Feature tag")
 
         if ok:
-            feat = str(feat).strip()
+            feat = feat.strip()
 
-            # TODO - check the feature is valid (eg. no embedded spaces) and
-            # not already in use.
-            if feat:
-                # Add the feature to the project
-                self.pane.gui.project.addFeature(feat)
+            if feat == '':
+                Application.warning(window_title,
+                        "The name of the feature must not be blank.",
+                        self.treeWidget())
+            elif feat in project.features:
+                Application.warning(window_title,
+                        "'{0}' is already used as the name of a feature.".format(feat),
+                        self.treeWidget())
+            else:
+                # Add the feature to the project.
+                project.features.append(feat)
+                IDirty(project).dirty = True
 
-    def _externalmoduleSlot(self):
-        """
-        Handle adding a new external module.
-        """
-        # Get the name of the new external module.
-        (xm, ok) = QInputDialog.getText(self.pane, "External Module",
-                "External Module")
+    def _externalfeatureSlot(self):
+        """ Handle adding a new external feature. """
+
+        project = self._project
+        window_title = "Add External Feature"
+
+        # Get the name of the new external feature.
+        (xf, ok) = QInputDialog.getText(self.treeWidget(), window_title,
+                "External feature")
 
         if ok:
-            xm = str(xm).strip()
+            xf = xf.strip()
 
-            # TODO - check the module is valid (eg. no embedded spaces) and not
-            # already in use.
-            if xm:
-                # Add the external module to the project
-                self.pane.gui.project.addExternalModule(xm)
+            if xf == '':
+                Application.warning(window_title,
+                        "The name of the external feature must not be blank.",
+                        self.treeWidget())
+            elif xf in project.externalfeatures:
+                Application.warning(window_title,
+                        "'{0}' is already used as the name of an external feature.".format(xf),
+                        self.treeWidget())
+            else:
+                # Add the external feature to the project.
+                project.externalfeatures.append(xf)
+                IDirty(project).dirty = True
 
     def _ignorednamespaceSlot(self):
-        """
-        Handle adding a new ignored namespace.
-        """
+        """ Handle adding a new ignored namespace. """
+
+        project = self._project
+        window_title = "Add Ignored Namespace"
+
         # Get the name of the new ignored namespace.
-        (ns, ok) = QInputDialog.getText(self.pane, "Ignored Namespace",
+        (ns, ok) = QInputDialog.getText(self.treeWidget(), window_title,
                 "Ignored Namespace")
 
         if ok:
-            ns = str(ns).strip()
+            ns = ns.strip()
 
-            if ns:
-                # Add the ignored namespace to the project
-                self.pane.gui.project.addIgnoredNamespace(ns)
+            if ns == '':
+                Application.warning(window_title,
+                        "The name of the ignored namespace must not be blank.",
+                        self.treeWidget())
+            elif ns in project.ignorednamespaces:
+                Application.warning(window_title,
+                        "'{0}' is already used as the name of an ignored namespace.".format(ns),
+                        self.treeWidget())
+            else:
+                # Add the ignored namespace to the project.
+                project.ignorednamespaces.append(ns)
+                IDirty(project).dirty = True
 
     def _propertiesSlot(self):
         """
         Handle the project's properties.
         """
-        prj = self.pane.gui.project
-        dlg = ProjectPropertiesDialog(prj, self.pane)
+        prj = self._project
+        dlg = ProjectPropertiesDialog(prj, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (prj.rootmodule, prj.platforms, prj.features, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
 
             self.set_dirty()
 
+    def __on_modules_changed(self, change):
+        """ Invoked when the list of modules changes. """
+
+        for mod in change.old:
+            for idx in range(self.childCount()):
+                itm = self.child(idx)
+                if itm.module is mod:
+                    self.removeChild(itm)
+                    break
+
+        for mod in change.new:
+            _ModuleItem(mod, self)
+
+        self._sort()
+
+    def _sort(self):
+        """ Sort the modules. """
+
+        self.sortChildren(ApiEditor.NAME, Qt.AscendingOrder)
+
 
 class _ModuleItem(_FixedItem):
     """
     This class implements a navigation item that represents a module.
     """
-    def __init__(self, parent, mod, progress=None, so_far=0):
+    def __init__(self, mod, parent, progress=None, so_far=0):
         """ Initialise the item instance.
 
-        :param parent:
-            is the parent.
         :param mod:
             is the module instance.
+        :param parent:
+            is the parent.
         :param progress:
             is the optional progress dialog to update.
         :param so_far:
             is the optional count of items processed so far.
         """
+
         self.module = mod
 
         super().__init__(parent)
@@ -761,13 +837,14 @@ class _ModuleItem(_FixedItem):
     def _updateFromWebXML(self):
         """ Update argument names from WebXML to all unnamed arguments. """
 
-        self.pane.updateArgumentsFromWebXML(self.module)
+        self.treeWidget().updateArgumentsFromWebXML(self.module)
 
     def _propertiesSlot(self):
         """ Handle the module's properties. """
 
         mod = self.module
-        dlg = ModulePropertiesDialog(self.pane.gui.project, mod, self.pane)
+        dlg = ModulePropertiesDialog(self.treeWidget().project, mod,
+                self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (mod.outputdirsuffix, mod.imports, mod.directives, mod.version) = dlg.fields()
@@ -878,18 +955,18 @@ class _SipFileItem(_SimpleItem, _DropSite):
     def _nameFromConventions(self):
         """ Apply the argument naming conventions to all unnamed arguments. """
 
-        self.pane.nameArgumentsFromConventions(self.sipfile)
+        self.treeWidget().nameArgumentsFromConventions(self.sipfile)
 
     def _acceptNames(self):
         """ Accept all argument names. """
 
-        self.pane.acceptArgumentNames(self.sipfile)
+        self.treeWidget().acceptArgumentNames(self.sipfile)
 
     def _addManualCode(self):
         """
         Slot to handle the creation of manual code.
         """
-        dlg = ManualCodeDialog("", self.pane)
+        dlg = ManualCodeDialog("", self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (precis, ) = dlg.fields()
@@ -1104,7 +1181,7 @@ class _Argument(_FixedItem):
         Slot to handle the argument's properties.
         """
         arg = self.arg
-        dlg = ArgPropertiesDialog(arg, self.pane)
+        dlg = ArgPropertiesDialog(arg, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (arg.name, arg.unnamed, arg.pytype, arg.annos) = dlg.fields()
@@ -1288,7 +1365,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         if slist:
             menu.append(None)
             menu.append(("Versions...", self._versionsSlot,
-                    (len(self.pane.gui.project.versions) != 0 and
+                    (len(self.treeWidget().project.versions) != 0 and
                     len(self.code.versions) <= 1)))
 
             return menu
@@ -1468,13 +1545,15 @@ class _CodeItem(_SimpleItem, _DropSite):
             menu.append(("Accept all argument names", self._acceptNames))
 
         # Add the extra menu items.
+        project = self.treeWidget().project
+
         menu.append(None)
         menu.append(("Versions...", self._versionsSlot,
-                len(self.pane.gui.project.versions) != 0))
+                len(project.versions) != 0))
         menu.append(("Platform Tags...", self._platformTagsSlot,
-                len(self.pane.gui.project.platforms) != 0))
+                len(project.platforms) != 0))
         menu.append(("Feature Tags...", self._featureTagsSlot,
-                (len(self.pane.gui.project.features) != 0 or len(self.pane.gui.project.externalfeatures) != 0)))
+                (len(project.features) != 0 or len(project.externalfeatures) != 0)))
 
         if pslot:
             menu.append(("Properties...", pslot))
@@ -1487,12 +1566,12 @@ class _CodeItem(_SimpleItem, _DropSite):
     def _nameFromConventions(self):
         """ Apply the argument naming conventions to all unnamed arguments. """
 
-        self.pane.nameArgumentsFromConventions(self.code)
+        self.treeWidget().nameArgumentsFromConventions(self.code)
 
     def _acceptNames(self):
         """ Accept all argument names. """
 
-        self.pane.acceptArgumentNames(self.code)
+        self.treeWidget().acceptArgumentNames(self.code)
 
     def _getScope(self):
         """
@@ -1511,7 +1590,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         Slot to handle the creation of manual code.
         """
-        dlg = ManualCodeDialog("", self.pane)
+        dlg = ManualCodeDialog("", self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (precis, ) = dlg.fields()
@@ -1530,7 +1609,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         Slot to handle the update of the manual code.
         """
-        dlg = ManualCodeDialog(self.code.precis, self.pane)
+        dlg = ManualCodeDialog(self.code.precis, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (precis, ) = dlg.fields()
@@ -1567,7 +1646,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         Slot to handle the deletion of a code item.
         """
-        ans = QMessageBox.question(self.pane, "Delete Code",
+        ans = QMessageBox.question(self.treeWidget(), "Delete Code",
 "Are you sure you want to delete this code?",
                                    QMessageBox.Yes,
                                    QMessageBox.No|QMessageBox.Default|QMessageBox.Escape)
@@ -1998,7 +2077,8 @@ class _CodeItem(_SimpleItem, _DropSite):
     def _versionsSlot(self):
         """ Slot to handle the versions. """
 
-        dlg = GenerationsDialog(self.pane.gui.project, self.code, self.pane)
+        dlg = GenerationsDialog(self.treeWidget().project, self.code,
+                self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (startversion, endversion) = dlg.fields()
@@ -2015,7 +2095,8 @@ class _CodeItem(_SimpleItem, _DropSite):
         Slot to handle the platform tags.
         """
         code = self.code
-        dlg = PlatformPickerDialog(self.pane.gui.project, code, self.pane)
+        dlg = PlatformPickerDialog(self.treeWidget().project, code,
+                self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (code.platforms, ) = dlg.fields()
@@ -2027,7 +2108,8 @@ class _CodeItem(_SimpleItem, _DropSite):
         Slot to handle the feature tags.
         """
         code = self.code
-        dlg = FeaturePickerDialog(self.pane.gui.project, code, self.pane)
+        dlg = FeaturePickerDialog(self.treeWidget().project, code,
+                self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (code.features, ) = dlg.fields()
@@ -2039,35 +2121,35 @@ class _CodeItem(_SimpleItem, _DropSite):
         Slot to handle the properties for opaque classes.
         """
         code = self.code
-        dlg = OpaqueClassPropertiesDialog(code, self.pane)
+        dlg = OpaqueClassPropertiesDialog(code, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
 
-            self.setText(0, self.code.user())
+            self.setText(ApiEditor.NAME, self.code.user())
 
     def _classPropertiesSlot(self):
         """
         Slot to handle the properties for classes.
         """
         code = self.code
-        dlg = ClassPropertiesDialog(code, self.pane)
+        dlg = ClassPropertiesDialog(code, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (code.pybases, code.annos) = dlg.fields()
 
             self.set_dirty()
 
-            self.setText(0, self.code.user())
+            self.setText(ApiEditor.NAME, self.code.user())
 
     def _callablePropertiesSlot(self):
         """
         Slot to handle the properties for callables.
         """
         code = self.code
-        dlg = CallablePropertiesDialog(code, self.pane)
+        dlg = CallablePropertiesDialog(code, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (pytype, pyargs, code.annos) = dlg.fields()
@@ -2080,49 +2162,49 @@ class _CodeItem(_SimpleItem, _DropSite):
 
             self.set_dirty()
 
-            self.setText(0, self.code.user())
+            self.setText(ApiEditor.NAME, self.code.user())
 
     def _variablePropertiesSlot(self):
         """
         Slot to handle the properties for variables.
         """
         code = self.code
-        dlg = VariablePropertiesDialog(code, self.pane)
+        dlg = VariablePropertiesDialog(code, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
 
-            self.setText(0, self.code.user())
+            self.setText(ApiEditor.NAME, self.code.user())
 
     def _enumPropertiesSlot(self):
         """
         Slot to handle the properties for enums.
         """
         code = self.code
-        dlg = EnumPropertiesDialog(code, self.pane)
+        dlg = EnumPropertiesDialog(code, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
 
-            self.setText(0, self.code.user())
+            self.setText(ApiEditor.NAME, self.code.user())
 
     def _enumValuePropertiesSlot(self):
         """
         Slot to handle the properties for enum values.
         """
         code = self.code
-        dlg = EnumValuePropertiesDialog(self.code, self.pane)
+        dlg = EnumValuePropertiesDialog(self.code, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
 
-            self.setText(0, self.code.user())
+            self.setText(ApiEditor.NAME, self.code.user())
 
     def _setStatusChecked(self):
         """

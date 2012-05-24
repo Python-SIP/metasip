@@ -116,8 +116,6 @@ class ProjectItem(ScannerItem):
 
         super().__init__(parent)
 
-        self._project = project
-
         self.setText(ScannerView.NAME, project.descriptive_name())
         observe('name', project,
                 lambda c: self.setText(ScannerView.NAME,
@@ -135,7 +133,7 @@ class ProjectItem(ScannerItem):
     def get_project_item(self):
         """ Return the item's corresponding project item. """
 
-        return self._project
+        return self.treeWidget().project
 
     def __on_headers_changed(self, change):
         """ Invoked when the list of header directories changes. """

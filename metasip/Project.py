@@ -536,36 +536,6 @@ class Project(Model):
                     for callable in self._get_unnamed_callables(sub):
                         yield callable
 
-    def addPlatform(self, plat):
-        """ Add a new platform to the project. """
-
-        self.platforms.append(plat)
-        IDirty(self).dirty = True
-
-    def addFeature(self, feat):
-        """ Add a new feature to the project. """
-
-        self.features.append(feat)
-        IDirty(self).dirty = True
-
-    def addExternalModule(self, xm):
-        """ Add a new external module to the project. """
-
-        self.externalmodules.append(xm)
-        IDirty(self).dirty = True
-
-    def addExternalFeature(self, xf):
-        """ Add a new external feature to the project. """
-
-        self.externalfeatures.append(xf)
-        IDirty(self).dirty = True
-
-    def addIgnoredNamespace(self, ns):
-        """ Add a new ignored namespace to the project. """
-
-        self.ignorednamespaces.append(ns)
-        IDirty(self).dirty = True
-
     def save(self, saveas=None):
         """
         Save the project and return True if the save was successful.
@@ -843,19 +813,6 @@ class Project(Model):
             f.blank()
 
         return f
-
-    def newModule(self, name):
-        """
-        Add a new module to the project.
-
-        name is the name of the module.
-        """
-        mod = Module(name=name)
-        self.modules.append(mod)
-
-        IDirty(self).dirty = True
-
-        return mod
 
     def findHeaderDirectory(self, target):
         """
