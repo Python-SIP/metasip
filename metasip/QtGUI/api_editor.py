@@ -69,7 +69,7 @@ class ApiEditor(QTreeWidget):
 
         self.dragged = None
 
-        _ProjectItem(project, self)
+        ProjectItem(project, self)
 
     def set_dirty(self):
         """ Mark the project as having been modified. """
@@ -112,7 +112,7 @@ class ApiEditor(QTreeWidget):
 
         if itm:
             # Get the list of siblings that are also selected.
-            slist = []
+            siblings = []
 
             parent = itm.parent()
             if parent is not None:
@@ -120,10 +120,10 @@ class ApiEditor(QTreeWidget):
                     sib = parent.child(sib_idx)
 
                     if sib is not itm and sib.isSelected() and not sib.isHidden():
-                        slist.append(sib)
+                        siblings.append(sib)
 
             # Check it has a menu.
-            opts = itm.getMenu(slist)
+            opts = itm.get_menu(siblings)
 
             if opts:
                 # Create the menu.
@@ -265,7 +265,7 @@ class ApiEditor(QTreeWidget):
             return source, target
 
         # Ask the target if it can handle the source.
-        if not (isinstance(target, _DropSite) and target.droppable(source)):
+        if not (isinstance(target, DropSite) and target.droppable(source)):
             return None
 
         return source, target
@@ -369,44 +369,65 @@ class ApiEditor(QTreeWidget):
         dlg.show()
 
 
-class _DropSite(object):
-    """
-    This mixin class implements a drop site.  Any derived class must also
+class DropSite():
+    """ This mixin class implements a drop site.  Any derived class must also
     derive QTreeWidgetItem.
     """
+
     def __init__(self):
-        """
-        Initialise the instance.
-        """
+        """ Initialise the instance. """
+
         self.setFlags(self.flags() | Qt.ItemIsDropEnabled)
 
     def droppable(self, source):
-        """
-        Determine if an item can be dropped.
+        """ Determine if an item can be dropped.
 
-        source is the QTreeWidgetItem sub-class instance being dropped.
+        :param source:
+            is the QTreeWidgetItem sub-class instance being dropped.
+        :return:
+            ``True`` if the source can be dropped.
         """
+
         raise NotImplementedError
 
     def drop(self, source):
-        """
-        Handle the drop of an item.
+        """ Handle the drop of an item.
 
-        source is the QTreeWidgetItem sub-class instance being dropped.
+        :param source:
+            is the QTreeWidgetItem sub-class instance being dropped.
         """
+
         raise NotImplementedError
 
 
-class _EditorItem(QTreeWidgetItem):
-    """ This class represents a simple item in the API editor. """
+class EditorItem(QTreeWidgetItem):
+    """ This class represents an item in the API editor. """
 
-    def getMenu(self, slist):
+    def __init__(self, parent, after=None):
+        """ Initialise the item instance.
+
+        :param parent:
+            is the parent.
+        :param after:
+            is the sibling after which this should be placed.  If it is
+            ``None`` then it should be placed at the end.  If it is the parent
+            then it should be placed at the start.
+        """
+
+        if after is parent:
+            super().__init__(parent, None)
+        elif after is None:
+            super().__init__(parent)
+        else:
+            super().__init__(parent, after)
+
+    def get_menu(self, siblings):
         """ Return the list of context menu options or None if the item doesn't
         have a context menu.  Each element is a tuple of the text of the
         option, the bound method that handles the option, and a flag that is
         True if the option should be enabled.
 
-        :param slist:
+        :param siblings:
             is a list of siblings of the item that is also selected.
         :return:
             this implementation always returns ``None``.
@@ -419,13 +440,8 @@ class _EditorItem(QTreeWidgetItem):
 
         self.treeWidget().set_dirty()
 
-    def sort(self):
-        """ Sort the modules. """
 
-        self.sortChildren(ApiEditor.NAME, Qt.AscendingOrder)
-
-
-class _SimpleItem(_EditorItem):
+class _SimpleItem(EditorItem):
     """
     This class represents a simple item (ie. no context menu) in the navigation
     pane.
@@ -439,12 +455,7 @@ class _SimpleItem(_EditorItem):
         then it should be placed at the end.  If it is the parent then it
         should be placed at the start.
         """
-        if after is parent:
-            super().__init__(parent, None)
-        elif after is None:
-            super().__init__(parent)
-        else:
-            super().__init__(parent, after)
+        super().__init__(parent, after)
 
         self.drawAll()
 
@@ -529,7 +540,7 @@ class _FixedItem(_SimpleItem):
         self.setFlags(Qt.ItemIsEnabled)
 
 
-class _ProjectItem(_EditorItem):
+class ProjectItem(EditorItem):
     """ This class implements a navigation item that represents a project. """
 
     def __init__(self, project, parent):
@@ -558,20 +569,23 @@ class _ProjectItem(_EditorItem):
 
         so_far = 0
         for mod in project.modules:
-            _ModuleItem(mod, self, progress, so_far)
+            ModuleItem(mod, self, progress, so_far)
             so_far += len(mod.content)
 
         observe('modules', project, self.__on_modules_changed)
 
-        self.sort()
+        self._sort()
 
-    def getMenu(self, slist):
-        """
-        Return the item's context menu.
+    def get_menu(self, siblings):
+        """ Return the list of context menu options.
 
-        slist is a list of siblings of the item that is also selected.
+        :param siblings:
+            is a list of siblings of the item that is also selected.
+        :return:
+            the menu options.
         """
-        if slist:
+
+        if len(siblings) != 0:
             return None
 
         return [("Add Module...", self._addModuleSlot),
@@ -762,12 +776,17 @@ class _ProjectItem(_EditorItem):
                     break
 
         for mod in change.new:
-            _ModuleItem(mod, self)
+            ModuleItem(mod, self)
 
-        self.sort()
+        self._sort()
+
+    def _sort(self):
+        """ Sort the modules. """
+
+        self.sortChildren(ApiEditor.NAME, Qt.AscendingOrder)
 
 
-class _ModuleItem(_EditorItem):
+class ModuleItem(EditorItem, DropSite):
     """ This class implements an editor item that represents a module. """
 
     def __init__(self, module, parent, progress=None, so_far=0):
@@ -783,14 +802,15 @@ class _ModuleItem(_EditorItem):
             is the optional count of items processed so far.
         """
 
-        super().__init__(parent)
+        EditorItem.__init__(self, parent)
+        DropSite.__init__(self)
 
         self.module = module
 
         self.setText(ApiEditor.NAME, module.name)
 
         for sf in module.content:
-            _SipFileItem(sf, self)
+            SipFileItem(sf, self)
 
             if progress is not None:
                 so_far += 1
@@ -799,15 +819,42 @@ class _ModuleItem(_EditorItem):
 
         observe('content', module, self.__on_content_changed)
 
-        self.sort()
+    def droppable(self, source):
+        """ Determine if an item can be dropped.
 
-    def getMenu(self, slist):
+        :param source:
+            is the QTreeWidgetItem sub-class instance being dropped.
+        :return:
+            ``True`` if the source can be dropped.
         """
-        Return the item's context menu.
 
-        slist is a list of siblings of the item that is also selected.
+        # We allow the order of our children to be changed.
+        return source.parent() is self
+
+    def drop(self, source):
+        """ Handle the drop of an item.
+
+        :param source:
+            is the QTreeWidgetItem sub-class instance being dropped.
         """
-        if slist:
+
+        # Dropping a child is interpreted as moving it to the top.
+        sf = source.sipfile
+        self.content.remove(sf)
+        self.content.insert(0, sf)
+
+        self.set_dirty()
+
+    def get_menu(self, siblings):
+        """ Return the list of context menu options.
+
+        :param siblings:
+            is a list of siblings of the item that is also selected.
+        :return:
+            the menu options.
+        """
+
+        if len(siblings) != 0:
             return None
 
         return [("Update argument names from WebXML", self._updateFromWebXML),
@@ -840,95 +887,128 @@ class _ModuleItem(_EditorItem):
                     self.removeChild(itm)
                     break
 
-        for sf in change.new:
-            _SipFileItem(sf, self)
+        # The order of view items must match the order of model items.
+        module_content = change.model.content
+        idx_list = [module_content.index(sf) for sf in change.new]
+        idx_list.sort()
 
-        self.sort()
+        for idx in idx_list:
+            after = self if idx == 0 else self.child(idx - 1)
+
+            SipFileItem(module_content[idx], self, after)
 
 
-class _SipFileItem(_SimpleItem, _DropSite):
-    """
-    This class implements a navigation item that represents a header file in a
-    particular module.
-    """
-    def __init__(self, sf, parent, after=None):
+class SipFileItem(EditorItem, DropSite):
+    """ This class implements an editor item that represents a .sip file. """
+
+    def __init__(self, sipfile, parent, after=None):
+        """ Initialise the item instance.
+
+        :param sipfile:
+            is the .sip file instance.
+        :param parent:
+            is the parent.
+        :param after:
+            is the sibling after which this should be placed.  If it is
+            ``None`` then it should be placed at the end.  If it is the parent
+            then it should be placed at the start.
         """
-        Initialise the item instance.
 
-        sf is the .sip file instance.
-        parent is the parent.
-        after is the sibling after which this should be placed.  If it is None
-        then it should be placed at the end.  If it is the parent then it
-        should be placed at the start.
-        """
-        self.sipfile = sf
+        EditorItem.__init__(self, parent, after)
+        DropSite.__init__(self)
 
-        _SimpleItem.__init__(self, parent, after)
-        _DropSite.__init__(self)
+        self.sipfile = sipfile
 
         self._targets = []
         self._editors = {}
 
-        self._draw()
+        self.setText(ApiEditor.NAME, sipfile.name)
+
+        for cd in sipfile.content:
+            CodeItem(cd, self)
+
+        observe('content', sipfile, self.__on_content_changed)
 
         if self.isExpanded():
             parent.setExpanded(True)
 
-    def getName(self):
-        """ Return the value of the name column. """
-
-        return self.sipfile.name
-
-    def _draw(self):
-        """
-        Draw the current project.
-        """
-        for cd in self.sipfile.content:
-            _CodeItem(self, cd)
-
-        self.drawStatus()
-
     def droppable(self, source):
-        """
-        Determine if an item can be dropped here.
-        """
-        if not isinstance(source, _CodeItem):
-            return False
+        """ Determine if an item can be dropped.
 
-        # We can only move code around its siblings.
-        return (source.parent() is self)
+        :param source:
+            is the QTreeWidgetItem sub-class instance being dropped.
+        :return:
+            ``True`` if the source can be dropped.
+        """
+
+        # See if we are moving a sibling.
+        if isinstance(source, SipFileItem):
+            return source.parent() is self.parent()
+
+        # See if we are moving a child to the top.
+        if isinstance(source, CodeItem):
+            return source.parent() is self
+
+        return False
 
     def drop(self, source, after=None):
+        """ Handle the drop of an item.
+
+        :param source:
+            is the QTreeWidgetItem sub-class instance being dropped.
         """
-        Handle the item being dropped here.
 
-        source is the item being dropped.
-        after is the optional child on which the item was dropped.
-        """
-        # Handle the move of child code.
-        cd = source.code
-        sf = self.sipfile
+        if isinstance(source, SipFileItem):
+            # Move a sibling behind us.
+            module_content = self.parent().module.content
+            sf = source.sipfile
 
-        sf.remove(cd)
-        self.removeChild(source)
+            module_content.remove(sf)
 
-        if after is None:
-            at = 0
-        else:
-            at = sf.index(after.code) + 1
+            new_idx = module_content.index(self.sipfile) + 1
+            if new_idx < len(module_content):
+                module_content.insert(new_idx, sf)
+            else:
+                module_content.append(sf)
 
-        sf.insert(at, cd)
-        self.insertChild(at, source)
+        elif isinstance(source, CodeItem):
+            # Dropping a child is interpreted as moving it to the top.
+            cd = source.code
+            self.content.remove(cd)
+            self.content.insert(0, cd)
 
         self.set_dirty()
 
-    def getMenu(self, slist):
-        """
-        Return the item's context menu.
+    def __on_content_changed(self, change):
+        """ Invoked when the content changes. """
 
-        slist is a list of siblings of the item that is also selected.
+        for cd in change.old:
+            for idx in range(self.childCount()):
+                itm = self.child(idx)
+                if itm.code is cd:
+                    self.removeChild(itm)
+                    break
+
+        # The order of view items must match the order of model items.
+        sipfile_content = change.model.content
+        idx_list = [sipfile_content.index(sf) for sf in change.new]
+        idx_list.sort()
+
+        for idx in idx_list:
+            after = self if idx == 0 else self.child(idx - 1)
+
+            CodeItem(sipfile_content[idx], self, after)
+
+    def get_menu(self, siblings):
+        """ Return the list of context menu options.
+
+        :param siblings:
+            is a list of siblings of the item that is also selected.
+        :return:
+            the menu options.
         """
-        if slist:
+
+        if len(siblings) != 0:
             return None
 
         return [("Hide Ignored", self._hideIgnoredSlot),
@@ -970,7 +1050,7 @@ class _SipFileItem(_SimpleItem, _DropSite):
 
                 self.sipfile.insert(0, mc)
 
-                _CodeItem(self, mc, self)
+                CodeItem(mc, self, self)
 
                 self.set_dirty()
 
@@ -1128,7 +1208,7 @@ class _SipFileItem(_SimpleItem, _DropSite):
         itm = it.value()
 
         while itm:
-            if isinstance(itm, _CodeItem) and itm.code.status == "ignored":
+            if isinstance(itm, CodeItem) and itm.code.status == "ignored":
                 itm.setHidden(not visible)
 
             it += 1
@@ -1159,13 +1239,16 @@ class _Argument(_FixedItem):
         """
         return self.arg.user(self.parent().code)
 
-    def getMenu(self, slist):
-        """
-        Return the item's context menu.
+    def get_menu(self, siblings):
+        """ Return the list of context menu options.
 
-        slist is a list of siblings of the item that is also selected.
+        :param siblings:
+            is a list of siblings of the item that is also selected.
+        :return:
+            the menu options.
         """
-        if slist:
+
+        if len(siblings) != 0:
             return None
 
         return [("Properties...", self._propertiesSlot)]
@@ -1187,17 +1270,17 @@ class _Argument(_FixedItem):
             self.parent().drawStatus()
 
 
-class _CodeItem(_SimpleItem, _DropSite):
+class CodeItem(_SimpleItem, DropSite):
     """
     This class implements a navigation item that represents code in a header
     file.
     """
-    def __init__(self, parent, cd, after=None):
+    def __init__(self, cd, parent, after=None):
         """
         Initialise the item instance.
 
-        parent is the parent.
         cd is the code instance.
+        parent is the parent.
         after is the sibling after which this should be placed.  If it is None
         then it should be placed at the end.  If it is the parent then it
         should be placed at the start.
@@ -1205,7 +1288,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         self.code = cd
 
         _SimpleItem.__init__(self, parent, after)
-        _DropSite.__init__(self)
+        DropSite.__init__(self)
 
         self._targets = []
 
@@ -1231,14 +1314,21 @@ class _CodeItem(_SimpleItem, _DropSite):
                     unnamed_args = True
         elif isinstance(cd, (Class, Enum, Namespace)):
             for c in cd.content:
-                _CodeItem(self, c)
+                CodeItem(c, self)
 
         # The parent should be open if it is not ignored and we are, or we are
         # todo or unknown.
-        if (not isinstance(parent, _CodeItem) or parent.code.status != "ignored") and (cd.status in ("todo", "unknown") or (cd.status == "" and unnamed_args) or self.isExpanded()):
+        if (not isinstance(parent, CodeItem) or parent.code.status != "ignored") and (cd.status in ("todo", "unknown") or (cd.status == "" and unnamed_args) or self.isExpanded()):
             parent.setExpanded(True)
 
         self._editors = {}
+
+        observe('versions', cd, self.__on_versions_changed)
+
+    def __on_versions_changed(self, change):
+        """ Invoked when the code's versions changes. """
+
+        self.drawVersions()
 
     def getName(self):
         """
@@ -1302,7 +1392,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         Determine if an item can be dropped here.
         """
-        if not isinstance(source, _CodeItem):
+        if not isinstance(source, CodeItem):
             return False
 
         # We can only move code around its siblings or onto its parent.
@@ -1341,14 +1431,17 @@ class _CodeItem(_SimpleItem, _DropSite):
             # Get the parent to handle the move.
             self.parent().drop(source, self)
 
-    def getMenu(self, slist):
-        """
-        Return the item's context menu.
+    def get_menu(self, siblings):
+        """ Return the list of context menu options.
 
-        slist is a list of siblings of the item that is also selected.
+        :param siblings:
+            is a list of siblings of the item that is also selected.
+        :return:
+            the menu options.
         """
+
         # Save the list of targets for the menu action, including this one.
-        self._targets = slist[:]
+        self._targets = siblings[:]
         self._targets.append(self)
 
         menu = [("Checked", self._setStatusChecked, True, (self.code.status == "")),
@@ -1356,7 +1449,7 @@ class _CodeItem(_SimpleItem, _DropSite):
                 ("Unchecked", self._setStatusUnchecked, True, (self.code.status == "unknown")),
                 ("Ignored", self._setStatusIgnored, True, (self.code.status == "ignored"))]
 
-        if slist:
+        if siblings:
             menu.append(None)
             menu.append(("Versions...", self._versionsSlot,
                     (len(self.treeWidget().project.versions) != 0 and
@@ -1573,7 +1666,7 @@ class _CodeItem(_SimpleItem, _DropSite):
         """
         prnt = self.parent()
 
-        if isinstance(prnt, _CodeItem):
+        if isinstance(prnt, CodeItem):
             scope = prnt.code
         else:
             scope = prnt.headerfile
@@ -1597,7 +1690,7 @@ class _CodeItem(_SimpleItem, _DropSite):
                 scope = self._getScope()
                 scope.insert(scope.index(self.code) + 1, mc)
 
-                _CodeItem(self.parent(), mc, self)
+                CodeItem(mc, self.parent(), self)
 
     def _precisManualCode(self):
         """
