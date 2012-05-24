@@ -38,12 +38,9 @@ class ProjectEditorTool(BaseManagedModelTool):
     def create_views(self, model):
         """ Create the views for editing a model. """
 
-        from .QtGUI import api_editor
+        from .api_editor import ApiEditor
 
-        # Create the view.
-        view = api_editor.ApiEditor(model)
-
-        return [view]
+        return [ApiEditor(model)]
 
     def handles(self, model):
         """ Check that the tool can handle a model. """

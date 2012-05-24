@@ -18,7 +18,7 @@ PYTHON2=python
 all: gui
 
 gui:
-	$(MAKE) -C metasip/QtGUI/Designer all
+	$(MAKE) -C metasip/api_editor/Designer all
 
 build: gui VERSION
 	$(PYTHON2) build.py changelog
@@ -33,7 +33,7 @@ clean:
 	rm -rf ChangeLog* VERSION MANIFEST build dist
 	find . -name '*.pyc' -exec rm -f {} \;
 	find . -depth -name __pycache__ -exec rm -rf {} \;
-	$(MAKE) -C metasip/QtGUI/Designer clean
+	$(MAKE) -C metasip/api_editor/Designer clean
 
 dist-clean: clean
 	rm -f *.tar.gz *.zip
