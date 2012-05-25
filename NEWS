@@ -1,3 +1,13 @@
+v1.2 25th May 2012
+  - Updated the project file format to v2.
+  - Move the header file scanner and parser functionality to a separate tool
+    with a more obvious user interface.
+  - The workflow now supports working on multiple versions of a library at the
+    same time (rather than assuming the latest versions was always being worked
+    on).
+  - The assumption that the header files reside in the same header directory
+    for all versions has been removed.
+
 v1.1 5th May 2012
   - The logger is now a separate dock window.
   - Added the ability to verify the format of a project file against a formal
