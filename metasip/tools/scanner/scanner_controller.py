@@ -299,18 +299,22 @@ class ScannerController(Controller):
 
         from ...GccXML import GccXMLParser
 
+        project = self.current_project
         hdir = self.current_header_directory
         hfile = self.current_header_files[0]
 
         parser = GccXMLParser()
 
-        phf = parser.parse(self.model.source_directory, hdir, hfile)
+        name = os.path.join(self.model.source_directory, hdir.inputdirsuffix,
+                hfile.name)
+        _, name = self._read_header(name)
+
+        phf = parser.parse(project, self.model.source_directory, hdir, hfile,
+                name)
 
         if phf is None:
-            Application.warning("Parse", parser.diagnostic, self.parser_editor)
+            Application.warning("Parse", parser.diagnostic, self.parse_editor)
         else:
-            project = self.current_project
-
             # Find the corresponding .sip file creating it if is a new header
             # file.
             # FIXME: Assuming we ultimately want to be able to create a
@@ -533,9 +537,7 @@ class ScannerController(Controller):
         # C style comments aren't handled very well.
         m = hashlib.md5()
 
-        f = open(hpath, 'r')
-        src = f.read()
-        f.close()
+        src, _ = self._read_header(hpath)
 
         lnr = 1
         state = 'copy'
@@ -705,3 +707,34 @@ class ScannerController(Controller):
             working_version = ''
 
         return working_version
+
+    @classmethod
+    def _read_header(cls, name):
+        """ Read the contents of a header file.  Handle the special case of the
+        file just be a #include redirect to another header file.
+        """
+
+        contents, actual_name = cls._read_single_header(name)
+        while actual_name != name:
+            name = actual_name
+            contents, actual_name = cls._read_single_header(name)
+
+        return contents, actual_name
+
+    @staticmethod
+    def _read_single_header(name):
+        """ Read the contents of a single header file. """
+
+        f = open(name, 'r')
+        contents = f.read()
+        f.close()
+
+        lines = contents.strip().split('\n')
+        if len(lines) == 1:
+            words = lines[0].split()
+            if len(words) == 2 and words[0] == '#include':
+                include_name = words[1]
+                if include_name.startswith('".') and include_name.endswith('"'):
+                    name = os.path.dirname(name) + '/' + include_name[1:-1]
+
+        return contents, name

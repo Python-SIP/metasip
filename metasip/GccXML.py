@@ -14,6 +14,10 @@ import os
 import subprocess
 import tempfile
 
+from dip.model import implements, Instance, Model
+
+from .interfaces.project import ICodeContainer, IProject
+
 from .logger import Logger
 from .Parser import ParserBase, optAttribute
 from .Project import (Function, Argument, Variable, Typedef, OpaqueClass,
@@ -172,9 +176,9 @@ class _Namespace(_ScopedItem):
         scope is the scope to append the transformed entity to.
         """
         tci = Namespace(name=self.name, container=scope)
-        scope.append(tci)
+        scope.content.append(tci)
 
-        parser.transformScope(tci.content, self)
+        parser.transformScope(tci, self)
 
 
 class _Class(_ScopedItem, _Access):
@@ -216,11 +220,11 @@ class _Class(_ScopedItem, _Access):
         # Automatically ignore non-public classes.
         status = 'unknown' if self.access == '' else 'ignored'
 
-        tci = Class(name=self.name, container=scope, bases=", ".join(bl),
+        tci = Class(name=self.name, container=scope, bases=', '.join(bl),
                 struct=False, access=self.access, status=status)
-        scope.append(tci)
+        scope.content.append(tci)
 
-        parser.transformScope(tci.content, self)
+        parser.transformScope(tci, self)
 
 
 class _Struct(_ScopedItem, _Access):
@@ -247,18 +251,18 @@ class _Struct(_ScopedItem, _Access):
         scope is the scope to append the transformed entity to.
         """
         if self.incomplete:
-            scope.append(
+            scope.content.append(
                     OpaqueClass(name=self.name, container=scope,
                             access=self.access, status='ignored'))
         else:
             # Automatically ignore non-public classes.
             status = 'unknown' if self.access == '' else 'ignored'
 
-            tci = Class(name=self.name, container=scope, bases="", struct=True,
+            tci = Class(name=self.name, container=scope, struct=True,
                     access=self.access, status=status)
-            scope.append(tci)
+            scope.content.append(tci)
 
-            parser.transformScope(tci.content, self)
+            parser.transformScope(tci, self)
 
 
 class _Callable(_ScopedItem):
@@ -325,7 +329,7 @@ class _Constructor(_ClassCallable):
 
         _transformArgs(parser, self.args, tci.args)
 
-        scope.append(tci)
+        scope.content.append(tci)
 
 
 class _Destructor(_ScopedItem, _Access):
@@ -351,7 +355,7 @@ class _Destructor(_ScopedItem, _Access):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        scope.append(
+        scope.content.append(
                 Destructor(name=self.name, container=scope, access=self.access,
                         virtual=self.virtual))
 
@@ -382,7 +386,7 @@ class _Converter(_ClassCallable):
         tci = OperatorCast(name=parser.asType(self.returns), container=scope,
                 access=self.access, const=self.const)
 
-        scope.append(tci)
+        scope.content.append(tci)
 
 
 class _Method(_ClassCallable):
@@ -423,7 +427,7 @@ class _Method(_ClassCallable):
 
         _fixQt(tci)
 
-        scope.append(tci)
+        scope.content.append(tci)
 
 
 class _OperatorMethod(_ClassCallable):
@@ -461,7 +465,7 @@ class _OperatorMethod(_ClassCallable):
 
         _transformArgs(parser, self.args, tci.args)
 
-        scope.append(tci)
+        scope.content.append(tci)
 
 
 class _Function(_Callable):
@@ -491,7 +495,7 @@ class _Function(_Callable):
 
         _transformArgs(parser, self.args, tci.args)
 
-        scope.append(tci)
+        scope.content.append(tci)
 
 
 class _OperatorFunction(_Callable):
@@ -521,7 +525,7 @@ class _OperatorFunction(_Callable):
 
         _transformArgs(parser, self.args, tci.args)
 
-        scope.append(tci)
+        scope.content.append(tci)
 
 
 class _Variable(_ScopedItem, _Access):
@@ -555,7 +559,7 @@ class _Variable(_ScopedItem, _Access):
 
         _fixQt(tci)
 
-        scope.append(tci)
+        scope.content.append(tci)
 
 
 class _Field(_Variable):
@@ -572,7 +576,7 @@ class _Field(_Variable):
         t = parser.asType(self.type_id)
 
         if t:
-            scope.append(
+            scope.content.append(
                     Variable(name=self.name, type=t, static=False,
                             access=self.access))
 
@@ -614,7 +618,7 @@ class _Enumeration(_ScopedItem, _Access):
         for e in self.values:
             tci.content.append(EnumValue(name=e.name))
 
-        scope.append(tci)
+        scope.content.append(tci)
 
 
 class _EnumValue(object):
@@ -658,7 +662,7 @@ class _Typedef(_ScopedItem):
         # Ignore unsupported types - probably only those defined in terms of
         # a MethodType (eg. typedef foo_t (scope::*bar)();).
         if t:
-            scope.append(Typedef(name=self.name, type=t))
+            scope.content.append(Typedef(name=self.name, type=t))
 
 
 class _FunctionType(object):
@@ -894,6 +898,15 @@ def _transformArgs(parser, gargs, pargs):
         pargs.append(pa)
 
 
+@implements(ICodeContainer)
+class _CodeContainer(Model):
+    """ An internal class that implements the root of the transformed items.
+    """
+
+    # The project.
+    project = Instance(IProject)
+
+
 class GccXMLParser(ParserBase):
     """
     This class implements a C++ parser based on GCC-XML.  It should be used as
@@ -912,23 +925,18 @@ class GccXMLParser(ParserBase):
                 "arraytype":        _PointerType,
                 "cvqualifiedtype":  _CvQualifiedType}
 
-    def parse(self, input_dir, hdir, hf):
+    def parse(self, project, input_dir, hdir, hf, pathname):
         """
         Parse a file and return the parsed file instance or None if there was
         an error.
 
+        project is the project.
         input_dir is the root input directory.
         hdir is the header directory instance.
         hf is the header file instance.
+        pathname is the name of the actual file to parse.
         """
-        # Check the input directory exists.
-        if not os.path.isdir(input_dir):
-            self.diagnostic = "%s directory does not exist" % input_dir
-            Logger.log(self.diagnostic)
-
-            return None
-
-        self._pathname = os.path.join(input_dir, hdir.inputdirsuffix, hf.name)
+        self._pathname = pathname
         iname = os.path.join(tempfile.gettempdir(), hf.name + '.tmp')
 
         argv = ['gccxml']
@@ -999,11 +1007,11 @@ class GccXMLParser(ParserBase):
             return None
 
         # Now convert it to the internal format.
-        phf = []
+        phf = _CodeContainer(project=project)
 
         self.transformScope(phf, self._rootns)
 
-        return phf
+        return phf.content
 
     def namespaceStart(self, attrs):
         """
@@ -1014,7 +1022,7 @@ class GccXMLParser(ParserBase):
         ns = _Namespace(self, attrs)
 
         # Remember the root namespace.
-        if ns.name == "::":
+        if ns.name == '::':
             self._rootns = ns
 
     def fieldStart(self, attrs):
@@ -1204,56 +1212,57 @@ class GccXMLParser(ParserBase):
         if attrs["name"] == self._pathname:
             self._fileid = attrs["id"]
 
-    def transformScope(self, code, scope):
+    def transformScope(self, container, scope):
         """
         Transform a scope (either a namespace or a class) from the stripped
         down GCC-XML format to the internal project format.
 
-        code is the list of code items to add to.
+        container is the code container to add to.
         scope is the scope to convert.
         """
-        def sortedScope(scope):
-            """
-            Return a list of the items in a scope sorted by line number.
+        # Transform each scoped item.
+        for si in self._sorted_scope(scope):
+            si.transform(self, container)
 
-            scope is the scope.
-            """
-            # Return the cached list if we have already built it.
-            try:
-                return scope.sorted
-            except AttributeError:
-                pass
+    def _sorted_scope(self, unsorted):
+        """
+        Return a list of the items in a scope sorted by line number.
 
-            ssl = []
+        unsorted is the scope.
+        """
+        # Return the cached list if we have already built it.
+        try:
+            return unsorted._cache
+        except AttributeError:
+            pass
 
-            for si in self.scopeditems:
-                # Skip if this item is part of the scope.
-                if si is scope or si.context != scope.id:
+        ssl = []
+
+        for si in self.scopeditems:
+            # Skip if this item is part of the scope.
+            if si is unsorted or si.context != unsorted.id:
+                continue
+
+            # If we don't know the item's position then it must be a namespace
+            # so sort it's contents and take the position of it's first
+            # "child".
+            if si.file is None or si.line is None:
+                si_sorted = self._sorted_scope(si)
+
+                # Skip it if it was empty.
+                if len(si_sorted) == 0:
                     continue
 
-                # If we don't know the item's position then it must be a
-                # namespace so sort it's contents and take the position of it's
-                # first "child".
-                if si.file is None or si.line is None:
-                    si.sorted = sortedScope(si)
+                si.file = si_sorted[0].file
+                si.line = si_sorted[0].line
 
-                    # Skip it if it was empty.
-                    if not si.sorted:
-                        continue
+            if si.file == self._fileid:
+                ssl.append(si)
 
-                    si.file = si.sorted[0].file
-                    si.line = si.sorted[0].line
+        ssl.sort(key=lambda k: k.line)
+        unsorted._cache = ssl
 
-                if si.file == self._fileid:
-                    ssl.append(si)
-
-            ssl.sort(key=lambda k: k.line)
-
-            return ssl
-
-        # Transform each scoped item.
-        for si in sortedScope(scope):
-            si.transform(self, code)
+        return ssl
 
     def asType(self, type_id):
         """

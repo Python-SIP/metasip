@@ -81,7 +81,7 @@ class VersionedItem(Model):
         """ Return the project instance. """
 
         sf = self
-        while not isinstance(sf, SipFile):
+        while not hasattr(sf, 'project'):
             sf = sf.container
 
         return sf.project
