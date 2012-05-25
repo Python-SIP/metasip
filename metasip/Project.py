@@ -175,12 +175,12 @@ class Project(Model):
             return True
 
         for version_range in version_ranges:
-            if version_range.startversion is None:
+            if version_range.startversion == '':
                 start_idx = 0
             else:
                 start_idx = self.versions.index(version_range.startversion)
 
-            if version_range.endversion is None:
+            if version_range.endversion == '':
                 end_idx = len(self.versions)
             else:
                 end_idx = self.versions.index(version_range.endversion)
