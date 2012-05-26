@@ -60,18 +60,22 @@ class VersionsTool(Model):
             new_versions = model['versions']
 
             new_so_far = 0
+            new_version = None
+            new_version_idx = -1
             ok = True
             for i, new in enumerate(new_versions):
                 try:
                     old_i = old_versions.index(new)
 
-                    if old_i != i + new_so_far:
+                    if old_i != i - new_so_far:
                         # It's an old version in a different position.
                         ok = False
                         break
                 except ValueError:
                     # It's a new version.
                     new_so_far += 1
+                    new_version = new
+                    new_version_idx = i
 
             if ok:
                 # Check that nothing has been deleted.
@@ -83,7 +87,11 @@ class VersionsTool(Model):
                     ok = False
 
             if ok:
-                project.versions.append(new_versions[-1])
+                if new_version_idx == len(new_versions) - 1:
+                    project.versions.append(new_version)
+                else:
+                    project.versions.insert(new_version_idx, new_version)
+
                 IDirty(project).dirty = True
             else:
                 Application.warning("Versions",

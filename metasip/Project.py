@@ -832,8 +832,9 @@ class Project(Model):
     def __on_versions_changed(self, change):
         """ Invoked when the list of versions changes. """
 
-        # FIXME: This code assumes that versions will only ever be appended to.
-        new_version = self.versions[-1]
+        # FIXME: This code assumes that the only possible change is the
+        #        addition (somewhere) of a new version.
+        new_version = change.new[0]
 
         # See if the first explicit version has just been defined.
         if len(self.versions) == 1:
@@ -844,8 +845,13 @@ class Project(Model):
                     hfile.versions[0].version = new_version
         else:
             # Create new versions of each header file based on the previous
-            # version.
-            prev_version = self.versions[-2]
+            # version (or the next one if the new one has been put at the
+            # start).
+            new_version_idx = self.versions.index(new_version)
+            if new_version_idx != 0:
+                prev_version = self.versions[new_version_idx - 1]
+            else:
+                prev_version = self.versions[new_version_idx + 1]
 
             for hdir in self.headers:
                 scan = False
