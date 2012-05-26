@@ -25,7 +25,7 @@ from ...interfaces.project import (ICodeContainer, IHeaderDirectory,
         IHeaderFile, IProject)
 from ...logger import Logger
 from ...Project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
-        ManualCode, Project, SipFile)
+        ManualCode, Project, SipFile, VersionRange)
 
 from .scanner_view import ScannerView
 

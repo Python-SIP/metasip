@@ -11,7 +11,7 @@
 
 
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator
+from PyQt4.QtGui import QTreeWidget, QTreeWidgetItem
 
 from dip.model import observe
 
@@ -45,6 +45,8 @@ class ScannerView(QTreeWidget):
 
         ProjectItem(project, self)
 
+        self._update_working_version()
+
     def hide_ignored(self, header_directory, hide):
         """ Show or hide all the ignored files in a header directory. """
 
@@ -63,9 +65,7 @@ class ScannerView(QTreeWidget):
 
         if self.working_version != working_version:
             self.working_version = working_version
-
-            for itm in self._items():
-                itm.update_working_version()
+            self._update_working_version()
 
     def refresh_selection(self):
         """ Invoked when the item selection changes. """
@@ -73,16 +73,25 @@ class ScannerView(QTreeWidget):
         self._controller.selection(
                 [itm.get_project_item() for itm in self.selectedItems()])
 
-    def _items(self):
-        """ A generator for all the items in the tree. """
+    def _update_working_version(self):
+        """ Update the working version for all items. """
 
-        it = QTreeWidgetItemIterator(self)
+        for itm in self._items():
+            itm.update_working_version()
 
-        value = it.value()
-        while value is not None:
-            yield value
-            it += 1
-            value = it.value()
+    def _items(self, root=None):
+        """ A generator for all the items in the tree depth first. """
+
+        if root is None:
+            root = self.invisibleRootItem()
+
+        for i in range(root.childCount()):
+            child = root.child(i)
+
+            for itm in self._items(child):
+                yield itm
+
+            yield child
 
 
 class ScannerItem(QTreeWidgetItem):
@@ -168,27 +177,30 @@ class HeaderDirectoryItem(ScannerItem):
 
         self.setText(ScannerView.NAME, header_directory.name)
 
-        expand = False
-
         for header_file in header_directory.content:
-            itm = HeaderFileItem(header_file, self)
-
-            # Expand the header directory if there is at least one visible file
-            # that needs something doing.
-            if not itm.isHidden() and itm.text(ScannerView.STATUS) != '':
-                expand = True
+            HeaderFileItem(header_file, self)
 
         observe('content', header_directory, self.__on_content_changed)
 
         self.sort()
 
-        if expand:
-            self.setExpanded(True)
-
     def update_working_version(self):
         """ Update in the light of the working version. """
 
         self._draw_status()
+
+        # Expand if we have anything that needs working on.
+        for i in range(self.childCount()):
+            hfile_itm = self.child(i)
+
+            status = hfile_itm.text(ScannerView.STATUS)
+            if status not in ('', "Ignored"):
+                expand = True
+                break
+        else:
+            expand = False
+
+        self.setExpanded(expand)
 
     def get_project_item(self):
         """ Return the item's corresponding project item. """
@@ -254,6 +266,8 @@ class HeaderFileItem(ScannerItem):
 
         self._draw_status()
 
+        self.setHidden(self._header_file.ignored)
+
     def get_project_item(self):
         """ Return the item's corresponding project item. """
 
@@ -274,12 +288,9 @@ class HeaderFileItem(ScannerItem):
             else:
                 working_file = None
 
-        hidden = (working_file is None)
-
         # Determine the status.
         if self._header_file.ignored:
             status = "Ignored"
-            hidden = True
         elif self._header_file.module == '':
             status = "Needs assigning"
         elif working_file is not None and working_file.parse:
@@ -288,8 +299,6 @@ class HeaderFileItem(ScannerItem):
             status = ''
 
         self.setText(ScannerView.STATUS, status)
-
-        self.setHidden(hidden)
 
     def __on_ignored_changed(self, change):
         """ Invoked when a header file's ignored state changes. """
