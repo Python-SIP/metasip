@@ -537,7 +537,7 @@ class ScannerController(Controller):
         # C style comments aren't handled very well.
         m = hashlib.md5()
 
-        src, _ = self._read_header(hpath)
+        src, _, encoding = self._read_header(hpath)
 
         lnr = 1
         state = 'copy'
@@ -586,7 +586,7 @@ class ScannerController(Controller):
             # At this point we know the previous character wasn't part of a
             # comment.
             if prev:
-                m.update(prev.encode(f.encoding))
+                m.update(prev.encode(encoding))
 
         # Note that we didn't add the last character, but it would normally be
         # a newline.
@@ -714,12 +714,12 @@ class ScannerController(Controller):
         file just be a #include redirect to another header file.
         """
 
-        contents, actual_name = cls._read_single_header(name)
+        contents, actual_name, encoding = cls._read_single_header(name)
         while actual_name != name:
             name = actual_name
-            contents, actual_name = cls._read_single_header(name)
+            contents, actual_name, encoding = cls._read_single_header(name)
 
-        return contents, actual_name
+        return contents, actual_name, encoding
 
     @staticmethod
     def _read_single_header(name):
@@ -727,6 +727,7 @@ class ScannerController(Controller):
 
         f = open(name, 'r')
         contents = f.read()
+        encoding = f.encoding
         f.close()
 
         lines = contents.strip().split('\n')
@@ -737,4 +738,4 @@ class ScannerController(Controller):
                 if include_name.startswith('".') and include_name.endswith('"'):
                     name = os.path.dirname(name) + '/' + include_name[1:-1]
 
-        return contents, name
+        return contents, name, encoding
