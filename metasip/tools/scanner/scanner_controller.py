@@ -307,7 +307,7 @@ class ScannerController(Controller):
 
         name = os.path.join(self.model.source_directory, hdir.inputdirsuffix,
                 hfile.name)
-        _, name = self._read_header(name)
+        _, name, _ = self._read_header(name)
 
         phf = parser.parse(project, self.model.source_directory, hdir, hfile,
                 name)
