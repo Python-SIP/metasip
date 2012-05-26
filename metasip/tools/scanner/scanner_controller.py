@@ -25,7 +25,7 @@ from ...interfaces.project import (ICodeContainer, IHeaderDirectory,
         IHeaderFile, IProject)
 from ...logger import Logger
 from ...Project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
-        Project, SipFile)
+        ManualCode, Project, SipFile)
 
 from .scanner_view import ScannerView
 
@@ -427,7 +427,7 @@ class ScannerController(Controller):
             vmap = project.vmap_create(True)
         else:
             vmap = project.vmap_create(False)
-            project.vmap_or_version_ranges(vmap, version_range)
+            project.vmap_or_version_ranges(vmap, api_item.versions)
 
         # Update the version map appropriately using the working version.
         # First take a shortcut to see if anything has changed.
