@@ -189,19 +189,6 @@ class HeaderDirectoryItem(ScannerItem):
 
         self._draw_status()
 
-        # Expand if we have anything that needs working on.
-        for i in range(self.childCount()):
-            hfile_itm = self.child(i)
-
-            status = hfile_itm.text(ScannerView.STATUS)
-            if status not in ('', "Ignored"):
-                expand = True
-                break
-        else:
-            expand = False
-
-        self.setExpanded(expand)
-
     def get_project_item(self):
         """ Return the item's corresponding project item. """
 
@@ -289,16 +276,23 @@ class HeaderFileItem(ScannerItem):
                 working_file = None
 
         # Determine the status.
+        expand = False
+
         if self._header_file.ignored:
             status = "Ignored"
         elif self._header_file.module == '':
             status = "Needs assigning"
+            expand = True
         elif working_file is not None and working_file.parse:
             status = "Needs parsing"
+            expand = True
         else:
             status = ''
 
         self.setText(ScannerView.STATUS, status)
+
+        if expand:
+            self.parent().setExpanded(True)
 
     def __on_ignored_changed(self, change):
         """ Invoked when a header file's ignored state changes. """
@@ -319,6 +313,8 @@ class HeaderFileItem(ScannerItem):
 
         for hfile_version in change.new:
             observe('parse', hfile_version, self.__on_parse_changed)
+
+        self._draw_status()
 
     def __on_parse_changed(self, change):
         """ Invoked when a header file version's parse state changes. """

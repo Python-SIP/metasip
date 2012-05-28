@@ -898,7 +898,120 @@ class ModuleItem(EditorItem, DropSite):
             SipFileItem(module_content[idx], self, after)
 
 
-class SipFileItem(EditorItem, DropSite):
+class ContainerItem(EditorItem, DropSite):
+    """ This class implements an editor item that represents a potential
+    container for code items.
+    """
+
+    def __init__(self, container, parent, after):
+        """ Initialise the item instance.
+
+        :param container:
+            is the potential container instance.
+        :param parent:
+            is the parent.
+        :param after:
+            is the sibling after which this should be placed.  If it is
+            ``None`` then it should be placed at the end.  If it is the parent
+            then it should be placed at the start.
+        """
+
+        EditorItem.__init__(self, parent, after)
+        DropSite.__init__(self)
+
+        if hasattr(container, 'content'):
+            for code in container.content:
+                CodeItem(code, self)
+
+            observe('content', container, self.__on_content_changed)
+
+    def droppable(self, source):
+        """ Determine if an item can be dropped.
+
+        :param source:
+            is the QTreeWidgetItem sub-class instance being dropped.
+        :return:
+            ``True`` if the source can be dropped.
+        """
+
+        # See if we are moving a sibling.
+        if source.parent() is self.parent():
+            return True
+
+        # See if we are moving a child to the top.
+        if source.parent() is self:
+            return True
+
+        return False
+
+    def drop(self, source):
+        """ Handle the drop of an item.
+
+        :param source:
+            is the QTreeWidgetItem sub-class instance being dropped.
+        """
+
+        if source.parent() is self.parent():
+            # We are moving a sibling after us.
+            parent_content = self.parent_project_item().content
+            project_item = source.project_item()
+
+            parent_content.remove(project_item)
+
+            new_idx = parent_content.index(self.project_item()) + 1
+            if new_idx < len(parent_content):
+                parent_content.insert(new_idx, project_item)
+            else:
+                parent_content.append(project_item)
+
+            self.set_dirty()
+
+            return
+
+        if source.parent() is self:
+            # Dropping a child is interpreted as moving it to the top.
+            my_content = self.project_item().content
+            project_item = source.project_item()
+
+            my_content.remove(project_item)
+            my_content.insert(0, project_item)
+
+            self.set_dirty()
+
+            return
+
+    def parent_project_item(self):
+        """ Return the parent project item that contains our project item. """
+
+        raise NotImplementedError
+
+    def project_item(self):
+        """ Return our project item. """
+
+        raise NotImplementedError
+
+    def __on_content_changed(self, change):
+        """ Invoked when the content changes. """
+
+        for code in change.old:
+            for idx in range(self.childCount()):
+                itm = self.child(idx)
+                if itm.code is code:
+                    self.removeChild(itm)
+                    break
+
+        # The order of editor items must match the order of model items.
+        container_content = change.model.content
+        idx_list = [container_content.index(code) for code in change.new]
+        idx_list.sort()
+
+        for idx in idx_list:
+            after = self if idx == 0 else self.child(idx - 1)
+
+            CodeItem(container_content[idx], self, after)
+
+
+class SipFileItem(ContainerItem):
     """ This class implements an editor item that represents a .sip file. """
 
     def __init__(self, sipfile, parent, after=None):
@@ -914,8 +1027,7 @@ class SipFileItem(EditorItem, DropSite):
             then it should be placed at the start.
         """
 
-        EditorItem.__init__(self, parent, after)
-        DropSite.__init__(self)
+        super().__init__(sipfile, parent, after)
 
         self.sipfile = sipfile
 
@@ -924,80 +1036,15 @@ class SipFileItem(EditorItem, DropSite):
 
         self.setText(ApiEditor.NAME, sipfile.name)
 
-        for cd in sipfile.content:
-            CodeItem(cd, self)
+    def parent_project_item(self):
+        """ Return the parent project item that contains our project item. """
 
-        observe('content', sipfile, self.__on_content_changed)
+        return self.parent().module
 
-        if self.isExpanded():
-            parent.setExpanded(True)
+    def project_item(self):
+        """ Return our project item. """
 
-    def droppable(self, source):
-        """ Determine if an item can be dropped.
-
-        :param source:
-            is the QTreeWidgetItem sub-class instance being dropped.
-        :return:
-            ``True`` if the source can be dropped.
-        """
-
-        # See if we are moving a sibling.
-        if isinstance(source, SipFileItem):
-            return source.parent() is self.parent()
-
-        # See if we are moving a child to the top.
-        if isinstance(source, CodeItem):
-            return source.parent() is self
-
-        return False
-
-    def drop(self, source, after=None):
-        """ Handle the drop of an item.
-
-        :param source:
-            is the QTreeWidgetItem sub-class instance being dropped.
-        """
-
-        if isinstance(source, SipFileItem):
-            # Move a sibling behind us.
-            module_content = self.parent().module.content
-            sf = source.sipfile
-
-            module_content.remove(sf)
-
-            new_idx = module_content.index(self.sipfile) + 1
-            if new_idx < len(module_content):
-                module_content.insert(new_idx, sf)
-            else:
-                module_content.append(sf)
-
-        elif isinstance(source, CodeItem):
-            # Dropping a child is interpreted as moving it to the top.
-            cd = source.code
-            self.content.remove(cd)
-            self.content.insert(0, cd)
-
-        self.set_dirty()
-
-    def __on_content_changed(self, change):
-        """ Invoked when the content changes. """
-
-        for cd in change.old:
-            for idx in range(self.childCount()):
-                itm = self.child(idx)
-                if itm.code is cd:
-                    self.removeChild(itm)
-                    break
-
-        # The order of view items must match the order of model items.
-        sipfile_content = change.model.content
-        idx_list = [sipfile_content.index(sf) for sf in change.new]
-        idx_list.sort()
-
-        for idx in idx_list:
-            after = self if idx == 0 else self.child(idx - 1)
-
-            CodeItem(sipfile_content[idx], self, after)
+        return self.sipfile
 
     def get_menu(self, siblings):
         """ Return the list of context menu options.
@@ -1266,170 +1313,146 @@ class _Argument(_FixedItem):
             self.set_dirty()
 
             self.drawName()
-            self.parent().drawName()
-            self.parent().drawStatus()
+            self.parent().draw_name()
+            self.parent().draw_status()
 
 
-class CodeItem(_SimpleItem, DropSite):
-    """
-    This class implements a navigation item that represents code in a header
+class CodeItem(ContainerItem):
+    """ This class implements an editor item that represents code in a .sip
     file.
     """
-    def __init__(self, cd, parent, after=None):
-        """
-        Initialise the item instance.
 
-        cd is the code instance.
-        parent is the parent.
-        after is the sibling after which this should be placed.  If it is None
-        then it should be placed at the end.  If it is the parent then it
-        should be placed at the start.
-        """
-        self.code = cd
+    def __init__(self, code, parent, after=None):
+        """ Initialise the item instance.
 
-        _SimpleItem.__init__(self, parent, after)
-        DropSite.__init__(self)
+        :param code:
+            is the code instance.
+        :param parent:
+            is the parent.
+        :param after:
+            is the sibling after which this should be placed.  If it is
+            ``None`` then it should be placed at the end.  If it is the parent
+            then it should be placed at the start.
+        """
+
+        self.code = code
+
+        super().__init__(code, parent, after)
 
         self._targets = []
+        self._editors = {}
 
-        if cd.status == "ignored":
+        self.draw_name()
+        self._draw_access()
+        self.draw_status()
+        self._draw_versions()
+
+        if code.status == 'ignored':
             self.setHidden(True)
 
         # Create any children.
-        unnamed_args = False
-
-        if hasattr(cd, "args"):
-            if isinstance(cd, (OperatorMethod, OperatorCast, OperatorFunction)):
-                access = 'private'
-            else:
-                try:
-                    access = cd.access
-                except AttributeError:
-                    access = ''
-
-            for a in cd.args:
+        if hasattr(code, 'args'):
+            for a in code.args:
                 _Argument(self, a)
 
-                if access != 'private' and a.unnamed and a.default != '':
-                    unnamed_args = True
-        elif isinstance(cd, (Class, Enum, Namespace)):
-            for c in cd.content:
-                CodeItem(c, self)
+        observe('versions', code, self.__on_versions_changed)
 
-        # The parent should be open if it is not ignored and we are, or we are
-        # todo or unknown.
-        if (not isinstance(parent, CodeItem) or parent.code.status != "ignored") and (cd.status in ("todo", "unknown") or (cd.status == "" and unnamed_args) or self.isExpanded()):
-            parent.setExpanded(True)
+    def parent_project_item(self):
+        """ Return the parent project item that contains our project item. """
 
-        self._editors = {}
+        return self.parent().project_item()
 
-        observe('versions', cd, self.__on_versions_changed)
+    def project_item(self):
+        """ Return our project item. """
 
-    def __on_versions_changed(self, change):
-        """ Invoked when the code's versions changes. """
+        return self.code
 
-        self.drawVersions()
+    def draw_name(self):
+        """ Update the item's name. """
 
-    def getName(self):
-        """
-        Return the value of the name column.
-        """
-        return self.code.user()
+        self.setText(ApiEditor.NAME, self.code.user())
 
-    def getAccess(self):
-        """
-        Return the value of the access column.
-        """
+    def _draw_access(self):
+        """ Update the item's access. """
+
         # Not everything has an access specifier.
         try:
-            a = self.code.access
+            access = self.code.access
         except AttributeError:
-            a = ""
+            access = ''
 
-        return a
+        self.setText(ApiEditor.ACCESS, access)
 
-    def getStatus(self):
-        """
-        Return the value of the status column.
-        """
-        s = self.code.status
+    def _has_unnamed_args(self):
+        """ Returns ``True`` if the code has unnamed arguments. """
+
+        # These types don't use named arguments.
+        if isinstance(self.code, (OperatorMethod, OperatorCast, OperatorFunction)):
+            return False
+
+        # Ignore private items.
+        try:
+            private = (self.code.access == 'private')
+        except AttributeError:
+            private = False
+
+        if private:
+            return False
+
+        for arg in self.code.args:
+            if arg.unnamed and arg.default != '':
+                return True
+
+        return False
+
+    def draw_status(self):
+        """ Update the item's status. """
+
         status = []
 
-        if s == "todo":
+        expand = False
+        s = self.code.status
+
+        if s == 'todo':
             text = "Todo"
-        elif s == "unknown":
+            expand = True
+        elif s == 'unknown':
             text = "Unchecked"
-        elif s == "ignored":
+            expand = True
+        elif s == 'ignored':
             text = "Ignored"
         else:
-            text = ""
+            text = ''
 
         if text:
             status.append(text)
 
-        if hasattr(self.code, 'args'):
-            if isinstance(self.code, (OperatorMethod, OperatorCast, OperatorFunction)):
-                access = 'private'
-            else:
-                try:
-                    access = self.code.access
-                except AttributeError:
-                    access = ''
+        if s != 'ignored' and hasattr(self.code, 'args') and self._has_unnamed_args():
+            status.append("Unnamed arguments")
+            expand = True
 
-            for a in self.code.args:
-                if access != 'private' and a.unnamed and a.default != '':
-                    status.append("Unnamed arguments")
-                    break
+        self.setText(ApiEditor.STATUS, ", ".join(status))
 
-        return ", ".join(status)
+        if expand:
+            parent = self.parent()
+            while parent is not None:
+                if isinstance(parent, CodeItem):
+                    if parent.code.status == 'ignored':
+                        break
 
-    def getVersionedItem(self):
-        """ Return the API item for the versions column. """
+                parent.setExpanded(True)
+                parent = parent.parent()
 
-        return self.code
+    def _draw_versions(self):
+        """ Update the item's versions. """
 
-    def droppable(self, source):
-        """
-        Determine if an item can be dropped here.
-        """
-        if not isinstance(source, CodeItem):
-            return False
+        ranges = [version_range(r) for r in self.code.versions]
+        self.setText(ApiEditor.VERSIONS, ", ".join(ranges))
 
-        # We can only move code around its siblings or onto its parent.
-        owner = source.parent()
+    def __on_versions_changed(self, change):
+        """ Invoked when the code's versions changes. """
 
-        return (owner is self.parent() or owner is self)
-
-    def drop(self, source, after=None):
-        """
-        Handle the item being dropped here.
-
-        source is the item being dropped.
-        after is the optional child on which the item was dropped.
-        """
-        owner = source.parent()
-
-        if after is not None or owner is self:
-            # Either a child has been dropped on us to move it to the start,
-            # or we've been called by a child to place a sibling immediately
-            # after it.
-            cd = self.code
-
-            cd.remove(source.code)
-            owner.removeChild(source)
-
-            if after:
-                at = cd.index(after.code) + 1
-            else:
-                at = 0
-
-            cd.insert(at, source.code)
-            owner.insertChild(at, source)
-
-            self.set_dirty()
-        else:
-            # Get the parent to handle the move.
-            self.parent().drop(source, self)
+        self._draw_versions()
 
     def get_menu(self, siblings):
         """ Return the list of context menu options.
@@ -1660,19 +1683,6 @@ class CodeItem(_SimpleItem, DropSite):
 
         self.treeWidget().acceptArgumentNames(self.code)
 
-    def _getScope(self):
-        """
-        Return the object that is the containing scope of this item.
-        """
-        prnt = self.parent()
-
-        if isinstance(prnt, CodeItem):
-            scope = prnt.code
-        else:
-            scope = prnt.headerfile
-
-        return scope
-
     def _addManualCode(self):
         """
         Slot to handle the creation of manual code.
@@ -1685,12 +1695,10 @@ class CodeItem(_SimpleItem, DropSite):
             if precis:
                 mc = ManualCode(precis=precis)
 
+                parent_content = self.parent_project_item().content
+                parent_content.insert(parent_content.index(self.code) + 1, mc)
+
                 self.set_dirty()
-
-                scope = self._getScope()
-                scope.insert(scope.index(self.code) + 1, mc)
-
-                CodeItem(mc, self.parent(), self)
 
     def _precisManualCode(self):
         """
@@ -1703,7 +1711,7 @@ class CodeItem(_SimpleItem, DropSite):
 
             if self.code.precis != precis:
                 self.code.precis = precis
-                self.drawName()
+                self.draw_name()
 
             self.set_dirty()
 
@@ -1739,8 +1747,7 @@ class CodeItem(_SimpleItem, DropSite):
                                    QMessageBox.No|QMessageBox.Default|QMessageBox.Escape)
 
         if ans == QMessageBox.Yes:
-            self._getScope().remove(self.code)
-            self.parent().removeChild(self)
+            self.parent_project_item().content.remove(self.code)
             self.set_dirty()
 
     def _accessCodeSlot(self):
@@ -2173,7 +2180,6 @@ class CodeItem(_SimpleItem, DropSite):
             for itm in self._targets:
                 itm.code.versions = [VersionRange(startversion=startversion,
                         endversion=endversion)]
-                itm.drawVersions()
 
             self.set_dirty()
 
@@ -2327,7 +2333,9 @@ class CodeItem(_SimpleItem, DropSite):
             if itm.code.status != new:
                 itm.code.status = new
                 self.set_dirty()
-                itm.drawStatus()
+
+                # FIXME: Observe the status attribute.
+                itm.draw_status()
 
     def _setAccessPublic(self):
         """
@@ -2380,4 +2388,6 @@ class CodeItem(_SimpleItem, DropSite):
         if self.code.access != new:
             self.code.access = new
             self.set_dirty()
-            self.drawAccess()
+
+            # FIXME: Observe the access attribute.
+            self._draw_access()
