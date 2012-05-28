@@ -32,29 +32,28 @@ class GenerationsDialog(QDialog, Ui_GenerationsBase):
         self.setupUi(self)
 
         # Initialise the dialog.
-        self.sgen.addItem("First", None)
+        self.sgen.addItem("First", '')
 
         start_index = 0
         end_index = len(prj.versions)
 
         if len(api_item.versions) == 0:
-            api_start = None
-            api_end = None
+            api_start = ''
+            api_end = ''
         else:
-            vers = api_item.versions[0]
-            api_start = vers.startversion
-            api_end = vers.endversion
+            api_start = api_item.versions[0].startversion
+            api_end = api_item.versions[-1].endversion
 
         for i, v in enumerate(prj.versions):
-            self.sgen.addItem(v.name, v)
-            if v is api_start:
+            self.sgen.addItem(v, v)
+            if v == api_start:
                 start_index = i + 1
 
-            self.egen.addItem(v.name, v)
-            if v is api_end:
+            self.egen.addItem(v, v)
+            if v == api_end:
                 end_index = i
 
-        self.egen.addItem("Latest", None)
+        self.egen.addItem("Latest", '')
 
         self.sgen.setCurrentIndex(start_index)
         self.egen.setCurrentIndex(end_index)
@@ -65,4 +64,4 @@ class GenerationsDialog(QDialog, Ui_GenerationsBase):
         start_index = self.sgen.currentIndex()
         end_index = self.egen.currentIndex()
 
-        return (self.itemData(start_index), self.itemData(end_index))
+        return (self.sgen.itemData(start_index), self.egen.itemData(end_index))

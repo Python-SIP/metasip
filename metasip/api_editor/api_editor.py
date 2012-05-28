@@ -21,7 +21,7 @@ from dip.ui import Application
 
 from ..Project import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
-        ManualCode, Module, OpaqueClass, OperatorCast, Namespace,
+        ManualCode, Module, OpaqueClass, OperatorCast, Namespace, VersionRange,
         version_range)
 
 from .ExternalEditor import ExternalEditor
@@ -1472,11 +1472,10 @@ class CodeItem(ContainerItem):
                 ("Unchecked", self._setStatusUnchecked, True, (self.code.status == "unknown")),
                 ("Ignored", self._setStatusIgnored, True, (self.code.status == "ignored"))]
 
-        if siblings:
+        if len(siblings) != 0:
             menu.append(None)
             menu.append(("Versions...", self._versionsSlot,
-                    (len(self.treeWidget().project.versions) != 0 and
-                    len(self.code.versions) <= 1)))
+                    (len(self.treeWidget().project.versions) != 0)))
 
             return menu
 
@@ -1747,8 +1746,10 @@ class CodeItem(ContainerItem):
                                    QMessageBox.No|QMessageBox.Default|QMessageBox.Escape)
 
         if ans == QMessageBox.Yes:
-            self.parent_project_item().content.remove(self.code)
+            # Mark as dirty before removing it.
             self.set_dirty()
+
+            self.parent_project_item().content.remove(self.code)
 
     def _accessCodeSlot(self):
         """
