@@ -30,16 +30,14 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
         arg is the argument instance.
         parent is the parent widget.
         """
-        super(ArgPropertiesDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setupUi(self)
 
         # Initialise the dialog.
         self._encoding = Encoding(self.encodingCb)
 
-        if arg.name is not None:
-            self.name.setText(arg.name)
-
+        self.name.setText(arg.name)
         self.unnamedCb.setChecked(arg.unnamed)
         self.pyType.setText(arg.pytype)
 
@@ -111,12 +109,9 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
         """
         Return a tuple of the dialog fields.
         """
-        name = str(self.name.text()).strip()
-        if name == "":
-            name = None
-
+        name = self.name.text().strip()
         unnamed = self.unnamedCb.isChecked()
-        pytype = str(self.pyType.text()).strip()
+        pytype = self.pyType.text().strip()
 
         alist = []
 
