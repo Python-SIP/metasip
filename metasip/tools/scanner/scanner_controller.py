@@ -375,11 +375,11 @@ class ScannerController(Controller):
                 if working_version == '':
                     # Forget about it because there are no other versions that
                     # might refer to it.
-                    dsc.remove(dsi)
+                    dsc.content.remove(dsi)
                 elif not self._update_with_working_version(dsi, False):
                     # Forget about it because there are no other versions that
                     # refer to it.
-                    dsc.remove(dsi)
+                    dsc.content.remove(dsi)
 
         # Anything left in the source code is new.
 
