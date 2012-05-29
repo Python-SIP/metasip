@@ -347,7 +347,7 @@ class ScannerController(Controller):
     def _merge_code(self, dsc, ssc):
         """ Merge source code into destination code. """
 
-        working_version = self.model.working_version
+        working_version = self._working_version_as_string()
 
         # Go though each existing code item.
         for dsi in dsc.content:
@@ -357,9 +357,9 @@ class ScannerController(Controller):
 
             # Go through each potentially new code item.
             for ssi in ssc:
-                if type(dsi) is type(ssi) and dsi.signature() == ssi.signature():
+                if type(dsi) is type(ssi) and dsi.signature(working_version) == ssi.signature(working_version):
                     # Make sure the versions include the working version.
-                    if working_version is not None:
+                    if working_version != '':
                         self._update_with_working_version(dsi, True)
 
                     # Discard the new code item.
@@ -372,7 +372,7 @@ class ScannerController(Controller):
                     break
             else:
                 # The existing one doesn't exist in the working version.
-                if working_version is None:
+                if working_version == '':
                     # Forget about it because there are no other versions that
                     # might refer to it.
                     dsc.remove(dsi)
@@ -383,7 +383,7 @@ class ScannerController(Controller):
 
         # Anything left in the source code is new.
 
-        if working_version is None:
+        if working_version == '':
             startversion = endversion = ''
         else:
             versions = self.current_project.versions

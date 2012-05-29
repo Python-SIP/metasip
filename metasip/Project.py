@@ -874,7 +874,7 @@ class Project(Model):
 class Code(VersionedItem, Annotations):
     """ This class is the base class for all elements of parsed C++ code. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
@@ -910,7 +910,7 @@ class Code(VersionedItem, Annotations):
 class Access(Model):
     """ This class is derived by all code that is affected by class access. """
 
-    def sigAccess(self):
+    def sigAccess(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
@@ -920,10 +920,12 @@ class Access(Model):
         except IndexError:
             s = ""
 
-        if s == "signals":
-            s = "protected"
-        elif s == "public":
-            s = ""
+        if s == 'signals':
+            # This is a horrible hack (although a fairly safe one) until we
+            # decide how to do it nicely.
+            s = '' if working_version.startswith('Qt_5_') else 'protected'
+        elif s == 'public':
+            s = ''
 
         return s
 
@@ -1123,7 +1125,7 @@ class HeaderFile(Model):
 class Argument(Annotations):
     """ This class represents an argument. """
 
-    def signature(self, callable):
+    def signature(self, callable, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
@@ -1205,7 +1207,7 @@ class Argument(Annotations):
 class Class(Code, Access):
     """ This class represents a class. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
@@ -1220,7 +1222,7 @@ class Class(Code, Access):
         if self.bases != '':
             s += " : " + self.bases
 
-        s += self.sigAccess()
+        s += self.sigAccess(working_version)
 
         return s
 
@@ -1444,11 +1446,11 @@ class Class(Code, Access):
 class Callable(Code):
     """ This class represents a callable. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return self.expand_type(self.rtype) + self.name + "(" + ", ".join([a.signature(self) for a in self.args]) + ")"
+        return self.expand_type(self.rtype) + self.name + "(" + ", ".join([a.signature(self, working_version) for a in self.args]) + ")"
 
     def user(self):
         """
@@ -1559,7 +1561,7 @@ class Callable(Code):
 class EnumValue(VersionedItem, Annotations):
     """ This class represents an enum value. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
@@ -1596,11 +1598,11 @@ class EnumValue(VersionedItem, Annotations):
 class Enum(Code, Access):
     """ This class represents an enum. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return super().signature() + self.sigAccess()
+        return super().signature(working_version) + self.sigAccess(working_version)
 
     def user(self):
         """
@@ -1674,10 +1676,10 @@ class Enum(Code, Access):
 class ClassCallable(Callable, Access):
     """ This class represents a callable in a class context. """
 
-    def signature(self):
+    def signature(self, working_version):
         """ Return a C/C++ representation for comparison purposes. """
 
-        return super().signature() + self.sigAccess()
+        return super().signature(working_version) + self.sigAccess(working_version)
 
     def xmlAttributes(self):
         """ Return the XML attributes as a list. """
@@ -1689,11 +1691,11 @@ class ClassCallable(Callable, Access):
 class Constructor(ClassCallable):
     """ This class represents a constructor. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        s = super().signature()
+        s = super().signature(working_version)
 
         if self.explicit:
             s = "explicit " + s
@@ -1762,11 +1764,11 @@ class Constructor(ClassCallable):
 class Destructor(Code, Access):
     """ This class represents a destructor. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        s = self.name + self.sigAccess()
+        s = self.name + self.sigAccess(working_version)
 
         if self.virtual:
             s = "virtual " + s
@@ -1827,11 +1829,11 @@ class Destructor(Code, Access):
 class OperatorCast(ClassCallable):
     """ This class represents an operator cast. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        s = "operator " + super().signature()
+        s = "operator " + super().signature(working_version)
 
         if self.const:
             s += " const"
@@ -1897,7 +1899,7 @@ class OperatorCast(ClassCallable):
 class Method(ClassCallable):
     """ This class represents a method. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
@@ -1909,7 +1911,7 @@ class Method(ClassCallable):
         if self.static:
             s += "static "
 
-        s += self.expand_type(self.rtype) + self.name + "(" + ", ".join([a.signature(self) for a in self.args]) + ")"
+        s += self.expand_type(self.rtype) + self.name + "(" + ", ".join([a.signature(self, working_version) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -1917,7 +1919,7 @@ class Method(ClassCallable):
         if self.abstract:
             s += " = 0"
 
-        s += self.sigAccess()
+        s += self.sigAccess(working_version)
 
         return s
 
@@ -2038,7 +2040,7 @@ class Method(ClassCallable):
 class OperatorMethod(ClassCallable):
     """ This class represents a scoped operator. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
@@ -2047,7 +2049,7 @@ class OperatorMethod(ClassCallable):
         if self.virtual:
             s += "virtual "
 
-        s += self.expand_type(self.rtype) + "operator" + self.name + "(" + ", ".join([a.signature(self) for a in self.args]) + ")"
+        s += self.expand_type(self.rtype) + "operator" + self.name + "(" + ", ".join([a.signature(self, working_version) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -2055,7 +2057,7 @@ class OperatorMethod(ClassCallable):
         if self.abstract:
             s += " = 0"
 
-        s += self.sigAccess()
+        s += self.sigAccess(working_version)
 
         return s
 
@@ -2195,11 +2197,11 @@ class Function(Callable):
 class OperatorFunction(Callable):
     """ This class represents a global operator. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return self.expand_type(self.rtype) + "operator" + self.name + "(" + ", ".join([a.signature(self) for a in self.args]) + ")"
+        return self.expand_type(self.rtype) + "operator" + self.name + "(" + ", ".join([a.signature(self, working_version) for a in self.args]) + ")"
 
     def user(self):
         """
@@ -2259,11 +2261,11 @@ class OperatorFunction(Callable):
 class Variable(Code, Access):
     """ This class represents a variable. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return super().signature() + self.sigAccess()
+        return super().signature(working_version) + self.sigAccess(working_version)
 
     def user(self):
         """
@@ -2465,11 +2467,11 @@ class Namespace(Code):
 class OpaqueClass(Code, Access):
     """ This class represents an opaque class. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return super().signature() + self.sigAccess()
+        return super().signature(working_version) + self.sigAccess(working_version)
 
     def user(self):
         """
@@ -2504,11 +2506,11 @@ class OpaqueClass(Code, Access):
 class ManualCode(Code, Access):
     """ This class represents some manual code. """
 
-    def signature(self):
+    def signature(self, working_version):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return super().signature() + self.sigAccess()
+        return super().signature(working_version) + self.sigAccess(working_version)
 
     def user(self):
         """
