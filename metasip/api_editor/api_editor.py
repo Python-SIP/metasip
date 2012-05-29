@@ -345,8 +345,8 @@ class ApiEditor(QTreeWidget):
                 callables.append(callable)
 
         for callable in callables:
-            callable.drawName()
-            callable.drawStatus()
+            callable.draw_name()
+            callable.draw_status()
 
     def _stringDialog(self, caption, strings):
         """
