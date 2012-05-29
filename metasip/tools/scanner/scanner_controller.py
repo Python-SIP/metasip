@@ -21,7 +21,7 @@ from dip.shell import IDirty
 from dip.ui import (Application, Controller, IGroupBox, IOptionSelector, IView,
         IViewStack)
 
-from ...interfaces.project import (ICodeContainer, IHeaderDirectory,
+from ...interfaces.project import (ICodeContainer, IEnum, IHeaderDirectory,
         IHeaderFile, IProject)
 from ...logger import Logger
 from ...Project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
@@ -366,7 +366,7 @@ class ScannerController(Controller):
                     ssc.remove(ssi)
 
                     # Merge any child code.
-                    if isinstance(dsi, ICodeContainer):
+                    if isinstance(dsi, (ICodeContainer, IEnum)):
                         self._merge_code(dsi, ssi.content)
 
                     break
