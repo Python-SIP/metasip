@@ -384,7 +384,7 @@ class ScannerController(Controller):
         # Anything left in the source code is new.
 
         if working_version is None:
-            startversion = endversion = None
+            startversion = endversion = ''
         else:
             versions = self.current_project.versions
             working_idx = versions.index(working_version)
@@ -392,7 +392,7 @@ class ScannerController(Controller):
             # If the working version is the first then assume that the new item
             # will appear in earlier versions, otherwise it is restricted to
             # this version.
-            startversion = None if working_idx == 0 else working_version
+            startversion = '' if working_idx == 0 else working_version
 
             # If the working version is the latest then assume that the new
             # item will appear in later versions, otherwise it is restricted to
@@ -400,10 +400,10 @@ class ScannerController(Controller):
             try:
                 endversion = versions[working_idx + 1]
             except IndexError:
-                endversion = None
+                endversion = ''
 
         for ssi in ssc:
-            if startversion is not None or endversion is not None:
+            if startversion != '' or endversion != '':
                 ssi.versions.append(
                         VersionRange(startversion=startversion,
                                 endversion=endversion))
