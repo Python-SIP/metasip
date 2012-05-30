@@ -374,7 +374,7 @@ class _Converter(_ClassCallable):
         parser is the parser instance.
         attr is the entity's attribute dictionary.
         """
-        _ClassCallable.__init__(self, parser, attrs)
+        super().__init__(parser, attrs)
 
         self.returns = attrs["returns"]
         self.const = bool(int(optAttribute(attrs, "const", "0")))
@@ -386,10 +386,12 @@ class _Converter(_ClassCallable):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        tci = OperatorCast(name=parser.asType(self.returns), container=scope,
-                access=self.access, const=self.const)
+        name = parser.asType(self.returns)
+        if name is not None:
+            tci = OperatorCast(name=name, container=scope, access=self.access,
+                    const=self.const)
 
-        scope.content.append(tci)
+            scope.content.append(tci)
 
 
 class _Method(_ClassCallable):
