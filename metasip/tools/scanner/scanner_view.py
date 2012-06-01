@@ -55,7 +55,7 @@ class ScannerView(QTreeWidget):
                 for hfile_idx in range(itm.childCount()):
                     hfile_itm = itm.child(hfile_idx)
 
-                    if hfile_itm.text(ScannerView.STATUS) == "Ignored":
+                    if hfile_itm.get_working_file() is not None and hfile_itm.text(ScannerView.STATUS) == "Ignored":
                         hfile_itm.setHidden(hide)
 
                 break
@@ -253,17 +253,16 @@ class HeaderFileItem(ScannerItem):
 
         self._draw_status()
 
-        self.setHidden(self._header_file.ignored)
-
     def get_project_item(self):
         """ Return the item's corresponding project item. """
 
         return self._header_file
 
-    def _draw_status(self):
-        """ Draw the status column. """
+    def get_working_file(self):
+        """ Get the version of the header file corresponding to the working
+        version, if there is one.
+        """
 
-        # Get the working version of the file, if any.
         working_version = self.treeWidget().working_version
 
         if working_version is None:
@@ -275,11 +274,22 @@ class HeaderFileItem(ScannerItem):
             else:
                 working_file = None
 
+        return working_file
+
+    def _draw_status(self):
+        """ Draw the status column. """
+
+        # Get the working version of the file, if any.
+        working_file = self.get_working_file()
+
+        self.setHidden(working_file is None)
+
         # Determine the status.
         expand = False
 
         if self._header_file.ignored:
             status = "Ignored"
+            self.setHidden(True)
         elif self._header_file.module == '':
             status = "Needs assigning"
             expand = True
