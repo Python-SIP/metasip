@@ -323,7 +323,7 @@ class ApiEditor(QTreeWidget):
 
         # Update the affected names.
         for arg in updated_args:
-            arg._gui.drawName()
+            arg._gui.draw_name()
 
         # Show any undocumented callables.
         if len(undocumented) > 0:
@@ -338,7 +338,7 @@ class ApiEditor(QTreeWidget):
         """
         callables = []
         for arg in updated_args:
-            arg._gui.drawName()
+            arg._gui.draw_name()
 
             callable = arg._gui.parent()
             if callable not in callables:
@@ -439,105 +439,6 @@ class EditorItem(QTreeWidgetItem):
         """ Mark the project as having been modified. """
 
         self.treeWidget().set_dirty()
-
-
-class _SimpleItem(EditorItem):
-    """
-    This class represents a simple item (ie. no context menu) in the navigation
-    pane.
-    """
-    def __init__(self, parent, after=None):
-        """
-        Initialise the item instance.
-
-        parent is the parent.
-        after is the sibling after which this should be placed.  If it is None
-        then it should be placed at the end.  If it is the parent then it
-        should be placed at the start.
-        """
-        super().__init__(parent, after)
-
-        self.drawAll()
-
-    def drawAll(self):
-        """ Draw all columns of the item. """
-
-        self.drawName()
-        self.drawAccess()
-        self.drawStatus()
-        self.drawVersions()
-
-    def drawName(self):
-        """ Draw the name column of the item. """
-
-        n = self.getName()
-
-        if n:
-            self.setText(ApiEditor.NAME, n)
-
-    def getName(self):
-        """ Return the value of the name of the item. """
-
-        raise NotImplementedError
-
-    def drawAccess(self):
-        """ Draw the access column of the item. """
-
-        a = self.getAccess()
-
-        if a is not None:
-            self.setText(ApiEditor.ACCESS, a)
-
-    def getAccess(self):
-        """ Return the value of the access of the item. """
-
-        return None
-
-    def drawStatus(self):
-        """ Draw the status column of the item. """
-
-        s = self.getStatus()
-
-        if s is not None:
-            self.setText(ApiEditor.STATUS, s)
-
-    def getStatus(self):
-        """ Return the value of the status of the item. """
-
-        return None
-
-    def drawVersions(self):
-        """ Draw the versions column of the item. """
-
-        api_item = self.getVersionedItem()
-
-        if api_item is not None:
-            ranges = [version_range(r) for r in api_item.versions]
-            self.setText(ApiEditor.VERSIONS, ", ".join(ranges))
-
-    def getVersionedItem(self):
-        """ Return the API item for the versions column. """
-
-        return None
-
-
-class _FixedItem(_SimpleItem):
-    """
-    This class is a base class for items that implement fixed parts of a
-    project's structure.
-    """
-    def __init__(self, parent, after=None):
-        """
-        Initialise the item instance.
-
-        parent is the parent.
-        after is the sibling after which this should be placed.  If it is None
-        then it should be placed at the end.  If it is the parent then it
-        should be placed at the start.
-        """
-        super().__init__(parent, after)
-
-        self.setFlags(Qt.ItemIsEnabled)
 
 
 class ProjectItem(EditorItem):
@@ -1107,7 +1008,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._exportedHeaderCodeDone)
-        ed.edit(self.sipfile.exportedheadercode, "%ExportedHeaderCode: " + self.getName())
+        ed.edit(self.sipfile.exportedheadercode, "%ExportedHeaderCode: " + self.sipfile.name)
         self._editors["ehc"] = ed
 
     def _exportedHeaderCodeDone(self, text_changed, text):
@@ -1129,7 +1030,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._moduleHeaderCodeDone)
-        ed.edit(self.sipfile.moduleheadercode, "%ModuleHeaderCode: " + self.getName())
+        ed.edit(self.sipfile.moduleheadercode, "%ModuleHeaderCode: " + self.sipfile.name)
         self._editors["mhc"] = ed
 
     def _moduleHeaderCodeDone(self, text_changed, text):
@@ -1151,7 +1052,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._moduleCodeDone)
-        ed.edit(self.sipfile.modulecode, "%ModuleCode: " + self.getName())
+        ed.edit(self.sipfile.modulecode, "%ModuleCode: " + self.sipfile.name)
         self._editors["moc"] = ed
 
     def _moduleCodeDone(self, text_changed, text):
@@ -1173,7 +1074,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._preInitCodeDone)
-        ed.edit(self.sipfile.preinitcode, "%PreInitialisationCode: " + self.getName())
+        ed.edit(self.sipfile.preinitcode, "%PreInitialisationCode: " + self.sipfile.name)
         self._editors["pric"] = ed
 
     def _preInitCodeDone(self, text_changed, text):
@@ -1195,7 +1096,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._initCodeDone)
-        ed.edit(self.sipfile.initcode, "%InitialisationCode: " + self.getName())
+        ed.edit(self.sipfile.initcode, "%InitialisationCode: " + self.sipfile.name)
         self._editors["ic"] = ed
 
     def _initCodeDone(self, text_changed, text):
@@ -1217,7 +1118,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._postInitCodeDone)
-        ed.edit(self.sipfile.postinitcode, "%PostInitialisationCode: " + self.getName())
+        ed.edit(self.sipfile.postinitcode, "%PostInitialisationCode: " + self.sipfile.name)
         self._editors["poic"] = ed
 
     def _postInitCodeDone(self, text_changed, text):
@@ -1262,10 +1163,9 @@ class SipFileItem(ContainerItem):
             itm = it.value()
 
 
-class _Argument(_FixedItem):
-    """
-    This class implements a function argument.
-    """
+class Argument(EditorItem):
+    """ This class implements a function argument. """
+
     def __init__(self, parent, arg):
         """
         Initialise the item instance.
@@ -1275,16 +1175,19 @@ class _Argument(_FixedItem):
         """
         self.arg = arg
 
+        super().__init__(parent)
+
+        self.setFlags(Qt.ItemIsEnabled)
+
+        self.draw_name()
+
         # Stash this so that an argument can re-draw itself.
         arg._gui = self
 
-        _FixedItem.__init__(self, parent)
+    def draw_name(self):
+        """ Draw the name column. """
 
-    def getName(self):
-        """
-        Return the value of the name column.
-        """
-        return self.arg.user(self.parent().code)
+        self.setText(ApiEditor.NAME, self.arg.user(self.parent().code))
 
     def get_menu(self, siblings):
         """ Return the list of context menu options.
@@ -1312,7 +1215,7 @@ class _Argument(_FixedItem):
 
             self.set_dirty()
 
-            self.drawName()
+            self.draw_name()
             self.parent().draw_name()
             self.parent().draw_status()
 
@@ -1353,7 +1256,7 @@ class CodeItem(ContainerItem):
         # Create any children.
         if hasattr(code, 'args'):
             for a in code.args:
-                _Argument(self, a)
+                Argument(self, a)
 
         observe('versions', code, self.__on_versions_changed)
 
