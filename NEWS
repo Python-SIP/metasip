@@ -1,3 +1,7 @@
+v1.4 3rd June 2012
+  - Handle Qt5 signals which are public rather than protected.
+  - Bug fixes to the extent that this version will handle Qt5.
+
 v1.3 28th May 2012
   - Bug fixes.
 
