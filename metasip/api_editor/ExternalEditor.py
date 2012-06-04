@@ -79,7 +79,7 @@ class ExternalEditor(QObject):
         """
         fn = QFileDialog.getOpenFileName(self._dialog, "Insert File")
 
-        if fn.isNull():
+        if fn == '':
             return
 
         f = QFile(fn)
