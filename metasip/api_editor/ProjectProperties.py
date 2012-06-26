@@ -56,7 +56,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         self.buttonRemoveModule.setEnabled(self.externalModules.count())
         self.buttonRemoveModule.clicked.connect(self._removeModule)
 
-        for n in prj.ignorednamespaces():
+        for n in prj.ignorednamespaces:
             self.ignoredNamespaces.addItem(n)
 
         self.buttonRemoveNamespace.setEnabled(self.ignoredNamespaces.count())
