@@ -16,10 +16,9 @@ import os
 
 from PyQt4.QtGui import QInputDialog
 
-from dip.model import Instance, List, observe
+from dip.model import Instance, List, observe, unadapted
 from dip.shell import IDirty
-from dip.ui import (Application, Controller, IGroupBox, IOptionSelector, IView,
-        IViewStack)
+from dip.ui import Application, Controller
 
 from ...interfaces.project import (ICodeContainer, IEnum, IHeaderDirectory,
         IHeaderFile, IProject)
@@ -45,7 +44,7 @@ class ScannerController(Controller):
     current_project = Instance(IProject)
 
     # The current project specific user interface.
-    current_project_ui = Instance(IView)
+    current_project_ui = Instance(ScannerView)
 
     def activate_project(self, project):
         """ Activate a project. """
@@ -54,7 +53,7 @@ class ScannerController(Controller):
         self.current_project_ui = project_ui = self._find_view(project)
 
         # Make sure the project's view is current.
-        IViewStack(self.project_views_view).current_view = project_ui
+        self.project_views_view.current_view = project_ui
 
         # Configure the versions.
         self._update_from_versions()
@@ -70,7 +69,7 @@ class ScannerController(Controller):
     def close_project(self, project):
         """ Close a project. """
 
-        project_views = IViewStack(self.project_views_view).views
+        project_views = self.project_views_view.views
 
         # Remove the observers.
         observe('headers', project, self.__on_headers_changed, remove=True)
@@ -81,20 +80,20 @@ class ScannerController(Controller):
 
         # Hide the GUI if there are no more projects.
         if len(project_views) == 0:
-            IViewStack(self.view).current_view = self.no_project_view
+            self.view.current_view = self.no_project_view
 
     def open_project(self, project):
         """ Open a project. """
 
-        project_views = IViewStack(self.project_views_view).views
+        project_views = self.project_views_view.views
 
         # Show the GUI if it was previously hidden.
         if len(project_views) == 0:
-            IViewStack(self.view).current_view = self.splitter_view
+            self.view.current_view = self.splitter_view
 
         # Create the project specific part of the GUI.
         view = ScannerView(self, project)
-        IViewStack(self.project_views_view).views.append(view)
+        self.project_views_view.views.append(view)
 
         # Observe any changes to the header directories and versions.
         observe('headers', project, self.__on_headers_changed)
@@ -136,9 +135,9 @@ class ScannerController(Controller):
                 if model.source_directory != '' and model.module != '' and len(self.current_header_files) == 1:
                     parse_enabled = True
 
-        IView(self.module_editor).enabled = module_enabled
-        IView(self.parse_editor).enabled = parse_enabled
-        IView(self.update_file_editor).enabled = update_enabled
+        self.module_editor.enabled = module_enabled
+        self.parse_editor.enabled = parse_enabled
+        self.update_file_editor.enabled = update_enabled
 
         super().update_view()
 
@@ -184,16 +183,16 @@ class ScannerController(Controller):
             model.file_filter = header_directory.filefilter
             model.suffix = header_directory.inputdirsuffix
             model.parser_arguments = header_directory.parserargs
-            IGroupBox(self.directory_group_view).enabled = True
-            IView(self.delete_editor).enabled = True
+            self.directory_group_view.enabled = True
+            self.delete_editor.enabled = True
         else:
             self.current_header_directory = None
             model.header_directory_name = ''
             model.file_filter = ''
             model.suffix = ''
             model.parser_arguments = ''
-            IGroupBox(self.directory_group_view).enabled = False
-            IView(self.delete_editor).enabled = False
+            self.directory_group_view.enabled = False
+            self.delete_editor.enabled = False
 
         if len(header_files) != 0:
             # Create an amalgamation of the selected header files.
@@ -218,22 +217,23 @@ class ScannerController(Controller):
             model.header_file_name = (", ").join(names)
             model.ignored = ignored
             model.module = module
-            IGroupBox(self.file_group_view).enabled = True
+            self.file_group_view.enabled = True
         else:
             self.current_header_files = []
             model.header_file_name = ''
             model.ignored = False
             model.module = ''
-            IGroupBox(self.file_group_view).enabled = False
+            self.file_group_view.enabled = False
 
         self._update_from_source_directory()
 
     def _find_view(self, project):
         """ Find the project specific part of the GUI for a project. """
 
-        for view in IViewStack(self.project_views_view).views:
-            if view.project == project:
-                return view
+        for view in self.project_views_view.views:
+            scanner_view = unadapted(view)
+            if scanner_view.project is project:
+                return scanner_view
 
         # This should never happen.
         return None
@@ -674,8 +674,8 @@ class ScannerController(Controller):
 
         enabled = (len(self.current_project.headers) != 0)
 
-        IView(self.scan_form_view).enabled = enabled
-        IView(self.reset_workflow_editor).enabled = enabled
+        self.scan_form_view.enabled = enabled
+        self.reset_workflow_editor.enabled = enabled
 
     def _update_from_source_directory(self):
         """ Update the Gui from the source directory. """
@@ -683,19 +683,19 @@ class ScannerController(Controller):
         model = self.model
 
         scan_enabled = (model.source_directory != '' and self.current_header_directory is not None)
-        IView(self.scan_editor).enabled = scan_enabled
+        self.scan_editor.enabled = scan_enabled
 
         parse_enabled = (model.source_directory != '' and model.module != '' and len(self.current_header_files) == 1)
-        IView(self.parse_editor).enabled = parse_enabled
+        self.parse_editor.enabled = parse_enabled
 
     def _update_from_versions(self):
         """ Update the GUI from the current project's list of versions. """
 
         versions = self.current_project.versions
-        ioptionselector = IOptionSelector(self.working_version_editor)
+        optionselector = self.working_version_editor
 
-        ioptionselector.options = reversed(versions)
-        ioptionselector.visible = (len(versions) != 0)
+        optionselector.options = reversed(versions)
+        optionselector.visible = (len(versions) != 0)
 
     def _working_version_as_string(self):
         """ Return the working version as a string.  This will be an empty
