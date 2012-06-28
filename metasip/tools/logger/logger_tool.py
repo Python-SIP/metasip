@@ -12,6 +12,7 @@
 
 from PyQt4.QtGui import QAbstractSlider, QApplication, QPlainTextEdit
 
+from dip.model import unadapted
 from dip.shell import SimpleViewTool
 
 from ... import Logger
@@ -53,11 +54,13 @@ class LoggerTool(SimpleViewTool):
             newlines.
         """
 
+        qview = unadapted(self.view)
+
         # Add the new message
-        self.view.appendPlainText(message)
+        qview.appendPlainText(message)
 
         # Make sure the new message is visible.
-        self.view.verticalScrollBar().triggerAction(
+        qview.verticalScrollBar().triggerAction(
                 QAbstractSlider.SliderToMaximum)
 
         # Update the screen so that individual messages appear as soon as they

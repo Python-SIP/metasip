@@ -271,8 +271,8 @@ class ScannerController(Controller):
         window_title = "New Header Directory"
 
         # Get the name of the header directory.
-        (hname, ok) = QInputDialog.getText(self.new_editor, window_title,
-                "Descriptive name")
+        (hname, ok) = QInputDialog.getText(unadapted(self.new_editor),
+                window_title, "Descriptive name")
 
         if ok:
             hname = hname.strip()
@@ -280,11 +280,11 @@ class ScannerController(Controller):
             if hname == '':
                 Application.warning(window_title,
                         "The name of a header directory must not be blank.",
-                        self.new_editor)
+                        unadapted(self.new_editor))
             elif hname in [hdir.name for hdir in project.headers]:
                 Application.warning(window_title,
                         "'{0}' is already used as the name of a header directory.".format(hname),
-                        self.new_editor)
+                        unadapted(self.new_editor))
             else:
                 working_version = self._working_version_as_string()
 

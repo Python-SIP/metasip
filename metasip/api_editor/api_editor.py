@@ -995,10 +995,7 @@ class SipFileItem(ContainerItem):
 
             if precis:
                 mc = ManualCode(precis=precis)
-
-                self.sipfile.insert(0, mc)
-
-                CodeItem(mc, self, self)
+                self.sipfile.content.insert(0, mc)
 
                 self.set_dirty()
 
@@ -1644,9 +1641,8 @@ class CodeItem(ContainerItem):
         Slot to handle the deletion of a code item.
         """
         ans = QMessageBox.question(self.treeWidget(), "Delete Code",
-"Are you sure you want to delete this code?",
-                                   QMessageBox.Yes,
-                                   QMessageBox.No|QMessageBox.Default|QMessageBox.Escape)
+                "Are you sure you want to delete this code?", QMessageBox.Yes,
+                QMessageBox.No|QMessageBox.Default|QMessageBox.Escape)
 
         if ans == QMessageBox.Yes:
             # Mark as dirty before removing it.
