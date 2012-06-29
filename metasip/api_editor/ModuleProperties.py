@@ -31,11 +31,9 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
 
         self.setupUi(self)
 
-        self._ilistall = prj.externalmodules
+        self._ilistall = list(prj.externalmodules)
         self._ilistall.extend([m.name for m in prj.modules])
         self._ilistall.sort()
-
-        ilistset = mod.imports
 
         # Initialise the dialog.
         self.outputDirSuffix.setText(mod.outputdirsuffix)
@@ -52,7 +50,7 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
 
             if mod.name == itm:
                 cb.setEnabled(False)
-            elif itm in ilistset:
+            elif itm in mod.imports:
                 cb.setCheckState(Qt.Checked)
 
             layout.addWidget(cb, i // 2, i % 2)
