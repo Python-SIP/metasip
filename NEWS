@@ -1,3 +1,8 @@
+v1.5 2nd July 2012
+  - Changes required by dip v0.4.3.
+  - Bug fixes to the extent that this version was used to create PyQtCharts
+    v0.1.
+
 v1.4 3rd June 2012
   - Handle Qt5 signals which are public rather than protected.
   - Bug fixes to the extent that this version will handle Qt5.
