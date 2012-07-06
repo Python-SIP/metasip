@@ -974,7 +974,23 @@ class SipFileItem(ContainerItem):
                 ("%PostInitialisationCode", self._postInitCodeSlot, ("poic" not in self._editors)),
                 None,
                 ("Apply argument naming conventions...", self._nameFromConventions),
-                ("Accept argument names", self._acceptNames)]
+                ("Accept argument names", self._acceptNames),
+                None,
+                ("Delete", self._deleteFile, (len(self.sipfile.content) == 0))]
+
+    def _deleteFile(self):
+        """ Delete an empty .sip file. """
+
+        ans = QMessageBox.question(self.treeWidget(), "Delete header file",
+                "Are you sure you want to delete this header file?",
+                QMessageBox.Yes,
+                QMessageBox.No|QMessageBox.Default|QMessageBox.Escape)
+
+        if ans == QMessageBox.Yes:
+            # Mark as dirty before removing it.
+            self.set_dirty()
+
+            self.parent_project_item().content.remove(self.sipfile)
 
     def _nameFromConventions(self):
         """ Apply the argument naming conventions to all unnamed arguments. """
