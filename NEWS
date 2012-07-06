@@ -1,6 +1,12 @@
+v1.6 6th July 2012
+  - Added the ability to delete an empty header file (ie. the .sip file) from a
+    module.
+  - Bug fixes to the extent that this version was used to create PyQtChart
+    v1.0.
+
 v1.5 2nd July 2012
   - Changes required by dip v0.4.3.
-  - Bug fixes to the extent that this version was used to create PyQtCharts
+  - Bug fixes to the extent that this version was used to create PyQtChart
     v0.1.
 
 v1.4 3rd June 2012
