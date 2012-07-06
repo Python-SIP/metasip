@@ -508,12 +508,12 @@ class ScannerController(Controller):
         for hfile in saved:
             for hfile_version in hfile.versions:
                 if hfile_version.version == working_version:
-                    hfile.versions.remove(hfile_version)
-
-                    # If there are no versions left then remove the file
+                    # If there is only one version left then remove the file
                     # itself.
-                    if len(hfile.versions) == 0:
-                        hdir.remove(hfile)
+                    if len(hfile.versions) == 1:
+                        hdir.content.remove(hfile)
+                    else:
+                        hfile.versions.remove(hfile_version)
 
                     IDirty(project).dirty = True
 

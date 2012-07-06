@@ -741,8 +741,10 @@ class ModuleItem(EditorItem, DropSite):
 
         # Dropping a child is interpreted as moving it to the top.
         sf = source.sipfile
-        self.content.remove(sf)
-        self.content.insert(0, sf)
+        sipfiles = self.module.content
+
+        sipfiles.remove(sf)
+        sipfiles.insert(0, sf)
 
         self.set_dirty()
 
