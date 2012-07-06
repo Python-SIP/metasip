@@ -350,13 +350,13 @@ class ScannerController(Controller):
         working_version = self._working_version_as_string()
 
         # Go though each existing code item.
-        for dsi in dsc.content:
+        for dsi in list(dsc.content):
             # Manual code is always retained.
             if isinstance(dsi, ManualCode):
                 continue
 
             # Go through each potentially new code item.
-            for ssi in ssc:
+            for ssi in list(ssc):
                 if type(dsi) is type(ssi) and dsi.signature(working_version) == ssi.signature(working_version):
                     # Make sure the versions include the working version.
                     if working_version != '':
