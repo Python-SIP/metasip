@@ -15,7 +15,6 @@
 import sys
 import os
 
-from dip.model import unadapted
 from dip.io import IoManager, StorageError
 from dip.io.storage.filesystem import FilesystemStorageFactory
 
@@ -105,15 +104,14 @@ def launchGUI(prjname, guiargs):
         the exit code or 0 if there was no error.
     """
 
-    from PyQt4.QtCore import QSettings
-    from PyQt4.QtGui import QApplication, QMessageBox
-
     from dip.io import StorageError
+    from dip.settings import SettingsManager
     from dip.shell import IShell
     from dip.shell.shells.main_window import MainWindowShell
     from dip.shell.tools.dirty import DirtyTool
     from dip.shell.tools.model_manager import ModelManagerTool
     from dip.shell.tools.quit import QuitTool
+    from dip.ui import Application
 
     from metasip import ProjectEditorTool, ProjectFactory, UpdateManager
     from metasip.schemas import ProjectV1Schema, ProjectV2Schema
@@ -123,7 +121,8 @@ def launchGUI(prjname, guiargs):
     from metasip.tools.versions import VersionsTool
     from metasip.updates import ProjectV2Update
 
-    app = QApplication(guiargs)
+    app = Application(guiargs)
+    SettingsManager.load('riverbankcomputing.com')
 
     # Add the project updates.
     UpdateManager.updates.append(ProjectV2Update())
@@ -151,48 +150,14 @@ def launchGUI(prjname, guiargs):
             IShell(view).open('metasip.tools.project_editor', prjname,
                     'metasip.formats.project')
         except StorageError as e:
-            msg_box = QMessageBox(QMessageBox.Warning, "Open",
+            Application.warning("Open",
                     "There was an error opening {0}.".format(prjname),
-                    detailedText=str(e))
-            msg_box.exec()
+                    detail=str(e))
 
-    # Get the user settings and adjust the layout.
-    settings = QSettings('riverbankcomputing.com', 'MetaSIP')
-
-    settings.beginGroup('GUI')
-
-    main_state = settings.value('mainState')
-    if main_state is not None:
-        unadapted(view).restoreState(main_state)
-
-    main_geometry = settings.value('mainGeometry')
-    if main_geometry is not None:
-        unadapted(view).restoreGeometry(main_geometry)
-
-    # If there was no project then the editor will not have been created yet.
-    if len(editor_tool.views) != 0:
-        settings.beginGroup('mainPane0')
-        unadapted(editor_tool.views[0]).loadGUILayout(settings)
-        settings.endGroup()
-
-    settings.endGroup()
-
-    # Display the GUI.
+    SettingsManager.restore(view.all_views())
     view.visible = True
-
-    rc = app.exec()
-
-    # Save the GUI layout.
-    settings.beginGroup('GUI')
-
-    settings.setValue('mainState', unadapted(view).saveState())
-    settings.setValue('mainGeometry', unadapted(view).saveGeometry())
-
-    settings.beginGroup('mainPane0')
-    unadapted(editor_tool.views[0]).saveGUILayout(settings)
-    settings.endGroup()
-
-    settings.endGroup()
+    rc = app.execute()
+    SettingsManager.save(view.all_views())
 
     return rc
 

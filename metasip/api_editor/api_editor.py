@@ -76,31 +76,6 @@ class ApiEditor(QTreeWidget):
 
         IDirty(self.project).dirty = True
 
-    def loadGUILayout(self, settings):
-        """
-        Load the GUI layout from the user settings.
-
-        settings is the user settings.
-        """
-        colws = settings.value('widths')
-        colw = [int(w) for w in colws.split()]
-
-        # Allow for a different number of columns (in case any get added or
-        # removed during development).
-        nr_cols = min(len(colw), self.columnCount())
-
-        for c in range(nr_cols):
-            self.setColumnWidth(c, colw[c])
-
-    def saveGUILayout(self, settings):
-        """
-        Save the GUI layout to the user settings.
-
-        settings is the user settings.
-        """
-        colws = [str(self.columnWidth(c)) for c in range(self.columnCount())]
-        settings.setValue('widths', ' '.join(colws))
-
     def contextMenuEvent(self, ev):
         """
         Reimplemented to handle a context menu event.
