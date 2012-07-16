@@ -76,7 +76,7 @@ class ScannerController(Controller):
         observe('versions', project, self.__on_versions_changed, remove=True)
 
         # Remove the project specific part of the GUI.
-        del project_views[self._find_view(project)]
+        project_views.remove(self._find_view(project))
 
         # Hide the GUI if there are no more projects.
         if len(project_views) == 0:
