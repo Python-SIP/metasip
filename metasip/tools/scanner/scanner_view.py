@@ -27,7 +27,7 @@ class ScannerView(QTreeWidget):
     def __init__(self, controller, project):
         """ Initialise the view. """
 
-        super().__init__()
+        super().__init__(objectName='metasip.scanner.explorer')
 
         self.setHeaderLabels(["Name", "Status"])
 

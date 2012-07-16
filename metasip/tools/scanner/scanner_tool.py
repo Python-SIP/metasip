@@ -66,6 +66,7 @@ class ScannerTool(SimpleViewTool):
                         Form(
                             ComboBox('working_version', visible=False),
                             FilesystemLocationEditor('source_directory',
+                                    id='metasip.scanner.source_directory',
                                     mode='directory'),
                             id='metasip.scanner.scan_form'),
                         GroupBox(

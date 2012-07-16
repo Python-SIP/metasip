@@ -55,7 +55,7 @@ class ApiEditor(QTreeWidget):
             is the project.
         """
 
-        super().__init__()
+        super().__init__(objectName='metasip.api_editor.explorer')
 
         self.project = project
 
