@@ -674,7 +674,7 @@ class Project(Model):
         """ Return the descriptive name of the project. """
 
         if self.name == '':
-            return "Untitled"
+            return "Unnamed"
 
         # Remove the standard extension, but leave any non-standard one in
         # place.
