@@ -13,10 +13,13 @@
 """ This module implements the interface to an external editor. """
 
 
-from PyQt4.QtCore import pyqtSignal, QFile, QObject, QTextStream
+from PyQt4.QtCore import pyqtSignal, QEvent, QFile, QObject, QTextStream
 from PyQt4.QtGui import (QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout,
         QMessageBox, QPushButton, QVBoxLayout)
 from PyQt4.Qsci import QsciLexerCPP, QsciScintilla
+
+from dip.settings import SettingsManager
+from dip.ui import IDialog
 
 
 class ExternalEditor(QObject):
@@ -64,14 +67,25 @@ class ExternalEditor(QObject):
         bbox.rejected.connect(self._on_rejected)
         layout.addWidget(bbox)
 
-        self._dialog = dlg = QDialog(windowTitle=caption)
+        self._dialog = dlg = QDialog(windowTitle=caption,
+                objectName='metasip.api_editor.external_editor')
         dlg.setLayout(layout)
 
         # Load the text.
         ed.setText(text)
 
+        SettingsManager.restore(IDialog(dlg).all_views())
+        dlg.installEventFilter(self)
         dlg.show()
         dlg.raise_()
+
+    def eventFilter(self, obj, event):
+        """ Reimplemented to handle any dialog close events. """
+
+        if event.type() == QEvent.Close:
+            self._on_rejected()
+
+        return super().eventFilter(obj, event)
 
     def _insert_file(self):
         """
@@ -96,15 +110,17 @@ class ExternalEditor(QObject):
         f.close()
 
     def _on_accepted(self):
-        """
-        Invoked when the user accepts the edited text.
-        """
+        """ Invoked when the user accepts the edited text. """
+
+        SettingsManager.save(IDialog(self._dialog).all_views())
+
         self.editDone.emit(True, self._editor.text())
         self._dialog.deleteLater()
 
     def _on_rejected(self):
-        """
-        Invoked when the user rejects the edited text.
-        """
+        """ Invoked when the user rejects the edited text. """
+
+        SettingsManager.save(IDialog(self._dialog).all_views())
+
         self.editDone.emit(False, '')
         self._dialog.deleteLater()
