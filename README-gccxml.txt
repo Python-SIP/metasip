@@ -13,6 +13,30 @@ Download the installer image from::
 
 Install the package, including the command line symlinks.
 
+GCC-XML appears to have a bug where the preprocessor tries to evaluate all
+parts of a logical and (ie. &&) expression rather than stopping with the first
+part that evaluates to 0.  This breaks some OS/X and Qt v5 header files.  To
+fix these:
+
+- edit /usr/lib/clang/4.0/include/limits.h and
+  /usr/lib/clang/4.0/include/stdint.h and add::
+
+    #if defined(__GCCXML__)
+    #define __has_include_next(x)   (0)
+    #endif
+
+- edit ~/usr/qt-5/include/QtCore/qcompilerdetection.h and add::
+
+    #if defined(__GCCXML__)
+    #define __has_feature(x)    (0)
+    #endif
+
+- edit ~/usr/qt-5/include/QtCore/qisenum.h and add::
+
+    #if defined(__GCCXML__)
+    #define __has_extension(x)i (0)
+    #endif
+
 
 Getting the GCC-XML Source
 --------------------------

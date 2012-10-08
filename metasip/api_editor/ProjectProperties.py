@@ -102,7 +102,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         """
         Remove the current feature tag from the list.
         """
-        idx = self.featureTags.currectIndex()
+        idx = self.featureTags.currentIndex()
 
         if idx >= 0:
             self.featureTags.removeItem(idx)
@@ -112,7 +112,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         """
         Remove the current external feature tag from the list.
         """
-        idx = self.extFeatureTags.currectIndex()
+        idx = self.extFeatureTags.currentIndex()
 
         if idx >= 0:
             self.extFeatureTags.removeItem(idx)
@@ -122,7 +122,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         """
         Remove the current external module from the list.
         """
-        idx = self.externalModules.currectIndex()
+        idx = self.externalModules.currentIndex()
 
         if idx >= 0:
             self.externalModules.removeItem(idx)
@@ -132,7 +132,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         """
         Remove the current ignored namespace from the list.
         """
-        idx = self.ignoredNamespaces.currectIndex()
+        idx = self.ignoredNamespaces.currentIndex()
 
         if idx >= 0:
             self.ignoredNamespaces.removeItem(idx)
