@@ -307,6 +307,12 @@ class ScannerController(Controller):
 
         name = os.path.join(self.model.source_directory, hdir.inputdirsuffix,
                 hfile.name)
+
+        if not os.access(name, os.R_OK):
+            Application.warning("Parse", "Unable to read {0}.".format(name),
+                    self.parse_editor)
+            return
+
         _, name, _ = self._read_header(name)
 
         phf = parser.parse(project, self.model.source_directory, hdir, hfile,
@@ -314,35 +320,34 @@ class ScannerController(Controller):
 
         if phf is None:
             Application.warning("Parse", parser.diagnostic, self.parse_editor)
-        else:
-            # Find the corresponding .sip file creating it if is a new header
-            # file.
-            # FIXME: Assuming we ultimately want to be able to create a
-            #        complete project without parsing .h files then we will
-            #        need the ability (in the main editor) to manually create
-            #        a SipFile instance.
-            for mod in project.modules:
-                if mod.name == hfile.module:
-                    for sfile in mod.content:
-                        if sfile.name == hfile.name:
-                            break
-                    else:
-                        sfile = SipFile(name=hfile.name)
-                        mod.content.append(sfile)
+            return
 
-                    self._merge_code(sfile, phf)
+        # Find the corresponding .sip file creating it if is a new header file.
+        # FIXME: Assuming we ultimately want to be able to create a complete
+        #        project without parsing .h files then we will need the ability
+        #        (in the main editor) to manually create a SipFile instance.
+        for mod in project.modules:
+            if mod.name == hfile.module:
+                for sfile in mod.content:
+                    if sfile.name == hfile.name:
+                        break
+                else:
+                    sfile = SipFile(name=hfile.name)
+                    mod.content.append(sfile)
 
-                    break
+                self._merge_code(sfile, phf)
 
-            # The file version no longer needs parsing.
-            working_version = self._working_version_as_string()
+                break
 
-            for hfile_version in hfile.versions:
-                if hfile_version.version == working_version:
-                    hfile_version.parse = False
-                    break
+        # The file version no longer needs parsing.
+        working_version = self._working_version_as_string()
 
-            IDirty(project).dirty = True
+        for hfile_version in hfile.versions:
+            if hfile_version.version == working_version:
+                hfile_version.parse = False
+                break
+
+        IDirty(project).dirty = True
 
     def _merge_code(self, dsc, ssc):
         """ Merge source code into destination code. """
