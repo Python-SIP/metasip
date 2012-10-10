@@ -1248,6 +1248,7 @@ class CodeItem(ContainerItem):
             for a in code.args:
                 Argument(self, a)
 
+        observe('status', code, self.__on_status_changed)
         observe('versions', code, self.__on_versions_changed)
 
     def parent_project_item(self):
@@ -1335,6 +1336,11 @@ class CodeItem(ContainerItem):
 
                 parent.setExpanded(True)
                 parent = parent.parent()
+
+    def __on_status_changed(self, change):
+        """ Invoked when the code's status changes. """
+
+        self.draw_status()
 
     def _draw_versions(self):
         """ Update the item's versions. """

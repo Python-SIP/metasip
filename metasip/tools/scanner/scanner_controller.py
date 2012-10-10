@@ -381,7 +381,10 @@ class ScannerController(Controller):
                     # Forget about it because there are no other versions that
                     # might refer to it.
                     dsc.content.remove(dsi)
-                elif not self._update_with_working_version(dsi, False):
+                elif self._update_with_working_version(dsi, False):
+                    # It's removal needs checking.
+                    dsi.status = 'unknown'
+                else:
                     # Forget about it because there are no other versions that
                     # refer to it.
                     dsc.content.remove(dsi)
