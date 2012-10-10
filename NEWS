@@ -1,3 +1,10 @@
+v1.8 10th October 2012
+  - An item is now marked as Unchecked if it has been removed from the current
+    version as the result of a parse.
+  - The code editor now uses a mono-spaced font and draws an edge line at
+    column 80.
+  - Bug fixes.
+
 v1.7 17th July 2012
   - Use the dip.settings module of dip v0.4.4 to handle the saving of the
     user interface configuration.
