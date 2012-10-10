@@ -56,9 +56,20 @@ class ExternalEditor(QObject):
         ed.setIndentationWidth(4)
         ed.setIndentationsUseTabs(False)
         ed.setFolding(QsciScintilla.PlainFoldStyle)
+        ed.setEdgeColumn(80)
+        ed.setEdgeMode(QsciScintilla.EdgeLine)
 
         lexer = QsciLexerCPP(ed)
         ed.setLexer(lexer)
+
+        # Use a mono-spaced font.
+        s = 0
+        while lexer.description(s) != '':
+            f = lexer.font(s)
+            f.setFamily('Courier')
+            lexer.setFont(f)
+
+            s += 1
 
         layout.addWidget(ed)
 
