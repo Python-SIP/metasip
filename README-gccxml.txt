@@ -18,8 +18,8 @@ parts of a logical and (ie. &&) expression rather than stopping with the first
 part that evaluates to 0.  This breaks some OS/X and Qt v5 header files.  To
 fix these:
 
-- edit /usr/lib/clang/4.0/include/limits.h and
-  /usr/lib/clang/4.0/include/stdint.h and add::
+- edit /usr/lib/clang/4.*/include/limits.h and
+  /usr/lib/clang/4.*/include/stdint.h and add::
 
     #if defined(__GCCXML__)
     #define __has_include_next(x)   (0)
