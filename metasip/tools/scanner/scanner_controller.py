@@ -365,7 +365,7 @@ class ScannerController(Controller):
                 if type(dsi) is type(ssi) and dsi.signature(working_version) == ssi.signature(working_version):
                     # Make sure the versions include the working version.
                     if working_version != '':
-                        self._update_with_working_version(dsi, True)
+                        self._add_working_version(dsi)
 
                     # Discard the new code item.
                     ssc.remove(ssi)
@@ -381,13 +381,16 @@ class ScannerController(Controller):
                     # Forget about it because there are no other versions that
                     # might refer to it.
                     dsc.content.remove(dsi)
-                elif self._update_with_working_version(dsi, False):
-                    # It's removal needs checking.
-                    dsi.status = 'unknown'
                 else:
-                    # Forget about it because there are no other versions that
-                    # refer to it.
-                    dsc.content.remove(dsi)
+                    version_status = self._remove_working_version(dsi)
+                    if version_status == 'no_longer_working':
+                        # It's removal needs checking.
+                        if dsi.status == '':
+                            dsi.status = 'unknown'
+                    elif version_status == 'no_longer_any':
+                        # Forget about it because there are no other versions
+                        # that refer to it.
+                        dsc.content.remove(dsi)
 
         # Anything left in the source code is new.
 
@@ -418,20 +421,35 @@ class ScannerController(Controller):
 
             dsc.content.append(ssi)
 
-    def _update_with_working_version(self, api_item, add_working):
-        """ Update a list of version ranges to include or exclude the working
-        version.  Return True if the item is still present in some version as a
-        result.
+    def _add_working_version(self, api_item):
+        """ Add the working version to an item's version ranges. """
+
+        # There is only something to do if the item is currently versioned.
+        if len(api_item.versions) != 0:
+            project = self.current_project
+
+            # Construct the existing list of version ranges to a version map.
+            vmap = project.vmap_create(False)
+            project.vmap_or_version_ranges(vmap, api_item.versions)
+
+            # Add the working version.
+            working_idx = project.versions.index(self.model.working_version)
+            vmap[working_idx] = True
+
+            # Convert the version map back to a list of version ranges.
+            api_item.versions = project.vmap_to_version_ranges(vmap)
+
+    def _remove_working_version(self, api_item):
+        """ Remove the working version from an item's version ranges.  Returns
+        'wasnt_working' if the item wasn't in the working version,
+        'no_longer_working' if the item is no longer in the working version and
+        'no_longer_any' if the item is no longer in any version.
         """
 
         project = self.current_project
 
         # Construct the existing list of version ranges to a version map.
         if len(api_item.versions) == 0:
-            if add_working:
-                # Take a shortcut when the item is present in all versions.
-                return True
-
             vmap = project.vmap_create(True)
         else:
             vmap = project.vmap_create(False)
@@ -441,20 +459,20 @@ class ScannerController(Controller):
         # First take a shortcut to see if anything has changed.
         working_idx = project.versions.index(self.model.working_version)
 
-        if vmap[working_idx] == add_working:
-            return True
+        if not vmap[working_idx]:
+            return 'wasnt_working'
 
-        vmap[working_idx] = add_working
+        vmap[working_idx] = False
 
         # Convert the version map back to a list of version ranges.
         versions = project.vmap_to_version_ranges(vmap)
 
         if versions is None:
-            return False
+            return 'no_longer_any'
 
         api_item.versions = versions
 
-        return True
+        return 'no_longer_working'
 
     @observe('model.reset_workflow')
     def __on_reset_workflow_triggered(self, change):
