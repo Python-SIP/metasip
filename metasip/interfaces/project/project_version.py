@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#   3   Implemented by metasip v1.9.
+#       - added the features and platforms attributes to the EnumValue element.
+#
 #   2   Implemented by metasip v1.2.
 #       - removed the inputdir, outputdir and webxmldir attributes from the
 #         Project element
@@ -23,9 +26,9 @@
 #       - added HeaderFileVersion as a sub-element of the HeaderFile element
 #         moved appropriate attributes from the HeaderFile element to the
 #         HeaderFileVersion sub-element
-#       - added the scan attribute of the HeaderDirectory element
+#       - added the scan attribute of the HeaderDirectory element.
 #
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 2
+ProjectVersion = 3

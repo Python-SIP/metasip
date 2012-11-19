@@ -12,3 +12,4 @@
 
 from .project_v1_schema import ProjectV1Schema
 from .project_v2_schema import ProjectV2Schema
+from .project_v3_schema import ProjectV3Schema

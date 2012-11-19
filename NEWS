@@ -1,3 +1,8 @@
+v1.9 19th November 2012
+  - Updated the project file format to v3 to support enum values having
+    features and platforms.
+  - Bug fixes.
+
 v1.8 10th October 2012
   - An item is now marked as Unchecked if it has been removed from the current
     version as the result of a parse.

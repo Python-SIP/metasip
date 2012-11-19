@@ -114,18 +114,20 @@ def launchGUI(prjname, guiargs):
     from dip.ui import Application
 
     from metasip import ProjectEditorTool, ProjectFactory, UpdateManager
-    from metasip.schemas import ProjectV1Schema, ProjectV2Schema
+    from metasip.schemas import (ProjectV1Schema, ProjectV2Schema,
+            ProjectV3Schema)
     from metasip.tools.logger import LoggerTool
     from metasip.tools.scanner import ScannerTool
     from metasip.tools.schema_validator import SchemaValidatorTool
     from metasip.tools.versions import VersionsTool
-    from metasip.updates import ProjectV2Update
+    from metasip.updates import ProjectV2Update, ProjectV3Update
 
     app = Application(guiargs)
     SettingsManager.load('riverbankcomputing.com')
 
     # Add the project updates.
     UpdateManager.updates.append(ProjectV2Update())
+    UpdateManager.updates.append(ProjectV3Update())
 
     # Define the shell.
     editor_tool = ProjectEditorTool(model_policy='one')
@@ -137,7 +139,8 @@ def launchGUI(prjname, guiargs):
                     lambda: editor_tool,
                     ScannerTool,
                     lambda: SchemaValidatorTool(
-                            schemas=[ProjectV1Schema(), ProjectV2Schema()]),
+                            schemas=[ProjectV1Schema(), ProjectV2Schema(),
+                                    ProjectV3Schema()]),
                     VersionsTool],
             window_title_template="[view][*]")
 

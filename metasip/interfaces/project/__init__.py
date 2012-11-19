@@ -38,9 +38,9 @@ from .i_operator_function import IOperatorFunction
 from .i_operator_method import IOperatorMethod
 from .i_project import IProject
 from .i_sip_file import ISipFile
+from .i_tagged import ITagged
 from .i_typedef import ITypedef
 from .i_variable import IVariable
-from .i_versioned import IVersioned
 from .i_version_range import IVersionRange
 from .i_workflow import IWorkflow
 

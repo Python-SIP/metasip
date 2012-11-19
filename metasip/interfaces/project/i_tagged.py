@@ -10,15 +10,22 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Interface, List
+from dip.model import Interface, List, Str
 
 from .i_version_range import IVersionRange
 
 
-class IVersioned(Interface):
-    """ The IVersioned interface is implemented by API items that are
-    subject to version control.
+class ITagged(Interface):
+    """ The ITagged interface is implemented by API items that are
+    subject to tags (i.e. SIP's %If statement).
     """
+
+    # The optional list of features that the API item is limited to.  A feature
+    # may be preceded by "!" to indicate the logical inverse.
+    features = List(Str())
+
+    # The optional list of platforms that the API item is limited to.
+    platforms = List(Str())
 
     # The versions.
     versions = List(IVersionRange)

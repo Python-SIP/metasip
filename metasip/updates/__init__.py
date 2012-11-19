@@ -11,3 +11,4 @@
 
 
 from .project_v2_update import ProjectV2Update
+from .project_v3_update import ProjectV3Update

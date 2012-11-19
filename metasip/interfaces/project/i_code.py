@@ -10,24 +10,17 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Instance, List, Str
+from dip.model import Instance
 
 from .i_annos import IAnnos
-from .i_versioned import IVersioned
+from .i_tagged import ITagged
 from .i_workflow import IWorkflow
 
 
-class ICode(IAnnos, IVersioned, IWorkflow):
+class ICode(IAnnos, ITagged, IWorkflow):
     """ The ICode interface is implemented by API items that can be annotated,
     are subject to version control and a workflow.
     """
 
     # The containing API item.
     container = Instance('.ICodeContainer')
-
-    # The optional list of features that the API item is limited to.  A feature
-    # may be preceded by "!" to indicate the logical inverse.
-    features = List(Str())
-
-    # The optional list of platforms that the API item is limited to.
-    platforms = List(Str())

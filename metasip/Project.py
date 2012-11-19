@@ -24,8 +24,8 @@ from .interfaces.project import (ProjectVersion, IArgument, IClass,
         IConstructor, IDestructor, IEnum, IEnumValue, IFunction,
         IHeaderDirectory, IHeaderFile, IHeaderFileVersion, IManualCode,
         IMethod, IModule, INamespace, IOpaqueClass, IOperatorCast,
-        IOperatorFunction, IOperatorMethod, IProject, ISipFile, ITypedef,
-        IVariable, IVersioned, IVersionRange)
+        IOperatorFunction, IOperatorMethod, IProject, ISipFile, ITagged,
+        ITypedef, IVariable, IVersionRange)
 
 
 class Annotations(Model):
@@ -57,10 +57,10 @@ class VersionRange(Model):
     """ This class implements a range of versions. """
 
 
-@implements(IVersioned)
-class VersionedItem(Model):
+@implements(ITagged)
+class TaggedItem(Model):
     """ This class is a base class for all project elements that is subject to
-    workflow or versions.
+    workflow or tags.
     """
 
     def xmlAttributes(self):
@@ -74,6 +74,12 @@ class VersionedItem(Model):
         if len(self.versions) != 0:
             ranges = [version_range(r).replace(' ', '') for r in self.versions]
             xml.append('versions="{0}"'.format(' '.join(ranges)))
+
+        if len(self.platforms) != 0:
+            xml.append('platforms="{0}"'.format(' '.join(self.platforms)))
+
+        if len(self.features) != 0:
+            xml.append('features="{0}"'.format(' '.join(self.features)))
 
         return xml
 
@@ -871,7 +877,7 @@ class Project(Model):
                     hdir.scan.append(new_version)
 
 
-class Code(VersionedItem, Annotations):
+class Code(TaggedItem, Annotations):
     """ This class is the base class for all elements of parsed C++ code. """
 
     def signature(self, working_version):
@@ -896,13 +902,7 @@ class Code(VersionedItem, Annotations):
         """ Return the XML attributes as a list. """
 
         xml = Annotations.xmlAttributes(self)
-        xml += VersionedItem.xmlAttributes(self)
-
-        if len(self.platforms) != 0:
-            xml.append('platforms="{0}"'.format(' '.join(self.platforms)))
-
-        if len(self.features) != 0:
-            xml.append('features="{0}"'.format(' '.join(self.features)))
+        xml += TaggedItem.xmlAttributes(self)
 
         return xml
 
@@ -1558,7 +1558,7 @@ class Callable(Code):
 
 
 @implements(IEnumValue)
-class EnumValue(VersionedItem, Annotations):
+class EnumValue(TaggedItem, Annotations):
     """ This class represents an enum value. """
 
     def signature(self, working_version):
@@ -1573,10 +1573,12 @@ class EnumValue(VersionedItem, Annotations):
         """
         return self.name
 
-    def sip(self, latest_sip):
-        """ Return the enum value suitable for writing to a .sip file. """
+    def sip(self, f, latest_sip):
+        """ Write the enum value to a .sip file. """
 
-        return self.name + self.sipAnnos()
+        closure = _sip_start_version(f, self)
+        f.write(self.name + self.sipAnnos() + ",\n")
+        _sip_end_version(f, closure)
 
     def xml(self, f):
         """ Write the enum value to an XML file. """
@@ -1587,7 +1589,7 @@ class EnumValue(VersionedItem, Annotations):
         """ Return the XML attributes as a list. """
 
         xml = Annotations.xmlAttributes(self)
-        xml += VersionedItem.xmlAttributes(self)
+        xml += TaggedItem.xmlAttributes(self)
 
         xml.append('name="{0}"'.format(self.name))
 
@@ -1634,15 +1636,7 @@ class Enum(Code, Access):
             if e.status != '':
                 continue
 
-            vrange = _sip_versions(e)
-
-            if vrange != '':
-                f.write("%%If (%s)\n" % vrange, False)
-
-            f.write(e.sip(latest_sip) + ",\n")
-
-            if vrange != '':
-                f.write("%End\n", False)
+            e.sip(f, latest_sip)
 
         f -= 1
         f.write("};\n")

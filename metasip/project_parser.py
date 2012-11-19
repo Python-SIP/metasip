@@ -215,8 +215,10 @@ class ProjectParser:
     def add_enum_value(self, project, en, elem):
         """ Add an element defining an enum value to an enum. """
 
-        ev = EnumValue(name=elem.get('name'), annos=elem.get('annos', ''),
-                status=elem.get('status', ''),
+        ev = EnumValue(name=elem.get('name'),
+                platforms=elem.get('platforms', '').split(),
+                features=elem.get('features', '').split(),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
                 versions=self.get_versions(project, elem))
 
         en.content.append(ev)
