@@ -634,15 +634,35 @@ class ScannerController(Controller):
 
         for hfile_version in hfile.versions:
             if hfile_version.version == working_version:
+                # See if the version's contents have changed.
+                if hfile_version.md5 != md5:
+                    hfile_version.md5 = md5
+                    hfile_version.parse = True
+
+                    IDirty(self.current_project).dirty = True
+
                 break
         else:
             # It's a new version.
-            hfile_version = HeaderFileVersion(version=working_version)
+            hfile_version = HeaderFileVersion(version=working_version, md5=md5)
             hfile.versions.append(hfile_version)
 
-        if hfile_version.md5 != md5:
-            hfile_version.md5 = md5
-            hfile_version.parse = True
+            # Find the immediately preceding version if there is one.
+            versions_sorted = sorted(hfile.versions,
+                    key=lambda v: self.current_project.versions.index(
+                            v.version))
+
+            for hfv in versions_sorted:
+                if hfv.version == working_version:
+                    break
+
+                prev_md5 = hfv.md5
+            else:
+                prev_md5 = ''
+
+            if prev_md5 == md5:
+                hfile_version.parse = False
+
             IDirty(self.current_project).dirty = True
 
         return hfile

@@ -30,5 +30,6 @@ class IHeaderFile(Interface):
     # The basename of the header file.
     name = Str()
 
-    # The individual versions of the header file.
+    # The individual versions of the header file.  Note that these are
+    # unordered.
     versions = List(IHeaderFileVersion)
