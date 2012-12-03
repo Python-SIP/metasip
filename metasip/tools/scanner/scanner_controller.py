@@ -652,13 +652,12 @@ class ScannerController(Controller):
                     key=lambda v: self.current_project.versions.index(
                             v.version))
 
+            prev_md5 = ''
             for hfv in versions_sorted:
                 if hfv.version == working_version:
                     break
 
                 prev_md5 = hfv.md5
-            else:
-                prev_md5 = ''
 
             if prev_md5 == md5:
                 hfile_version.parse = False
