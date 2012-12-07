@@ -893,6 +893,10 @@ def _transformArgs(parser, gargs, pargs):
             if typ is None:
                 continue
 
+            # For Qt5.
+            if typ.endswith('::QPrivateSignal'):
+                continue
+
             default = a.default
 
             if (default and ("::" in typ) and ("::" not in default) and
