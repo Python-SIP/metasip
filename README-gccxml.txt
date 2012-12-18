@@ -34,7 +34,7 @@ fix these:
 - edit ~/usr/qt-5/include/QtCore/qisenum.h and add::
 
     #if defined(__GCCXML__)
-    #define __has_extension(x)i (0)
+    #define __has_extension(x)  (0)
     #endif
 
 
