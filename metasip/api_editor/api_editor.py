@@ -467,7 +467,6 @@ class ProjectItem(EditorItem):
         return [("Add Module...", self._addModuleSlot),
                 ("Add External Module...", self._externalmoduleSlot),
                 ("Add Platform Tag...", self._platformSlot),
-                ("Add Feature Tag...", self._featureSlot),
                 ("Add External Feature...", self._externalfeatureSlot),
                 ("Add Ignored Namespace...", self._ignorednamespaceSlot),
                 ("Properties...", self._propertiesSlot)]
@@ -549,32 +548,6 @@ class ProjectItem(EditorItem):
             else:
                 # Add the platform to the project.
                 project.platforms.append(plat)
-                self.set_dirty()
-
-    def _featureSlot(self):
-        """ Handle adding a new feature tag. """
-
-        project = self._project
-        window_title = "Add Feature Tag"
-
-        # Get the name of the new feature.
-        (feat, ok) = QInputDialog.getText(self.treeWidget(), window_title,
-                "Feature tag")
-
-        if ok:
-            feat = feat.strip()
-
-            if feat == '':
-                Application.warning(window_title,
-                        "The name of the feature must not be blank.",
-                        self.treeWidget())
-            elif feat in project.features:
-                Application.warning(window_title,
-                        "'{0}' is already used as the name of a feature.".format(feat),
-                        self.treeWidget())
-            else:
-                # Add the feature to the project.
-                project.features.append(feat)
                 self.set_dirty()
 
     def _externalfeatureSlot(self):
