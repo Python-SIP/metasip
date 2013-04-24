@@ -18,7 +18,7 @@ from dip.shell import IDirty, ITool
 from dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
         Dialog, IDialog, DialogController, Form, LineEditor, MessageArea, VBox)
 
-from ...interfaces.project import IProject
+from ...interfaces.project import ICodeContainer, IEnum, IProject
 
 
 @implements(ITool, ISubscriber)
@@ -119,7 +119,21 @@ class FeaturesTool(Model):
                 controller=FeatureController(project=project))
 
         if IDialog(dlg).execute():
-            print("Renaming feature:", model['old_name'], model['feature'])
+            old_name = model['old_name']
+            new_name = model['feature']
+
+            # Rename in each API item it sppears.
+            for api_item, _ in self._featured_items():
+                for i, feature in enumerate(api_item.features):
+                    if feature[0] == '!':
+                        if feature[1:] == old_name:
+                            api_item.features[i] = '!' + new_name
+                    elif feature == old_name:
+                        api_item.features[i] = new_name
+
+            # Rename in the project's list.
+            project.features[project.features.index(old_name)] = new_name
+
             IDirty(project).dirty = True
 
     def _update_actions(self):
@@ -129,6 +143,41 @@ class FeaturesTool(Model):
 
         IAction(self.feature_rename).enabled = are_features
         IAction(self.feature_delete).enabled = are_features
+
+    def _featured_items(self):
+        """ Returns a list of 2-tuples of all API items that are subject to a
+        feature and the API item that contains it.  The list is in depth first
+        order.
+        """
+
+        # Convert to a list while ignoring featureless items.
+        return [item for item in self._tagged_items(self.subscription.model) if len(item[0].features) != 0]
+
+    @classmethod
+    def _tagged_items(cls, project):
+        """ A generator of 2-tuples of all API items that implement ITagged and
+        the API item that contains it.  The values are in depth first order.
+        """
+
+        for module in project.modules:
+            for sip_file in module.content:
+                for item in cls._tagged_from_container(sip_file):
+                    yield item
+
+    @classmethod
+    def _tagged_from_container(cls, container):
+        """ A sub-generator for the items in a container. """
+
+        for code in container.content:
+            # Depth first.
+            if isinstance(code, IEnum):
+                for enum_value in code.content:
+                    yield (enum_value, code)
+            elif isinstance(code, ICodeContainer):
+                for item in cls._tagged_from_container(code):
+                    yield item
+
+            yield (code, container)
 
 
 class FeatureController(DialogController):
@@ -153,5 +202,8 @@ class FeatureController(DialogController):
 
         if feature in self.project.features:
             return "A feature has already been defined with the same name."
+
+        if feature in self.project.externalfeatures:
+            return "An external feature has already been defined with the same name."
 
         return ""
