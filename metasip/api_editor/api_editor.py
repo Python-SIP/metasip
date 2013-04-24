@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -637,7 +637,7 @@ class ProjectItem(EditorItem):
         dlg = ProjectPropertiesDialog(prj, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
-            (prj.rootmodule, prj.platforms, prj.features, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
+            (prj.rootmodule, prj.platforms, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
 
             self.set_dirty()
 

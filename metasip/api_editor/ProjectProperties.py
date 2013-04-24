@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -38,12 +38,6 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         self.buttonRemovePlatTag.setEnabled(self.platformTags.count())
         self.buttonRemovePlatTag.clicked.connect(self._removePlatTag)
 
-        for f in prj.features:
-            self.featureTags.addItem(f)
-
-        self.buttonRemoveFeatTag.setEnabled(self.featureTags.count())
-        self.buttonRemoveFeatTag.clicked.connect(self._removeFeatTag)
-
         for f in prj.externalfeatures:
             self.extFeatureTags.addItem(f)
 
@@ -74,9 +68,6 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         pl = [self.platformTags.itemText(i)
                 for i in range(self.platformTags.count())]
 
-        fl = [self.featureTags.itemText(i)
-                for i in range(self.featureTags.count())]
-
         xfl = [self.extFeatureTags.itemText(i)
                 for i in range(self.extFeatureTags.count())]
 
@@ -86,7 +77,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         ns = [self.ignoredNamespaces.itemText(i)
                 for i in range(self.ignoredNamespaces.count())]
 
-        return (rootmodule, pl, fl, xfl, ml, ns, sipcomments)
+        return (rootmodule, pl, xfl, ml, ns, sipcomments)
 
     def _removePlatTag(self):
         """
@@ -97,16 +88,6 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         if idx >= 0:
             self.platformTags.removeItem(idx)
             self.buttonRemovePlatTag.setEnabled(self.platformTags.count())
-
-    def _removeFeatTag(self):
-        """
-        Remove the current feature tag from the list.
-        """
-        idx = self.featureTags.currentIndex()
-
-        if idx >= 0:
-            self.featureTags.removeItem(idx)
-            self.buttonRemoveFeatTag.setEnabled(self.featureTags.count())
 
     def _removeExtFeatTag(self):
         """

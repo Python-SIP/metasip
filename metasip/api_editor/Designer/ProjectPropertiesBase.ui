@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>552</width>
-    <height>491</height>
+    <width>547</width>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,27 +16,34 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="1" colspan="2">
-      <widget class="QLineEdit" name="rootModule"/>
-     </item>
-     <item row="1" column="1">
-      <widget class="QComboBox" name="platformTags">
-       <property name="editable">
-        <bool>false</bool>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>External features</string>
        </property>
       </widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="QPushButton" name="buttonRemoveNamespace">
+       <property name="text">
+        <string>Remove namespace</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="buttonRemoveExtFeatTag">
+       <property name="text">
+        <string>Remove feature</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="2">
+      <widget class="QLineEdit" name="rootModule"/>
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Root module</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Platforms</string>
        </property>
       </widget>
      </item>
@@ -47,83 +54,24 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_8">
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Features</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="featureTags">
-       <property name="editable">
-        <bool>false</bool>
+        <string>Platforms</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QComboBox" name="extFeatureTags"/>
-     </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="buttonRemoveFeatTag">
-       <property name="text">
-        <string>Remove feature</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>External features</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
       <widget class="QComboBox" name="externalModules">
        <property name="editable">
         <bool>false</bool>
        </property>
       </widget>
      </item>
-     <item row="3" column="2">
-      <widget class="QPushButton" name="buttonRemoveExtFeatTag">
-       <property name="text">
-        <string>Remove feature</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>External modules</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QComboBox" name="ignoredNamespaces"/>
-     </item>
-     <item row="4" column="2">
-      <widget class="QPushButton" name="buttonRemoveModule">
-       <property name="text">
-        <string>Remove module</string>
-       </property>
-      </widget>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="extFeatureTags"/>
      </item>
      <item row="5" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Ignored namespaces</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="2">
-      <widget class="QPushButton" name="buttonRemoveNamespace">
-       <property name="text">
-        <string>Remove namespace</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
         <string>SIP file comments</string>
@@ -133,7 +81,38 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="1" colspan="2">
+     <item row="1" column="1">
+      <widget class="QComboBox" name="platformTags">
+       <property name="editable">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QComboBox" name="ignoredNamespaces"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>External modules</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QPushButton" name="buttonRemoveModule">
+       <property name="text">
+        <string>Remove module</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Ignored namespaces</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1" colspan="2">
       <widget class="QPlainTextEdit" name="sipFileComments">
        <property name="lineWrapMode">
         <enum>QPlainTextEdit::NoWrap</enum>
@@ -171,8 +150,6 @@
   <tabstop>rootModule</tabstop>
   <tabstop>platformTags</tabstop>
   <tabstop>buttonRemovePlatTag</tabstop>
-  <tabstop>featureTags</tabstop>
-  <tabstop>buttonRemoveFeatTag</tabstop>
   <tabstop>extFeatureTags</tabstop>
   <tabstop>buttonRemoveExtFeatTag</tabstop>
   <tabstop>externalModules</tabstop>
