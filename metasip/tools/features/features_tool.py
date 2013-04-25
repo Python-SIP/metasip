@@ -87,7 +87,39 @@ class FeaturesTool(Model):
         dlg = self.dialog_delete(model)
 
         if IDialog(dlg).execute():
-            print("Deleting feature:", model['feature'], model['discard'])
+            feature = model['feature']
+            discard = model['discard']
+            print("Deleting feature:", feature, discard)
+
+            # Delete from each API item it sppears.
+            for api_item, container in self._featured_items():
+                remove = []
+
+                for f in api_item.features:
+                    if f[0] == '!':
+                        if f[1:] == feature:
+                            # Just remove it if it is not the only one or if we
+                            # are discarding if enabled (and the feature is
+                            # inverted).
+                            if len(api_item.features) > 1 or discard:
+                                remove.append(f)
+                            else:
+                                container.content.remove(api_item)
+                    elif f == feature:
+                        # Just remove it if it is not the only one or if we are
+                        # discarding if enabled.
+                        if len(api_item.features) > 1 or not discard:
+                            remove.append(f)
+                        else:
+                            container.content.remove(api_item)
+
+                # Note that we deal with a feature appearing multiple times,
+                # even though that is probably a user bug.
+                for f in remove:
+                    api_item.features.remove(f)
+
+            # Delete from the project's list.
+            project.features.remove(feature)
             IDirty(project).dirty = True
 
             self._update_actions()
@@ -125,16 +157,15 @@ class FeaturesTool(Model):
 
             # Rename in each API item it sppears.
             for api_item, _ in self._featured_items():
-                for i, feature in enumerate(api_item.features):
-                    if feature[0] == '!':
-                        if feature[1:] == old_name:
+                for i, f in enumerate(api_item.features):
+                    if f[0] == '!':
+                        if f[1:] == old_name:
                             api_item.features[i] = '!' + new_name
-                    elif feature == old_name:
+                    elif f == old_name:
                         api_item.features[i] = new_name
 
             # Rename in the project's list.
             project.features[project.features.index(old_name)] = new_name
-
             IDirty(project).dirty = True
 
     def _update_actions(self):
