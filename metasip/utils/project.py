@@ -50,9 +50,9 @@ def validate_identifier(identifier, identifier_type):
     """
 
     if identifier == '':
-        return "A %s name is required." % identifier_type
+        return "A {0} name is required.".format(identifier_type)
 
     if not _identifier_re.match(identifier):
-        return "A %s name can only contain underscores, ASCII letters and digits and cannot start with a digit." % identifier_type
+        return "A {0} name can only contain underscores, ASCII letters and digits and cannot start with a digit.".format(identifier_type)
 
     return ""

@@ -466,7 +466,6 @@ class ProjectItem(EditorItem):
 
         return [("Add Module...", self._addModuleSlot),
                 ("Add External Module...", self._externalmoduleSlot),
-                ("Add External Feature...", self._externalfeatureSlot),
                 ("Add Ignored Namespace...", self._ignorednamespaceSlot),
                 ("Properties...", self._propertiesSlot)]
 
@@ -523,32 +522,6 @@ class ProjectItem(EditorItem):
                 project.externalmodules.append(xm)
                 self.set_dirty()
 
-    def _externalfeatureSlot(self):
-        """ Handle adding a new external feature. """
-
-        project = self._project
-        window_title = "Add External Feature"
-
-        # Get the name of the new external feature.
-        (xf, ok) = QInputDialog.getText(self.treeWidget(), window_title,
-                "External feature")
-
-        if ok:
-            xf = xf.strip()
-
-            if xf == '':
-                Application.warning(window_title,
-                        "The name of the external feature must not be blank.",
-                        self.treeWidget())
-            elif xf in project.externalfeatures:
-                Application.warning(window_title,
-                        "'{0}' is already used as the name of an external feature.".format(xf),
-                        self.treeWidget())
-            else:
-                # Add the external feature to the project.
-                project.externalfeatures.append(xf)
-                self.set_dirty()
-
     def _ignorednamespaceSlot(self):
         """ Handle adding a new ignored namespace. """
 
@@ -583,7 +556,7 @@ class ProjectItem(EditorItem):
         dlg = ProjectPropertiesDialog(prj, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
-            (prj.rootmodule, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
+            (prj.rootmodule, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
 
             self.set_dirty()
 

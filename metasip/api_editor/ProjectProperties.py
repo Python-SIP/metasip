@@ -32,12 +32,6 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         # Initialise the dialog.
         self.rootModule.setText(prj.rootmodule)
 
-        for f in prj.externalfeatures:
-            self.extFeatureTags.addItem(f)
-
-        self.buttonRemoveExtFeatTag.setEnabled(self.extFeatureTags.count())
-        self.buttonRemoveExtFeatTag.clicked.connect(self._removeExtFeatTag)
-
         for m in prj.externalmodules:
             self.externalModules.addItem(m)
 
@@ -59,26 +53,13 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         rootmodule = self.rootModule.text().strip()
         sipcomments = self.sipFileComments.toPlainText().strip()
 
-        xfl = [self.extFeatureTags.itemText(i)
-                for i in range(self.extFeatureTags.count())]
-
         ml = [self.externalModules.itemText(i)
                 for i in range(self.externalModules.count())]
 
         ns = [self.ignoredNamespaces.itemText(i)
                 for i in range(self.ignoredNamespaces.count())]
 
-        return (rootmodule, xfl, ml, ns, sipcomments)
-
-    def _removeExtFeatTag(self):
-        """
-        Remove the current external feature tag from the list.
-        """
-        idx = self.extFeatureTags.currentIndex()
-
-        if idx >= 0:
-            self.extFeatureTags.removeItem(idx)
-            self.buttonRemoveExtFeatTag.setEnabled(self.extFeatureTags.count())
+        return (rootmodule, ml, ns, sipcomments)
 
     def _removeModule(self):
         """

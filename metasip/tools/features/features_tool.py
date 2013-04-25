@@ -35,7 +35,12 @@ class FeaturesTool(Model):
             window_title="Delete Feature")
 
     # The new feature dialog.
-    dialog_new = Dialog('feature', MessageArea(), window_title="New Feature")
+    dialog_new = Dialog(
+            VBox(Form('feature'),
+                    CheckBox('external',
+                            label="The feature is defined in another project"),
+                    MessageArea()),
+            window_title="New Feature")
 
     # The rename feature dialog.
     dialog_rename = Dialog(
@@ -67,8 +72,10 @@ class FeaturesTool(Model):
     def __subscription_changed(self, change):
         """ Invoked when the subscription changes. """
 
+        project = change.new.model
+
         is_active = (change.new.event == 'dip.events.active')
-        are_features = (len(change.new.model.features) != 0)
+        are_features = (len(project.features) + len(project.externalfeatures) != 0)
 
         IAction(self.feature_new).enabled = is_active
         IAction(self.feature_rename).enabled = (is_active and are_features)
@@ -79,7 +86,8 @@ class FeaturesTool(Model):
         """ Invoked when the delete feature action is triggered. """
 
         project = self.subscription.model
-        model = dict(feature=project.features[0], features=project.features,
+        all_features = self._all_features(project)
+        model = dict(feature=all_features[0], features=all_features,
                 discard=False)
 
         dlg = self.dialog_delete(model)
@@ -116,7 +124,12 @@ class FeaturesTool(Model):
                     api_item.features.remove(f)
 
             # Delete from the project's list.
-            project.features.remove(feature)
+            if feature in project.externalfeatures:
+                feature_list = project.externalfeatures
+            else:
+                feature_list = project.features
+
+            feature_list.remove(feature)
             IDirty(project).dirty = True
 
             self._update_actions()
@@ -126,13 +139,21 @@ class FeaturesTool(Model):
         """ Invoked when the new feature action is triggered. """
 
         project = self.subscription.model
-        model = dict(feature='')
+        model = dict(feature='', external=False)
 
         dlg = self.dialog_new(model,
                 controller=FeatureController(project=project))
 
         if IDialog(dlg).execute():
-            project.features.append(model['feature'])
+            feature = model['feature']
+            external = model['external']
+
+            if external:
+                feature_list = project.externalfeatures
+            else:
+                feature_list = project.features
+
+            feature_list.append(feature)
             IDirty(project).dirty = True
 
             self._update_actions()
@@ -142,8 +163,9 @@ class FeaturesTool(Model):
         """ Invoked when the rename feature action is triggered. """
 
         project = self.subscription.model
-        model = dict(feature='', old_name=project.features[0],
-                features=project.features)
+        all_features = self._all_features(project)
+        model = dict(feature='', old_name=all_features[0],
+                features=all_features)
 
         dlg = self.dialog_rename(model,
                 controller=FeatureController(project=project))
@@ -162,7 +184,12 @@ class FeaturesTool(Model):
                         api_item.features[i] = new_name
 
             # Rename in the project's list.
-            project.features[project.features.index(old_name)] = new_name
+            if old_name in project.externalfeatures:
+                feature_list = project.externalfeatures
+            else:
+                feature_list = project.features
+
+            feature_list[feature_list.index(old_name)] = new_name
             IDirty(project).dirty = True
 
     def _update_actions(self):
@@ -172,6 +199,12 @@ class FeaturesTool(Model):
 
         IAction(self.feature_rename).enabled = are_features
         IAction(self.feature_delete).enabled = are_features
+
+    @staticmethod
+    def _all_features(project):
+        """ Return the sorted list of all the features of a project. """
+
+        return sorted(project.features + project.externalfeatures)
 
     def _featured_items(self):
         """ Returns a list of 2-tuples of all API items that are subject to a
