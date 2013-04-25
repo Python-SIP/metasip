@@ -18,7 +18,8 @@ from dip.shell import IDirty, ITool
 from dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
         Dialog, IDialog, DialogController, Form, LineEditor, MessageArea, VBox)
 
-from ...interfaces.project import ICodeContainer, IEnum, IProject
+from ...interfaces.project import IProject
+from ...utils.project import ITagged_items
 
 
 @implements(ITool, ISubscriber)
@@ -151,33 +152,7 @@ class FeaturesTool(Model):
         """
 
         # Convert to a list while ignoring featureless items.
-        return [item for item in self._tagged_items(self.subscription.model) if len(item[0].features) != 0]
-
-    @classmethod
-    def _tagged_items(cls, project):
-        """ A generator of 2-tuples of all API items that implement ITagged and
-        the API item that contains it.  The values are in depth first order.
-        """
-
-        for module in project.modules:
-            for sip_file in module.content:
-                for item in cls._tagged_from_container(sip_file):
-                    yield item
-
-    @classmethod
-    def _tagged_from_container(cls, container):
-        """ A sub-generator for the items in a container. """
-
-        for code in container.content:
-            # Depth first.
-            if isinstance(code, IEnum):
-                for enum_value in code.content:
-                    yield (enum_value, code)
-            elif isinstance(code, ICodeContainer):
-                for item in cls._tagged_from_container(code):
-                    yield item
-
-            yield (code, container)
+        return [item for item in ITagged_items(self.subscription.model) if len(item[0].features) != 0]
 
 
 class FeatureController(DialogController):
