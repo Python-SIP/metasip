@@ -10,8 +10,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-import re
-
 from dip.model import implements, Instance, Model, observe
 from dip.publish import ISubscriber
 from dip.shell import IDirty, ITool
@@ -19,7 +17,7 @@ from dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
         Dialog, IDialog, DialogController, Form, LineEditor, MessageArea, VBox)
 
 from ...interfaces.project import IProject
-from ...utils.project import ITagged_items
+from ...utils.project import ITagged_items, validate_identifier
 
 
 @implements(ITool, ISubscriber)
@@ -89,7 +87,6 @@ class FeaturesTool(Model):
         if IDialog(dlg).execute():
             feature = model['feature']
             discard = model['discard']
-            print("Deleting feature:", feature, discard)
 
             # Delete from each API item it sppears.
             for api_item, container in self._featured_items():
@@ -189,9 +186,6 @@ class FeaturesTool(Model):
 class FeatureController(DialogController):
     """ A controller for a dialog containing an editor for a feature. """
 
-    # The regular expression for a valid feature name.
-    feature_re = re.compile(r'[_A-Z][_A-Z0-9]*', re.ASCII|re.IGNORECASE)
-
     # The project.
     project = Instance(IProject)
 
@@ -200,11 +194,9 @@ class FeatureController(DialogController):
 
         feature = self.feature_editor.value
 
-        if feature == '':
-            return "A feature name is required."
-
-        if not self.feature_re.match(feature):
-            return "A feature name can only contain underscores, ASCII letters and digits and cannot start with a digit."
+        message = validate_identifier(feature, "feature")
+        if message != "":
+            return message
 
         if feature in self.project.features:
             return "A feature has already been defined with the same name."

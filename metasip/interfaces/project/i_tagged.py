@@ -24,7 +24,8 @@ class ITagged(Interface):
     # may be preceded by "!" to indicate the logical inverse.
     features = List(Str())
 
-    # The optional list of platforms that the API item is limited to.
+    # The optional list of platforms that the API item is limited to.  A
+    # platform may be preceded by "!" to indicate the logical inverse.
     platforms = List(Str())
 
     # The versions.

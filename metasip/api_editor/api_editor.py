@@ -466,7 +466,6 @@ class ProjectItem(EditorItem):
 
         return [("Add Module...", self._addModuleSlot),
                 ("Add External Module...", self._externalmoduleSlot),
-                ("Add Platform Tag...", self._platformSlot),
                 ("Add External Feature...", self._externalfeatureSlot),
                 ("Add Ignored Namespace...", self._ignorednamespaceSlot),
                 ("Properties...", self._propertiesSlot)]
@@ -522,32 +521,6 @@ class ProjectItem(EditorItem):
             else:
                 # Add the external module to the project.
                 project.externalmodules.append(xm)
-                self.set_dirty()
-
-    def _platformSlot(self):
-        """ Handle adding a new platform tag. """
-
-        project = self._project
-        window_title = "Add Platform Tag"
-
-        # Get the name of the new platform.
-        (plat, ok) = QInputDialog.getText(self.treeWidget(), window_title,
-                "Platform tag")
-
-        if ok:
-            plat = plat.strip()
-
-            if plat == '':
-                Application.warning(window_title,
-                        "The name of the platform must not be blank.",
-                        self.treeWidget())
-            elif plat in project.platforms:
-                Application.warning(window_title,
-                        "'{0}' is already used as the name of a platform.".format(plat),
-                        self.treeWidget())
-            else:
-                # Add the platform to the project.
-                project.platforms.append(plat)
                 self.set_dirty()
 
     def _externalfeatureSlot(self):
@@ -610,7 +583,7 @@ class ProjectItem(EditorItem):
         dlg = ProjectPropertiesDialog(prj, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
-            (prj.rootmodule, prj.platforms, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
+            (prj.rootmodule, prj.externalfeatures, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
 
             self.set_dirty()
 

@@ -10,6 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+import re
+
 from ..interfaces.project import ICodeContainer, IEnum
 
 
@@ -37,3 +39,20 @@ def _tagged_from_container(container):
                 yield item
 
         yield (code, container)
+
+
+# The regular expression used to validate an identifier.
+_identifier_re = re.compile(r'[_A-Z][_A-Z0-9]*', re.ASCII|re.IGNORECASE)
+
+def validate_identifier(identifier, identifier_type):
+    """ Validate an identifier and return an error message describing why it is
+    invalid, or an empty string if it is valid.
+    """
+
+    if identifier == '':
+        return "A %s name is required." % identifier_type
+
+    if not _identifier_re.match(identifier):
+        return "A %s name can only contain underscores, ASCII letters and digits and cannot start with a digit." % identifier_type
+
+    return ""

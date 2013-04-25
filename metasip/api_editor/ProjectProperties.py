@@ -32,12 +32,6 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         # Initialise the dialog.
         self.rootModule.setText(prj.rootmodule)
 
-        for p in prj.platforms:
-            self.platformTags.addItem(p)
-
-        self.buttonRemovePlatTag.setEnabled(self.platformTags.count())
-        self.buttonRemovePlatTag.clicked.connect(self._removePlatTag)
-
         for f in prj.externalfeatures:
             self.extFeatureTags.addItem(f)
 
@@ -65,9 +59,6 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         rootmodule = self.rootModule.text().strip()
         sipcomments = self.sipFileComments.toPlainText().strip()
 
-        pl = [self.platformTags.itemText(i)
-                for i in range(self.platformTags.count())]
-
         xfl = [self.extFeatureTags.itemText(i)
                 for i in range(self.extFeatureTags.count())]
 
@@ -77,17 +68,7 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         ns = [self.ignoredNamespaces.itemText(i)
                 for i in range(self.ignoredNamespaces.count())]
 
-        return (rootmodule, pl, xfl, ml, ns, sipcomments)
-
-    def _removePlatTag(self):
-        """
-        Remove the current platform tag from the list.
-        """
-        idx = self.platformTags.currentIndex()
-
-        if idx >= 0:
-            self.platformTags.removeItem(idx)
-            self.buttonRemovePlatTag.setEnabled(self.platformTags.count())
+        return (rootmodule, xfl, ml, ns, sipcomments)
 
     def _removeExtFeatTag(self):
         """

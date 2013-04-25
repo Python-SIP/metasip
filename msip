@@ -118,6 +118,7 @@ def launchGUI(prjname, guiargs):
             ProjectV3Schema)
     from metasip.tools.features import FeaturesTool
     from metasip.tools.logger import LoggerTool
+    from metasip.tools.platforms import PlatformsTool
     from metasip.tools.scanner import ScannerTool
     from metasip.tools.schema_validator import SchemaValidatorTool
     from metasip.tools.versions import VersionsTool
@@ -139,6 +140,7 @@ def launchGUI(prjname, guiargs):
                             model_factories=[ProjectFactory()]),
                     lambda: editor_tool,
                     FeaturesTool,
+                    PlatformsTool,
                     ScannerTool,
                     lambda: SchemaValidatorTool(
                             schemas=[ProjectV1Schema(), ProjectV2Schema(),
