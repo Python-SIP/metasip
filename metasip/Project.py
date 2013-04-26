@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -1248,7 +1248,7 @@ class Class(Code, Access):
     def sip(self, f, sf, latest_sip):
         """ Write the class to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         f.blank()
 
@@ -1363,7 +1363,7 @@ class Class(Code, Access):
 
         f.blank()
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the class to an XML file. """
@@ -1576,9 +1576,9 @@ class EnumValue(TaggedItem, Annotations):
     def sip(self, f, latest_sip):
         """ Write the enum value to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
         f.write(self.name + self.sipAnnos() + ",\n")
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the enum value to an XML file. """
@@ -1620,7 +1620,7 @@ class Enum(Code, Access):
     def sip(self, f, sf, latest_sip):
         """ Write the enum to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         f.blank()
 
@@ -1642,7 +1642,7 @@ class Enum(Code, Access):
         f.write("};\n")
         f.blank()
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the enum to an XML file. """
@@ -1710,7 +1710,7 @@ class Constructor(ClassCallable):
     def sip(self, f, sf, latest_sip):
         """ Write the constructor to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         if self.explicit:
             f.write("explicit ")
@@ -1725,7 +1725,7 @@ class Constructor(ClassCallable):
         self.sipDocstring(f)
         self.sipMethcode(f)
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the constructor to an XML file. """
@@ -1783,7 +1783,7 @@ class Destructor(Code, Access):
     def sip(self, f, sf, latest_sip):
         """ Write the destructor to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         if self.virtual:
             f.write("virtual ")
@@ -1793,7 +1793,7 @@ class Destructor(Code, Access):
         _writeMethCodeSIP(f, self.methcode)
         _writeVirtCodeSIP(f, self.virtcode)
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the destructor to an XML file. """
@@ -1848,7 +1848,7 @@ class OperatorCast(ClassCallable):
     def sip(self, f, sf, latest_sip):
         """ Write the operator cast to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         f.write("operator ")
 
@@ -1861,7 +1861,7 @@ class OperatorCast(ClassCallable):
 
         self.sipMethcode(f)
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the operator cast to an XML file. """
@@ -1954,7 +1954,7 @@ class Method(ClassCallable):
     def sip(self, f, sf, latest_sip):
         """ Write the method to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         # We can't use the super class version because we might need to stick
         # some text in the middle of it.
@@ -1990,7 +1990,7 @@ class Method(ClassCallable):
         self.sipMethcode(f)
         _writeVirtCodeSIP(f, self.virtcode)
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the method to an XML file. """
@@ -2087,7 +2087,7 @@ class OperatorMethod(ClassCallable):
     def sip(self, f, sf, latest_sip):
         """ Write the operator method to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         s = ""
 
@@ -2117,7 +2117,7 @@ class OperatorMethod(ClassCallable):
         self.sipMethcode(f)
         _writeVirtCodeSIP(f, self.virtcode)
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the operator to an XML file. """
@@ -2160,7 +2160,7 @@ class Function(Callable):
     def sip(self, f, sf, latest_sip):
         """ Write the function to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         super().sip(f, sf, latest_sip)
         f.write(";\n")
@@ -2168,7 +2168,7 @@ class Function(Callable):
         self.sipDocstring(f)
         self.sipMethcode(f)
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the function to an XML file. """
@@ -2218,7 +2218,7 @@ class OperatorFunction(Callable):
     def sip(self, f, sf, latest_sip):
         """ Write the operator function to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         f.write(self.returnType(ignore_namespaces=True) + "operator" + self.name)
 
@@ -2233,7 +2233,7 @@ class OperatorFunction(Callable):
 
         self.sipMethcode(f)
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the operator to an XML file. """
@@ -2275,7 +2275,7 @@ class Variable(Code, Access):
     def sip(self, f, sf, latest_sip):
         """ Write the variable to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         s = self.expand_type(self.type, self.name, ignore_namespaces=True)
 
@@ -2317,7 +2317,7 @@ class Variable(Code, Access):
 
             f.write(";\n", indent=False)
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the variable to an XML file. """
@@ -2366,9 +2366,9 @@ class Typedef(Code):
     def sip(self, f, sf, latest_sip):
         """ Write the typedef to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
         f.write("typedef " + self.expand_type(self.type, self.name, ignore_namespaces=True) + self.sipAnnos() + ";\n")
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the typedef to an XML file. """
@@ -2401,7 +2401,7 @@ class Namespace(Code):
 
         ignore = (self.name in sf.project.ignorednamespaces)
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         if not ignore:
             f.blank()
@@ -2432,7 +2432,7 @@ class Namespace(Code):
 
             f.blank()
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the namespace to an XML file. """
@@ -2476,9 +2476,9 @@ class OpaqueClass(Code, Access):
     def sip(self, f, sf, latest_sip):
         """ Write the opaque class to a .sip file. """
 
-        closure = _sip_start_version(f, self);
+        nr_ends = _sip_start_version(f, self);
         f.write("class " + self.name + self.sipAnnos() + ";\n")
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the opaque class to an XML file. """
@@ -2515,7 +2515,7 @@ class ManualCode(Code, Access):
     def sip(self, f, sf, latest_sip):
         """ Write the code to a .sip file. """
 
-        closure = _sip_start_version(f, self)
+        nr_ends = _sip_start_version(f, self)
 
         if self.body != '':
             f.write("// " + self.precis + "\n" + self.body + "\n", False)
@@ -2527,7 +2527,7 @@ class ManualCode(Code, Access):
         _writeDocstringSIP(f, self.docstring)
         _writeMethCodeSIP(f, self.methcode)
 
-        _sip_end_version(f, closure)
+        _sip_end_version(f, nr_ends)
 
     def xml(self, f):
         """ Write the manual code to an XML file. """
@@ -2765,40 +2765,34 @@ def _attrsAsString(item):
 
 
 def _sip_start_version(f, api_item):
-    """ Write the start of the version tests for an API item.  Return a closure
-    to be passed to the corresponding call to _sip_end_version().
+    """ Write the start of the version tests for an API item.  Returns the
+    number of %End statements needed to be passed to the corresponding call to
+    _sip_end_version().
     """
 
-    v_end = p_end = f_end = False
+    nr_ends = 0
 
-    vrange = _sip_versions(api_item)
-    if vrange != '':
-        f.write("%%If (%s)\n" % vrange, False)
-        v_end = True
+    for vrange in api_item.versions:
+        vr = version_range(vrange)
+        if vr != '':
+            f.write("%%If (%s)\n" % vr, False)
+            nr_ends += 1
 
     if len(api_item.platforms) != 0:
         f.write("%%If (%s)\n" % " || ".join(api_item.platforms), False)
-        p_end = True
+        nr_ends += 1
 
     if len(api_item.features) != 0:
         f.write("%%If (%s)\n" % " || ".join(api_item.features), False)
-        f_end = True
+        nr_ends += 1
 
-    return (v_end, p_end, f_end)
+    return nr_ends
 
 
-def _sip_end_version(f, closure):
+def _sip_end_version(f, nr_ends):
     """ Write the end of the version tests for an API item. """
 
-    (v_end, p_end, f_end) = closure
-
-    if f_end:
-        f.write("%End\n", False)
-
-    if p_end:
-        f.write("%End\n", False)
-
-    if v_end:
+    for _ in range(nr_ends):
         f.write("%End\n", False)
 
 
@@ -2822,6 +2816,7 @@ def version_range(version_range):
 
     if version_range.startversion == '':
         if version_range.endversion == '':
+            # This should never happen.
             return ""
 
         return "- " + version_range.endversion
