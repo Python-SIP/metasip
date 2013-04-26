@@ -96,9 +96,11 @@ class FeaturesTool(Model):
             feature = model['feature']
             discard = model['discard']
 
-            # Delete from each API item it sppears.
+            # Delete from each API item it appears.
+            remove_items = []
+
             for api_item, container in self._featured_items():
-                remove = []
+                remove_features = []
 
                 for f in api_item.features:
                     if f[0] == '!':
@@ -107,21 +109,26 @@ class FeaturesTool(Model):
                             # are discarding if enabled (and the feature is
                             # inverted).
                             if len(api_item.features) > 1 or discard:
-                                remove.append(f)
+                                remove_features.append(f)
                             else:
-                                container.content.remove(api_item)
+                                remove_items.append((api_item, container))
+                                break
                     elif f == feature:
                         # Just remove it if it is not the only one or if we are
                         # discarding if enabled.
                         if len(api_item.features) > 1 or not discard:
-                            remove.append(f)
+                            remove_features.append(f)
                         else:
-                            container.content.remove(api_item)
+                            remove_items.append((api_item, container))
+                            break
+                else:
+                    # Note that we deal with a feature appearing multiple
+                    # times, even though that is probably a user bug.
+                    for f in remove_features:
+                        api_item.features.remove(f)
 
-                # Note that we deal with a feature appearing multiple times,
-                # even though that is probably a user bug.
-                for f in remove:
-                    api_item.features.remove(f)
+            for api_item, container in remove_items:
+                container.content.remove(api_item)
 
             # Delete from the project's list.
             if feature in project.externalfeatures:
@@ -174,7 +181,7 @@ class FeaturesTool(Model):
             old_name = model['old_name']
             new_name = model['feature']
 
-            # Rename in each API item it sppears.
+            # Rename in each API item it appears.
             for api_item, _ in self._featured_items():
                 for i, f in enumerate(api_item.features):
                     if f[0] == '!':

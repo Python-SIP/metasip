@@ -9,3 +9,4 @@ Add the ability to annotate everything.
 Add support for dragging multiple items (particularly Unknown -> Ignored).
 Auto-scroll the tree widget when dragging (as Qt3 used to do).
 Looks like tool tips no longer work for code items.
+The API editor doesn't receive notifications when a version is renamed.

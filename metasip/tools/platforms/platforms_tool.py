@@ -88,32 +88,39 @@ class PlatformsTool(Model):
             platform = model['platform']
             discard = model['discard']
 
-            # Delete from each API item it sppears.
-            for api_item, container in self._platformed_items():
-                remove = []
+            # Delete from each API item it appears.
+            remove_items = []
 
-                for f in api_item.platforms:
-                    if f[0] == '!':
-                        if f[1:] == platform:
+            for api_item, container in self._platformed_items():
+                remove_platforms = []
+
+                for p in api_item.platforms:
+                    if p[0] == '!':
+                        if p[1:] == platform:
                             # Just remove it if it is not the only one or if we
                             # are discarding if enabled (and the platform is
                             # inverted).
                             if len(api_item.platforms) > 1 or discard:
-                                remove.append(f)
+                                remove_platforms.append(p)
                             else:
-                                container.content.remove(api_item)
-                    elif f == platform:
+                                remove_items.append((api_item, container))
+                                break
+                    elif p == platform:
                         # Just remove it if it is not the only one or if we are
                         # discarding if enabled.
                         if len(api_item.platforms) > 1 or not discard:
-                            remove.append(f)
+                            remove_platforms.append(p)
                         else:
-                            container.content.remove(api_item)
+                            remove_items.append((api_item, container))
+                            break
+                else:
+                    # Note that we deal with a platform appearing multiple
+                    # times, even though that is probably a user bug.
+                    for p in remove_platforms:
+                        api_item.platforms.remove(p)
 
-                # Note that we deal with a platform appearing multiple times,
-                # even though that is probably a user bug.
-                for f in remove:
-                    api_item.platforms.remove(f)
+            for api_item, container in remove_items:
+                container.content.remove(api_item)
 
             # Delete from the project's list.
             project.platforms.remove(platform)
@@ -152,13 +159,13 @@ class PlatformsTool(Model):
             old_name = model['old_name']
             new_name = model['platform']
 
-            # Rename in each API item it sppears.
+            # Rename in each API item it appears.
             for api_item, _ in self._platformed_items():
-                for i, f in enumerate(api_item.platforms):
-                    if f[0] == '!':
-                        if f[1:] == old_name:
+                for i, p in enumerate(api_item.platforms):
+                    if p[0] == '!':
+                        if p[1:] == old_name:
                             api_item.platforms[i] = '!' + new_name
-                    elif f == old_name:
+                    elif p == old_name:
                         api_item.platforms[i] = new_name
 
             # Rename in the project's list.

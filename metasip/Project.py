@@ -16,7 +16,7 @@ import time
 import fnmatch
 from xml.sax import saxutils
 
-from dip.model import implements, Instance, Model, observe, Str
+from dip.model import implements, Instance, Model, Str
 from dip.shell import IDirty
 
 from .logger import Logger
@@ -833,48 +833,6 @@ class Project(Model):
 
         # This should never happen.
         return None
-
-    @observe('versions')
-    def __on_versions_changed(self, change):
-        """ Invoked when the list of versions changes. """
-
-        # FIXME: This code assumes that the only possible change is the
-        #        addition (somewhere) of a new version.
-        new_version = change.new[0]
-
-        # See if the first explicit version has just been defined.
-        if len(self.versions) == 1:
-            # Update the version on all header file versions.
-            for hdir in self.headers:
-                for hfile in hdir.content:
-                    # There will only be one version defined.
-                    hfile.versions[0].version = new_version
-        else:
-            # Create new versions of each header file based on the previous
-            # version (or the next one if the new one has been put at the
-            # start).
-            new_version_idx = self.versions.index(new_version)
-            if new_version_idx != 0:
-                prev_version = self.versions[new_version_idx - 1]
-            else:
-                prev_version = self.versions[new_version_idx + 1]
-
-            for hdir in self.headers:
-                scan = False
-
-                for hfile in hdir.content:
-                    for hfile_version in hfile.versions:
-                        if hfile_version.version == prev_version:
-                            hfv = HeaderFileVersion(md5=hfile_version.md5,
-                                    parse=False, version=new_version)
-                            hfile.versions.append(hfv)
-
-                            # The header directory needs scanning.
-                            scan = True
-                            break
-
-                if scan:
-                    hdir.scan.append(new_version)
 
 
 class Code(TaggedItem, Annotations):

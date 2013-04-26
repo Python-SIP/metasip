@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -20,13 +20,18 @@ class ITagged(Interface):
     subject to tags (i.e. SIP's %If statement).
     """
 
-    # The optional list of features that the API item is limited to.  A feature
-    # may be preceded by "!" to indicate the logical inverse.
+    # The optional list of logically or-ed features that the API item is
+    # limited to.  A feature may be preceded by "!" to indicate the logical
+    # inverse.
     features = List(Str())
 
-    # The optional list of platforms that the API item is limited to.  A
-    # platform may be preceded by "!" to indicate the logical inverse.
+    # The optional list of logically or-ed platforms that the API item is
+    # limited to.  Note that SIP supports inverting a platform, as does the
+    # MetaSIP platforms tool, but the MetaSIP UI for picking a platform doesn't
+    # yet.
     platforms = List(Str())
 
-    # The versions.
+    # The optional list of logically and-ed version ranges.  Note that SIP
+    # supports multiple ranges, as does the MetaSIP versions tool, but the
+    # MetaSIP UI for picking a version range doesn't yet.
     versions = List(IVersionRange)
