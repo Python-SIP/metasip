@@ -1293,7 +1293,7 @@ class CodeItem(ContainerItem):
         if len(siblings) != 0:
             menu.append(None)
             menu.append(("Versions...", self._versionsSlot,
-                    (len(self.treeWidget().project.versions) != 0)))
+                    (len(self.treeWidget().project.versions) > 1)))
 
             return menu
 

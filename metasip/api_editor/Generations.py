@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -31,29 +31,36 @@ class GenerationsDialog(QDialog, Ui_GenerationsBase):
 
         self.setupUi(self)
 
-        # Initialise the dialog.
-        self.sgen.addItem("First", '')
+        # Initialise the dialog.  The start list will have the list of versions
+        # with the first version replaced by "First".  The end list will have
+        # the list of versions excluding the first version and with "Latest"
+        # appended.
+        for i, v in enumerate(prj.versions):
+            if i == 0:
+                # The first version never actually appears itself.
+                self.sgen.addItem("First", '')
+            else:
+                self.sgen.addItem(v, v)
+                self.egen.addItem(v, v)
 
-        start_index = 0
-        end_index = len(prj.versions)
+        self.egen.addItem("Latest", '')
 
         if len(api_item.versions) == 0:
             api_start = ''
             api_end = ''
         else:
             api_start = api_item.versions[0].startversion
-            api_end = api_item.versions[-1].endversion
+            api_end = api_item.versions[0].endversion
 
-        for i, v in enumerate(prj.versions):
-            self.sgen.addItem(v, v)
-            if v == api_start:
-                start_index = i + 1
+        if api_start == '':
+            start_index = 0
+        else:
+            start_index = prj.versions.index(api_start)
 
-            self.egen.addItem(v, v)
-            if v == api_end:
-                end_index = i
-
-        self.egen.addItem("Latest", '')
+        if api_end == '':
+            end_index = len(prj.versions) - 1
+        else:
+            end_index = prj.versions.index(api_start) - 1
 
         self.sgen.setCurrentIndex(start_index)
         self.egen.setCurrentIndex(end_index)
