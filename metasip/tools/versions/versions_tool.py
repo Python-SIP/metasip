@@ -191,7 +191,7 @@ class VersionsTool(Model):
                     scan = False
 
                     for hfile in hdir.content:
-                        for hfile_version in hfile_versions:
+                        for hfile_version in hfile.versions:
                             if hfile_version == after:
                                 new_hfile_version = HeaderFileVersion(
                                         md5=hfile_version.md5, parse=False,
@@ -200,6 +200,8 @@ class VersionsTool(Model):
 
                                 # The header directory needs scanning.
                                 scan = True
+
+                                break
 
                     if scan:
                         hdir.scan.append(version)

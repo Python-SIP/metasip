@@ -64,7 +64,7 @@ class ScannerTool(SimpleViewTool):
                     ViewStack(id='metasip.scanner.project_views'),
                     VBox(
                         Form(
-                            ComboBox('working_version', visible=False),
+                            ComboBox('working_version'),
                             FilesystemLocationEditor('source_directory',
                                     id='metasip.scanner.source_directory',
                                     mode='directory'),

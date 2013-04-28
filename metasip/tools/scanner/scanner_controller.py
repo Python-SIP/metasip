@@ -707,9 +707,19 @@ class ScannerController(Controller):
     def __on_versions_changed(self, change):
         """ Invoked when the list of project versions changes. """
 
-        # FIXME: This code assumes that versions will only ever be appended.
-
         if change.model is self.current_project:
+            # See if the current working version is being affected.
+            if self.current_project_ui.working_version in change.old:
+                # Determine a sensible new working version.
+                if len(change.new) != 0:
+                    working_version = change.new[0]
+                elif len(change.model.versions) == 0:
+                    working_version = None
+                else:
+                    working_version = change.model.versions[-1]
+
+                self.current_project_ui.set_working_version(working_version)
+
             self._update_from_versions()
 
     def _update_from_headers(self):
@@ -723,7 +733,7 @@ class ScannerController(Controller):
         self.reset_workflow_editor.enabled = enabled
 
     def _update_from_source_directory(self):
-        """ Update the Gui from the source directory. """
+        """ Update the GUI from the source directory. """
 
         model = self.model
 
@@ -736,11 +746,23 @@ class ScannerController(Controller):
     def _update_from_versions(self):
         """ Update the GUI from the current project's list of versions. """
 
-        versions = self.current_project.versions
         optionselector = self.working_version_editor
+        versions = self.current_project.versions
 
-        optionselector.options = reversed(versions)
-        optionselector.visible = (len(versions) != 0)
+        if len(versions) == 0:
+            optionselector.visible = False
+        else:
+            optionselector.visible = True
+
+            # We need to make sure that the value and the options of the option
+            # selector are always valid, ie. that the value is None while the
+            # options are being changed.  Because the value and the current
+            # working version are tied together then we also need to save (and
+            # automatically restore) the latter.
+            working_version = self.current_project_ui.working_version
+            optionselector.value = None
+            optionselector.options = reversed(versions)
+            optionselector.value = working_version
 
     def _working_version_as_string(self):
         """ Return the working version as a string.  This will be an empty
