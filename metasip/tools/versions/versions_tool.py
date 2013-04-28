@@ -98,28 +98,32 @@ class VersionsTool(Model):
                     remove_item = False
 
                     if r.startversion == version:
-                        if versions[0] == version:
-                            r.startversion = ''
-                        else:
-                            # It now starts with the version after the one we
-                            # are deleting.  If that is the same as the end
-                            # version then we delete the API item itself.
-                            new_start = '' if versions[-1] == version else versions[versions.index(version) + 1]
+                        # It now starts with the version after the one we are
+                        # deleting.  If that is the same as the end version
+                        # then we delete the API item.
+                        new_start = '' if versions[-1] == version else versions[versions.index(version) + 1]
 
-                            if new_start == r.endversion:
-                                remove_item = True
-                            else:
-                                r.startversion = new_start
-
-                    if r.endversion == version:
-                        if versions[0] == version:
+                        if new_start == r.endversion:
                             remove_item = True
                         else:
-                            # It now ends with the version after the one we are
-                            # deleting.
-                            new_end = '' if versions[-1] == version else versions[versions.index(version) + 1]
+                            r.startversion = new_start
 
-                            r.endversion = new_end
+                    # If the start version is now what the first version will
+                    # now be then we clear it.
+                    if r.startversion != '' and r.startversion == versions[1]:
+                        r.startversion = ''
+
+                    if r.endversion == version:
+                        # It now ends with the version after the one we are
+                        # deleting.
+                        new_end = '' if versions[-1] == version else versions[versions.index(version) + 1]
+
+                        r.endversion = new_end
+
+                    # If the end version is now what the first version will now
+                    # be then we delete the API item.
+                    if r.endversion != '' and r.endversion == versions[1]:
+                        remove_item = True
 
                     if remove_item:
                         remove_items.append((api_item, container))
