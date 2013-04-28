@@ -264,11 +264,12 @@ class HeaderFileItem(ScannerItem):
         """
 
         working_version = self.treeWidget().working_version
+        hfile_versions = self._header_file.versions
 
         if working_version is None:
-            working_file = self._header_file.versions[0]
+            working_file = None if len(hfile_versions) == 0 else hfile_versions[0]
         else:
-            for working_file in self._header_file.versions:
+            for working_file in hfile_versions:
                 if working_file.version == working_version:
                     break
             else:
