@@ -855,6 +855,12 @@ class SipFileItem(ContainerItem):
         if len(siblings) != 0:
             return None
 
+        empty_sipfile = True
+        for code in self.sipfile.content:
+            if code.status != 'ignored':
+                empty_sipfile = False
+                break
+
         return [("Hide Ignored", self._hideIgnoredSlot),
                 ("Show Ignored", self._showIgnoredSlot),
                 None,
@@ -870,7 +876,7 @@ class SipFileItem(ContainerItem):
                 ("Apply argument naming conventions...", self._nameFromConventions),
                 ("Accept argument names", self._acceptNames),
                 None,
-                ("Delete", self._deleteFile, (len(self.sipfile.content) == 0))]
+                ("Delete...", self._deleteFile, empty_sipfile)]
 
     def _deleteFile(self):
         """ Delete an empty .sip file. """
