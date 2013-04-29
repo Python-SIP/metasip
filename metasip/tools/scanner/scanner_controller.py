@@ -249,7 +249,7 @@ class ScannerController(Controller):
         has_cache = ""
         for hfile in self.current_header_directory.content:
             if not hfile.ignored and hfile.module != '' and len(hfile.versions) != 0:
-                has_cache = "(which includes saved header file signatures)"
+                has_cache = " (which includes saved header file signatures)"
                 break
 
         confirmed = Application.question(window_title,

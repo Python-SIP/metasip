@@ -294,6 +294,12 @@ class HeaderFileItem(ScannerItem):
         elif self._header_file.module == '':
             status = "Needs assigning"
             expand = True
+        elif len(self._header_file.versions) == 0:
+            # This happens when all the versions containing this header file
+            # have been deleted.
+            status = "Unused"
+            expand = True
+            self.setHidden(False)
         elif working_file is not None and working_file.parse:
             status = "Needs parsing"
             expand = True
