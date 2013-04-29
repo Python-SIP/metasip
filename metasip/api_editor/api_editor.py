@@ -569,8 +569,8 @@ class ModuleItem(EditorItem, DropSite):
             ``True`` if the source can be dropped.
         """
 
-        # We allow the order of our children to be changed.
-        return source.parent() is self
+        # We allow .sip files to be moved around anywhere.
+        return isinstance(source, SipFileItem)
 
     def drop(self, source):
         """ Handle the drop of an item.
@@ -579,12 +579,13 @@ class ModuleItem(EditorItem, DropSite):
             is the QTreeWidgetItem sub-class instance being dropped.
         """
 
-        # Dropping a child is interpreted as moving it to the top.
+        # The .sip file is always placed at the top.
         sf = source.sipfile
-        sipfiles = self.module.content
+        dst_sipfiles = self.module.content
+        src_sipfiles = source.parent().module.content
 
-        sipfiles.remove(sf)
-        sipfiles.insert(0, sf)
+        src_sipfiles.remove(sf)
+        dst_sipfiles.insert(0, sf)
 
         self.set_dirty()
 
@@ -784,6 +785,61 @@ class SipFileItem(ContainerItem):
         self._editors = {}
 
         self.setText(ApiEditor.NAME, sipfile.name)
+
+    def droppable(self, source):
+        """ Determine if an item can be dropped.
+
+        :param source:
+            is the QTreeWidgetItem sub-class instance being dropped.
+        :return:
+            ``True`` if the source can be dropped.
+        """
+
+        # See if we are moving another .sip file.
+        if isinstance(source, SipFileItem):
+            return True
+
+        # See if we are moving a child to the top.
+        if source.parent() is self:
+            return True
+
+        return False
+
+    def drop(self, source):
+        """ Handle the drop of an item.
+
+        :param source:
+            is the QTreeWidgetItem sub-class instance being dropped.
+        """
+
+        if isinstance(source, SipFileItem):
+            # We are moving another .sip file after us.  First remove the item
+            # from its container.
+            source.parent().module.content.remove(source.sipfile)
+
+            # Now add it to our container.
+            content = self.parent().module.content
+            idx = content.index(self.sipfile) + 1
+            if idx < len(content):
+                content.insert(idx, source.sipfile)
+            else:
+                content.append(source.sipfile)
+
+            self.set_dirty()
+
+            return
+
+        if source.parent() is self:
+            # Dropping a child is interpreted as moving it to the top.
+            content = self.sipfile.content
+            code = source.code
+
+            content.remove(code)
+            content.insert(0, code)
+
+            self.set_dirty()
+
+            return
 
     def parent_project_item(self):
         """ Return the parent project item that contains our project item. """
