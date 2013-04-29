@@ -464,63 +464,8 @@ class ProjectItem(EditorItem):
         if len(siblings) != 0:
             return None
 
-        return [("Add Module...", self._addModuleSlot),
-                ("Add External Module...", self._externalmoduleSlot),
-                ("Add Ignored Namespace...", self._ignorednamespaceSlot),
+        return [("Add Ignored Namespace...", self._ignorednamespaceSlot),
                 ("Properties...", self._propertiesSlot)]
-
-    def _addModuleSlot(self):
-        """ Handle adding a module to the project. """
-
-        project = self._project
-        window_title = "Add Module"
-
-        # Get the name of the module.
-        (mname, ok) = QInputDialog.getText(self.treeWidget(), window_title,
-                "Module name")
-
-        if ok:
-            mname = mname.strip()
-
-            if mname == '':
-                Application.warning(window_title,
-                        "The name of the module must not be blank.",
-                        self.treeWidget())
-            elif mname in [mod.name for mod in project.modules]:
-                Application.warning(window_title,
-                        "'{0}' is already used as the name of a module.".format(mname),
-                        self.treeWidget())
-            else:
-                # Add the module to the project.
-                mod = Module(name=mname)
-                project.modules.append(mod)
-                self.set_dirty()
-
-    def _externalmoduleSlot(self):
-        """ Handle adding a new external module. """
-
-        project = self._project
-        window_title = "Add External Module"
-
-        # Get the name of the new external module.
-        (xm, ok) = QInputDialog.getText(self.treeWidget(), window_title,
-                "External module")
-
-        if ok:
-            xm = xm.strip()
-
-            if xm == '':
-                Application.warning(window_title,
-                        "The name of the external module must not be blank.",
-                        self.treeWidget())
-            elif xm in project.externalmodules:
-                Application.warning(window_title,
-                        "'{0}' is already used as the name of an external module.".format(xm),
-                        self.treeWidget())
-            else:
-                # Add the external module to the project.
-                project.externalmodules.append(xm)
-                self.set_dirty()
 
     def _ignorednamespaceSlot(self):
         """ Handle adding a new ignored namespace. """
@@ -556,7 +501,7 @@ class ProjectItem(EditorItem):
         dlg = ProjectPropertiesDialog(prj, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
-            (prj.rootmodule, prj.externalmodules, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
+            (prj.rootmodule, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
 
             self.set_dirty()
 
@@ -612,6 +557,7 @@ class ModuleItem(EditorItem, DropSite):
                 progress.setValue(so_far)
                 QApplication.processEvents()
 
+        observe('name', module, self.__on_name_changed)
         observe('content', module, self.__on_content_changed)
 
     def droppable(self, source):
@@ -673,6 +619,12 @@ class ModuleItem(EditorItem, DropSite):
             (mod.outputdirsuffix, mod.imports, mod.directives, mod.version) = dlg.fields()
 
             self.set_dirty()
+
+    def __on_name_changed(self, change):
+        """ Invoked when the name changes. """
+
+        self.setText(ApiEditor.NAME, change.new)
+        self.parent().sortChildren(ApiEditor.NAME, Qt.AscendingOrder)
 
     def __on_content_changed(self, change):
         """ Invoked when the content changes. """

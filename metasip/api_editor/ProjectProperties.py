@@ -32,12 +32,6 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         # Initialise the dialog.
         self.rootModule.setText(prj.rootmodule)
 
-        for m in prj.externalmodules:
-            self.externalModules.addItem(m)
-
-        self.buttonRemoveModule.setEnabled(self.externalModules.count())
-        self.buttonRemoveModule.clicked.connect(self._removeModule)
-
         for n in prj.ignorednamespaces:
             self.ignoredNamespaces.addItem(n)
 
@@ -53,23 +47,10 @@ class ProjectPropertiesDialog(QDialog, Ui_ProjectPropertiesBase):
         rootmodule = self.rootModule.text().strip()
         sipcomments = self.sipFileComments.toPlainText().strip()
 
-        ml = [self.externalModules.itemText(i)
-                for i in range(self.externalModules.count())]
-
         ns = [self.ignoredNamespaces.itemText(i)
                 for i in range(self.ignoredNamespaces.count())]
 
-        return (rootmodule, ml, ns, sipcomments)
-
-    def _removeModule(self):
-        """
-        Remove the current external module from the list.
-        """
-        idx = self.externalModules.currentIndex()
-
-        if idx >= 0:
-            self.externalModules.removeItem(idx)
-            self.buttonRemoveModule.setEnabled(self.externalModules.count())
+        return (rootmodule, ns, sipcomments)
 
     def _removeNamespace(self):
         """
