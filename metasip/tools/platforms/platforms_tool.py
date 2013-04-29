@@ -56,7 +56,7 @@ class PlatformsTool(Model):
     platform_rename = Action(enabled=False, text="Rename Platform...")
 
     # The collection of the tool's actions.
-    platforms_actions = ActionCollection(
+    platforms_actions = ActionCollection(text="Platforms",
             actions=['platform_new', 'platform_rename', 'platform_delete'],
             within='dip.ui.collections.edit')
 

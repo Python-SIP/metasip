@@ -57,7 +57,7 @@ class VersionsTool(Model):
     version_rename = Action(enabled=False, text="Rename Version...")
 
     # The collection of the tool's actions.
-    versions_actions = ActionCollection(
+    versions_actions = ActionCollection(text="Versions",
             actions=['version_new', 'version_rename', 'version_delete'],
             within='dip.ui.collections.edit')
 

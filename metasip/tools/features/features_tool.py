@@ -61,7 +61,7 @@ class FeaturesTool(Model):
     feature_rename = Action(enabled=False, text="Rename Feature...")
 
     # The collection of the tool's actions.
-    features_actions = ActionCollection(
+    features_actions = ActionCollection(text="Features",
             actions=['feature_new', 'feature_rename', 'feature_delete'],
             within='dip.ui.collections.edit')
 

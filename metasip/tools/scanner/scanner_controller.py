@@ -254,7 +254,7 @@ class ScannerController(Controller):
 
         if len(self.current_header_files) != 0:
             window_title = "Delete Header File"
-            question = "Are you sure you want to delete the header file?"
+            question = "Are you sure you want to delete this header file?"
         else:
             window_title = "Delete Header Directory"
 
@@ -264,7 +264,7 @@ class ScannerController(Controller):
                     has_cache = " (which includes saved header file signatures)"
                     break
 
-            question = "Are you sure you want to delete the header directory{0}?".format(has_cache)
+            question = "Are you sure you want to delete this header directory{0}?".format(has_cache)
 
         confirmed = Application.question(window_title, question,
                 self.delete_editor)
