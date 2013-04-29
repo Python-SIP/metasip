@@ -195,6 +195,14 @@ class ScannerController(Controller):
             self.delete_editor.enabled = False
 
         if len(header_files) != 0:
+            # The delete button is enabled for a selected header directory, or
+            # a single header file that is either ignored or unused.
+            if len(header_files) > 1:
+                self.delete_editor.enabled = False
+            else:
+                hfile = header_files[0]
+                self.delete_editor.enabled = (hfile.ignored or len(hfile.versions) == 0)
+
             # Create an amalgamation of the selected header files.
             hfile = header_files[0]
             names = [hfile.name]
@@ -244,20 +252,30 @@ class ScannerController(Controller):
 
         project = self.current_project
 
-        window_title = "Delete Header Directory"
+        if len(self.current_header_files) != 0:
+            window_title = "Delete Header File"
+            question = "Are you sure you want to delete the header file?"
+        else:
+            window_title = "Delete Header Directory"
 
-        has_cache = ""
-        for hfile in self.current_header_directory.content:
-            if not hfile.ignored and hfile.module != '' and len(hfile.versions) != 0:
-                has_cache = " (which includes saved header file signatures)"
-                break
+            has_cache = ""
+            for hfile in self.current_header_directory.content:
+                if not hfile.ignored and hfile.module != '' and len(hfile.versions) != 0:
+                    has_cache = " (which includes saved header file signatures)"
+                    break
 
-        confirmed = Application.question(window_title,
-                    "Are you sure you want to delete the header directory{0}?".format(has_cache),
-                    self.delete_editor)
+            question = "Are you sure you want to delete the header directory{0}?".format(has_cache)
+
+        confirmed = Application.question(window_title, question,
+                self.delete_editor)
 
         if confirmed == 'yes':
-            project.headers.remove(self.current_header_directory)
+            if len(self.current_header_files) != 0:
+                self.current_header_directory.content.remove(
+                        self.current_header_files[0])
+            else:
+                project.headers.remove(self.current_header_directory)
+
             IDirty(project).dirty = True
 
     @observe('model.hide_ignored')
