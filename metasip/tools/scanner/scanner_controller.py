@@ -246,14 +246,18 @@ class ScannerController(Controller):
 
         window_title = "Delete Header Directory"
 
-        hdir = self.current_header_directory
+        has_cache = ""
+        for hfile in self.current_header_directory.content:
+            if not hfile.ignored and hfile.module != '' and len(hfile.versions) != 0:
+                has_cache = "(which includes saved header file signatures)"
+                break
 
-        if len(hdir.content) != 0:
-            Application.warning(window_title,
-                    "Deleting a scanned header directory is not yet supported.",
+        confirmed = Application.question(window_title,
+                    "Are you sure you want to delete the header directory{0}?".format(has_cache),
                     self.delete_editor)
-        else:
-            project.headers.remove(hdir)
+
+        if confirmed == 'yes':
+            project.headers.remove(self.current_header_directory)
             IDirty(project).dirty = True
 
     @observe('model.hide_ignored')

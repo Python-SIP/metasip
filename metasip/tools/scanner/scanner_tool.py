@@ -101,7 +101,8 @@ class ScannerTool(SimpleViewTool):
                             id='metasip.scanner.file_group'),
                         HBox(
                             PushButton('new', label="New..."),
-                            PushButton('delete', enabled=False),
+                            PushButton('delete', label="Delete...",
+                                    enabled=False),
                             PushButton('reset_workflow', enabled=False)),
                         Stretch(),
                         MessageArea()),
