@@ -87,6 +87,7 @@ class VersionsTool(Model):
 
         if IDialog(dlg).execute():
             version = model['version']
+            removing_first_version = (version == versions[0])
 
             # Delete from each API item it appears.
             remove_items = []
@@ -95,8 +96,6 @@ class VersionsTool(Model):
                 remove_ranges = []
 
                 for r in api_item.versions:
-                    remove_item = False
-
                     if r.startversion == version:
                         # It now starts with the version after the one we are
                         # deleting.  If that is the same as the end version
@@ -104,13 +103,14 @@ class VersionsTool(Model):
                         new_start = '' if versions[-1] == version else versions[versions.index(version) + 1]
 
                         if new_start == r.endversion:
-                            remove_item = True
-                        else:
-                            r.startversion = new_start
+                            remove_items.append((api_item, container))
+                            break
+
+                        r.startversion = new_start
 
                     # If the start version is now what the first version will
                     # now be then we clear it.
-                    if r.startversion != '' and r.startversion == versions[1]:
+                    if r.startversion != '' and removing_first_version and r.startversion == versions[1]:
                         r.startversion = ''
 
                     if r.endversion == version:
@@ -119,15 +119,6 @@ class VersionsTool(Model):
                         new_end = '' if versions[-1] == version else versions[versions.index(version) + 1]
 
                         r.endversion = new_end
-
-                    # If the end version is now what the first version will now
-                    # be then we delete the API item.
-                    if r.endversion != '' and r.endversion == versions[1]:
-                        remove_item = True
-
-                    if remove_item:
-                        remove_items.append((api_item, container))
-                        break
 
                     if r.startversion == '' and r.endversion == '':
                         remove_ranges.append(r)
