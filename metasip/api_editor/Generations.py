@@ -60,7 +60,7 @@ class GenerationsDialog(QDialog, Ui_GenerationsBase):
         if api_end == '':
             end_index = len(prj.versions) - 1
         else:
-            end_index = prj.versions.index(api_start) - 1
+            end_index = prj.versions.index(api_end) - 1
 
         self.sgen.setCurrentIndex(start_index)
         self.egen.setCurrentIndex(end_index)
