@@ -800,7 +800,7 @@ class ScannerController(Controller):
     @classmethod
     def _read_header(cls, name):
         """ Read the contents of a header file.  Handle the special case of the
-        file just be a #include redirect to another header file.
+        file just being a #include redirect to another header file.
         """
 
         contents, actual_name, encoding = cls._read_single_header(name)

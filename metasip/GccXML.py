@@ -1220,8 +1220,13 @@ class GccXMLParser(ParserBase):
         attrs is the dictionary of attributes.
         """
         # Remember the file ID of the file being parsed.
-        if attrs["name"] == self._pathname:
-            self._fileid = attrs["id"]
+        name = attrs["name"]
+        if os.path.isabs(name):
+            if name == self._pathname:
+                self._fileid = attrs["id"]
+        else:
+            if self._pathname.endswith(name[1:]):
+                self._fileid = attrs["id"]
 
     def transformScope(self, container, scope):
         """
