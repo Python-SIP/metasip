@@ -1256,11 +1256,15 @@ class Class(Code, Access):
         if self.typecode:
             _writeCodeSIP(f, "%TypeCode", self.typecode, False)
 
+        if self.subclasscode:
+            _writeCodeSIP(f, "%ConvertToSubClassCode", self.subclasscode)
+
         if self.convtotypecode:
             _writeCodeSIP(f, "%ConvertToTypeCode", self.convtotypecode, False)
 
-        if self.subclasscode:
-            _writeCodeSIP(f, "%ConvertToSubClassCode", self.subclasscode)
+        if self.convfromtypecode:
+            _writeCodeSIP(f, "%ConvertFromTypeCode", self.convfromtypecode,
+                    False)
 
         if self.gctraversecode:
             _writeCodeSIP(f, "%GCTraverseCode", self.gctraversecode)
@@ -1336,11 +1340,14 @@ class Class(Code, Access):
         if self.typecode:
             _writeLiteralXML(f, "typecode", self.typecode)
 
+        if self.subclasscode:
+            _writeLiteralXML(f, "subclasscode", self.subclasscode)
+
         if self.convtotypecode:
             _writeLiteralXML(f, "convtotypecode", self.convtotypecode)
 
-        if self.subclasscode:
-            _writeLiteralXML(f, "subclasscode", self.subclasscode)
+        if self.convfromtypecode:
+            _writeLiteralXML(f, "convfromtypecode", self.convfromtypecode)
 
         if self.gctraversecode:
             _writeLiteralXML(f, "gctraversecode", self.gctraversecode)

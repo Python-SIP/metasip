@@ -1,3 +1,10 @@
+v1.10 7th June 2013
+  - Updated the project file format to v4 to support classes having
+    %ConvertFromTypeCode.
+  - May improvements to the flexibility of the API editor to make it easy to
+    move elements around between modules and to delete elements.
+  - Bug fixes.
+
 v1.9 19th November 2012
   - Updated the project file format to v3 to support enum values having
     features and platforms.

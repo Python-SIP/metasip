@@ -1330,6 +1330,7 @@ class CodeItem(ContainerItem):
         thcslot = False
         tcslot = False
         cttcslot = False
+        cftcslot = False
         mcslot = False
         vccslot = False
         sccslot = False
@@ -1364,6 +1365,7 @@ class CodeItem(ContainerItem):
             thcslot = True
             tcslot = True
             cttcslot = True
+            cftcslot = True
             sccslot = True
             gctcslot = True
             gcccslot = True
@@ -1420,7 +1422,7 @@ class CodeItem(ContainerItem):
         elif isinstance(self.code, EnumValue):
             pslot = self._enumValuePropertiesSlot
 
-        if thcslot or tcslot or cttcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
+        if thcslot or tcslot or cttcslot or cftcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
             menu.append(None)
 
             if thcslot:
@@ -1429,11 +1431,14 @@ class CodeItem(ContainerItem):
             if tcslot:
                 menu.append(("%TypeCode", self._typeCodeSlot, ("tc" not in self._editors)))
 
-            if cttcslot:
-                menu.append(("%ConvertToTypeCode", self._convTypeCodeSlot, ("cttc" not in self._editors)))
-
             if sccslot:
                 menu.append(("%ConvertToSubClassCode", self._subclassCodeSlot, ("scc" not in self._editors)))
+
+            if cttcslot:
+                menu.append(("%ConvertToTypeCode", self._convToTypeCodeSlot, ("cttc" not in self._editors)))
+
+            if cftcslot:
+                menu.append(("%ConvertFromTypeCode", self._convFromTypeCodeSlot, ("cftc" not in self._editors)))
 
             if mcslot:
                 menu.append(("%MethodCode", self._methodCodeSlot, ("mc" not in self._editors)))
@@ -1692,16 +1697,16 @@ class CodeItem(ContainerItem):
 
         del self._editors["tc"]
 
-    def _convTypeCodeSlot(self):
+    def _convToTypeCodeSlot(self):
         """
         Slot to handle %ConvertToTypeCode.
         """
         ed = ExternalEditor()
-        ed.editDone.connect(self._convTypeCodeDone)
+        ed.editDone.connect(self._convToTypeCodeDone)
         ed.edit(self.code.convtotypecode, "%ConvertToTypeCode: " + self.code.user())
         self._editors["cttc"] = ed
 
-    def _convTypeCodeDone(self, text_changed, text):
+    def _convToTypeCodeDone(self, text_changed, text):
         """
         Slot to handle changed %ConvertToTypeCode.
 
@@ -1713,6 +1718,28 @@ class CodeItem(ContainerItem):
             self.set_dirty()
 
         del self._editors["cttc"]
+
+    def _convFromTypeCodeSlot(self):
+        """
+        Slot to handle %ConvertFromTypeCode.
+        """
+        ed = ExternalEditor()
+        ed.editDone.connect(self._convFromTypeCodeDone)
+        ed.edit(self.code.convfromtypecode, "%ConvertFromTypeCode: " + self.code.user())
+        self._editors["cftc"] = ed
+
+    def _convFromTypeCodeDone(self, text_changed, text):
+        """
+        Slot to handle changed %ConvertFromTypeCode.
+
+        text_changed is set if the code has changed.
+        text is the code.
+        """
+        if text_changed:
+            self.code.convfromtypecode = text
+            self.set_dirty()
+
+        del self._editors["cftc"]
 
     def _gcTraverseCodeSlot(self):
         """

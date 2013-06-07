@@ -3,7 +3,7 @@
 
     <xsd:annotation>
         <xsd:documentation xml:lang="en">
-            The schema for version 3 of a MetaSIP project.
+            The schema for version 4 of a MetaSIP project.
         </xsd:documentation>
     </xsd:annotation>
 
@@ -42,6 +42,7 @@
                             <xsd:enumeration value="bisegcountcode"/>
                             <xsd:enumeration value="biwritebufcode"/>
                             <xsd:enumeration value="convtotypecode"/>
+                            <xsd:enumeration value="convfromtypecode"/>
                             <xsd:enumeration value="docstring"/>
                             <xsd:enumeration value="gcclearcode"/>
                             <xsd:enumeration value="gctraversecode"/>

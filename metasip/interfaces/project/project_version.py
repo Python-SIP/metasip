@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#   4   Implemented by metasip v1.10.
+#       - added the convfromtypecode to the Class element.
+#
 #   3   Implemented by metasip v1.9.
 #       - added the features and platforms attributes to the EnumValue element.
 #
@@ -31,4 +34,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 3
+ProjectVersion = 4

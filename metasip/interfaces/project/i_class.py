@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -41,6 +41,9 @@ class IClass(ICode, ICodeContainer, IDocString, IAccess):
 
     # The optional %BIWriteBufferCode.
     biwritebufcode = Str()
+
+    # The optional %ConvertFromTypeCode.
+    convfromtypecode = Str()
 
     # The optional %ConvertToTypeCode.
     convtotypecode = Str()

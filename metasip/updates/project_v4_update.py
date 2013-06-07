@@ -16,14 +16,14 @@ from ..interfaces import IUpdate
 
 
 @implements(IUpdate)
-class ProjectV3Update(Model):
-    """ The ProjectV3Update class implements the update of a project from v2 to
-    v3.
+class ProjectV4Update(Model):
+    """ The ProjectV4Update class implements the update of a project from v3 to
+    v4.
     """
 
     # The project format version number that this will update to (from the
     # immediately previous format).
-    updates_to = 3
+    updates_to = 4
 
     def create_view(self, root):
         """ Create the view that will gather the information from the user
@@ -35,7 +35,7 @@ class ProjectV3Update(Model):
             the view.
         """
 
-        # We don't need any inout from the user.
+        # We don't need any input from the user.
         return None
 
     def update(self, root, view):
@@ -47,6 +47,6 @@ class ProjectV3Update(Model):
             is the view returned by create_view().
         """
 
-        # The v3 schema allows enum values to have features and platforms, so
-        # we just need to bump the version number.
+        # The v4 schema allows classes to have %ConvertFromTypeCode so we just
+        # need to bump the version number.
         root.set('version', str(self.updates_to))
