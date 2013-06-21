@@ -675,14 +675,16 @@ class ScannerController(Controller):
                             v.version))
 
             prev_md5 = ''
+            prev_parse = True
             for hfv in versions_sorted:
                 if hfv.version == working_version:
                     break
 
                 prev_md5 = hfv.md5
+                prev_parse = hfv.parse
 
             if prev_md5 == md5:
-                hfile_version.parse = False
+                hfile_version.parse = prev_parse
 
             IDirty(self.current_project).dirty = True
 
