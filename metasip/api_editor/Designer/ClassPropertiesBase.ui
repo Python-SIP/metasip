@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>537</width>
-    <height>302</height>
+    <width>505</width>
+    <height>298</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,9 +42,9 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QCheckBox" name="nodefaultctorsCb">
+       <widget class="QCheckBox" name="mixinCb">
         <property name="text">
-         <string>NoDefaultCtors</string>
+         <string>Mixin</string>
         </property>
        </widget>
       </item>
@@ -56,18 +56,11 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <layout class="QFormLayout" name="formLayout_4">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>PyName</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="pyName"/>
-        </item>
-       </layout>
+       <widget class="QCheckBox" name="nodefaultctorsCb">
+        <property name="text">
+         <string>NoDefaultCtors</string>
+        </property>
+       </widget>
       </item>
       <item row="2" column="0">
        <layout class="QFormLayout" name="formLayout_3">
@@ -84,11 +77,18 @@
        </layout>
       </item>
       <item row="2" column="1">
-       <widget class="QCheckBox" name="noqmetaobjectCb">
-        <property name="text">
-         <string>PyQt4NoQMetaObject</string>
-        </property>
-       </widget>
+       <layout class="QFormLayout" name="formLayout_4">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>PyName</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="pyName"/>
+        </item>
+       </layout>
       </item>
       <item row="3" column="0">
        <widget class="QCheckBox" name="delaydtorCb">
@@ -98,18 +98,11 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <layout class="QFormLayout" name="formLayout_5">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Supertype</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="supertype"/>
-        </item>
-       </layout>
+       <widget class="QCheckBox" name="noqmetaobjectCb">
+        <property name="text">
+         <string>PyQt4NoQMetaObject</string>
+        </property>
+       </widget>
       </item>
       <item row="4" column="0">
        <layout class="QFormLayout" name="formLayout_2">
@@ -122,6 +115,23 @@
         </item>
         <item row="0" column="1">
          <widget class="QLineEdit" name="metatype"/>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="1">
+       <layout class="QFormLayout" name="formLayout_5">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Supertype</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="supertype"/>
         </item>
        </layout>
       </item>
@@ -160,6 +170,7 @@
   <tabstop>api</tabstop>
   <tabstop>delaydtorCb</tabstop>
   <tabstop>metatype</tabstop>
+  <tabstop>mixinCb</tabstop>
   <tabstop>nodefaultctorsCb</tabstop>
   <tabstop>pyName</tabstop>
   <tabstop>noqmetaobjectCb</tabstop>

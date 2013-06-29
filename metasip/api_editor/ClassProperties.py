@@ -53,6 +53,8 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
                 cb = self.nodefaultctorsCb
             elif name == "PyQt4NoQMetaObject":
                 cb = self.noqmetaobjectCb
+            elif name == "Mixin":
+                cb = self.mixinCb
             elif name == "PyName":
                 le = self.pyName
             elif name == "API":
@@ -89,6 +91,9 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
 
         if self.noqmetaobjectCb.isChecked():
             alist.append("PyQt4NoQMetaObject")
+
+        if self.mixinCb.isChecked():
+            alist.append("Mixin")
 
         s = str(self.pyName.text()).strip()
         if s:
