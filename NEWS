@@ -1,3 +1,7 @@
+v1.11 30th June 2013
+  - Updated the project file format to v5 to support %FinalisationCode.
+  - Added support for the /Mixin/ class annotation.
+
 v1.10 7th June 2013
   - Updated the project file format to v4 to support classes having
     %ConvertFromTypeCode.

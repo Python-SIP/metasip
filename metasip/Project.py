@@ -1256,6 +1256,9 @@ class Class(Code, Access):
         if self.typecode:
             _writeCodeSIP(f, "%TypeCode", self.typecode, False)
 
+        if self.finalisationcode:
+            _writeCodeSIP(f, "%FinalisationCode", self.finalisationcode)
+
         if self.subclasscode:
             _writeCodeSIP(f, "%ConvertToSubClassCode", self.subclasscode)
 
@@ -1339,6 +1342,9 @@ class Class(Code, Access):
 
         if self.typecode:
             _writeLiteralXML(f, "typecode", self.typecode)
+
+        if self.finalisationcode:
+            _writeLiteralXML(f, "finalisationcode", self.finalisationcode)
 
         if self.subclasscode:
             _writeLiteralXML(f, "subclasscode", self.subclasscode)

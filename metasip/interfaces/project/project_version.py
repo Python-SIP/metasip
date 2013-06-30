@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#   5   Implemented by metasip v1.11.
+#       - added the finalisationcode to the Class element.
+#
 #   4   Implemented by metasip v1.10.
 #       - added the convfromtypecode to the Class element.
 #
@@ -34,4 +37,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 4
+ProjectVersion = 5

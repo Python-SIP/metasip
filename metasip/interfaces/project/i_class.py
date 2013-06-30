@@ -71,6 +71,9 @@ class IClass(ICode, ICodeContainer, IDocString, IAccess):
     # The optional %ConvertToSubClassCode.
     subclasscode = Str()
 
+    # The optional %FinalisationCode.
+    finalisationcode = Str()
+
     # The optional %TypeCode.
     typecode = Str()
 

@@ -1333,6 +1333,7 @@ class CodeItem(ContainerItem):
         cftcslot = False
         mcslot = False
         vccslot = False
+        fcslot = False
         sccslot = False
         acslot = False
         gcslot = False
@@ -1366,6 +1367,7 @@ class CodeItem(ContainerItem):
             tcslot = True
             cttcslot = True
             cftcslot = True
+            fcslot = True
             sccslot = True
             gctcslot = True
             gcccslot = True
@@ -1422,7 +1424,7 @@ class CodeItem(ContainerItem):
         elif isinstance(self.code, EnumValue):
             pslot = self._enumValuePropertiesSlot
 
-        if thcslot or tcslot or cttcslot or cftcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
+        if thcslot or tcslot or cttcslot or cftcslot or fcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
             menu.append(None)
 
             if thcslot:
@@ -1430,6 +1432,9 @@ class CodeItem(ContainerItem):
 
             if tcslot:
                 menu.append(("%TypeCode", self._typeCodeSlot, ("tc" not in self._editors)))
+
+            if fcslot:
+                menu.append(("%FinalisationCode", self._finalCodeSlot, ("fc" not in self._editors)))
 
             if sccslot:
                 menu.append(("%ConvertToSubClassCode", self._subclassCodeSlot, ("scc" not in self._editors)))
@@ -1938,6 +1943,28 @@ class CodeItem(ContainerItem):
             self.set_dirty()
 
         del self._editors["pick"]
+
+    def _finalCodeSlot(self):
+        """
+        Slot to handle %FinalisationCode.
+        """
+        ed = ExternalEditor()
+        ed.editDone.connect(self._finalCodeDone)
+        ed.edit(self.code.finalisationcode, "%FinalisationCode: " + self.code.user())
+        self._editors["fc"] = ed
+
+    def _finalCodeDone(self, text_changed, text):
+        """
+        Slot to handle changed %FinalisationCode.
+
+        text_changed is set if the code has changed.
+        text is the code.
+        """
+        if text_changed:
+            self.code.finalisationcode = text
+            self.set_dirty()
+
+        del self._editors["fc"]
 
     def _subclassCodeSlot(self):
         """
