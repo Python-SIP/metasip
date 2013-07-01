@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -41,6 +41,17 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
         if mod.directives:
             self.additionalDirectives.setPlainText(mod.directives + "\n")
 
+        self.callSuperInitCb.addItems(["Undefined", "No", "Yes"])
+
+        if mod.callsuperinit == 'undefined':
+            idx = 0
+        elif mod.callsuperinit == 'no':
+            idx = 1
+        else:
+            idx = 2
+
+        self.callSuperInitCb.setCurrentIndex(idx)
+
         self.version.setText(mod.version)
 
         layout = QGridLayout()
@@ -60,9 +71,10 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
     def fields(self):
         """ Return a tuple of the dialog fields. """
 
-        odirsuff = str(self.outputDirSuffix.text()).strip()
-        adddirectives = str(self.additionalDirectives.toPlainText()).strip()
-        version = str(self.version.text()).strip()
+        odirsuff = self.outputDirSuffix.text().strip()
+        adddirectives = self.additionalDirectives.toPlainText().strip()
+        callsuperinit = self.callSuperInitCb.currentText().lower()
+        version = self.version.text().strip()
 
         il = []
 
@@ -75,4 +87,4 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
             if cb.checkState() == Qt.Checked:
                 il.append(self._ilistall[i])
 
-        return (odirsuff, il, adddirectives, version)
+        return (odirsuff, il, adddirectives, callsuperinit, version)

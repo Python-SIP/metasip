@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Interface, List, Str
+from dip.model import Enum, Interface, List, Str
 
 from .i_sip_file import ISipFile
 
@@ -19,6 +19,10 @@ class IModule(Interface):
     """ The IModule interface is implemented by models representing a Python
     module.
     """
+
+    # Whether instances of classes defined in the module should call
+    # super().__init().
+    callsuperinit = Enum('undefined', 'no', 'yes')
 
     # The list of .sip files defining API items included in the module.
     content = List(ISipFile)

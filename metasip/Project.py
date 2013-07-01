@@ -635,6 +635,9 @@ class Project(Model):
             if mod.outputdirsuffix != '':
                 f.write(' outputdirsuffix="%s"' % mod.outputdirsuffix)
 
+            if mod.callsuperinit != 'undefined':
+                f.write(' callsuperinit="%s"' % ('1' if mod.callsuperinit == 'yes' else '0'))
+
             if mod.version != '':
                 f.write(' version="%s"' % mod.version)
 
@@ -727,13 +730,18 @@ class Project(Model):
         if rname != '':
             rname += "."
 
-        if mod.version != '':
-            version = ", version=%s" % mod.version
-        else:
-            version = ""
-
         if latest_sip:
-            f.write("%%Module(name=%s%s, keyword_arguments=\"Optional\"%s)\n\n" % (rname, mod.name, version))
+            if mod.callsuperinit != 'undefined':
+                callsuperinit = ", call_super_init=%s" % ('True' if mod.callsuperinit == 'yes' else 'False')
+            else:
+                callsuperinit = ""
+
+            if mod.version != '':
+                version = ", version=%s" % mod.version
+            else:
+                version = ""
+
+            f.write("%%Module(name=%s%s%s, keyword_arguments=\"Optional\"%s)\n\n" % (rname, mod.name, callsuperinit, version))
         else:
             f.write("%%Module %s%s 0\n\n" % (rname, mod.name))
 

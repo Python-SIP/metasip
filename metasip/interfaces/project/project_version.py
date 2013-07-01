@@ -13,11 +13,14 @@
 # The current project file format version number.
 #
 # History:
+#   6   Implemented by metasip v1.12.
+#       - added callsuperinit to the Module element.
+#
 #   5   Implemented by metasip v1.11.
-#       - added the finalisationcode to the Class element.
+#       - added finalisationcode to the Class element.
 #
 #   4   Implemented by metasip v1.10.
-#       - added the convfromtypecode to the Class element.
+#       - added convfromtypecode to the Class element.
 #
 #   3   Implemented by metasip v1.9.
 #       - added the features and platforms attributes to the EnumValue element.
@@ -37,4 +40,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 5
+ProjectVersion = 6

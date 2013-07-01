@@ -333,9 +333,17 @@ class ProjectParser:
     def add_module(self, project, elem):
         """ Add an element defining a module to a project. """
 
+        callsuperinit = int(elem.get('callsuperinit', '-1'))
+        if callsuperinit < 0:
+            callsuperinit = 'undefined'
+        elif callsuperinit == 0:
+            callsuperinit = 'no'
+        else:
+            callsuperinit = 'yes'
+
         mod = Module(name=elem.get('name'),
                 outputdirsuffix=elem.get('outputdirsuffix', ''),
-                version=elem.get('version', ''),
+                callsuperinit=callsuperinit, version=elem.get('version', ''),
                 imports=elem.get('imports', '').split())
 
         for child in elem:

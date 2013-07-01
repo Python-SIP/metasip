@@ -15,3 +15,4 @@ from .project_v2_schema import ProjectV2Schema
 from .project_v3_schema import ProjectV3Schema
 from .project_v4_schema import ProjectV4Schema
 from .project_v5_schema import ProjectV5Schema
+from .project_v6_schema import ProjectV6Schema
