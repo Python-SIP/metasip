@@ -268,6 +268,11 @@ class _Struct(_ScopedItem, _Access):
             parser.transformScope(tci, self)
 
 
+# Treat a union as a struct so that it appears in the .sip file where it can be
+# handled with handwritten code.
+_Union = _Struct
+
+
 class _Callable(_ScopedItem):
     """
     This class is the base class for callable code.
@@ -1065,6 +1070,14 @@ class GccXMLParser(ParserBase):
 
         _Variable(self, attrs)
 
+    def unionStart(self, attrs):
+        """
+        Called at the start of a union.
+
+        attrs is the dictionary of attributes.
+        """
+        _Union(self, attrs)
+
     def structStart(self, attrs):
         """
         Called at the start of a structure.
@@ -1283,7 +1296,7 @@ class GccXMLParser(ParserBase):
     def asType(self, type_id):
         """
         Return the string representation of a type or None if it is an
-        unsupported type (like a union).
+        unsupported type.
 
         type_id is the type ID.
         """
