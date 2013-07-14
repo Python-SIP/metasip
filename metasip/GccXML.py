@@ -141,13 +141,15 @@ class _ScopedItem(object):
 
         parser.scopeditems.append(self)
 
-    def asType(self, parser):
+    def asType(self, parser, prefix_ok):
         """
         Return the string representation of the item for when it is used as a
         type.
 
         parser is the parser instance.
         """
+        assert prefix_ok is None
+
         sl = []
 
         # Prefix it by any scope.
@@ -161,7 +163,7 @@ class _ScopedItem(object):
             sl.insert(0, pc.name)
             pc = parser.byid[pc.context]
 
-        return "::".join(sl)
+        return "::".join(sl), True
 
 
 class _Namespace(_ScopedItem):
@@ -215,7 +217,7 @@ class _Class(_ScopedItem, _Access):
                 acc = sbid[0]
                 bid = sbid[1]
 
-            bl.append("%s %s" % (acc, parser.byid[bid].asType(parser)))
+            bl.append("%s %s" % (acc, parser.asType(bid)))
 
         # Automatically ignore non-public classes.
         status = 'unknown' if self.access == '' else 'ignored'
@@ -691,17 +693,19 @@ class _FunctionType(object):
 
         parser.byid[attrs["id"]] = self
 
-    def asType(self, parser):
+    def asType(self, parser, prefix_ok):
         """
         Return the string representation of the type.
 
         parser is the parser instance.
         """
+        assert prefix_ok is None
+
         al = []
         for a in self.args:
             al.append(parser.asType(a.type_id))
 
-        return parser.asType(self.returns) + " (%s)(" + ", ".join(al) + ")"
+        return parser.asType(self.returns) + " (%s)(" + ", ".join(al) + ")", False
 
 
 class _FundamentalType(object):
@@ -719,12 +723,14 @@ class _FundamentalType(object):
 
         parser.byid[attrs["id"]] = self
 
-    def asType(self, parser):
+    def asType(self, parser, prefix_ok):
         """
         Return the string representation of the type.
 
         parser is the parser instance.
         """
+        assert prefix_ok is None
+
         # Map some of GCC-XML's verbose types to something SIP can handle.
         type_map = {
             "short int": "short",
@@ -733,12 +739,7 @@ class _FundamentalType(object):
             "long long unsigned int": "unsigned long long"
         }
 
-        try:
-            return type_map[self.name]
-        except KeyError:
-            pass
-
-        return self.name
+        return type_map.get(self.name, self.name), True
 
 
 class _IndirectType(object):
@@ -757,45 +758,45 @@ class _IndirectType(object):
 
         parser.byid[attrs["id"]] = self
 
-    def asType(self, parser):
+    def asType(self, parser, prefix_ok):
         """
         Return the string representation of the type that this type indirects
         to.
 
         parser is the parser instance.
         """
-        return parser.asType(self.type_id)
+        return parser.asInnerType(self.type_id, prefix_ok)
 
 
 class _ReferenceType(_IndirectType):
     """
     This class represents a GCC-XML reference type entity.
     """
-    def asType(self, parser):
+    def asType(self, parser, prefix_ok):
         """
         Return the string representation of the type.
 
         parser is the parser instance.
         """
-        s = super(_ReferenceType, self).asType(parser)
+        s, _ = super().asType(parser, prefix_ok)
 
         if s[-1] not in "*&":
             s += " "
 
-        return s + "&"
+        return s + "&", False
 
 
 class _PointerType(_IndirectType):
     """
     This class represents a GCC-XML pointer type entity.
     """
-    def asType(self, parser):
+    def asType(self, parser, prefix_ok):
         """
         Return the string representation of the type.
 
         parser is the parser instance.
         """
-        s = super(_PointerType, self).asType(parser)
+        s, _ = super().asType(parser, prefix_ok)
 
         rt = parser.byid[self.type_id]
 
@@ -809,7 +810,7 @@ class _PointerType(_IndirectType):
 
             s += "*"
 
-        return s
+        return s, False
 
 
 class _CvQualifiedType(_IndirectType):
@@ -827,18 +828,21 @@ class _CvQualifiedType(_IndirectType):
 
         self.const = bool(int(optAttribute(attrs, "const", "0")))
 
-    def asType(self, parser):
+    def asType(self, parser, prefix_ok):
         """
         Return the string representation of the type.
 
         parser is the parser instance.
         """
-        if self.const:
-            s = "const "
-        else:
-            s = ""
+        s, prefix_ok = super().asType(parser, prefix_ok)
 
-        return s + super(_CvQualifiedType, self).asType(parser)
+        if self.const:
+            if prefix_ok:
+                s = "const " + s
+            else:
+                s = s + " const"
+
+        return s, False
 
 
 class _Argument(object):
@@ -1300,7 +1304,20 @@ class GccXMLParser(ParserBase):
 
         type_id is the type ID.
         """
+        type_str, _ = self.asInnerType(type_id, None)
+
+        return type_str
+
+    def asInnerType(self, type_id, prefix_ok):
+        """
+        Return the string representation of a type or None if it is an
+        unsupported type.
+
+        type_id is the type ID.
+        """
         try:
-            return self.byid[type_id].asType(self)
+            type_str, prefix_ok = self.byid[type_id].asType(self, prefix_ok)
         except KeyError:
-            return None
+            type_str = None
+
+        return type_str, prefix_ok
