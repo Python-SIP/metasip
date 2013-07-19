@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -56,6 +56,8 @@ class VariablePropertiesDialog(QDialog, Ui_VariablePropertiesBase):
                 le = self.docType
             elif name == "Encoding":
                 self._encoding.setAnnotation(a)
+            elif name == "PyInt":
+                cb = self.pyIntCb
             elif name == "PyName":
                 le = self.pyName
 
@@ -75,6 +77,9 @@ class VariablePropertiesDialog(QDialog, Ui_VariablePropertiesBase):
         s = str(self.docType.text()).strip()
         if s:
             alist.append("DocType=\"%s\"" % s)
+
+        if self.pyIntCb.isChecked():
+            alist.append("PyInt")
 
         s = str(self.pyName.text()).strip()
         if s:
