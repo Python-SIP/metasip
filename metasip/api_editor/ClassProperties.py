@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -63,6 +63,8 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
                 le = self.metatype
             elif name == "Supertype":
                 le = self.supertype
+            elif name == "PyQtInterface":
+                le = self.interface
 
             if cb:
                 cb.setChecked(True)
@@ -73,7 +75,7 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
         """
         Return a tuple of the dialog fields.
         """
-        pybases = " ".join(str(self.pyBaseClasses.text()).strip().split())
+        pybases = " ".join(self.pyBaseClasses.text().strip().split())
 
         alist = []
 
@@ -95,20 +97,24 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
         if self.mixinCb.isChecked():
             alist.append("Mixin")
 
-        s = str(self.pyName.text()).strip()
+        s = self.pyName.text().strip()
         if s:
             alist.append("PyName=" + s)
 
-        s = str(self.api.text()).strip()
+        s = self.api.text().strip()
         if s:
             alist.append("API=" + s)
 
-        s = str(self.metatype.text()).strip()
+        s = self.metatype.text().strip()
         if s:
             alist.append("Metatype=" + s)
 
-        s = str(self.supertype.text()).strip()
+        s = self.supertype.text().strip()
         if s:
             alist.append("Supertype=" + s)
+
+        s = self.interface.text().strip()
+        if s:
+            alist.append("PyQtInterface=" + s)
 
         return (pybases, ",".join(alist))

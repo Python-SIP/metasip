@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>505</width>
-    <height>298</height>
+    <width>453</width>
+    <height>338</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,9 +42,9 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QCheckBox" name="mixinCb">
+       <widget class="QCheckBox" name="nodefaultctorsCb">
         <property name="text">
-         <string>Mixin</string>
+         <string>NoDefaultCtors</string>
         </property>
        </widget>
       </item>
@@ -56,11 +56,18 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QCheckBox" name="nodefaultctorsCb">
-        <property name="text">
-         <string>NoDefaultCtors</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>PyName</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="pyName"/>
+        </item>
+       </layout>
       </item>
       <item row="2" column="0">
        <layout class="QFormLayout" name="formLayout_3">
@@ -77,18 +84,11 @@
        </layout>
       </item>
       <item row="2" column="1">
-       <layout class="QFormLayout" name="formLayout_4">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>PyName</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="pyName"/>
-        </item>
-       </layout>
+       <widget class="QCheckBox" name="noqmetaobjectCb">
+        <property name="text">
+         <string>PyQt4NoQMetaObject</string>
+        </property>
+       </widget>
       </item>
       <item row="3" column="0">
        <widget class="QCheckBox" name="delaydtorCb">
@@ -98,11 +98,18 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QCheckBox" name="noqmetaobjectCb">
-        <property name="text">
-         <string>PyQt4NoQMetaObject</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>PyQtInterface</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="interface"/>
+        </item>
+       </layout>
       </item>
       <item row="4" column="0">
        <layout class="QFormLayout" name="formLayout_2">
@@ -134,6 +141,13 @@
          <widget class="QLineEdit" name="supertype"/>
         </item>
        </layout>
+      </item>
+      <item row="5" column="0">
+       <widget class="QCheckBox" name="mixinCb">
+        <property name="text">
+         <string>Mixin</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -174,6 +188,7 @@
   <tabstop>nodefaultctorsCb</tabstop>
   <tabstop>pyName</tabstop>
   <tabstop>noqmetaobjectCb</tabstop>
+  <tabstop>interface</tabstop>
   <tabstop>supertype</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
