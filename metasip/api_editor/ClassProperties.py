@@ -53,6 +53,8 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
                 cb = self.nodefaultctorsCb
             elif name == "PyQt4NoQMetaObject":
                 cb = self.noqmetaobjectCb
+            elif name == "ExportGeneratedDerived":
+                cb = self.exportgenderivedCb
             elif name == "Mixin":
                 cb = self.mixinCb
             elif name == "PyName":
@@ -93,6 +95,9 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
 
         if self.noqmetaobjectCb.isChecked():
             alist.append("PyQt4NoQMetaObject")
+
+        if self.exportgenderivedCb.isChecked():
+            alist.append("ExportGeneratedDerived")
 
         if self.mixinCb.isChecked():
             alist.append("Mixin")
