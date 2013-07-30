@@ -105,9 +105,9 @@
        </widget>
       </item>
       <item row="4" column="0">
-       <widget class="QCheckBox" name="exportgenderivedCb">
+       <widget class="QCheckBox" name="exportderivedCb">
         <property name="text">
-         <string>ExportGeneratedDerived</string>
+         <string>ExportDerived</string>
         </property>
        </widget>
       </item>
