@@ -39,11 +39,17 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
             name = al[0]
 
             le = None
+            cb = None
 
             if name == "PyName":
                 le = self.pyName
 
-            if le:
+            if name == "NoScope":
+                cb = self.noScopeCb
+
+            if cb is not None:
+                cb.setChecked(True)
+            elif le is not None:
                 le.setText(al[1])
 
     def fields(self):
@@ -52,8 +58,11 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
         """
         alist = []
 
-        s = str(self.pyName.text()).strip()
-        if s:
+        s = self.pyName.text().strip()
+        if s != '':
             alist.append("PyName=" + s)
+
+        if self.noScopeCb.isChecked():
+            alist.append("NoScope")
 
         return (",".join(alist), )
