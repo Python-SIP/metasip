@@ -190,7 +190,7 @@
   <tabstop>allownoneCb</tabstop>
   <tabstop>api</tabstop>
   <tabstop>delaydtorCb</tabstop>
-  <tabstop>exportgenderivedCb</tabstop>
+  <tabstop>exportderivedCb</tabstop>
   <tabstop>metatype</tabstop>
   <tabstop>mixinCb</tabstop>
   <tabstop>nodefaultctorsCb</tabstop>
