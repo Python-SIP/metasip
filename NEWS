@@ -1,5 +1,12 @@
+v1.13 21st August 2013
+  - Added support for the /ExportDerived/ class annotation.
+  - Added support for the /PyQtInterface/ class annotation.
+  - Added support for the /NoScope/ enum annotation.
+  - Added support for the /PyInt/ variable annotation.
+  - The GCC-XML parser now handles unions and maps them to structs.
+
 v1.12 1st July 2013
-  - Updated the project file format to v5 to support call_super_init.
+  - Updated the project file format to v6 to support call_super_init.
 
 v1.11 30th June 2013
   - Updated the project file format to v5 to support %FinalisationCode.
