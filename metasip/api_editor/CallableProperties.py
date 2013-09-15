@@ -19,6 +19,7 @@ from ..Project import (Constructor, Destructor, Method, OperatorMethod,
         Function, OperatorFunction, ManualCode)
 
 from .Designer.CallablePropertiesBase import Ui_CallablePropertiesBase
+from .Annos import split_annos
 from .Encoding import Encoding
 
 
@@ -134,18 +135,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
 
         self.setWindowTitle(cap)
 
-        for a in code.annos.split(','):
-            al = a.split("=")
-            name = al[0]
-
-            if len(al) == 2:
-                value = al[1]
-
-                if value.startswith('"') and value.endswith('"'):
-                    value = value[1:-1]
-            else:
-                value = None
-
+        for name, value in split_annos(code.annos):
             cb = None
             le = None
 
