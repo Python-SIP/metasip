@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,11 +10,12 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import adapt, Adapter, observe
+from dip.model import adapt, Adapter, DelegatedTo, observe
 from dip.io import IFilterHints
 from dip.shell import IManagedModel
+from dip.ui import IDisplay
 
-from .Project import Project
+from .Project import Project, Module
 
 
 @adapt(Project, to=IFilterHints)
@@ -37,3 +38,10 @@ class ProjectIManagedModelAdapter(Adapter):
         """ Invoked when the location changes. """
 
         self.adaptee.name = str(change.new)
+
+
+@adapt(Module, to=IDisplay)
+class ModuleIDisplayAdapter(Adapter):
+    """ Adapt the Module class to the IDisplay interface. """
+
+    name = DelegatedTo('adaptee.name')

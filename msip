@@ -118,6 +118,7 @@ def launchGUI(prjname, guiargs):
             ProjectV3Schema, ProjectV4Schema, ProjectV5Schema, ProjectV6Schema)
     from metasip.tools.features import FeaturesTool
     from metasip.tools.logger import LoggerTool
+    from metasip.tools.module_autofill import ModuleAutofillTool
     from metasip.tools.modules import ModulesTool
     from metasip.tools.platforms import PlatformsTool
     from metasip.tools.scanner import ScannerTool
@@ -145,6 +146,7 @@ def launchGUI(prjname, guiargs):
                             model_factories=[ProjectFactory()]),
                     lambda: editor_tool,
                     FeaturesTool,
+                    ModuleAutofillTool,
                     ModulesTool,
                     PlatformsTool,
                     ScannerTool,
