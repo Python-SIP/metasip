@@ -60,7 +60,6 @@ class ScannerController(Controller):
         self.model.working_version = project_ui.working_version
 
         # Configure the Scan form.
-        self.model.source_directory = project_ui.source_directory
         self._update_from_headers()
 
         # Configure from the selection.
@@ -109,8 +108,8 @@ class ScannerController(Controller):
         model = self.model
 
         # Check the validity of the source directory.
-        if self.is_valid(self.source_directory_editor):
-            self.current_project_ui.source_directory = model.source_directory
+        #if self.is_valid(self.source_directory_editor):
+        #    self.current_project_ui.source_directory = model.source_directory
 
         self._update_from_source_directory()
 

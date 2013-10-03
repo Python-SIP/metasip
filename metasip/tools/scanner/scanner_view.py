@@ -36,7 +36,6 @@ class ScannerView(QTreeWidget):
 
         self._controller = controller
         self.project = project
-        self.source_directory = ''
 
         try:
             self.working_version = project.versions[-1]
