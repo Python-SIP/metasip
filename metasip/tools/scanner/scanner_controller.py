@@ -107,10 +107,6 @@ class ScannerController(Controller):
 
         model = self.model
 
-        # Check the validity of the source directory.
-        #if self.is_valid(self.source_directory_editor):
-        #    self.current_project_ui.source_directory = model.source_directory
-
         self._update_from_source_directory()
 
         # Update the working version.
@@ -775,17 +771,8 @@ class ScannerController(Controller):
         if len(versions) == 0:
             optionselector.visible = False
         else:
-            optionselector.visible = True
-
-            # We need to make sure that the value and the options of the option
-            # selector are always valid, ie. that the value is None while the
-            # options are being changed.  Because the value and the current
-            # working version are tied together then we also need to save (and
-            # automatically restore) the latter.
-            working_version = self.current_project_ui.working_version
-            optionselector.value = None
             optionselector.options = reversed(versions)
-            optionselector.value = working_version
+            optionselector.visible = True
 
     def _working_version_as_string(self):
         """ Return the working version as a string.  This will be an empty
