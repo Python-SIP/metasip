@@ -892,6 +892,10 @@ def _transformArgs(parser, gargs, pargs):
     gargs is the list of GCC-XML arguments.
     pargs is the list of project arguments.
     """
+
+    # Default values that are in the Qt namespace.
+    QT_NAMESPACE = ('white', )
+
     for a in gargs:
         if isinstance(a, _Ellipsis):
             pa = Argument(type="...")
@@ -914,7 +918,10 @@ def _transformArgs(parser, gargs, pargs):
 
             default = a.default
 
-            if (default and ("::" in min_type) and ("::" not in default) and
+            # Handle values we know are in the Qt namespace.
+            if default in QT_NAMESPACE:
+                default = "Qt::" + default
+            elif (default and ("::" in min_type) and ("::" not in default) and
                 ("()" not in default) and
                 (default not in ("0", "NULL", "true", "TRUE", "false", "FALSE"))):
                 default = min_type[:min_type.rfind("::")] + "::" + default
