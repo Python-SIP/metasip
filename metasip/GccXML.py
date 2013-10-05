@@ -898,22 +898,28 @@ def _transformArgs(parser, gargs, pargs):
         else:
             # GCC-XML doesn't add the scope to default values of enums so we
             # try and fix it here.
-            typ = parser.asType(a.type_id)
-            if typ is None:
+            full_type = parser.asType(a.type_id)
+            if full_type is None:
                 continue
 
             # For Qt5.
-            if typ.endswith('::QPrivateSignal'):
+            if full_type.endswith('::QPrivateSignal'):
                 continue
+
+            # Remove any QFlags<>.
+            if full_type.startswith('QFlags<'):
+                min_type = full_type[7:-1]
+            else:
+                min_type = full_type
 
             default = a.default
 
-            if (default and ("::" in typ) and ("::" not in default) and
+            if (default and ("::" in min_type) and ("::" not in default) and
                 ("()" not in default) and
                 (default not in ("0", "NULL", "true", "TRUE", "false", "FALSE"))):
-                default = typ[:typ.rfind("::")] + "::" + default
+                default = min_type[:min_type.rfind("::")] + "::" + default
 
-            pa = Argument(type=typ, name=a.name, default=default)
+            pa = Argument(type=full_type, name=a.name, default=default)
 
         pargs.append(pa)
 
