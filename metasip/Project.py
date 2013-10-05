@@ -2444,7 +2444,7 @@ class OpaqueClass(Code, Access):
         """
         Return a C/C++ representation for comparison purposes.
         """
-        return super().signature(working_version) + self.sigAccess(working_version)
+        return "class " + self.name + self.sigAccess(working_version)
 
     def user(self):
         """
