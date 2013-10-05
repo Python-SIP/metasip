@@ -883,6 +883,16 @@ class _Ellipsis(object):
         pass
 
 
+# Default values that are mapped to something SIP can handle.
+VALUE_MAP = {
+    'DisplayRole':                              'Qt::DisplayRole',
+    'EditRole':                                 'Qt::EditRole',
+    'white':                                    'Qt::white',
+    'operator|(MatchStartsWith, MatchWrap)':    'Qt::MatchStartsWith|Qt::MatchWrap',
+    'QUrlTwoFlags<QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption>(PrettyDecoded)':  'QUrl::PrettyDecoded',
+    'FullyEncoded':                             'QUrl::FullyEncoded'}
+
+
 def _transformArgs(parser, gargs, pargs):
     """
     Transform a list of GCC-XML arguments and append them to a list of project
@@ -892,9 +902,6 @@ def _transformArgs(parser, gargs, pargs):
     gargs is the list of GCC-XML arguments.
     pargs is the list of project arguments.
     """
-
-    # Default values that are in the Qt namespace.
-    QT_NAMESPACE = ('DisplayRole', 'EditRole', 'white')
 
     for a in gargs:
         if isinstance(a, _Ellipsis):
@@ -918,9 +925,11 @@ def _transformArgs(parser, gargs, pargs):
 
             default = a.default
 
-            # Handle values we know are in the Qt namespace.
-            if default in QT_NAMESPACE:
-                default = "Qt::" + default
+            # Map any problematic defaults.
+            mapped_default = VALUE_MAP.get(default)
+
+            if mapped_default is not None:
+                default = mapped_default
             elif (default and ("::" in min_type) and ("::" not in default) and
                 ("()" not in default) and
                 (default not in ("0", "NULL", "true", "TRUE", "false", "FALSE"))):
