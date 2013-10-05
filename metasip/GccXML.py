@@ -894,7 +894,7 @@ def _transformArgs(parser, gargs, pargs):
     """
 
     # Default values that are in the Qt namespace.
-    QT_NAMESPACE = ('white', )
+    QT_NAMESPACE = ('DisplayRole', 'EditRole', 'white')
 
     for a in gargs:
         if isinstance(a, _Ellipsis):

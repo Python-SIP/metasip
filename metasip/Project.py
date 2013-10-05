@@ -2336,6 +2336,12 @@ class Variable(Code, Access):
 class Typedef(Code):
     """ This class represents a typedef. """
 
+    def signature(self, working_version):
+        """
+        Return a C/C++ representation for comparison purposes.
+        """
+        return "typedef " + self.expand_type(self.type, self.name)
+
     def user(self):
         """
         Return a user friendly representation of the typedef.
