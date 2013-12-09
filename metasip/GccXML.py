@@ -885,8 +885,10 @@ class _Ellipsis(object):
 
 # Default values that are mapped to something SIP can handle.
 VALUE_MAP = {
+    'AlignLeft':                                'Qt::AlignLeft',
     'DisplayRole':                              'Qt::DisplayRole',
     'EditRole':                                 'Qt::EditRole',
+    'black':                                    'Qt::black',
     'white':                                    'Qt::white',
     'operator|(MatchStartsWith, MatchWrap)':    'Qt::MatchStartsWith|Qt::MatchWrap',
     'QUrlTwoFlags<QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption>(PrettyDecoded)':  'QUrl::PrettyDecoded',
