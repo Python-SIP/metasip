@@ -43,12 +43,6 @@ fix these:
     #define __has_attribute(x)  (0)
     #endif
 
-- edit ~/usr/qt-5/include/QtCore/qisenum.h and add::
-
-    #if defined(__GCCXML__)
-    #define __has_extension(x)  (0)
-    #endif
-
 
 Getting the GCC-XML Source
 --------------------------
