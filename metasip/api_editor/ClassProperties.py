@@ -51,7 +51,7 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
                 cb = self.delaydtorCb
             elif name == "NoDefaultCtors":
                 cb = self.nodefaultctorsCb
-            elif name == "PyQt4NoQMetaObject":
+            elif name == "PyQtNoQMetaObject":
                 cb = self.noqmetaobjectCb
             elif name == "ExportDerived":
                 cb = self.exportderivedCb
@@ -94,7 +94,7 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
             alist.append("NoDefaultCtors")
 
         if self.noqmetaobjectCb.isChecked():
-            alist.append("PyQt4NoQMetaObject")
+            alist.append("PyQtNoQMetaObject")
 
         if self.exportderivedCb.isChecked():
             alist.append("ExportGeneratedDerived")

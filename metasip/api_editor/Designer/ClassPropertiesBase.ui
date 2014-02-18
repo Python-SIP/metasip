@@ -100,7 +100,7 @@
       <item row="3" column="1">
        <widget class="QCheckBox" name="noqmetaobjectCb">
         <property name="text">
-         <string>PyQt4NoQMetaObject</string>
+         <string>PyQtNoQMetaObject</string>
         </property>
        </widget>
       </item>
