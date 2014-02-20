@@ -176,6 +176,8 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
                 le = self.preHook
             elif name == "PyName":
                 le = self.pyName
+            elif name == "PyQtSignalHack":
+                le = self.signalHack
             elif name == "ReleaseGIL":
                 cb = self.releaseGILCb
             elif name == "Transfer":
@@ -257,6 +259,10 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
         s = str(self.pyName.text()).strip()
         if s:
             alist.append("PyName=" + s)
+
+        s = str(self.signalHack.text()).strip()
+        if s:
+            alist.append("PyQtSignalHack=" + s)
 
         if self.releaseGILCb.isChecked():
             alist.append("ReleaseGIL")
