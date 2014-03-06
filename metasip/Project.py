@@ -932,7 +932,17 @@ class SipFile(Model):
         vmap = self.project.vmap_create(False)
         need_header = False
 
-        for api_item in self.content:
+        # This is a hack to handle the case of everything being contained in a
+        # single ignored namespace.
+        api_items = self.content
+        if len(api_items) == 1:
+            api_item = api_items[0]
+
+            if isinstance(api_item, Namespace) and api_item.name in self.project
+.ignorednamespaces:
+                api_items = api_item.content
+
+        for api_item in api_items:
             if api_item.status != '':
                 continue
 
