@@ -938,8 +938,7 @@ class SipFile(Model):
         if len(api_items) == 1:
             api_item = api_items[0]
 
-            if isinstance(api_item, Namespace) and api_item.name in self.project
-.ignorednamespaces:
+            if isinstance(api_item, Namespace) and api_item.name in self.project.ignorednamespaces:
                 api_items = api_item.content
 
         for api_item in api_items:
