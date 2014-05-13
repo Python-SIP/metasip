@@ -56,6 +56,8 @@ class VariablePropertiesDialog(QDialog, Ui_VariablePropertiesBase):
                 le = self.docType
             elif name == "Encoding":
                 self._encoding.setAnnotation(a)
+            elif name == "NoSetter":
+                cb = self.noSetterCb
             elif name == "PyInt":
                 cb = self.pyIntCb
             elif name == "PyName":
@@ -77,6 +79,9 @@ class VariablePropertiesDialog(QDialog, Ui_VariablePropertiesBase):
         s = str(self.docType.text()).strip()
         if s:
             alist.append("DocType=\"%s\"" % s)
+
+        if self.noSetterCb.isChecked():
+            alist.append("NoSetter")
 
         if self.pyIntCb.isChecked():
             alist.append("PyInt")
