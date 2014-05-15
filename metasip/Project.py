@@ -2772,12 +2772,14 @@ def _sip_start_version(f, api_item):
             f.write("%%If (%s)\n" % vr, False)
             nr_ends += 1
 
+    # Multiple platforms are logically or-ed.
     if len(api_item.platforms) != 0:
         f.write("%%If (%s)\n" % " || ".join(api_item.platforms), False)
         nr_ends += 1
 
-    if len(api_item.features) != 0:
-        f.write("%%If (%s)\n" % " || ".join(api_item.features), False)
+    # Multiple platforms are logically and-ed.
+    for feature in api_item.features:
+        f.write("%%If (%s)\n" % feature, False)
         nr_ends += 1
 
     return nr_ends
