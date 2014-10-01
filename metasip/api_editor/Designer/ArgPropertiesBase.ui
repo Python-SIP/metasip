@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>385</width>
-    <height>474</height>
+    <width>488</width>
+    <height>466</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,63 +55,38 @@
       <string>Annotations</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="allowNoneCb">
-        <property name="text">
-         <string>AllowNone</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="noCopyCb">
-        <property name="text">
-         <string>NoCopy</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="arrayCb">
-        <property name="text">
-         <string>Array</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="outCb">
-        <property name="text">
-         <string>Out</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QCheckBox" name="arraySizeCb">
         <property name="text">
          <string>ArraySize</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="1" column="1">
+       <layout class="QFormLayout" name="formLayout_2">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+        </property>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="ref"/>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="refLab">
+          <property name="text">
+           <string>Reference</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="7" column="1">
        <widget class="QCheckBox" name="pyIntCb">
         <property name="text">
          <string>PyInt</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="constrainedCb">
-        <property name="text">
-         <string>Constrained</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="resultSizeCb">
-        <property name="text">
-         <string>ResultSize</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" rowspan="3">
+      <item row="8" column="0" rowspan="3">
        <layout class="QFormLayout" name="formLayout">
         <item row="0" column="0">
          <widget class="QLabel" name="label_3">
@@ -145,68 +120,103 @@
         </item>
        </layout>
       </item>
-      <item row="4" column="1">
+      <item row="9" column="1">
        <widget class="QCheckBox" name="singleShotCb">
         <property name="text">
          <string>SingleShot</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="10" column="1">
        <widget class="QCheckBox" name="transferCb">
         <property name="text">
          <string>Transfer</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
-       <widget class="QCheckBox" name="transferBackCb">
-        <property name="text">
-         <string>TransferBack</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
+      <item row="11" column="0">
        <widget class="QCheckBox" name="getWrapperCb">
         <property name="text">
          <string>GetWrapper</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
-       <widget class="QCheckBox" name="transferThisCb">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="arrayCb">
         <property name="text">
-         <string>TransferThis</string>
+         <string>Array</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
-       <widget class="QCheckBox" name="inCb">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="allowNoneCb">
         <property name="text">
-         <string>In</string>
+         <string>AllowNone</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
+      <item row="0" column="1">
        <widget class="QCheckBox" name="keepRefCb">
         <property name="text">
          <string>KeepReference</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="0">
-       <layout class="QFormLayout" name="formLayout_2">
-        <item row="0" column="0">
-         <widget class="QLabel" name="refLab">
-          <property name="text">
-           <string>Reference</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="ref"/>
-        </item>
-       </layout>
+      <item row="8" column="1">
+       <widget class="QCheckBox" name="resultSizeCb">
+        <property name="text">
+         <string>ResultSize</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QCheckBox" name="disallowNoneCb">
+        <property name="text">
+         <string>DisallowNone</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="1">
+       <widget class="QCheckBox" name="transferBackCb">
+        <property name="text">
+         <string>TransferBack</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0">
+       <widget class="QCheckBox" name="inCb">
+        <property name="text">
+         <string>In</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="1">
+       <widget class="QCheckBox" name="transferThisCb">
+        <property name="text">
+         <string>TransferThis</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="constrainedCb">
+        <property name="text">
+         <string>Constrained</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="noCopyCb">
+        <property name="text">
+         <string>NoCopy</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="outCb">
+        <property name="text">
+         <string>Out</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -247,6 +257,7 @@
   <tabstop>arrayCb</tabstop>
   <tabstop>arraySizeCb</tabstop>
   <tabstop>constrainedCb</tabstop>
+  <tabstop>disallowNoneCb</tabstop>
   <tabstop>docType</tabstop>
   <tabstop>docValue</tabstop>
   <tabstop>encodingCb</tabstop>
@@ -262,7 +273,6 @@
   <tabstop>transferCb</tabstop>
   <tabstop>transferBackCb</tabstop>
   <tabstop>transferThisCb</tabstop>
-  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
  <connections>

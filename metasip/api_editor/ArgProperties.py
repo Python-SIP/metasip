@@ -66,6 +66,8 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
                 cb = self.arraySizeCb
             elif name == "Constrained":
                 cb = self.constrainedCb
+            elif name == "DisallowNone":
+                cb = self.disallowNoneCb
             elif name == "DocType":
                 le = self.docType
             elif name == "DocValue":
@@ -126,6 +128,9 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
 
         if self.constrainedCb.isChecked():
             alist.append("Constrained")
+
+        if self.disallowNoneCb.isChecked():
+            alist.append("DisallowNone")
 
         s = str(self.docType.text()).strip()
         if s:

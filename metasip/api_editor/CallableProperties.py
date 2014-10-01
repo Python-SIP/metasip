@@ -46,7 +46,10 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             self.pyType.setEnabled(False)
             self.pyArgs.setText(code.pyargs)
 
+            self.abortOnExcCb.setEnabled(False)
+            self.allowNoneCb.setEnabled(False)
             self.autoGen.setEnabled(False)
+            self.disallowNoneCb.setEnabled(False)
             self.docType.setEnabled(False)
             self.encodingCb.setEnabled(False)
             self.factoryCb.setEnabled(False)
@@ -64,9 +67,12 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             self.pyType.setEnabled(False)
             self.pyArgs.setEnabled(False)
 
+            self.abortOnExcCb.setEnabled(False)
+            self.allowNoneCb.setEnabled(False)
             self.api.setEnabled(False)
             self.autoGen.setEnabled(False)
             self.defaultCb.setEnabled(False)
+            self.disallowNoneCb.setEnabled(False)
             self.docType.setEnabled(False)
             self.encodingCb.setEnabled(False)
             self.factoryCb.setEnabled(False)
@@ -95,6 +101,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             self.pyType.setText(code.pytype)
             self.pyArgs.setText(code.pyargs)
 
+            self.abortOnExcCb.setEnabled(False)
             self.defaultCb.setEnabled(False)
             self.keepRefCb.setEnabled(False)
             self.lenCb.setEnabled(False)
@@ -106,6 +113,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             self.pyType.setText(code.pytype)
             self.pyArgs.setText(code.pyargs)
 
+            self.abortOnExcCb.setEnabled(False)
             self.defaultCb.setEnabled(False)
             self.keepRefCb.setEnabled(False)
             self.lenCb.setEnabled(False)
@@ -118,6 +126,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             self.pyType.setText(code.pytype)
             self.pyArgs.setText(code.pyargs)
 
+            self.abortOnExcCb.setEnabled(False)
             self.defaultCb.setEnabled(False)
             self.keepRefCb.setEnabled(False)
             self.lenCb.setEnabled(False)
@@ -139,7 +148,11 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             cb = None
             le = None
 
-            if name == "API":
+            if name == "AbortOnException":
+                cb = self.abortOnExcCb
+            elif name == "AllowNone":
+                cb = self.allowNoneCb
+            elif name == "API":
                 le = self.api
             elif name == "AutoGen":
                 le = self.autoGen
@@ -148,6 +161,8 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
                     value = "All"
             elif name == "Default":
                 cb = self.defaultCb
+            elif name == "DisallowNone":
+                cb = self.disallowNoneCb
             elif name == "DocType":
                 le = self.docType
             elif name == "Encoding":
@@ -201,6 +216,12 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
 
         alist = []
 
+        if self.abortOnExcCb.isChecked():
+            alist.append("AbortOnException")
+
+        if self.allowNoneCb.isChecked():
+            alist.append("AllowNone")
+
         s = str(self.api.text()).strip()
         if s:
             alist.append("API=" + s)
@@ -214,6 +235,9 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
 
         if self.defaultCb.isChecked():
             alist.append("Default")
+
+        if self.disallowNoneCb.isChecked():
+            alist.append("DisallowNone")
 
         s = str(self.docType.text()).strip()
         if s:

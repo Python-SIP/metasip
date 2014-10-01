@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>566</width>
-    <height>528</height>
+    <width>597</width>
+    <height>538</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,35 @@
       <string>Annotations</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0" rowspan="2">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="abortOnExcCb">
+        <property name="text">
+         <string>AbortOnException</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="noArgParserCb">
+        <property name="text">
+         <string>NoArgParser</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="allowNoneCb">
+        <property name="text">
+         <string>AllowNone</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="noCopyCb">
+        <property name="text">
+         <string>NoCopy</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" rowspan="2">
        <layout class="QFormLayout" name="formLayout_2">
         <item row="0" column="0">
          <widget class="QLabel" name="label_3">
@@ -68,59 +96,28 @@
         </item>
        </layout>
       </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="noCopyCb">
-        <property name="text">
-         <string>NoCopy</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="QCheckBox" name="noDerivedCb">
         <property name="text">
          <string>NoDerived</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="defaultCb">
-        <property name="text">
-         <string>Default</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QCheckBox" name="numericCb">
         <property name="text">
          <string>Numeric</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <layout class="QFormLayout" name="formLayout_3">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>DocType</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="docType"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Encoding</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QComboBox" name="encodingCb"/>
-        </item>
-       </layout>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="defaultCb">
+        <property name="text">
+         <string>Default</string>
+        </property>
+       </widget>
       </item>
-      <item row="3" column="1">
+      <item row="4" column="1" rowspan="3">
        <layout class="QFormLayout" name="formLayout_4">
         <item row="0" column="0">
          <widget class="QLabel" name="label_7">
@@ -164,73 +161,97 @@
         </item>
        </layout>
       </item>
-      <item row="4" column="0">
+      <item row="5" column="0">
+       <widget class="QCheckBox" name="disallowNoneCb">
+        <property name="text">
+         <string>DisallowNone</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <layout class="QFormLayout" name="formLayout_3">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>DocType</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="docType"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Encoding</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="encodingCb"/>
+        </item>
+       </layout>
+      </item>
+      <item row="7" column="0">
        <widget class="QCheckBox" name="factoryCb">
         <property name="text">
          <string>Factory</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
-       <widget class="QCheckBox" name="holdGILCb">
-        <property name="text">
-         <string>HoldGIL</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
+      <item row="7" column="1">
        <widget class="QCheckBox" name="releaseGILCb">
         <property name="text">
          <string>ReleaseGIL</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
-       <widget class="QCheckBox" name="keepRefCb">
+      <item row="8" column="0">
+       <widget class="QCheckBox" name="holdGILCb">
         <property name="text">
-         <string>KeepReference</string>
+         <string>HoldGIL</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="8" column="1">
        <widget class="QCheckBox" name="transferCb">
         <property name="text">
          <string>Transfer</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
-       <widget class="QCheckBox" name="lenCb">
+      <item row="9" column="0">
+       <widget class="QCheckBox" name="keepRefCb">
         <property name="text">
-         <string>__len__</string>
+         <string>KeepReference</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="9" column="1">
        <widget class="QCheckBox" name="transferBackCb">
         <property name="text">
          <string>TransferBack</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
-       <widget class="QCheckBox" name="newThreadCb">
+      <item row="10" column="0">
+       <widget class="QCheckBox" name="lenCb">
         <property name="text">
-         <string>NewThread</string>
+         <string>__len__</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="10" column="1">
        <widget class="QCheckBox" name="transferThisCb">
         <property name="text">
          <string>TransferThis</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
-       <widget class="QCheckBox" name="noArgParserCb">
+      <item row="11" column="0">
+       <widget class="QCheckBox" name="newThreadCb">
         <property name="text">
-         <string>NoArgParser</string>
+         <string>NewThread</string>
         </property>
        </widget>
       </item>
@@ -265,9 +286,12 @@
  <tabstops>
   <tabstop>pyType</tabstop>
   <tabstop>pyArgs</tabstop>
+  <tabstop>abortOnExcCb</tabstop>
+  <tabstop>allowNoneCb</tabstop>
   <tabstop>api</tabstop>
   <tabstop>autoGen</tabstop>
   <tabstop>defaultCb</tabstop>
+  <tabstop>disallowNoneCb</tabstop>
   <tabstop>docType</tabstop>
   <tabstop>encodingCb</tabstop>
   <tabstop>factoryCb</tabstop>
@@ -287,7 +311,6 @@
   <tabstop>transferCb</tabstop>
   <tabstop>transferBackCb</tabstop>
   <tabstop>transferThisCb</tabstop>
-  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
  <connections>
