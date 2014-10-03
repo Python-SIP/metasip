@@ -16,6 +16,16 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
+     <item row="1" column="1">
+      <widget class="QPlainTextEdit" name="additionalDirectives">
+       <property name="lineWrapMode">
+        <enum>QPlainTextEdit::NoWrap</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="callSuperInitCb"/>
+     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
@@ -26,29 +36,19 @@
      <item row="0" column="1">
       <widget class="QLineEdit" name="outputDirSuffix"/>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Additional directives</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QPlainTextEdit" name="additionalDirectives">
-       <property name="lineWrapMode">
-        <enum>QPlainTextEdit::NoWrap</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Version</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="version"/>
+     <item row="1" column="0" alignment="Qt::AlignTop">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Additional directives</string>
+       </property>
+      </widget>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_4">
@@ -57,8 +57,18 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="callSuperInitCb"/>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="version"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Default virtual error handler</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="virtualErrorHandler"/>
      </item>
     </layout>
    </item>
@@ -98,8 +108,8 @@
   <tabstop>outputDirSuffix</tabstop>
   <tabstop>additionalDirectives</tabstop>
   <tabstop>callSuperInitCb</tabstop>
+  <tabstop>virtualErrorHandler</tabstop>
   <tabstop>version</tabstop>
-  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
  <connections>

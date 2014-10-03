@@ -638,6 +638,9 @@ class Project(Model):
             if mod.callsuperinit != 'undefined':
                 f.write(' callsuperinit="%s"' % ('1' if mod.callsuperinit == 'yes' else '0'))
 
+            if mod.virtualerrorhandler != '':
+                f.write(' virtualerrorhandler="%s"' % mod.virtualerrorhandler)
+
             if mod.version != '':
                 f.write(' version="%s"' % mod.version)
 
@@ -736,12 +739,17 @@ class Project(Model):
             else:
                 callsuperinit = ""
 
+            if mod.virtualerrorhandler != '':
+                virtualerrorhandler = ", default_VirtualErrorHandler=%s" % mod.virtualerrorhandler
+            else:
+                virtualerrorhandler = ""
+
             if mod.version != '':
                 version = ", version=%s" % mod.version
             else:
                 version = ""
 
-            f.write("%%Module(name=%s%s%s, keyword_arguments=\"Optional\"%s)\n\n" % (rname, mod.name, callsuperinit, version))
+            f.write("%%Module(name=%s%s%s%s, keyword_arguments=\"Optional\"%s)\n\n" % (rname, mod.name, callsuperinit, virtualerrorhandler, version))
         else:
             f.write("%%Module %s%s 0\n\n" % (rname, mod.name))
 

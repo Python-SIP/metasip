@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2014 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -617,7 +617,7 @@ class ModuleItem(EditorItem, DropSite):
                 self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
-            (mod.outputdirsuffix, mod.imports, mod.directives, mod.callsuperinit, mod.version) = dlg.fields()
+            (mod.outputdirsuffix, mod.imports, mod.directives, mod.callsuperinit, mod.virtualerrorhandler, mod.version) = dlg.fields()
 
             self.set_dirty()
 

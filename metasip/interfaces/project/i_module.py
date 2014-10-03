@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2014 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -44,3 +44,6 @@ class IModule(Interface):
     # The version number of the module ABI.
     # FIXME: Convert to Int.
     version = Str()
+
+    # The default virtual error handler.
+    virtualerrorhandler = Str()

@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2014 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -16,14 +16,14 @@ from ..interfaces import IUpdate
 
 
 @implements(IUpdate)
-class ProjectV6Update(Model):
-    """ The ProjectV6Update class implements the update of a project from v5 to
-    v6.
+class ProjectV7Update(Model):
+    """ The ProjectV7Update class implements the update of a project from v6 to
+    v7.
     """
 
     # The project format version number that this will update to (from the
     # immediately previous format).
-    updates_to = 6
+    updates_to = 7
 
     def create_view(self, root):
         """ Create the view that will gather the information from the user
@@ -47,6 +47,6 @@ class ProjectV6Update(Model):
             is the view returned by create_view().
         """
 
-        # The v6 schema adds callsuperinit to modules so we just need to bump
-        # the version number.
+        # The v7 schema adds virtualerrorhandler to modules so we just need to
+        # bump the version number.
         root.set('version', str(self.updates_to))

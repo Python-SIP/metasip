@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2014 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#   7   Implemented by metasip v1.14.
+#       - added virtualerrorhandler to the Module element.
+#
 #   6   Implemented by metasip v1.12.
 #       - added callsuperinit to the Module element.
 #
@@ -40,4 +43,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 6
+ProjectVersion = 7

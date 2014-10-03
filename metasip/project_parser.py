@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2014 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -343,7 +343,9 @@ class ProjectParser:
 
         mod = Module(name=elem.get('name'),
                 outputdirsuffix=elem.get('outputdirsuffix', ''),
-                callsuperinit=callsuperinit, version=elem.get('version', ''),
+                callsuperinit=callsuperinit,
+                virtualerrorhandler=elem.get('virtualerrorhandler', ''),
+                version=elem.get('version', ''),
                 imports=elem.get('imports', '').split())
 
         for child in elem:
