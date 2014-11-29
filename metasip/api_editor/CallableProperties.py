@@ -59,6 +59,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             self.noArgParserCb.setEnabled(False)
             self.noCopyCb.setEnabled(False)
             self.numericCb.setEnabled(False)
+            self.pyIntCb.setEnabled(False)
             self.transferBackCb.setEnabled(False)
             self.transferThisCb.setEnabled(False)
             self.pyName.setEnabled(False)
@@ -85,6 +86,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             self.numericCb.setEnabled(False)
             self.postHook.setEnabled(False)
             self.preHook.setEnabled(False)
+            self.pyIntCb.setEnabled(False)
             self.transferCb.setEnabled(False)
             self.transferBackCb.setEnabled(False)
             self.transferThisCb.setEnabled(False)
@@ -189,6 +191,8 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
                 le = self.postHook
             elif name == "PreHook":
                 le = self.preHook
+            elif name == "PyInt":
+                cb = self.pyIntCb
             elif name == "PyName":
                 le = self.pyName
             elif name == "PyQtSignalHack":
@@ -279,6 +283,9 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
         s = str(self.preHook.text()).strip()
         if s:
             alist.append("PreHook=" + s)
+
+        if self.pyIntCb.isChecked():
+            alist.append("PyInt")
 
         s = str(self.pyName.text()).strip()
         if s:

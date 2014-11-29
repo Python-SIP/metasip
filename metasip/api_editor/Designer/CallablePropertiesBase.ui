@@ -52,9 +52,9 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QCheckBox" name="noArgParserCb">
+       <widget class="QCheckBox" name="noCopyCb">
         <property name="text">
-         <string>NoArgParser</string>
+         <string>NoCopy</string>
         </property>
        </widget>
       </item>
@@ -66,13 +66,13 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QCheckBox" name="noCopyCb">
+       <widget class="QCheckBox" name="noDerivedCb">
         <property name="text">
-         <string>NoCopy</string>
+         <string>NoDerived</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0" rowspan="2">
+      <item row="2" column="0">
        <layout class="QFormLayout" name="formLayout_2">
         <item row="0" column="0">
          <widget class="QLabel" name="label_3">
@@ -97,27 +97,20 @@
        </layout>
       </item>
       <item row="2" column="1">
-       <widget class="QCheckBox" name="noDerivedCb">
-        <property name="text">
-         <string>NoDerived</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
        <widget class="QCheckBox" name="numericCb">
         <property name="text">
          <string>Numeric</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="3" column="0">
        <widget class="QCheckBox" name="defaultCb">
         <property name="text">
          <string>Default</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1" rowspan="3">
+      <item row="3" column="1" rowspan="3">
        <layout class="QFormLayout" name="formLayout_4">
         <item row="0" column="0">
          <widget class="QLabel" name="label_7">
@@ -161,14 +154,14 @@
         </item>
        </layout>
       </item>
-      <item row="5" column="0">
+      <item row="4" column="0">
        <widget class="QCheckBox" name="disallowNoneCb">
         <property name="text">
          <string>DisallowNone</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="5" column="0">
        <layout class="QFormLayout" name="formLayout_3">
         <item row="0" column="0">
          <widget class="QLabel" name="label_5">
@@ -192,10 +185,24 @@
         </item>
        </layout>
       </item>
-      <item row="7" column="0">
+      <item row="6" column="0">
        <widget class="QCheckBox" name="factoryCb">
         <property name="text">
          <string>Factory</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QCheckBox" name="pyIntCb">
+        <property name="text">
+         <string>PyInt</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QCheckBox" name="holdGILCb">
+        <property name="text">
+         <string>HoldGIL</string>
         </property>
        </widget>
       </item>
@@ -206,10 +213,10 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
-       <widget class="QCheckBox" name="holdGILCb">
+      <item row="8" column="0" rowspan="2">
+       <widget class="QCheckBox" name="keepRefCb">
         <property name="text">
-         <string>HoldGIL</string>
+         <string>KeepReference</string>
         </property>
        </widget>
       </item>
@@ -220,14 +227,7 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
-       <widget class="QCheckBox" name="keepRefCb">
-        <property name="text">
-         <string>KeepReference</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="1">
+      <item row="9" column="1" rowspan="2">
        <widget class="QCheckBox" name="transferBackCb">
         <property name="text">
          <string>TransferBack</string>
@@ -241,17 +241,24 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="1">
+      <item row="11" column="0">
+       <widget class="QCheckBox" name="newThreadCb">
+        <property name="text">
+         <string>NewThread</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="1">
        <widget class="QCheckBox" name="transferThisCb">
         <property name="text">
          <string>TransferThis</string>
         </property>
        </widget>
       </item>
-      <item row="11" column="0">
-       <widget class="QCheckBox" name="newThreadCb">
+      <item row="12" column="0">
+       <widget class="QCheckBox" name="noArgParserCb">
         <property name="text">
-         <string>NewThread</string>
+         <string>NoArgParser</string>
         </property>
        </widget>
       </item>
@@ -307,10 +314,12 @@
   <tabstop>preHook</tabstop>
   <tabstop>pyName</tabstop>
   <tabstop>signalHack</tabstop>
+  <tabstop>pyIntCb</tabstop>
   <tabstop>releaseGILCb</tabstop>
   <tabstop>transferCb</tabstop>
   <tabstop>transferBackCb</tabstop>
   <tabstop>transferThisCb</tabstop>
+  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
  <connections>
