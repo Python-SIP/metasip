@@ -897,7 +897,7 @@ class Access(Model):
         if s == 'signals':
             # This is a horrible hack (although a fairly safe one) until we
             # decide how to do it nicely.
-            s = '' if working_version.startswith('Qt_5_') else 'protected'
+            s = 'protected' if working_version.startswith('Qt_4_') else ''
         elif s == 'public':
             s = ''
 
