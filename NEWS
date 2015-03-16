@@ -1,3 +1,12 @@
+v1.14 3rd October 2014
+  - Added support for the /DisallowNone/ argument annotation.
+  - Added support for the /NoSetter/ variable annotation.
+  - Added support for the /PyQtSignalHack/ function annotation.
+  - Renamed the /PyQt4NoQMetaObject/ class annotation to /PyQtNoQMetaObject/.
+  - Multiple features are now logically and-ed rather than logically or-ed.
+  - Added the auto-fill module tool (specifically for the OpenGL modules in
+    Qt5).
+
 v1.13 21st August 2013
   - Added support for the /ExportDerived/ class annotation.
   - Added support for the /PyQtInterface/ class annotation.
