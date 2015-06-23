@@ -52,7 +52,7 @@ _Q_OBJECT = (
     # These are for Qt v5.5 and later.  We don't include the argument as its
     # type varies.
     "const char *qt_getEnumName",
-    "const char *qt_getEnumMetaObject",
+    "const QMetaObject *qt_getEnumMetaObject",
 )
 
 
@@ -510,6 +510,8 @@ class _Function(_Callable):
                 rtype=parser.asType(self.returns))
 
         _transformArgs(parser, self.args, tci.args)
+
+        _fixQt(tci)
 
         scope.content.append(tci)
 
