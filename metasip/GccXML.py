@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2015 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -48,6 +48,11 @@ _Q_OBJECT = (
     "static const QMetaObject staticMetaObject",
     "virtual void *qt_metacast(const char *)",
     "virtual int qt_metacall(QMetaObject::Call, int, void **)",
+
+    # These are for Qt v5.5 and later.  We don't include the argument as its
+    # type varies.
+    "const char *qt_getEnumName",
+    "const char *qt_getEnumMetaObject",
 )
 
 
@@ -60,7 +65,6 @@ def _fixQt(code):
         is the code instance.
     """
 
-    # FIXME: We can now check the full signature.
     def leading(s):
         """ Return the start of the string up to the first opening parenthesis.
         """
