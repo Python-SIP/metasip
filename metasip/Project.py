@@ -941,6 +941,7 @@ class SipFile(Model):
 
         # This is a hack to handle the case of everything being contained in a
         # single ignored namespace.
+        # FIXME: Need to handle features as well as versions.
         api_items = self.content
         if len(api_items) == 1:
             api_item = api_items[0]
@@ -957,7 +958,9 @@ class SipFile(Model):
                 if need_header:
                     break
 
-            if isinstance(api_item, (Function, OperatorFunction, Variable, Enum)):
+            # Note that OperatorFunctions are handled within the class even if
+            # they have global declarations.
+            if isinstance(api_item, (Function, Variable, Enum)):
                 need_header = True
                 if vmap is None:
                     break
