@@ -1,3 +1,9 @@
+v1.15 10th August 2015
+  - Added support for the /PyInt/ function annotation.
+  - Added additional moc-generated functions to ignore for Qt v5.5.
+  - No longer include a timestamp in generated .sip files.
+  - Bug fixes.
+
 v1.14 3rd October 2014
   - Added support for the /DisallowNone/ argument annotation.
   - Added support for the /NoSetter/ variable annotation.
