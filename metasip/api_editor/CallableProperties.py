@@ -177,6 +177,10 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
                 cb = self.keepRefCb
             elif name == "__len__":
                 cb = self.lenCb
+            elif name == "__matmul__":
+                cb = self.matmulCb
+            elif name == "__imatmul__":
+                cb = self.imatmulCb
             elif name == "NewThread":
                 cb = self.newThreadCb
             elif name == "NoArgParser":
@@ -260,6 +264,12 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
 
         if self.lenCb.isChecked():
             alist.append("__len__")
+
+        if self.matmulCb.isChecked():
+            alist.append("__matmul__")
+
+        if self.imatmulCb.isChecked():
+            alist.append("__imatmul__")
 
         if self.newThreadCb.isChecked():
             alist.append("NewThread")
