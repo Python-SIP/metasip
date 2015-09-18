@@ -97,7 +97,7 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
             alist.append("PyQtNoQMetaObject")
 
         if self.exportderivedCb.isChecked():
-            alist.append("ExportGeneratedDerived")
+            alist.append("ExportDerived")
 
         if self.mixinCb.isChecked():
             alist.append("Mixin")
