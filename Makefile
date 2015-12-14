@@ -11,7 +11,7 @@
 
 
 PYTHON3=python3.4
-PYTHON2=python
+PYTHON2=python2.7
 
 .PHONY: build dist clean dist-clean
 
