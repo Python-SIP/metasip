@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -881,6 +881,9 @@ class SipFileItem(ContainerItem):
                 ("%InitialisationCode", self._initCodeSlot, ("ic" not in self._editors)),
                 ("%PostInitialisationCode", self._postInitCodeSlot, ("poic" not in self._editors)),
                 None,
+                ("%ExportedTypeHintCode", self._exportedTypeHintCodeSlot, ("ethc" not in self._editors)),
+                ("%ModuleTypeHintCode", self._moduleTypeHintCodeSlot, ("mthc" not in self._editors)),
+                None,
                 ("Apply argument naming conventions...", self._nameFromConventions),
                 ("Accept argument names", self._acceptNames),
                 None,
@@ -1056,6 +1059,50 @@ class SipFileItem(ContainerItem):
             self.set_dirty()
 
         del self._editors["poic"]
+
+    def _exportedTypeHintCodeSlot(self):
+        """
+        Slot to handle %ExportedTypeHintCode.
+        """
+        ed = ExternalEditor()
+        ed.editDone.connect(self._exportedTypeHintCodeDone)
+        ed.edit(self.sipfile.exportedtypehintcode, "%ExportedTypeHintCode: " + self.sipfile.name)
+        self._editors["ethc"] = ed
+
+    def _exportedTypeHintCodeDone(self, text_changed, text):
+        """
+        Slot to handle changed %ExportedTypeHintCode.
+
+        text_changed is set if the code has changed.
+        text is the code.
+        """
+        if text_changed:
+            self.sipfile.exportedtypehintcode = text
+            self.set_dirty()
+
+        del self._editors["ethc"]
+
+    def _moduleTypeHintCodeSlot(self):
+        """
+        Slot to handle %ModuleTypeHintCode.
+        """
+        ed = ExternalEditor()
+        ed.editDone.connect(self._moduleTypeHintCodeDone)
+        ed.edit(self.sipfile.moduletypehintcode, "%ModuleTypeHintCode: " + self.sipfile.name)
+        self._editors["mthc"] = ed
+
+    def _moduleTypeHintCodeDone(self, text_changed, text):
+        """
+        Slot to handle changed %ModuleTypeHintCode.
+
+        text_changed is set if the code has changed.
+        text is the code.
+        """
+        if text_changed:
+            self.sipfile.moduletypehintcode = text
+            self.set_dirty()
+
+        del self._editors["mthc"]
 
     def _hideIgnoredSlot(self):
         """

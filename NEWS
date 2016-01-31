@@ -1,3 +1,9 @@
+v1.16 ??? ??? 2016
+  - Added support for the /TypeHint/ annotations.
+  - Added support for the /__matmul__/ and /__imatmul__/ callable annotations.
+  - Updated the project file format to v8 to support %ExportedTypeHintCode and
+    %ModuleTypeHintCode.
+
 v1.15 10th August 2015
   - Added support for the /PyInt/ function annotation.
   - Added additional moc-generated functions to ignore for Qt v5.5.
@@ -12,6 +18,8 @@ v1.14 3rd October 2014
   - Multiple features are now logically and-ed rather than logically or-ed.
   - Added the auto-fill module tool (specifically for the OpenGL modules in
     Qt5).
+  - Updated the project file format to v7 to support the module-specific
+    virtual error handler.
 
 v1.13 21st August 2013
   - Added support for the /ExportDerived/ class annotation.

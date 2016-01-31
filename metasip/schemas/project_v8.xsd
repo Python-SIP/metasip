@@ -1,0 +1,592 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:annotation>
+        <xsd:documentation xml:lang="en">
+            The schema for version 7 of a MetaSIP project.
+        </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:element name="Project" type="ProjectType"/>
+
+    <xsd:simpleType name="AccessType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="private"/>
+            <xsd:enumeration value="protected"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="AnnosType">
+        <xsd:restriction base="xsd:string"/>
+    </xsd:simpleType>
+
+    <xsd:complexType name="ArgumentType">
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="default" type="xsd:string"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="pytype" type="xsd:string"/>
+        <xsd:attribute name="type" type="xsd:string" use="required"/>
+        <xsd:attribute name="unnamed" type="xsd:boolean" default="1"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="ClassLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="bicharbufcode"/>
+                            <xsd:enumeration value="bigetbufcode"/>
+                            <xsd:enumeration value="bireadbufcode"/>
+                            <xsd:enumeration value="birelbufcode"/>
+                            <xsd:enumeration value="bisegcountcode"/>
+                            <xsd:enumeration value="biwritebufcode"/>
+                            <xsd:enumeration value="convtotypecode"/>
+                            <xsd:enumeration value="convfromtypecode"/>
+                            <xsd:enumeration value="docstring"/>
+                            <xsd:enumeration value="finalisationcode"/>
+                            <xsd:enumeration value="gcclearcode"/>
+                            <xsd:enumeration value="gctraversecode"/>
+                            <xsd:enumeration value="picklecode"/>
+                            <xsd:enumeration value="subclasscode"/>
+                            <xsd:enumeration value="typecode"/>
+                            <xsd:enumeration value="typeheadercode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ClassType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:group ref="CodeGroup"/>
+            <xsd:element name="Constructor" type="ConstructorType"/>
+            <xsd:element name="Destructor" type="DestructorType"
+                    maxOccurs="1"/>
+            <xsd:element name="Literal" type="ClassLiterals"/>
+            <xsd:element name="Method" type="MethodType"/>
+            <xsd:element name="OperatorCast" type="OperatorCastType"/>
+            <xsd:element name="OperatorMethod" type="OperatorMethodType"/>
+        </xsd:choice>
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="bases" type="xsd:string"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="pybases" type="xsd:string"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="struct" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:group name="CodeGroup">
+        <xsd:choice>
+            <xsd:element name="Class" type="ClassType"/>
+            <xsd:element name="Enum" type="EnumType"/>
+            <xsd:element name="ManualCode" type="ManualCodeType"/>
+            <xsd:element name="Namespace" type="NamespaceType"/>
+            <xsd:element name="OpaqueClass" type="OpaqueClassType"/>
+            <xsd:element name="Typedef" type="TypedefType"/>
+            <xsd:element name="Variable" type="VariableType"/>
+        </xsd:choice>
+    </xsd:group>
+
+    <xsd:complexType name="ConstructorLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="docstring"/>
+                            <xsd:enumeration value="methcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ConstructorType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Argument" type="ArgumentType"/>
+            <xsd:element name="Literal" type="ConstructorLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="explicit" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="pyargs" type="xsd:string"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="DestructorLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="methcode"/>
+                            <xsd:enumeration value="virtcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="DestructorType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Literal" type="DestructorLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="virtual" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="EnumType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="EnumValue" type="EnumValueType"/>
+        </xsd:choice>
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="EnumValueType">
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="ExtendedAccessType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="private"/>
+            <xsd:enumeration value="protected"/>
+            <xsd:enumeration value="protected slots"/>
+            <xsd:enumeration value="public slots"/>
+            <xsd:enumeration value="signals"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="FeaturesType">
+        <xsd:restriction base="xsd:string"/>
+    </xsd:simpleType>
+
+    <xsd:complexType name="FunctionLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="docstring"/>
+                            <xsd:enumeration value="methcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="FunctionType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Argument" type="ArgumentType"/>
+            <xsd:element name="Literal" type="FunctionLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="pyargs" type="xsd:string"/>
+        <xsd:attribute name="pytype" type="xsd:string"/>
+        <xsd:attribute name="rtype" type="xsd:string" use="required"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="HeaderDirectoryType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="HeaderFile" type="HeaderFileType"/>
+        </xsd:choice>
+        <xsd:attribute name="filefilter" type="xsd:string" use="required"/>
+        <xsd:attribute name="inputdirsuffix" type="xsd:string" use="required"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="parserargs" type="xsd:string" use="required"/>
+        <xsd:attribute name="scan" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="HeaderFileType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="HeaderFileVersion"
+                    type="HeaderFileVersionType"/>
+        </xsd:choice>
+        <xsd:attribute name="ignored" type="xsd:boolean"/>
+        <xsd:attribute name="module" type="xsd:string"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="HeaderFileVersionType">
+        <xsd:attribute name="md5" type="xsd:string" use="required"/>
+        <xsd:attribute name="parse" type="xsd:boolean"/>
+        <xsd:attribute name="version" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="ManualCodeLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="body"/>
+                            <xsd:enumeration value="docstring"/>
+                            <xsd:enumeration value="methcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ManualCodeType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Literal" type="ManualCodeLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="access" type="ExtendedAccessType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="precis" type="xsd:string" use="required"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="MethodLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="docstring"/>
+                            <xsd:enumeration value="methcode"/>
+                            <xsd:enumeration value="virtcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="MethodType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Argument" type="ArgumentType"/>
+            <xsd:element name="Literal" type="MethodLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="abstract" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="access" type="ExtendedAccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="const" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="pyargs" type="xsd:string"/>
+        <xsd:attribute name="pytype" type="xsd:string"/>
+        <xsd:attribute name="rtype" type="xsd:string"/>
+        <xsd:attribute name="static" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+        <xsd:attribute name="virtual" type="xsd:boolean" default="0"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="ModuleLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="directives"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ModuleType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Literal" type="ModuleLiterals"/>
+            <xsd:element name="SipFile" type="SipFileType"/>
+        </xsd:choice>
+        <xsd:attribute name="imports" type="xsd:string"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="outputdirsuffix" type="xsd:string"/>
+        <xsd:attribute name="callsuperinit" type="xsd:boolean"/>
+        <xsd:attribute name="virtualerrorhandler" type="xsd:string"/>
+        <xsd:attribute name="version" type="xsd:nonNegativeInteger"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="NamespaceLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="typeheadercode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="NamespaceType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:group ref="CodeGroup"/>
+            <xsd:element name="Literal" type="NamespaceLiterals"/>
+            <xsd:element name="Function" type="FunctionType"/>
+            <xsd:element name="OperatorFunction" type="OperatorFunctionType"/>
+        </xsd:choice>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="OpaqueClassType">
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="OperatorCastLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="methcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="OperatorCastType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Argument" type="ArgumentType"/>
+            <xsd:element name="Literal" type="OperatorCastLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="const" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="OperatorFunctionLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="methcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="OperatorFunctionType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Argument" type="ArgumentType"/>
+            <xsd:element name="Literal" type="OperatorFunctionLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="pyargs" type="xsd:string"/>
+        <xsd:attribute name="pytype" type="xsd:string"/>
+        <xsd:attribute name="rtype" type="xsd:string" use="required"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="OperatorMethodLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="methcode"/>
+                            <xsd:enumeration value="virtcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="OperatorMethodType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Argument" type="ArgumentType"/>
+            <xsd:element name="Literal" type="OperatorMethodLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="abstract" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="const" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="pyargs" type="xsd:string"/>
+        <xsd:attribute name="pytype" type="xsd:string"/>
+        <xsd:attribute name="rtype" type="xsd:string" use="required"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+        <xsd:attribute name="virtual" type="xsd:boolean" default="0"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="PlatformsType">
+        <xsd:restriction base="xsd:string"/>
+    </xsd:simpleType>
+
+    <xsd:complexType name="ProjectLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="sipcomments"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ProjectType">
+        <xsd:sequence>
+            <xsd:element name="Literal" type="ProjectLiterals" minOccurs="0"
+                    maxOccurs="unbounded"/>
+            <xsd:element name="HeaderDirectory" type="HeaderDirectoryType"
+                    minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="Module" type="ModuleType" minOccurs="0"
+                    maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="externalfeatures" type="FeaturesType"/>
+        <xsd:attribute name="externalmodules" type="xsd:string"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="ignorednamespaces" type="xsd:string"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="rootmodule" type="xsd:string"/>
+        <xsd:attribute name="version" type="xsd:nonNegativeInteger" fixed="2"
+                use="required"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="SipFileLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="exportedheadercode"/>
+                            <xsd:enumeration value="exportedtypehintcode"/>
+                            <xsd:enumeration value="initcode"/>
+                            <xsd:enumeration value="modulecode"/>
+                            <xsd:enumeration value="moduleheadercode"/>
+                            <xsd:enumeration value="moduletypehintcode"/>
+                            <xsd:enumeration value="postinitcode"/>
+                            <xsd:enumeration value="preinitcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SipFileType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:group ref="CodeGroup"/>
+            <xsd:element name="Function" type="FunctionType"/>
+            <xsd:element name="Literal" type="SipFileLiterals"/>
+            <xsd:element name="OperatorFunction" type="OperatorFunctionType"/>
+        </xsd:choice>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="StatusType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ignored"/>
+            <xsd:enumeration value="todo"/>
+            <xsd:enumeration value="unknown"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="TypedefType">
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="type" type="xsd:string" use="required"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="VariableLiterals">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="accesscode"/>
+                            <xsd:enumeration value="getcode"/>
+                            <xsd:enumeration value="setcode"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="VariableType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="Literal" type="VariableLiterals"/>
+        </xsd:choice>
+        <xsd:attribute name="access" type="AccessType"/>
+        <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="features" type="FeaturesType"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="platforms" type="PlatformsType"/>
+        <xsd:attribute name="status" type="StatusType"/>
+        <xsd:attribute name="static" type="xsd:boolean" default="0"/>
+        <xsd:attribute name="versions" type="xsd:string"/>
+        <xsd:attribute name="type" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+</xsd:schema>

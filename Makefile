@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,8 +10,14 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-PYTHON3=python3.4
 PYTHON2=python2.7
+
+UNAME := $(shell uname)
+ifeq ($(UNAME), Darwin)
+    PYTHON3=$(HOME)/usr/metasip/bin/python3
+else
+    PYTHON3=python3
+endif
 
 .PHONY: build dist clean dist-clean
 

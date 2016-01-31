@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -1012,6 +1012,12 @@ class SipFile(Model):
         if self.postinitcode:
             _writeCodeSIP(f, "%PostInitialisationCode", self.postinitcode, False)
 
+        if self.exportedtypehintcode:
+            _writeCodeSIP(f, "%ExportedTypeHintCode", self.exportedtypehintcode, False)
+
+        if self.moduletypehintcode:
+            _writeCodeSIP(f, "%ModuleTypeHintCode", self.moduletypehintcode, False)
+
     def xml(self, f):
         """ Write the .sip file to an XML file. """
 
@@ -1039,6 +1045,12 @@ class SipFile(Model):
 
         if self.postinitcode:
             _writeLiteralXML(f, "postinitcode", self.postinitcode)
+
+        if self.exportedtypehintcode:
+            _writeLiteralXML(f, "exportedtypehintcode", self.exportedtypehintcode)
+
+        if self.moduletypehintcode:
+            _writeLiteralXML(f, "moduletypehintcode", self.moduletypehintcode)
 
         f.write('</SipFile>\n')
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -23,6 +23,9 @@ class ISipFile(ICodeContainer):
     # The optional %ExportedHeaderCode.
     exportedheadercode = Str()
 
+    # The optional %ExportedTypeHintCode.
+    exportedtypehintcode = Str()
+
     # The optional %InitialisationCode.
     initcode = Str()
 
@@ -31,6 +34,9 @@ class ISipFile(ICodeContainer):
 
     # The optional %ModuleHeaderCode.
     moduleheadercode = Str()
+
+    # The optional %ModuleTypeHintCode.
+    moduletypehintcode = Str()
 
     # The basename of the header file.  All header files that contribute to the
     # .sip file will have the same basename.  Note that there may not be any
