@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -62,6 +62,8 @@ class VariablePropertiesDialog(QDialog, Ui_VariablePropertiesBase):
                 cb = self.pyIntCb
             elif name == "PyName":
                 le = self.pyName
+            elif name == "TypeHint":
+                le = self.typeHint
 
             if cb:
                 cb.setChecked(True)
@@ -89,5 +91,9 @@ class VariablePropertiesDialog(QDialog, Ui_VariablePropertiesBase):
         s = str(self.pyName.text()).strip()
         if s:
             alist.append("PyName=" + s)
+
+        s = str(self.typeHint.text()).strip()
+        if s:
+            alist.append("TypeHint=\"%s\"" % s)
 
         return (",".join(alist), )

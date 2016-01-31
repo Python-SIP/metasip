@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -63,6 +63,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             self.transferBackCb.setEnabled(False)
             self.transferThisCb.setEnabled(False)
             self.pyName.setEnabled(False)
+            self.typeHint.setEnabled(False)
         elif isinstance(code, Destructor):
             cap = "Destructor Properties"
             self.pyType.setEnabled(False)
@@ -91,6 +92,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             self.transferBackCb.setEnabled(False)
             self.transferThisCb.setEnabled(False)
             self.pyName.setEnabled(False)
+            self.typeHint.setEnabled(False)
         elif isinstance(code, Method):
             cap = "Method Properties"
             self.pyType.setText(code.pytype)
@@ -209,6 +211,8 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
                 cb = self.transferBackCb
             elif name == "TransferThis":
                 cb = self.transferThisCb
+            elif name == "TypeHint":
+                le = self.typeHint
 
             if cb:
                 cb.setChecked(True)
@@ -316,5 +320,9 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
 
         if self.transferThisCb.isChecked():
             alist.append("TransferThis")
+
+        s = str(self.typeHint.text()).strip()
+        if s:
+            alist.append("TypeHint=\"%s\"" % s)
 
         return (pytype, pyargs, ",".join(alist))

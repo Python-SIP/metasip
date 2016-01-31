@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>546</width>
-    <height>533</height>
+    <width>552</width>
+    <height>578</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -52,9 +52,9 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QCheckBox" name="noDerivedCb">
+       <widget class="QCheckBox" name="numericCb">
         <property name="text">
-         <string>NoDerived</string>
+         <string>Numeric</string>
         </property>
        </widget>
       </item>
@@ -65,38 +65,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="numericCb">
-        <property name="text">
-         <string>Numeric</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <layout class="QFormLayout" name="formLayout_2">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>API</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="api"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>AutoGen</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="autoGen"/>
-        </item>
-       </layout>
-      </item>
-      <item row="2" column="1" rowspan="4">
+      <item row="1" column="1" rowspan="4">
        <layout class="QFormLayout" name="formLayout_4">
         <item row="0" column="0">
          <widget class="QLabel" name="label_7">
@@ -140,6 +109,30 @@
         </item>
        </layout>
       </item>
+      <item row="2" column="0">
+       <layout class="QFormLayout" name="formLayout_2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>API</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="api"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>AutoGen</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="autoGen"/>
+        </item>
+       </layout>
+      </item>
       <item row="3" column="0">
        <widget class="QCheckBox" name="defaultCb">
         <property name="text">
@@ -178,66 +171,87 @@
         </item>
        </layout>
       </item>
-      <item row="6" column="1">
+      <item row="5" column="1">
        <widget class="QCheckBox" name="pyIntCb">
         <property name="text">
          <string>PyInt</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="6" column="1">
        <widget class="QCheckBox" name="releaseGILCb">
         <property name="text">
          <string>ReleaseGIL</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
+      <item row="7" column="0">
        <widget class="QCheckBox" name="factoryCb">
         <property name="text">
          <string>Factory</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="7" column="1">
        <widget class="QCheckBox" name="transferCb">
         <property name="text">
          <string>Transfer</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
+      <item row="8" column="0">
        <widget class="QCheckBox" name="holdGILCb">
         <property name="text">
          <string>HoldGIL</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="1">
+      <item row="8" column="1">
        <widget class="QCheckBox" name="transferBackCb">
         <property name="text">
          <string>TransferBack</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="0">
+      <item row="9" column="0">
        <widget class="QCheckBox" name="keepRefCb">
         <property name="text">
          <string>KeepReference</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="1">
+      <item row="9" column="1">
        <widget class="QCheckBox" name="transferThisCb">
         <property name="text">
          <string>TransferThis</string>
         </property>
        </widget>
       </item>
-      <item row="11" column="0">
+      <item row="10" column="0">
        <widget class="QCheckBox" name="newThreadCb">
         <property name="text">
          <string>NewThread</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <layout class="QFormLayout" name="formLayout_5">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>TypeHint</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="typeHint"/>
+        </item>
+       </layout>
+      </item>
+      <item row="11" column="0">
+       <widget class="QCheckBox" name="noArgParserCb">
+        <property name="text">
+         <string>NoArgParser</string>
         </property>
        </widget>
       </item>
@@ -249,9 +263,9 @@
        </widget>
       </item>
       <item row="12" column="0">
-       <widget class="QCheckBox" name="noArgParserCb">
+       <widget class="QCheckBox" name="noCopyCb">
         <property name="text">
-         <string>NoArgParser</string>
+         <string>NoCopy</string>
         </property>
        </widget>
       </item>
@@ -263,9 +277,9 @@
        </widget>
       </item>
       <item row="13" column="0">
-       <widget class="QCheckBox" name="noCopyCb">
+       <widget class="QCheckBox" name="noDerivedCb">
         <property name="text">
-         <string>NoCopy</string>
+         <string>NoDerived</string>
         </property>
        </widget>
       </item>
@@ -332,6 +346,7 @@
   <tabstop>transferCb</tabstop>
   <tabstop>transferBackCb</tabstop>
   <tabstop>transferThisCb</tabstop>
+  <tabstop>typeHint</tabstop>
   <tabstop>lenCb</tabstop>
   <tabstop>matmulCb</tabstop>
   <tabstop>imatmulCb</tabstop>

@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -99,6 +99,8 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
                 cb = self.transferBackCb
             elif name == "TransferThis":
                 cb = self.transferThisCb
+            elif name == "TypeHint":
+                le = self.typeHint
 
             if cb:
                 cb.setChecked(True)
@@ -178,6 +180,10 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
 
         if self.transferThisCb.isChecked():
             alist.append("TransferThis")
+
+        s = str(self.typeHint.text()).strip()
+        if s:
+            alist.append("TypeHint=\"%s\"" % s)
 
         return (name, unnamed, pytype, ",".join(alist))
 

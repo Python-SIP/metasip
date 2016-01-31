@@ -6,63 +6,81 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>280</width>
-    <height>256</height>
+    <width>321</width>
+    <height>293</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Variable Properties</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Annotations</string>
      </property>
-     <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>DocType</string>
-        </property>
-       </widget>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QFormLayout" name="formLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>DocType</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="docType"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Encoding</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="encodingCb"/>
+        </item>
+       </layout>
       </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="docType"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Encoding</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="encodingCb"/>
-      </item>
-      <item row="2" column="0" colspan="2">
+      <item>
        <widget class="QCheckBox" name="noSetterCb">
         <property name="text">
          <string>NoSetter</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item>
        <widget class="QCheckBox" name="pyIntCb">
         <property name="text">
          <string>PyInt</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>PyName</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="pyName"/>
+      <item>
+       <layout class="QFormLayout" name="formLayout_2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>PyName</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="pyName"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>TypeHint</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="typeHint"/>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -98,6 +116,7 @@
   <tabstop>noSetterCb</tabstop>
   <tabstop>pyIntCb</tabstop>
   <tabstop>pyName</tabstop>
+  <tabstop>typeHint</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
