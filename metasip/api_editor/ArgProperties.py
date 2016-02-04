@@ -16,6 +16,7 @@
 from PyQt4.QtGui import QDialog
 
 from .Designer.ArgPropertiesBase import Ui_ArgPropertiesBase
+from .Annos import split_annos
 from .Encoding import Encoding
 
 
@@ -43,18 +44,7 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
 
         self.keepRefCb.stateChanged.connect(self._update_ref)
 
-        for a in arg.annos.split(','):
-            al = a.split("=")
-            name = al[0]
-
-            if len(al) == 2:
-                value = al[1]
-
-                if value.startswith('"') and value.endswith('"'):
-                    value = value[1:-1]
-            else:
-                value = None
-
+        for name, value in split_annos(arg.annos):
             cb = None
             le = None
 

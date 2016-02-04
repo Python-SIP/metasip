@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -16,6 +16,7 @@
 from PyQt4.QtGui import QDialog
 
 from .Designer.EnumValuePropertiesBase import Ui_EnumValuePropertiesBase
+from .Annos import split_annos
 
 
 class EnumValuePropertiesDialog(QDialog, Ui_EnumValuePropertiesBase):
@@ -34,17 +35,14 @@ class EnumValuePropertiesDialog(QDialog, Ui_EnumValuePropertiesBase):
         self.setupUi(self)
 
         # Initialise the dialog.
-        for a in cls.annos.split(','):
-            al = a.split("=")
-            name = al[0]
-
+        for name, value in split_annos(cls.annos):
             le = None
 
             if name == "PyName":
                 le = self.pyName
 
             if le:
-                le.setText(al[1])
+                le.setText(value)
 
     def fields(self):
         """

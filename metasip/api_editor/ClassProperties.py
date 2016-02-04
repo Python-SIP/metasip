@@ -16,6 +16,7 @@
 from PyQt4.QtGui import QDialog
 
 from .Designer.ClassPropertiesBase import Ui_ClassPropertiesBase
+from .Annos import split_annos
 
 
 class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
@@ -36,18 +37,7 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
         # Initialise the dialog.
         self.pyBaseClasses.setText(cls.pybases)
 
-        for a in cls.annos.split(','):
-            al = a.split("=")
-            name = al[0]
-
-            if len(al) == 2:
-                value = al[1]
-
-                if value.startswith('"') and value.endswith('"'):
-                    value = value[1:-1]
-            else:
-                value = None
-
+        for name, value in split_annos(cls.annos):
             cb = None
             le = None
 
@@ -81,7 +71,7 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
             if cb:
                 cb.setChecked(True)
             elif le:
-                le.setText(al[1])
+                le.setText(value)
 
     def fields(self):
         """

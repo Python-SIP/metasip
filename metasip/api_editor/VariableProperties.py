@@ -16,6 +16,7 @@
 from PyQt4.QtGui import QDialog
 
 from .Designer.VariablePropertiesBase import Ui_VariablePropertiesBase
+from .Annos import split_annos
 from .Encoding import Encoding
 
 
@@ -37,18 +38,7 @@ class VariablePropertiesDialog(QDialog, Ui_VariablePropertiesBase):
         # Initialise the dialog.
         self._encoding = Encoding(self.encodingCb)
 
-        for a in cls.annos.split(','):
-            al = a.split("=")
-            name = al[0]
-
-            if len(al) == 2:
-                value = al[1]
-
-                if value.startswith('"') and value.endswith('"'):
-                    value = value[1:-1]
-            else:
-                value = None
-
+        for name, value in split_annos(cls.annos):
             cb = None
             le = None
 

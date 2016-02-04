@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -16,6 +16,7 @@
 from PyQt4.QtGui import QDialog
 
 from .Designer.OpaqueClassPropertiesBase import Ui_OpaqueClassPropertiesBase
+from .Annos import split_annos
 
 
 class OpaqueClassPropertiesDialog(QDialog, Ui_OpaqueClassPropertiesBase):
@@ -34,10 +35,7 @@ class OpaqueClassPropertiesDialog(QDialog, Ui_OpaqueClassPropertiesBase):
         self.setupUi(self)
 
         # Initialise the dialog.
-        for a in cls.annos.split(','):
-            al = a.split("=")
-            name = al[0]
-
+        for name, value in split_annos(cls.annos):
             cb = None
 
             if name == "External":

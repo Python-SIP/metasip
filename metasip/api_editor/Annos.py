@@ -15,8 +15,7 @@
 
 def split_annos(anno_s):
     """ Split a number of annotations represented as a string into a sequence
-    if name/value pairs.  The string is assumed to be well formed (ie. no
-    superfluous spaces).
+    if name/value pairs.
     """
 
     # Handle the trvial case.
@@ -37,7 +36,7 @@ def split_annos(anno_s):
         if expecting == END_QUOTE:
             if ch == '"':
                 value = anno_s[part_start:i]
-                annos.append((name, value))
+                annos.append((name.strip(), value))
                 expecting = COMMA
         else:
             if ch == '=':
@@ -49,10 +48,10 @@ def split_annos(anno_s):
                 part_start = i + 1
             elif ch == ',':
                 if expecting == NAME:
-                    name = anno_s[part_start:i]
+                    name = anno_s[part_start:i].strip()
                     value = None
                 elif expecting == VALUE:
-                    value = anno_s[part_start:i]
+                    value = anno_s[part_start:i].strip()
 
                 annos.append((name, value))
 

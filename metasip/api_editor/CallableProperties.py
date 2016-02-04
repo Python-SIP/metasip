@@ -161,7 +161,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             elif name == "AutoGen":
                 le = self.autoGen
 
-                if not value:
+                if value is None:
                     value = "All"
             elif name == "Default":
                 cb = self.defaultCb
