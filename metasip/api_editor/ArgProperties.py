@@ -101,6 +101,10 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
                 cb = self.transferThisCb
             elif name == "TypeHint":
                 le = self.typeHint
+            elif name == "TypeHintIn":
+                le = self.typeHintIn
+            elif name == "TypeHintOut":
+                le = self.typeHintOut
 
             if cb:
                 cb.setChecked(True)
@@ -184,6 +188,14 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
         s = str(self.typeHint.text()).strip()
         if s:
             alist.append("TypeHint=\"%s\"" % s)
+
+        s = str(self.typeHintIn.text()).strip()
+        if s:
+            alist.append("TypeHintIn=\"%s\"" % s)
+
+        s = str(self.typeHintOut.text()).strip()
+        if s:
+            alist.append("TypeHintOut=\"%s\"" % s)
 
         return (name, unnamed, pytype, ",".join(alist))
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -40,6 +40,14 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
             al = a.split("=")
             name = al[0]
 
+            if len(al) == 2:
+                value = al[1]
+
+                if value.startswith('"') and value.endswith('"'):
+                    value = value[1:-1]
+            else:
+                value = None
+
             cb = None
             le = None
 
@@ -65,6 +73,8 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
                 le = self.metatype
             elif name == "Supertype":
                 le = self.supertype
+            elif name == "TypeHintIn":
+                le = self.typeHintIn
             elif name == "PyQtInterface":
                 le = self.interface
 
@@ -102,23 +112,27 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
         if self.mixinCb.isChecked():
             alist.append("Mixin")
 
-        s = self.pyName.text().strip()
+        s = str(self.pyName.text()).strip()
         if s:
             alist.append("PyName=" + s)
 
-        s = self.api.text().strip()
+        s = str(self.api.text()).strip()
         if s:
             alist.append("API=" + s)
 
-        s = self.metatype.text().strip()
+        s = str(self.metatype.text()).strip()
         if s:
             alist.append("Metatype=" + s)
 
-        s = self.supertype.text().strip()
+        s = str(self.supertype.text()).strip()
         if s:
             alist.append("Supertype=" + s)
 
-        s = self.interface.text().strip()
+        s = str(self.typeHintIn.text()).strip()
+        if s:
+            alist.append("TypeHintIn=\"%s\"" % s)
+
+        s = str(self.interface.text()).strip()
         if s:
             alist.append("PyQtInterface=" + s)
 
