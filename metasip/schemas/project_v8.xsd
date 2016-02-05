@@ -520,9 +520,9 @@
                             <xsd:enumeration value="initcode"/>
                             <xsd:enumeration value="modulecode"/>
                             <xsd:enumeration value="moduleheadercode"/>
-                            <xsd:enumeration value="moduletypehintcode"/>
                             <xsd:enumeration value="postinitcode"/>
                             <xsd:enumeration value="preinitcode"/>
+                            <xsd:enumeration value="typehintcode"/>
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:attribute>

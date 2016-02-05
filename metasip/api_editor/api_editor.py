@@ -882,7 +882,7 @@ class SipFileItem(ContainerItem):
                 ("%PostInitialisationCode", self._postInitCodeSlot, ("poic" not in self._editors)),
                 None,
                 ("%ExportedTypeHintCode", self._exportedTypeHintCodeSlot, ("ethc" not in self._editors)),
-                ("%ModuleTypeHintCode", self._moduleTypeHintCodeSlot, ("mthc" not in self._editors)),
+                ("%TypeHintCode", self._typeHintCodeSlot, ("thc" not in self._editors)),
                 None,
                 ("Apply argument naming conventions...", self._nameFromConventions),
                 ("Accept argument names", self._acceptNames),
@@ -1082,27 +1082,27 @@ class SipFileItem(ContainerItem):
 
         del self._editors["ethc"]
 
-    def _moduleTypeHintCodeSlot(self):
+    def _typeHintCodeSlot(self):
         """
-        Slot to handle %ModuleTypeHintCode.
+        Slot to handle %TypeHintCode.
         """
         ed = ExternalEditor()
-        ed.editDone.connect(self._moduleTypeHintCodeDone)
-        ed.edit(self.sipfile.moduletypehintcode, "%ModuleTypeHintCode: " + self.sipfile.name)
-        self._editors["mthc"] = ed
+        ed.editDone.connect(self._typeHintCodeDone)
+        ed.edit(self.sipfile.typehintcode, "%TypeHintCode: " + self.sipfile.name)
+        self._editors["thc"] = ed
 
-    def _moduleTypeHintCodeDone(self, text_changed, text):
+    def _typeHintCodeDone(self, text_changed, text):
         """
-        Slot to handle changed %ModuleTypeHintCode.
+        Slot to handle changed %TypeHintCode.
 
         text_changed is set if the code has changed.
         text is the code.
         """
         if text_changed:
-            self.sipfile.moduletypehintcode = text
+            self.sipfile.typehintcode = text
             self.set_dirty()
 
-        del self._editors["mthc"]
+        del self._editors["thc"]
 
     def _hideIgnoredSlot(self):
         """

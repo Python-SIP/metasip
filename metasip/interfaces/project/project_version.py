@@ -14,8 +14,7 @@
 #
 # History:
 #   8   Implemented by metasip v1.15.
-#       - added exportedtypehintcode and moduletypehintcode to the SipFile
-#         element.
+#       - added exportedtypehintcode and typehintcode to the SipFile element.
 #
 #   7   Implemented by metasip v1.14.
 #       - added virtualerrorhandler to the Module element.

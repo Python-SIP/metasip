@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>321</width>
-    <height>293</height>
+    <width>343</width>
+    <height>313</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,6 +48,13 @@
        <widget class="QCheckBox" name="noSetterCb">
         <property name="text">
          <string>NoSetter</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="noTypeHintCb">
+        <property name="text">
+         <string>NoTypeHint</string>
         </property>
        </widget>
       </item>
@@ -114,6 +121,7 @@
   <tabstop>docType</tabstop>
   <tabstop>encodingCb</tabstop>
   <tabstop>noSetterCb</tabstop>
+  <tabstop>noTypeHintCb</tabstop>
   <tabstop>pyIntCb</tabstop>
   <tabstop>pyName</tabstop>
   <tabstop>typeHint</tabstop>

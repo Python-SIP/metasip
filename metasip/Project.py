@@ -1015,8 +1015,8 @@ class SipFile(Model):
         if self.exportedtypehintcode:
             _writeCodeSIP(f, "%ExportedTypeHintCode", self.exportedtypehintcode, False)
 
-        if self.moduletypehintcode:
-            _writeCodeSIP(f, "%ModuleTypeHintCode", self.moduletypehintcode, False)
+        if self.typehintcode:
+            _writeCodeSIP(f, "%TypeHintCode", self.typehintcode, False)
 
     def xml(self, f):
         """ Write the .sip file to an XML file. """
@@ -1049,8 +1049,8 @@ class SipFile(Model):
         if self.exportedtypehintcode:
             _writeLiteralXML(f, "exportedtypehintcode", self.exportedtypehintcode)
 
-        if self.moduletypehintcode:
-            _writeLiteralXML(f, "moduletypehintcode", self.moduletypehintcode)
+        if self.typehintcode:
+            _writeLiteralXML(f, "typehintcode", self.typehintcode)
 
         f.write('</SipFile>\n')
 

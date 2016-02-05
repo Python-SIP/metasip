@@ -49,6 +49,8 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
                 cb = self.delaydtorCb
             elif name == "NoDefaultCtors":
                 cb = self.nodefaultctorsCb
+            elif name == "NoTypeHint":
+                cb = self.noTypeHintCb
             elif name == "PyQtNoQMetaObject":
                 cb = self.noqmetaobjectCb
             elif name == "ExportDerived":
@@ -92,6 +94,9 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
 
         if self.nodefaultctorsCb.isChecked():
             alist.append("NoDefaultCtors")
+
+        if self.noTypeHintCb.isChecked():
+            alist.append("NoTypeHint")
 
         if self.noqmetaobjectCb.isChecked():
             alist.append("PyQtNoQMetaObject")

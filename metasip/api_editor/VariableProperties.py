@@ -48,6 +48,8 @@ class VariablePropertiesDialog(QDialog, Ui_VariablePropertiesBase):
                 self._encoding.setAnnotation(a)
             elif name == "NoSetter":
                 cb = self.noSetterCb
+            elif name == "NoTypeHint":
+                cb = self.noTypeHintCb
             elif name == "PyInt":
                 cb = self.pyIntCb
             elif name == "PyName":
@@ -74,6 +76,9 @@ class VariablePropertiesDialog(QDialog, Ui_VariablePropertiesBase):
 
         if self.noSetterCb.isChecked():
             alist.append("NoSetter")
+
+        if self.noTypeHintCb.isChecked():
+            alist.append("NoTypeHint")
 
         if self.pyIntCb.isChecked():
             alist.append("PyInt")

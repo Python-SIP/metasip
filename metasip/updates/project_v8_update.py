@@ -47,6 +47,6 @@ class ProjectV8Update(Model):
             is the view returned by create_view().
         """
 
-        # The v8 schema adds exportedtypehintcode and moduletypehintcode to
-        # SIP files so we just need to bump the version number.
+        # The v8 schema adds exportedtypehintcode and typehintcode to SIP files
+        # so we just need to bump the version number.
         root.set('version', str(self.updates_to))

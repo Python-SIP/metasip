@@ -45,6 +45,9 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
             if name == "NoScope":
                 cb = self.noScopeCb
 
+            if name == "NoTypeHint":
+                cb = self.noTypeHintCb
+
             if cb is not None:
                 cb.setChecked(True)
             elif le is not None:
@@ -62,5 +65,8 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
 
         if self.noScopeCb.isChecked():
             alist.append("NoScope")
+
+        if self.noTypeHintCb.isChecked():
+            alist.append("NoTypeHint")
 
         return (",".join(alist), )

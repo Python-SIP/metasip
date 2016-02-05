@@ -1,8 +1,8 @@
-v1.16 ??? ??? 2016
-  - Added support for the /TypeHint/ annotations.
+v1.16 5th February 2016
+  - Added support for the /NoTypeHint/ and /TypeHint/ annotations.
   - Added support for the /__matmul__/ and /__imatmul__/ callable annotations.
   - Updated the project file format to v8 to support %ExportedTypeHintCode and
-    %ModuleTypeHintCode.
+    %TypeHintCode.
 
 v1.15 10th August 2015
   - Added support for the /PyInt/ function annotation.

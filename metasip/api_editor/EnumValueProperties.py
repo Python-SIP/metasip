@@ -36,12 +36,17 @@ class EnumValuePropertiesDialog(QDialog, Ui_EnumValuePropertiesBase):
 
         # Initialise the dialog.
         for name, value in split_annos(cls.annos):
+            cb = None
             le = None
 
-            if name == "PyName":
+            if name == "NoTypeHint":
+                cb = self.noTypeHintCb
+            elif name == "PyName":
                 le = self.pyName
 
-            if le:
+            if cb:
+                cb.setChecked(True)
+            elif le:
                 le.setText(value)
 
     def fields(self):
@@ -49,6 +54,9 @@ class EnumValuePropertiesDialog(QDialog, Ui_EnumValuePropertiesBase):
         Return a tuple of the dialog fields.
         """
         alist = []
+
+        if self.noTypeHintCb.isChecked():
+            alist.append("NoTypeHint")
 
         s = str(self.pyName.text()).strip()
         if s:

@@ -191,6 +191,8 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
                 cb = self.noCopyCb
             elif name == "NoDerived":
                 cb = self.noDerivedCb
+            elif name == "NoTypeHint":
+                cb = self.noTypeHintCb
             elif name == "Numeric":
                 cb = self.numericCb
             elif name == "PostHook":
@@ -286,6 +288,9 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
 
         if self.noDerivedCb.isChecked():
             alist.append("NoDerived")
+
+        if self.noTypeHintCb.isChecked():
+            alist.append("NoTypeHint")
 
         if self.numericCb.isChecked():
             alist.append("Numeric")

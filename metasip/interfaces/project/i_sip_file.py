@@ -35,8 +35,8 @@ class ISipFile(ICodeContainer):
     # The optional %ModuleHeaderCode.
     moduleheadercode = Str()
 
-    # The optional %ModuleTypeHintCode.
-    moduletypehintcode = Str()
+    # The optional %TypeHintCode.
+    typehintcode = Str()
 
     # The basename of the header file.  All header files that contribute to the
     # .sip file will have the same basename.  Note that there may not be any
