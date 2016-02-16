@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>534</width>
-    <height>360</height>
+    <width>549</width>
+    <height>422</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,9 +42,9 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QCheckBox" name="nodefaultctorsCb">
+       <widget class="QCheckBox" name="noqmetaobjectCb">
         <property name="text">
-         <string>NoDefaultCtors</string>
+         <string>PyQtNoQMetaObject</string>
         </property>
        </widget>
       </item>
@@ -55,77 +55,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="noTypeHintCb">
-        <property name="text">
-         <string>NoTypeHint</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <layout class="QFormLayout" name="formLayout_3">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>API</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="api"/>
-        </item>
-       </layout>
-      </item>
-      <item row="2" column="1">
-       <layout class="QFormLayout" name="formLayout_5">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>PyName</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="pyName"/>
-        </item>
-       </layout>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="delaydtorCb">
-        <property name="text">
-         <string>DelayDtor</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1" rowspan="2">
-       <widget class="QCheckBox" name="noqmetaobjectCb">
-        <property name="text">
-         <string>PyQtNoQMetaObject</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QCheckBox" name="exportderivedCb">
-        <property name="text">
-         <string>ExportDerived</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <layout class="QFormLayout" name="formLayout_2">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>Metatype</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="metatype"/>
-        </item>
-       </layout>
-      </item>
-      <item row="5" column="1" rowspan="3">
+      <item row="1" column="1" rowspan="8">
        <layout class="QFormLayout" name="formLayout_4">
         <item row="0" column="0">
          <widget class="QLabel" name="label_6">
@@ -150,12 +80,84 @@
         <item row="2" column="0">
          <widget class="QLabel" name="label_7">
           <property name="text">
-           <string>TypeHintIn</string>
+           <string>TypeHint</string>
           </property>
          </widget>
         </item>
         <item row="2" column="1">
+         <widget class="QLineEdit" name="typeHint"/>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>TypeHintIn</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
          <widget class="QLineEdit" name="typeHintIn"/>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>TypeHintOut</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLineEdit" name="typeHintOut"/>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>TypeHintValue</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QLineEdit" name="typeHintValue"/>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0">
+       <layout class="QFormLayout" name="formLayout_3">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>API</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="api"/>
+        </item>
+       </layout>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="delaydtorCb">
+        <property name="text">
+         <string>DelayDtor</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="exportderivedCb">
+        <property name="text">
+         <string>ExportDerived</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <layout class="QFormLayout" name="formLayout_2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Metatype</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="metatype"/>
         </item>
        </layout>
       </item>
@@ -165,6 +167,34 @@
          <string>Mixin</string>
         </property>
        </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QCheckBox" name="nodefaultctorsCb">
+        <property name="text">
+         <string>NoDefaultCtors</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QCheckBox" name="noTypeHintCb">
+        <property name="text">
+         <string>NoTypeHint</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <layout class="QFormLayout" name="formLayout_5">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>PyName</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="pyName"/>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -209,7 +239,10 @@
   <tabstop>noqmetaobjectCb</tabstop>
   <tabstop>interface</tabstop>
   <tabstop>supertype</tabstop>
+  <tabstop>typeHint</tabstop>
   <tabstop>typeHintIn</tabstop>
+  <tabstop>typeHintOut</tabstop>
+  <tabstop>typeHintValue</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>

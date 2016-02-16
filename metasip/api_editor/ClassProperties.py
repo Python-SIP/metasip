@@ -65,8 +65,14 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
                 le = self.metatype
             elif name == "Supertype":
                 le = self.supertype
+            elif name == "TypeHint":
+                le = self.typeHint
             elif name == "TypeHintIn":
                 le = self.typeHintIn
+            elif name == "TypeHintOut":
+                le = self.typeHintOut
+            elif name == "TypeHintValue":
+                le = self.typeHintValue
             elif name == "PyQtInterface":
                 le = self.interface
 
@@ -123,9 +129,21 @@ class ClassPropertiesDialog(QDialog, Ui_ClassPropertiesBase):
         if s:
             alist.append("Supertype=" + s)
 
+        s = str(self.typeHint.text()).strip()
+        if s:
+            alist.append("TypeHint=\"%s\"" % s)
+
         s = str(self.typeHintIn.text()).strip()
         if s:
             alist.append("TypeHintIn=\"%s\"" % s)
+
+        s = str(self.typeHintOut.text()).strip()
+        if s:
+            alist.append("TypeHintOut=\"%s\"" % s)
+
+        s = str(self.typeHintValue.text()).strip()
+        if s:
+            alist.append("TypeHintValue=\"%s\"" % s)
 
         s = str(self.interface.text()).strip()
         if s:
