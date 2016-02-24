@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#   9   Implemented by metasip v1.16.
+#       - added typehintcode to the Class element.
+#
 #   8   Implemented by metasip v1.15.
 #       - added exportedtypehintcode and typehintcode to the SipFile element.
 #
@@ -46,4 +49,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 8
+ProjectVersion = 9

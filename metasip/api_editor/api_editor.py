@@ -1375,6 +1375,7 @@ class CodeItem(ContainerItem):
 
         # See what extra menu items are needed.
         thcslot = False
+        thicslot = False
         tcslot = False
         cttcslot = False
         cftcslot = False
@@ -1411,6 +1412,7 @@ class CodeItem(ContainerItem):
             thcslot = True
         elif isinstance(self.code, Class):
             thcslot = True
+            thicslot = True
             tcslot = True
             cttcslot = True
             cftcslot = True
@@ -1471,7 +1473,7 @@ class CodeItem(ContainerItem):
         elif isinstance(self.code, EnumValue):
             pslot = self._enumValuePropertiesSlot
 
-        if thcslot or tcslot or cttcslot or cftcslot or fcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
+        if thcslot or thicslot or tcslot or cttcslot or cftcslot or fcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
             menu.append(None)
 
             if thcslot:
@@ -1479,6 +1481,9 @@ class CodeItem(ContainerItem):
 
             if tcslot:
                 menu.append(("%TypeCode", self._typeCodeSlot, ("tc" not in self._editors)))
+
+            if thicslot:
+                menu.append(("%TypeHintCode", self._typehintCodeSlot, ("thic" not in self._editors)))
 
             if fcslot:
                 menu.append(("%FinalisationCode", self._finalCodeSlot, ("fc" not in self._editors)))
@@ -1704,6 +1709,28 @@ class CodeItem(ContainerItem):
             self.set_dirty()
 
         del self._editors["sc"]
+
+    def _typehintCodeSlot(self):
+        """
+        Slot to handle %TypeHintCode.
+        """
+        ed = ExternalEditor()
+        ed.editDone.connect(self._typehintCodeDone)
+        ed.edit(self.code.typeheadercode, "%TypeHintCode: " + self.code.user())
+        self._editors["thic"] = ed
+
+    def _typehintCodeDone(self, text_changed, text):
+        """
+        Slot to handle changed %TypeHintCode.
+
+        text_changed is set if the code has changed.
+        text is the code.
+        """
+        if text_changed:
+            self.code.typehintcode = text
+            self.set_dirty()
+
+        del self._editors["thic"]
 
     def _typeheaderCodeSlot(self):
         """

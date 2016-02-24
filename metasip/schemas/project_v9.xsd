@@ -3,7 +3,7 @@
 
     <xsd:annotation>
         <xsd:documentation xml:lang="en">
-            The schema for version 8 of a MetaSIP project.
+            The schema for version 9 of a MetaSIP project.
         </xsd:documentation>
     </xsd:annotation>
 
@@ -51,6 +51,7 @@
                             <xsd:enumeration value="subclasscode"/>
                             <xsd:enumeration value="typecode"/>
                             <xsd:enumeration value="typeheadercode"/>
+                            <xsd:enumeration value="typehintcode"/>
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:attribute>

@@ -17,3 +17,4 @@ from .project_v5_update import ProjectV5Update
 from .project_v6_update import ProjectV6Update
 from .project_v7_update import ProjectV7Update
 from .project_v8_update import ProjectV8Update
+from .project_v9_update import ProjectV9Update

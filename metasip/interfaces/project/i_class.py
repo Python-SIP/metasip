@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -79,3 +79,6 @@ class IClass(ICode, ICodeContainer, IDocString, IAccess):
 
     # The optional %TypeHeaderCode.
     typeheadercode = Str()
+
+    # The optional %TypeHintCode.
+    typehintcode = Str()

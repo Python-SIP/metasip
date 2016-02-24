@@ -1281,6 +1281,9 @@ class Class(Code, Access):
 
         _writeDocstringSIP(f, self.docstring)
 
+        if self.typehintcode:
+            _writeCodeSIP(f, "%TypeHintCode", self.typehintcode, False)
+
         f.write("%TypeHeaderCode\n", False)
 
         if self.typeheadercode:
@@ -1375,6 +1378,9 @@ class Class(Code, Access):
         f.write('<Class%s>\n' % _attrsAsString(self))
 
         _writeDocstringXML(f, self.docstring)
+
+        if self.typehintcode:
+            _writeLiteralXML(f, "typehintcode", self.typehintcode)
 
         if self.typeheadercode:
             _writeLiteralXML(f, "typeheadercode", self.typeheadercode)
