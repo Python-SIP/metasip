@@ -1,3 +1,7 @@
+v1.17 25th February 2016
+  - Updated the project file format to v9 to support %TypeHintCode in classes.
+  - Added the /TypeHint/, /TypeHintOut/ and /TypeHintValue/ class annotations.
+
 v1.16 5th February 2016
   - Added support for the /NoTypeHint/ and /TypeHint/ annotations.
   - Added support for the /__matmul__/ and /__imatmul__/ callable annotations.
