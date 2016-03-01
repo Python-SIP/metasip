@@ -203,6 +203,7 @@ class _Class(_ScopedItem, _Access):
         _Access.__init__(self, parser, attrs)
 
         self.bases = optAttribute(attrs, "bases")
+        self.incomplete = bool(int(optAttribute(attrs, "incomplete", "0")))
 
     def transform(self, parser, scope):
         """
@@ -211,27 +212,32 @@ class _Class(_ScopedItem, _Access):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        bl = []
+        if self.incomplete:
+            scope.content.append(
+                    OpaqueClass(name=self.name, container=scope,
+                            access=self.access, status='ignored'))
+        else:
+            bl = []
 
-        for bid in self.bases.split():
-            sbid = bid.split(":")
+            for bid in self.bases.split():
+                sbid = bid.split(":")
 
-            if len(sbid) == 1:
-                acc = "public"
-            else:
-                acc = sbid[0]
-                bid = sbid[1]
+                if len(sbid) == 1:
+                    acc = "public"
+                else:
+                    acc = sbid[0]
+                    bid = sbid[1]
 
-            bl.append("%s %s" % (acc, parser.asType(bid)))
+                bl.append("%s %s" % (acc, parser.asType(bid)))
 
-        # Automatically ignore non-public classes.
-        status = 'unknown' if self.access == '' else 'ignored'
+            # Automatically ignore non-public classes.
+            status = 'unknown' if self.access == '' else 'ignored'
 
-        tci = Class(name=self.name, container=scope, bases=', '.join(bl),
-                struct=False, access=self.access, status=status)
-        scope.content.append(tci)
+            tci = Class(name=self.name, container=scope, bases=', '.join(bl),
+                    struct=False, access=self.access, status=status)
+            scope.content.append(tci)
 
-        parser.transformScope(tci, self)
+            parser.transformScope(tci, self)
 
 
 class _Struct(_ScopedItem, _Access):
