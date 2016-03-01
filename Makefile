@@ -23,6 +23,12 @@ endif
 
 all: gui
 
+develop: gui VERSION
+	$(PYTHON3) setup.py develop
+
+develop-uninstall:
+	$(PYTHON3) setup.py develop --uninstall
+
 gui:
 	$(MAKE) -C metasip/api_editor/Designer all
 

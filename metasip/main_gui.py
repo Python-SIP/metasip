@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
@@ -18,7 +16,7 @@ import os
 from dip.io import IoManager, StorageError
 from dip.io.storage.filesystem import FilesystemStorageFactory
 
-from metasip import Project, ProjectCodec
+from . import Project, ProjectCodec
 
 
 # Configure the i/o manager so we can use it for reading and writing projects
@@ -194,7 +192,9 @@ def fatal(msg):
     sys.exit(1)
 
 
-if __name__ == "__main__":
+def main():
+    """ The entry point for the setuptools generated GUI wrapper. """
+
     # Parse the arguments.
     argv = sys.argv[1:]
 
@@ -249,4 +249,4 @@ if __name__ == "__main__":
     else:
         rc = launchGUI(prjname, guiargs)
 
-    sys.exit(rc)
+    return rc

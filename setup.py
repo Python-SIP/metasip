@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -11,7 +11,7 @@
 
 
 import os
-from distutils.core import setup
+from setuptools import setup
 
 
 # Get the list of packages to include.
@@ -37,6 +37,6 @@ setup(
         author='Riverbank Computing Limited',
         author_email='info@riverbankcomputing.com',
         url='http://www.riverbankcomputing.com/software/metasip/',
-        scripts=['msip'],
+        entry_points={'gui_scripts': ['msip = metasip.main_gui:main']},
         packages=packages
      )
