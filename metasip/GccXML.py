@@ -689,6 +689,21 @@ class _Typedef(_ScopedItem):
         if t:
             scope.content.append(Typedef(name=self.name, type=t))
 
+    def asType(self, parser, prefix_ok):
+        """
+        Return the string representation of the item for when it is used as a
+        type.
+
+        parser is the parser instance.
+        """
+        # enum_type (as a reference to the underlying QFlags<> argument) was
+        # introduced in Qt v5.6.  We simply replace it with the enum to make
+        # sure signatures don't change from previous Qt versions.
+        if self.name == 'enum_type':
+            return parser.byid[self.type_id].asType(parser, prefix_ok)
+
+        return _ScopedItem.asType(self, parser, prefix_ok)
+
 
 class _FunctionType(object):
     """
