@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -12,6 +12,7 @@
 
 import os
 import subprocess
+import sys
 import tempfile
 
 from dip.model import implements, Instance, Model
@@ -989,10 +990,19 @@ class GccXMLParser(ParserBase):
         self._pathname = pathname
         iname = os.path.join(tempfile.gettempdir(), hf.name + '.tmp')
 
-        argv = ['gccxml']
+        argv = ['castxml', '-x', 'c++', '--castxml-gccxml']
+
+        if sys.platform == 'darwin':
+            # TODO: Search for the latest SDK version.
+            argv.append('-I')
+            argv.append('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include')
+            argv.append('-I')
+            argv.append('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include/c++/4.2.1')
+
+        argv.append('-o')
+        argv.append(iname)
         argv.append(hdir.parserargs)
         argv.append(self._pathname)
-        argv.append('-fxml=' + iname)
 
         # We use shell=True and a string argv for OS/X - but I don't understand
         # why it's needed.
