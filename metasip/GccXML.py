@@ -896,6 +896,10 @@ class _Argument(object):
         if self.default == 'QLatin1Char(32)':
             self.default = "QLatin1Char(' ')"
 
+        # This is the expansion of Q_NULLPTR introduced in Qt v5.6.
+        if self.default == '__null':
+            self.default = '0'
+
 
 class _Ellipsis(object):
     """
