@@ -1019,10 +1019,12 @@ class GccXMLParser(ParserBase):
 
         if sys.platform == 'darwin':
             # TODO: Search for the latest SDK version.
-            argv.append('-I')
-            argv.append('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include')
-            argv.append('-I')
-            argv.append('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include/c++/4.2.1')
+            sdk = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk'
+
+            argv.append('-isysroot')
+            argv.append(sdk)
+
+            argv.append('-I' + sdk + '/usr/include/c++/4.2.1')
 
         argv.append('-o')
         argv.append(iname)
