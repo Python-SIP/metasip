@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -106,7 +106,9 @@ class ProjectParser:
 
         arg = Argument(type=elem.get('type'), name=elem.get('name', ''),
                 unnamed=bool(int(elem.get('unnamed', '0'))),
-                default=elem.get('default', ''), pytype=elem.get('pytype', ''),
+                default=elem.get('default', ''),
+                pydefault=elem.get('pydefault', ''),
+                pytype=elem.get('pytype', ''),
                 annos=elem.get('annos', ''))
 
         callable.args.append(arg)

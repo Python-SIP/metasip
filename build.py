@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -19,12 +19,7 @@ or a Mercurial archive.  It is not part of a packaged release.
 
 import os
 import sys
-
-
-# MacHg is not on sys.path, so put it there if we find it.
-MacHgPath = '/Applications/MacHg.app/Contents/Plugins/LocalMercurial'
-if os.path.isdir(MacHgPath):
-    sys.path.append(MacHgPath)
+import time
 
 
 # The root directory, i.e. the one containing this script.
@@ -108,7 +103,8 @@ def _get_release():
         if version is not None:
             ctx = before
         else:
-            release_suffix = '-snapshot-' + str(ctx)
+            release_suffix = time.strftime('.dev%y%m%d%H%M',
+                    time.localtime(ctx.date()[0]))
 
         changelog = [_format_changelog(ctx)]
 

@@ -19,3 +19,4 @@ from .project_v6_schema import ProjectV6Schema
 from .project_v7_schema import ProjectV7Schema
 from .project_v8_schema import ProjectV8Schema
 from .project_v9_schema import ProjectV9Schema
+from .project_v10_schema import ProjectV10Schema

@@ -42,7 +42,7 @@ install: gui VERSION
 dist: dist-clean build
 
 clean:
-	rm -rf ChangeLog* VERSION MANIFEST build dist
+	rm -rf ChangeLog* VERSION MANIFEST build dist metasip.egg-info
 	find . -name '*.pyc' -exec rm -f {} \;
 	find . -depth -name __pycache__ -exec rm -rf {} \;
 	$(MAKE) -C metasip/api_editor/Designer clean

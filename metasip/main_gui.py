@@ -114,7 +114,8 @@ def launchGUI(prjname, guiargs):
     from metasip import ProjectEditorTool, ProjectFactory, UpdateManager
     from metasip.schemas import (ProjectV1Schema, ProjectV2Schema,
             ProjectV3Schema, ProjectV4Schema, ProjectV5Schema, ProjectV6Schema,
-            ProjectV7Schema, ProjectV8Schema, ProjectV9Schema)
+            ProjectV7Schema, ProjectV8Schema, ProjectV9Schema,
+            ProjectV10Schema)
     from metasip.tools.features import FeaturesTool
     from metasip.tools.logger import LoggerTool
     from metasip.tools.module_autofill import ModuleAutofillTool
@@ -125,7 +126,7 @@ def launchGUI(prjname, guiargs):
     from metasip.tools.versions import VersionsTool
     from metasip.updates import (ProjectV2Update, ProjectV3Update,
             ProjectV4Update, ProjectV5Update, ProjectV6Update, ProjectV7Update,
-            ProjectV8Update, ProjectV9Update)
+            ProjectV8Update, ProjectV9Update, ProjectV10Update)
 
     app = Application(guiargs)
     SettingsManager.load('riverbankcomputing.com')
@@ -139,6 +140,7 @@ def launchGUI(prjname, guiargs):
     UpdateManager.updates.append(ProjectV7Update())
     UpdateManager.updates.append(ProjectV8Update())
     UpdateManager.updates.append(ProjectV9Update())
+    UpdateManager.updates.append(ProjectV10Update())
 
     # Define the shell.
     editor_tool = ProjectEditorTool(model_policy='one')

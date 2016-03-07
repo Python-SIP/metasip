@@ -40,6 +40,7 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
 
         self.name.setText(arg.name)
         self.unnamedCb.setChecked(arg.unnamed)
+        self.pyDefault.setText(arg.pydefault)
         self.pyType.setText(arg.pytype)
 
         self.keepRefCb.stateChanged.connect(self._update_ref)
@@ -109,6 +110,7 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
         """
         name = self.name.text().strip()
         unnamed = self.unnamedCb.isChecked()
+        pydefault = self.pyDefault.text().strip()
         pytype = self.pyType.text().strip()
 
         alist = []
@@ -187,7 +189,7 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
         if s:
             alist.append("TypeHintOut=\"%s\"" % s)
 
-        return (name, unnamed, pytype, ",".join(alist))
+        return (name, unnamed, pydefault, pytype, ",".join(alist))
 
     def _update_ref(self, state=None):
         """

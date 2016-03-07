@@ -1145,7 +1145,9 @@ class Argument(Annotations):
 
             s += self.name
 
-        if self.default != '':
+        if self.pydefault != '':
+            s += " = " + self.pydefault
+        elif self.default != '':
             s += " = " + self.default
 
         return s
@@ -1168,7 +1170,9 @@ class Argument(Annotations):
 
         s += self.sipAnnos()
 
-        if self.default != '':
+        if self.pydefault != '':
+            s += " = " + self.pydefault
+        elif self.default != '':
             s += " = " + callable.ignore_namespaces(self.default)
 
         return s
@@ -1193,6 +1197,9 @@ class Argument(Annotations):
 
         if self.default != '':
             xml.append('default="{0}"'.format(escape(self.default)))
+
+        if self.pydefault != '':
+            xml.append('pydefault="{0}"'.format(escape(self.pydefault)))
 
         if self.pytype != '':
             xml.append('pytype="{0}"'.format(escape(self.pytype)))

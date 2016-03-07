@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -20,12 +20,15 @@ class IArgument(IAnnos):
     argument of a callable.
     """
 
-    # The optional default value of the argument.  This is interpreted
+    # The optional C/C++ default value of the argument.  This is interpreted
     # literally so that (for example) a string value includes the quotes.
     default = Str()
 
     # The optional name of the argument.
     name = Str()
+
+    # The optional Python default value of the argument.
+    pydefault = Str()
 
     # The optional Python type of the argument.
     pytype = Str()

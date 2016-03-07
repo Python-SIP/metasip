@@ -1181,7 +1181,7 @@ class Argument(EditorItem):
         dlg = ArgPropertiesDialog(arg, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
-            (arg.name, arg.unnamed, arg.pytype, arg.annos) = dlg.fields()
+            (arg.name, arg.unnamed, arg.pydefault, arg.pytype, arg.annos) = dlg.fields()
 
             self.set_dirty()
 

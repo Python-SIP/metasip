@@ -52,6 +52,7 @@ def autofill_module(project, source, destination):
 
             for a in range(len(dst.args)):
                 dst.args[a].annos = src.args[a].annos
+                dst.args[a].pydefault = src.args[a].pydefault
                 dst.args[a].pytype = src.args[a].pytype
 
             dst.status = ''

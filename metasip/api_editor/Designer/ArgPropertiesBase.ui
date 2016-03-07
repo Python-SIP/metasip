@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>568</width>
-    <height>530</height>
+    <width>563</width>
+    <height>551</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,16 +36,26 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
+    <layout class="QFormLayout" name="formLayout_4">
+     <item row="0" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Python type</string>
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="1">
       <widget class="QLineEdit" name="pyType"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Python default value</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="pyDefault"/>
      </item>
     </layout>
    </item>
@@ -282,11 +292,14 @@
   <zorder>buttonBox</zorder>
   <zorder>groupBox</zorder>
   <zorder>verticalSpacer</zorder>
+  <zorder>label_9</zorder>
+  <zorder>pyDefault</zorder>
  </widget>
  <tabstops>
   <tabstop>name</tabstop>
   <tabstop>unnamedCb</tabstop>
   <tabstop>pyType</tabstop>
+  <tabstop>pyDefault</tabstop>
   <tabstop>allowNoneCb</tabstop>
   <tabstop>arrayCb</tabstop>
   <tabstop>arraySizeCb</tabstop>

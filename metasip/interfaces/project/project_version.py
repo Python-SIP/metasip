@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#  10   Implemented by metasip v1.18.
+#       - added pydefault to the Argument element.
+#
 #   9   Implemented by metasip v1.16.
 #       - added typehintcode to the Class element.
 #
@@ -49,4 +52,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 9
+ProjectVersion = 10

@@ -1,3 +1,10 @@
+v1.18 ??? March 2016
+  - Updated the project file format to v10.
+  - A Python default value can now be specified for arguments.
+  - CastXML is now used as the header file parser.
+  - Parser tweaks for Qt v5.6.
+  - setup.py now uses setuptools.
+
 v1.17 25th February 2016
   - Updated the project file format to v9 to support %TypeHintCode in classes.
   - Added the /TypeHint/, /TypeHintOut/ and /TypeHintValue/ class annotations.
