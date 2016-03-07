@@ -34,7 +34,7 @@ gui:
 
 build: gui VERSION
 	$(PYTHON2) build.py changelog
-	$(PYTHON3) setup.py sdist --formats=gztar,zip --force-manifest --dist-dir=.
+	$(PYTHON3) setup.py sdist --formats=gztar,zip --dist-dir=.
 
 install: gui VERSION
 	$(PYTHON3) setup.py install
