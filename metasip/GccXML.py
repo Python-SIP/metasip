@@ -1015,7 +1015,7 @@ class GccXMLParser(ParserBase):
         self._pathname = pathname
         iname = os.path.join(tempfile.gettempdir(), hf.name + '.tmp')
 
-        argv = ['castxml', '-x', 'c++', '--castxml-gccxml']
+        argv = ['castxml', '-x', 'c++', '-std=c++11', '--castxml-gccxml']
 
         if sys.platform == 'darwin':
             # TODO: Search for the latest SDK version.
