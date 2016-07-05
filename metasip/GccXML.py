@@ -900,6 +900,10 @@ class _Argument(object):
         if self.default == '__null':
             self.default = '0'
 
+        # This is the expansion of Q_NULLPTR introduced in Qt v5.7.
+        if self.default == 'nullptr':
+            self.default = '0'
+
 
 class _Ellipsis(object):
     """
