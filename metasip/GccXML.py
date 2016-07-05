@@ -1018,13 +1018,12 @@ class GccXMLParser(ParserBase):
         argv = ['castxml', '-x', 'c++', '-std=c++11', '--castxml-gccxml']
 
         if sys.platform == 'darwin':
-            # TODO: Search for the latest SDK version.
-            sdk = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk'
+            xcode = '/Applications/Xcode.app/Contents/Developer'
 
             argv.append('-isysroot')
-            argv.append(sdk)
+            argv.append(xcode + '/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk')
 
-            argv.append('-I' + sdk + '/usr/include/c++/4.2.1')
+            argv.append('-I' + xcode + '/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1')
 
         argv.append('-o')
         argv.append(iname)
