@@ -55,6 +55,9 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
         self.virtualErrorHandler.setText(mod.virtualerrorhandler)
         self.version.setText(mod.version)
 
+        if mod.uselimitedapi:
+            self.limitedAPIcb.setCheckState(Qt.Checked)
+
         layout = QGridLayout()
 
         for i, itm in enumerate(self._ilistall):
@@ -77,6 +80,7 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
         callsuperinit = self.callSuperInitCb.currentText().lower()
         virtualerrorhandler = self.virtualErrorHandler.text().strip()
         version = self.version.text().strip()
+        uselimitedapi = (self.limitedAPIcb.checkState() == Qt.Checked)
 
         il = []
 
@@ -90,4 +94,4 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
                 il.append(self._ilistall[i])
 
         return (odirsuff, il, adddirectives, callsuperinit,
-                virtualerrorhandler, version)
+                virtualerrorhandler, version, uselimitedapi)

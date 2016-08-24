@@ -19,3 +19,4 @@ from .project_v7_update import ProjectV7Update
 from .project_v8_update import ProjectV8Update
 from .project_v9_update import ProjectV9Update
 from .project_v10_update import ProjectV10Update
+from .project_v11_update import ProjectV11Update

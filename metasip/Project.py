@@ -643,6 +643,9 @@ class Project(Model):
             if mod.version != '':
                 f.write(' version="%s"' % mod.version)
 
+            if mod.uselimitedapi:
+                f.write(' uselimitedapi="1"')
+
             if len(mod.imports) != 0:
                 f.write(' imports="{0}"'.format(' '.join(mod.imports)))
 
@@ -748,7 +751,12 @@ class Project(Model):
             else:
                 version = ""
 
-            f.write("%%Module(name=%s%s%s%s, keyword_arguments=\"Optional\"%s)\n\n" % (rname, mod.name, callsuperinit, virtualerrorhandler, version))
+            if mod.uselimitedapi != '':
+                uselimitedapi = ", use_limited_api=True"
+            else:
+                uselimitedapi = ""
+
+            f.write("%%Module(name=%s%s%s%s, keyword_arguments=\"Optional\"%s%s)\n\n" % (rname, mod.name, callsuperinit, virtualerrorhandler, uselimitedapi, version))
         else:
             f.write("%%Module %s%s 0\n\n" % (rname, mod.name))
 

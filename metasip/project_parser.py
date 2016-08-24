@@ -346,6 +346,7 @@ class ProjectParser:
         mod = Module(name=elem.get('name'),
                 outputdirsuffix=elem.get('outputdirsuffix', ''),
                 callsuperinit=callsuperinit,
+                uselimitedapi=bool(int(elem.get('uselimitedapi', '0'))),
                 virtualerrorhandler=elem.get('virtualerrorhandler', ''),
                 version=elem.get('version', ''),
                 imports=elem.get('imports', '').split())

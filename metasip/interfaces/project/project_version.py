@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#  11   Implemented by metasip v1.19.
+#       - added uselimitedapi to the Module element.
+#
 #  10   Implemented by metasip v1.18.
 #       - added pydefault to the Argument element.
 #
@@ -52,4 +55,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 10
+ProjectVersion = 11

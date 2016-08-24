@@ -15,17 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="1">
-      <widget class="QPlainTextEdit" name="additionalDirectives">
-       <property name="lineWrapMode">
-        <enum>QPlainTextEdit::NoWrap</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="callSuperInitCb"/>
-     </item>
+    <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
@@ -36,17 +26,17 @@
      <item row="0" column="1">
       <widget class="QLineEdit" name="outputDirSuffix"/>
      </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Version</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0" alignment="Qt::AlignTop">
+     <item row="1" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Additional directives</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPlainTextEdit" name="additionalDirectives">
+       <property name="lineWrapMode">
+        <enum>QPlainTextEdit::NoWrap</enum>
        </property>
       </widget>
      </item>
@@ -57,8 +47,8 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="version"/>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="callSuperInitCb"/>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_5">
@@ -69,6 +59,30 @@
      </item>
      <item row="3" column="1">
       <widget class="QLineEdit" name="virtualErrorHandler"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Use the limited Python API</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QCheckBox" name="limitedAPIcb">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Version</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="version"/>
      </item>
     </layout>
    </item>
@@ -109,6 +123,7 @@
   <tabstop>additionalDirectives</tabstop>
   <tabstop>callSuperInitCb</tabstop>
   <tabstop>virtualErrorHandler</tabstop>
+  <tabstop>limitedAPIcb</tabstop>
   <tabstop>version</tabstop>
  </tabstops>
  <resources/>

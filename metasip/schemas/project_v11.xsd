@@ -3,7 +3,7 @@
 
     <xsd:annotation>
         <xsd:documentation xml:lang="en">
-            The schema for version 10 of a MetaSIP project.
+            The schema for version 11 of a MetaSIP project.
         </xsd:documentation>
     </xsd:annotation>
 
@@ -337,6 +337,7 @@
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="outputdirsuffix" type="xsd:string"/>
         <xsd:attribute name="callsuperinit" type="xsd:boolean"/>
+        <xsd:attribute name="uselimitedapi" type="xsd:boolean"/>
         <xsd:attribute name="virtualerrorhandler" type="xsd:string"/>
         <xsd:attribute name="version" type="xsd:nonNegativeInteger"/>
     </xsd:complexType>
