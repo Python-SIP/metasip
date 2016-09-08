@@ -751,7 +751,7 @@ class Project(Model):
             else:
                 version = ""
 
-            if mod.uselimitedapi != '':
+            if mod.uselimitedapi:
                 uselimitedapi = ", use_limited_api=True"
             else:
                 uselimitedapi = ""
