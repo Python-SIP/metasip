@@ -1342,6 +1342,8 @@ class CodeItem(ContainerItem):
             the menu options.
         """
 
+        project = self.treeWidget().project
+
         # Save the list of targets for the menu action, including this one.
         self._targets = siblings[:]
         self._targets.append(self)
@@ -1350,13 +1352,6 @@ class CodeItem(ContainerItem):
                 ("Todo", self._setStatusTodo, True, (self.code.status == "todo")),
                 ("Unchecked", self._setStatusUnchecked, True, (self.code.status == "unknown")),
                 ("Ignored", self._setStatusIgnored, True, (self.code.status == "ignored"))]
-
-        if len(siblings) != 0:
-            menu.append(None)
-            menu.append(("Versions...", self._versionsSlot,
-                    (len(self.treeWidget().project.versions) > 1)))
-
-            return menu
 
         # Handle the access specifiers.
         if isinstance(self.code, Access):
@@ -1368,6 +1363,13 @@ class CodeItem(ContainerItem):
                 menu.append(("private", self._setAccessPrivate, True, (self.code.access == "private")))
                 menu.append(("private slots", self._setAccessPrivateSlots, True, (self.code.access == "private slots")))
                 menu.append(("signals", self._setAccessSignals, True, (self.code.access == "signals")))
+
+        if len(siblings) != 0:
+            menu.append(None)
+            menu.append(("Versions...", self._versionsSlot,
+                    (len(project.versions) != 0)))
+
+            return menu
 
         # Handle the manual code part of the menu.
         menu.append(None)
@@ -1548,8 +1550,6 @@ class CodeItem(ContainerItem):
             menu.append(("Accept all argument names", self._acceptNames))
 
         # Add the extra menu items.
-        project = self.treeWidget().project
-
         menu.append(None)
         menu.append(("Versions...", self._versionsSlot,
                 len(project.versions) != 0))
@@ -2345,9 +2345,10 @@ class CodeItem(ContainerItem):
 
         new is the new access.
         """
-        if self.code.access != new:
-            self.code.access = new
-            self.set_dirty()
+        for itm in self._targets:
+            if itm.code.access != new:
+                itm.code.access = new
+                self.set_dirty()
 
-            # FIXME: Observe the access attribute.
-            self._draw_access()
+                # FIXME: Observe the access attribute.
+                itm._draw_access()
