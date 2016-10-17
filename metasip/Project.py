@@ -1941,6 +1941,9 @@ class Method(ClassCallable):
         if self.const:
             s += " const"
 
+        if self.final:
+            s += " final"
+
         if self.abstract:
             s += " = 0"
 
@@ -1971,6 +1974,9 @@ class Method(ClassCallable):
 
         if self.const:
             s += " const"
+
+        if self.final:
+            s += " final"
 
         if self.abstract:
             s += " = 0"
@@ -2006,6 +2012,9 @@ class Method(ClassCallable):
 
         if self.const:
             s += " const"
+
+        if self.final:
+            s += " final"
 
         if self.abstract:
             s += " = 0"
@@ -2051,6 +2060,9 @@ class Method(ClassCallable):
 
         if self.const:
             xml.append('const="1"')
+
+        if self.final:
+            xml.append('final="1"')
 
         if self.static:
             xml.append('static="1"')

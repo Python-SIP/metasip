@@ -316,6 +316,7 @@ class ProjectParser:
                 access=elem.get('access', ''), rtype=elem.get('rtype'),
                 virtual=bool(int(elem.get('virtual', '0'))),
                 const=bool(int(elem.get('const', '0'))),
+                final=bool(int(elem.get('final', '0'))),
                 static=bool(int(elem.get('static', '0'))),
                 abstract=bool(int(elem.get('abstract', '0'))),
                 pytype=elem.get('pytype', ''), pyargs=elem.get('pyargs', ''),

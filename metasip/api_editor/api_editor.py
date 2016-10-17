@@ -2205,13 +2205,16 @@ class CodeItem(ContainerItem):
         dlg = CallablePropertiesDialog(code, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
-            (pytype, pyargs, code.annos) = dlg.fields()
+            (pytype, pyargs, final, code.annos) = dlg.fields()
 
             if hasattr(code, "pytype") and code.pytype is not None:
                 code.pytype = pytype
 
             if hasattr(code, "pyargs"):
                 code.pyargs = pyargs
+
+            if hasattr(code, "final"):
+                code.final = final
 
             self.set_dirty()
 

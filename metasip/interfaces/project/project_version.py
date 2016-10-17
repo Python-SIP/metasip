@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#  12   Implemented by metasip v1.20.
+#       - added final to the Method element.
+#
 #  11   Implemented by metasip v1.19.
 #       - added uselimitedapi to the Module element.
 #
@@ -55,4 +58,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 11
+ProjectVersion = 12

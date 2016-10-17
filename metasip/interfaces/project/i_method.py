@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2016 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -27,6 +27,9 @@ class IMethod(IClassCallable, IDocString, IExtendedAccess):
 
     # This is set if the method is const.
     const = Bool(False)
+
+    # This is set if the method is final.
+    final = Bool(False)
 
     # This is set if the method is static.
     static = Bool(False)

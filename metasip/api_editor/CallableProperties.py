@@ -53,6 +53,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             self.docType.setEnabled(False)
             self.encodingCb.setEnabled(False)
             self.factoryCb.setEnabled(False)
+            self.finalCb.setEnabled(False)
             self.keepRefCb.setEnabled(False)
             self.lenCb.setEnabled(False)
             self.newThreadCb.setEnabled(False)
@@ -78,6 +79,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             self.docType.setEnabled(False)
             self.encodingCb.setEnabled(False)
             self.factoryCb.setEnabled(False)
+            self.finalCb.setEnabled(False)
             self.keepRefCb.setEnabled(False)
             self.lenCb.setEnabled(False)
             self.newThreadCb.setEnabled(False)
@@ -97,6 +99,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             cap = "Method Properties"
             self.pyType.setText(code.pytype)
             self.pyArgs.setText(code.pyargs)
+            self.finalCb.setChecked(code.final)
 
             self.defaultCb.setEnabled(False)
             self.noDerivedCb.setEnabled(False)
@@ -107,6 +110,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
 
             self.abortOnExcCb.setEnabled(False)
             self.defaultCb.setEnabled(False)
+            self.finalCb.setEnabled(False)
             self.keepRefCb.setEnabled(False)
             self.lenCb.setEnabled(False)
             self.noArgParserCb.setEnabled(False)
@@ -119,6 +123,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
 
             self.abortOnExcCb.setEnabled(False)
             self.defaultCb.setEnabled(False)
+            self.finalCb.setEnabled(False)
             self.keepRefCb.setEnabled(False)
             self.lenCb.setEnabled(False)
             self.noCopyCb.setEnabled(False)
@@ -132,6 +137,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
 
             self.abortOnExcCb.setEnabled(False)
             self.defaultCb.setEnabled(False)
+            self.finalCb.setEnabled(False)
             self.keepRefCb.setEnabled(False)
             self.lenCb.setEnabled(False)
             self.noArgParserCb.setEnabled(False)
@@ -227,6 +233,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
         """
         pytype = str(self.pyType.text()).strip()
         pyargs = str(self.pyArgs.text()).strip()
+        final = self.finalCb.isChecked()
 
         alist = []
 
@@ -330,4 +337,4 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
         if s:
             alist.append("TypeHint=\"%s\"" % s)
 
-        return (pytype, pyargs, ",".join(alist))
+        return (pytype, pyargs, final, ",".join(alist))
