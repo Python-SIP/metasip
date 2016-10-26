@@ -1,4 +1,4 @@
-v1.20 ??? October 2016
+v1.20 26th October 2016
   - Updated the project file format to v12.
   - Added support for the 'final' keyword.
   - The specifying of signals and slots can now be done to multiple methods at
