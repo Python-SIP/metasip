@@ -162,7 +162,9 @@ def launchGUI(prjname, guiargs):
                             schemas=[ProjectV1Schema(), ProjectV2Schema(),
                                     ProjectV3Schema(), ProjectV4Schema(),
                                     ProjectV5Schema(), ProjectV6Schema(),
-                                    ProjectV7Schema(), ProjectV7Schema()]),
+                                    ProjectV7Schema(), ProjectV8Schema(),
+                                    ProjectV9Schema(), ProjectV10Schema(),
+                                    ProjectV11Schema(), ProjectV12Schema()]),
                     VersionsTool],
             window_title_template="[view][*]")
 
