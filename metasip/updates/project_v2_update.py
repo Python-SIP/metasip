@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -14,7 +14,7 @@ from xml.etree import ElementTree
 
 from dip.model import implements, Model
 
-from PyQt4.QtGui import QComboBox
+from PyQt5.QtWidgets import QComboBox
 
 from ..interfaces import IUpdate
 

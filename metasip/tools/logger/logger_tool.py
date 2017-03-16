@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt4.QtGui import QAbstractSlider, QApplication, QPlainTextEdit
+from PyQt5.QtWidgets import QAbstractSlider, QApplication, QPlainTextEdit
 
 from dip.model import unadapted
 from dip.shell import SimpleViewTool

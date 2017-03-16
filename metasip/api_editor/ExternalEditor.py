@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,10 +13,10 @@
 """ This module implements the interface to an external editor. """
 
 
-from PyQt4.QtCore import pyqtSignal, QEvent, QFile, QObject, QTextStream
-from PyQt4.QtGui import (QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout,
-        QMessageBox, QPushButton, QVBoxLayout)
-from PyQt4.Qsci import QsciLexerCPP, QsciScintilla
+from PyQt5.QtCore import pyqtSignal, QEvent, QFile, QObject, QTextStream
+from PyQt5.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog,
+        QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout)
+from PyQt5.Qsci import QsciLexerCPP, QsciScintilla
 
 from dip.settings import SettingsManager
 from dip.ui import IDialog
