@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,8 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QTreeWidget, QTreeWidgetItem
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem
 
 from dip.model import observe
 

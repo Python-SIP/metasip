@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -14,7 +14,7 @@ import glob
 import hashlib
 import os
 
-from PyQt4.QtGui import QInputDialog
+from PyQt5.QtWidgets import QInputDialog
 
 from dip.model import Instance, List, observe, unadapted
 from dip.shell import IDirty

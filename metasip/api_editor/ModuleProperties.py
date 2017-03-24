@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,8 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QCheckBox, QDialog, QGridLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QCheckBox, QDialog, QGridLayout
 
 from .Designer.ModulePropertiesBase import Ui_ModulePropertiesBase
 

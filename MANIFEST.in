@@ -1,1 +1,1 @@
-include ChangeLog* NEWS VERSION *.txt
+include ChangeLog* NEWS *.txt

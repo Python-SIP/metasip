@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -67,7 +67,7 @@ class UpdateManager(Model):
                 need_wizard = True
 
         if need_wizard:
-            from PyQt4.QtGui import QLabel
+            from PyQt5.QtWidgets import QLabel
 
             from dip.pui import Wizard, WizardPage
             from dip.ui import IWizard

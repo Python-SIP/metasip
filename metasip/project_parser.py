@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -12,7 +12,7 @@
 
 from xml.etree import ElementTree
 
-from PyQt4.QtGui import QApplication, QProgressDialog
+from PyQt5.QtWidgets import QApplication, QProgressDialog
 
 from dip.io import FormatError
 from dip.shell import IDirty

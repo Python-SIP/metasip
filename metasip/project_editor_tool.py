@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,7 +13,7 @@
 import glob
 import os
 
-from PyQt4.QtGui import QProgressDialog
+from PyQt5.QtWidgets import QProgressDialog
 
 from dip.model import Dict, implements, Instance
 from dip.shell import BaseManagedModelTool, IManagedModelTool

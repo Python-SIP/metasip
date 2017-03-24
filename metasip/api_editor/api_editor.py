@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,8 +10,9 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt4.QtCore import QByteArray, QMimeData, Qt
-from PyQt4.QtGui import (QApplication, QDialog, QDrag, QInputDialog, QMenu,
+from PyQt5.QtCore import QByteArray, QMimeData, Qt
+from PyQt5.QtGui import QDrag
+from PyQt5.QtWidgets import (QApplication, QDialog, QInputDialog, QMenu,
         QMessageBox, QProgressDialog, QTreeWidget, QTreeWidgetItem,
         QTreeWidgetItemIterator, QVBoxLayout)
 
