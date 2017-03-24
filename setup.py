@@ -37,5 +37,8 @@ setup(
         url='https://www.riverbankcomputing.com/software/metasip/',
         license='GPL3',
         packages=find_packages(),
-        entry_points={'gui_scripts': ['msip2 = metasip.main_gui:main']}
+        entry_points={
+            'console_scripts':  ['msipgen = metasip.main:msipgen_main'],
+            'gui_scripts':      ['msip = metasip.main:msip_main']
+        }
      )

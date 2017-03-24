@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,6 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+import argparse
 import sys
 import os
 
@@ -23,29 +24,6 @@ from . import Project, ProjectCodec
 # to the filesystem.
 IoManager.codecs.append(ProjectCodec())
 IoManager.storage_factories.append(FilesystemStorageFactory())
-
-
-def usage(rc = 2):
-    """Print a usage/help message and quit the application.
-
-    rc is the value to return as the exit code to the calling process.
-    """
-    if rc == 0:
-        f = sys.stdout
-    else:
-        f = sys.stderr
-
-    f.write("Usage:\n")
-    f.write("    msip [-h] [-g dir] [-O] [gui-args] [--] [project]\n")
-    f.write("where:\n")
-    f.write("    -h         display this help message\n")
-    f.write("    -g dir     generate the .sip files in dir\n")
-    f.write("    -O         generate .sip files for old versions of SIP\n")
-    f.write("    gui-args   arguments passed to the GUI\n")
-    f.write("    --         stop GUI argument parsing\n")
-    f.write("    project    the project file\n")
-
-    sys.exit(rc)
 
 
 def load_batch_project(prjname):
@@ -97,7 +75,7 @@ def launchGUI(prjname, guiargs):
     :param prjname:
         is the name of the project file.  It is None if there is none.
     :param guiargs:
-        is a list of any GUI specific command line arguments.
+        is a sequence of additional toolkit-specific arguments.
     :return:
         the exit code or 0 if there was no error.
     """
@@ -195,65 +173,35 @@ def fatal(msg):
 
     msg is the text of the message, excluding newlines.
     """
-    sys.stderr.write("msip: %s\n" % msg)
+    sys.stderr.write("msipgen: %s\n" % msg)
     sys.exit(1)
 
 
-def main():
-    """ The entry point for the setuptools generated GUI wrapper. """
+def msip_main():
+    """ The entry point for the setuptools generated msip wrapper. """
 
-    # Parse the arguments.
-    argv = sys.argv[1:]
+    # Parse the command line.
+    parser = argparse.ArgumentParser()
+    parser.add_argument('project', help="the project to edit", nargs='?')
+    args = parser.parse_args()
 
-    gendir = None
-    latest_sip = True
-    guiargs = []
+    return launchGUI(args.project, sys.argv)
 
-    nxt = 0
-    skip = False
 
-    for arg in argv:
-        nxt += 1
+def msipgen_main():
+    """ The entry point for the setuptools generated msipgen wrapper. """
 
-        if skip:
-            skip = False
-            continue
+    # Parse the command line.
+    parser = argparse.ArgumentParser()
 
-        if arg == "-h":
-            usage(0)
+    parser.add_argument('project', help="the project to generate code for",
+            nargs='?')
+    parser.add_argument('-g',
+            help="the directory to write the generated code to",
+            dest='gendir', metavar='DIR', required=True)
+    parser.add_argument('-O', help="generate code for an older version of sip",
+            dest='latest_sip', default=True, action='store_false')
 
-        if arg == "-O":
-            latest_sip = False
-        elif arg == "-g":
-            if nxt >= len(argv):
-                usage()
+    args = parser.parse_args()
 
-            gendir = argv[nxt]
-            skip = True
-        elif arg == "--":
-            # Stop parsing GUI arguments.
-            break
-        elif arg.startswith("-") or guiargs:
-            guiargs.append(arg)
-        else:
-            nxt -= 1
-            break
-
-    # There might be one argument left which is the project name.
-    unused = len(argv) - nxt
-
-    if unused > 1:
-        usage()
-
-    if unused == 1:
-        prjname = argv[-1]
-    else:
-        prjname = None
-
-    # Carry out the required action.
-    if gendir:
-        rc = generate(prjname, gendir, latest_sip)
-    else:
-        rc = launchGUI(prjname, guiargs)
-
-    return rc
+    return generate(args.project, args.gendir, args.latest_sip)
