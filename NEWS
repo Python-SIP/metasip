@@ -1,3 +1,7 @@
+v2.0 27th March 2017
+  - Split msip into the GUI msip and the command line msipgen.
+  - Ported to PyQt5.
+
 v1.20 26th October 2016
   - Updated the project file format to v12.
   - Added support for the 'final' keyword.
