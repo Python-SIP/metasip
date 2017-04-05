@@ -80,7 +80,7 @@ class ProjectCodec(Model):
 
         # Pass the contents of the temporary file back so that it can be
         # written to the real storage location.
-        with os.fdopen(fd) as f:
+        with os.fdopen(fd, mode='rb') as f:
             for line in f:
                 yield line
 
