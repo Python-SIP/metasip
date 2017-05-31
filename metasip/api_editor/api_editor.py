@@ -269,10 +269,9 @@ class ApiEditor(QTreeWidget):
         btn = QMessageBox.question(self, "Naming Conventions",
                 "Do you want to apply the naming conventions arguments rather "
                 "than just see what would be changed?",
-                QMessageBox.Yes, QMessageBox.No|QMessageBox.Default,
-                QMessageBox.Cancel)
+                QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
 
-        if btn == QMessageBox.Cancel:
+        if btn != QMessageBox.Yes:
             return
 
         invalid, updated_args = self.project.nameArgumentsFromConventions(
@@ -895,8 +894,7 @@ class SipFileItem(ContainerItem):
 
         ans = QMessageBox.question(self.treeWidget(), "Delete header file",
                 "Are you sure you want to delete this header file?",
-                QMessageBox.Yes,
-                QMessageBox.No|QMessageBox.Default|QMessageBox.Escape)
+                QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
 
         if ans == QMessageBox.Yes:
             # Mark as dirty before removing it.
@@ -1636,8 +1634,8 @@ class CodeItem(ContainerItem):
         Slot to handle the deletion of a code item.
         """
         ans = QMessageBox.question(self.treeWidget(), "Delete Code",
-                "Are you sure you want to delete this code?", QMessageBox.Yes,
-                QMessageBox.No|QMessageBox.Default|QMessageBox.Escape)
+                "Are you sure you want to delete this code?",
+                QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
 
         if ans == QMessageBox.Yes:
             # Mark as dirty before removing it.
