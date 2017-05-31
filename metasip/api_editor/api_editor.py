@@ -160,7 +160,7 @@ class ApiEditor(QTreeWidget):
             return
 
         # Serialize the id() of the item being dragged.
-        data = QByteArray(str(id(dragging)))
+        data = QByteArray.number(dragging.type())
         mime = QMimeData()
         mime.setData(self.MIME_FORMAT, data)
 
@@ -172,20 +172,19 @@ class ApiEditor(QTreeWidget):
         """
         Reimplemented to validate a drag enter.
         """
-        if self._source_target(ev) is None:
-            ev.ignore()
-        else:
+        if ev.source() is self:
             ev.accept()
+        else:
+            ev.ignore()
 
     def dragMoveEvent(self, ev):
         """
         Reimplemented to validate a drag move.
         """
-        if self._source_target(ev) is None:
-            ev.ignore()
-        else:
-            ev.setDropAction(Qt.MoveAction)
+        if ev.source() is self:
             ev.accept()
+        else:
+            ev.ignore()
 
     def dropEvent(self, ev):
         """
@@ -197,11 +196,8 @@ class ApiEditor(QTreeWidget):
             ev.ignore()
         else:
             source, target = source_target
-            if source is target:
-                ev.ignore()
-            else:
-                target.drop(source)
-                ev.accept()
+            target.drop(source)
+            ev.accept()
 
     def _source_target(self, ev):
         """
@@ -224,21 +220,15 @@ class ApiEditor(QTreeWidget):
         itm = it.value()
 
         while itm is not None:
-            if id(itm) == source_id:
+            if itm.type() == source_id:
                 source = itm
                 break
 
-            it+=1
+            it += 1
             itm = it.value()
 
-        if source is None:
+        if source is None or source is target:
             return None
-
-        # If the source is the target (ie. we are at the start of the drag)
-        # say that the drop is Ok, otherwise other drag events might not be
-        # generated.  We will properly check later when the drop is done.
-        if source is target:
-            return source, target
 
         # Ask the target if it can handle the source.
         if not (isinstance(target, DropSite) and target.droppable(source)):
@@ -375,6 +365,10 @@ class DropSite():
         raise NotImplementedError
 
 
+# Each QTreeWidgetItem has a unique key used in the DND support.
+_item_id = QTreeWidgetItem.UserType
+
+
 class EditorItem(QTreeWidgetItem):
     """ This class represents an item in the API editor. """
 
@@ -389,12 +383,16 @@ class EditorItem(QTreeWidgetItem):
             then it should be placed at the start.
         """
 
+        global _item_id
+        item_id = _item_id
+        _item_id += 1
+
         if after is parent:
-            super().__init__(parent, None)
+            super().__init__(parent, None, item_id)
         elif after is None:
-            super().__init__(parent)
+            super().__init__(parent, item_id)
         else:
-            super().__init__(parent, after)
+            super().__init__(parent, after, item_id)
 
     def get_menu(self, siblings):
         """ Return the list of context menu options or None if the item doesn't
