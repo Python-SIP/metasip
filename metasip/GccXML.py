@@ -982,9 +982,22 @@ def _transformArgs(parser, gargs, pargs):
                 type_parts = min_type.split('::')
                 default_parts = default.split('::')
 
-                if len(type_parts) + 1 == len(default_parts) and type_parts == default_parts[:-1]:
-                    del default_parts[-2]
-                    default = '::'.join(default_parts)
+                if len(type_parts) + 1 == len(default_parts):
+                        remove_enum = False
+
+                        if type_parts == default_parts[:-1]:
+                            remove_enum = True
+                        elif default_parts[-2].endswith('Flag'):
+                            # The default may be a particular flag value so
+                            # convert it to the QFlags name and try again.
+                            default_parts[-2] = default_parts[-2][:-4]
+
+                            if type_parts == default_parts[:-1]:
+                                remove_enum = True
+
+                        if remove_enum:
+                            del default_parts[-2]
+                            default = '::'.join(default_parts)
 
             pa = Argument(type=full_type, name=a.name, default=default)
 
