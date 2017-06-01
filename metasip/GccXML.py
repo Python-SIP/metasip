@@ -972,6 +972,19 @@ def _transformArgs(parser, gargs, pargs):
                 ("()" not in default) and
                 (default not in ("0", "NULL", "true", "TRUE", "false", "FALSE"))):
                 default = min_type[:min_type.rfind("::")] + "::" + default
+            else:
+                # Older versions used to provide a default value of an enum as
+                # class::enumerator.  Newer versions provide it as
+                # class::enum::enumerator.  We could just replace the old style
+                # with the new style but we don't know if older compilers could
+                # deal with the generated code.  Instead we replace the new
+                # style with the old style.
+                type_parts = min_type.split('::')
+                default_parts = default.split('::')
+
+                if len(type_parts) + 1 == len(default_parts) and type_parts == default_parts[:-1]:
+                    del default_parts[-2]
+                    default = '::'.join(default_parts)
 
             pa = Argument(type=full_type, name=a.name, default=default)
 
