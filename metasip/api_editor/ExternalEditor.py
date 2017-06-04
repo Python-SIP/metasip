@@ -102,7 +102,7 @@ class ExternalEditor(QObject):
         """
         Invoked to insert the contents of a file.
         """
-        fn = QFileDialog.getOpenFileName(self._dialog, "Insert File")
+        fn, _ = QFileDialog.getOpenFileName(self._dialog, "Insert File")
 
         if fn == '':
             return
