@@ -994,6 +994,14 @@ def _transformArgs(parser, gargs, pargs):
 
                             if type_parts == default_parts[:-1]:
                                 remove_enum = True
+                        elif type_parts[-1].endswith('s'):
+                            # The default may still be a particular flag value
+                            # so see if the type is a plural of the type of the
+                            # default and try again.
+                            type_parts[-1] = type_parts[-1][:-1]
+
+                            if type_parts == default_parts[:-1]:
+                                remove_enum = True
 
                         if remove_enum:
                             del default_parts[-2]
