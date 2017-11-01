@@ -1,3 +1,6 @@
+v2.1 1st November 2017
+  - Bug fixes.
+
 v2.0 27th March 2017
   - Split msip into the GUI msip and the command line msipgen.
   - Ported to PyQt5.
