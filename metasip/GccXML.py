@@ -1059,7 +1059,7 @@ class GccXMLParser(ParserBase):
             xcode = '/Applications/Xcode.app/Contents/Developer'
 
             argv.append('-isysroot')
-            argv.append(xcode + '/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk')
+            argv.append(xcode + '/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk')
 
             argv.append('-I' + xcode + '/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1')
 
