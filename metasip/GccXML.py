@@ -1403,8 +1403,7 @@ class GccXMLParser(ParserBase):
 
     def asType(self, type_id):
         """
-        Return the string representation of a type or None if it is an
-        unsupported type.
+        Return the string representation of a type.
 
         type_id is the type ID.
         """
@@ -1414,14 +1413,13 @@ class GccXMLParser(ParserBase):
 
     def asInnerType(self, type_id, prefix_ok):
         """
-        Return the string representation of a type or None if it is an
-        unsupported type.
+        Return the string representation of a type.
 
         type_id is the type ID.
         """
         try:
             type_str, prefix_ok = self.byid[type_id].asType(self, prefix_ok)
         except KeyError:
-            type_str = None
+            type_str = 'unknown_type'
 
         return type_str, prefix_ok
