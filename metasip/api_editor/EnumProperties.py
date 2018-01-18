@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -23,11 +23,11 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
     """
     This class implements the dialog for an enum's properties.
     """
-    def __init__(self, cls, parent):
+    def __init__(self, enum, parent):
         """
         Initialise the dialog.
 
-        cls is the class instance.
+        enum is the enum instance.
         parent is the parent widget.
         """
         super(EnumPropertiesDialog, self).__init__(parent)
@@ -35,7 +35,7 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
         self.setupUi(self)
 
         # Initialise the dialog.
-        for name, value in split_annos(cls.annos):
+        for name, value in split_annos(enum.annos):
             le = None
             cb = None
 
@@ -53,6 +53,8 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
             elif le is not None:
                 le.setText(value)
 
+        self.enumClassCb.setChecked(enum.enum_class)
+
     def fields(self):
         """
         Return a tuple of the dialog fields.
@@ -69,4 +71,4 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
         if self.noTypeHintCb.isChecked():
             alist.append("NoTypeHint")
 
-        return (",".join(alist), )
+        return (",".join(alist), self.enumClassCb.isChecked())

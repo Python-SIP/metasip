@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import List, Str
+from dip.model import Bool, List, Str
 
 from .i_access import IAccess
 from .i_code import ICode
@@ -22,6 +22,9 @@ class IEnum(ICode, IAccess):
 
     # The list of enum values.
     content = List(IEnumValue)
+
+    # Set if the enum is a C++11 enum class.
+    enum_class = Bool()
 
     # The optional name of the enum.
     name = Str()

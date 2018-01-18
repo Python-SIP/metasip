@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -16,14 +16,14 @@ from ..interfaces import IUpdate
 
 
 @implements(IUpdate)
-class ProjectV12Update(Model):
-    """ The ProjectV12Update class implements the update of a project from v11
-    to v12.
+class ProjectV13Update(Model):
+    """ The ProjectV13Update class implements the update of a project from v12
+    to v13.
     """
 
     # The project format version number that this will update to (from the
     # immediately previous format).
-    updates_to = 12
+    updates_to = 13
 
     def create_view(self, root):
         """ Create the view that will gather the information from the user
@@ -47,6 +47,6 @@ class ProjectV12Update(Model):
             is the view returned by create_view().
         """
 
-        # The v12 schema adds final to method so we just need to bump the
+        # The v13 schema adds enumclass to enum so we just need to bump the
         # version number.
         root.set('version', str(self.updates_to))

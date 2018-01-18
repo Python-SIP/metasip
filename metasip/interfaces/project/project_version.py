@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#  13   Implemented by metasip v2.3.
+#       - added enumclass to the Enum element.
+#
 #  12   Implemented by metasip v1.20.
 #       - added final to the Method element.
 #
@@ -58,4 +61,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 12
+ProjectVersion = 13

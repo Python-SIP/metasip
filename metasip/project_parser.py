@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -202,6 +202,7 @@ class ProjectParser:
         """ Add an element defining an enum to a scope. """
 
         en = Enum(name=elem.get('name'), container=scope,
+                enum_class=bool(int(elem.get('enumclass', '0'))),
                 access=elem.get('access', ''),
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),

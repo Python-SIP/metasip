@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>324</width>
-    <height>201</height>
+    <width>274</width>
+    <height>233</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,6 +33,13 @@
          <widget class="QLineEdit" name="pyName"/>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="enumClassCb">
+        <property name="text">
+         <string>C++11 enum class</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QCheckBox" name="noScopeCb">
@@ -78,9 +85,9 @@
  </widget>
  <tabstops>
   <tabstop>pyName</tabstop>
+  <tabstop>enumClassCb</tabstop>
   <tabstop>noScopeCb</tabstop>
   <tabstop>noTypeHintCb</tabstop>
-  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
  <connections>

@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -2239,7 +2239,7 @@ class CodeItem(ContainerItem):
         dlg = EnumPropertiesDialog(code, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
-            (code.annos, ) = dlg.fields()
+            (code.annos, code.enum_class) = dlg.fields()
 
             self.set_dirty()
 

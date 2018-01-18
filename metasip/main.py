@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -93,7 +93,8 @@ def launchGUI(prjname, guiargs):
     from metasip.schemas import (ProjectV1Schema, ProjectV2Schema,
             ProjectV3Schema, ProjectV4Schema, ProjectV5Schema, ProjectV6Schema,
             ProjectV7Schema, ProjectV8Schema, ProjectV9Schema,
-            ProjectV10Schema, ProjectV11Schema, ProjectV12Schema)
+            ProjectV10Schema, ProjectV11Schema, ProjectV12Schema,
+            ProjectV13Schema)
     from metasip.tools.features import FeaturesTool
     from metasip.tools.logger import LoggerTool
     from metasip.tools.module_autofill import ModuleAutofillTool
@@ -105,7 +106,7 @@ def launchGUI(prjname, guiargs):
     from metasip.updates import (ProjectV2Update, ProjectV3Update,
             ProjectV4Update, ProjectV5Update, ProjectV6Update, ProjectV7Update,
             ProjectV8Update, ProjectV9Update, ProjectV10Update,
-            ProjectV11Update, ProjectV12Update)
+            ProjectV11Update, ProjectV12Update, ProjectV13Update)
 
     app = Application(guiargs)
     SettingsManager.load('riverbankcomputing.com')
@@ -122,6 +123,7 @@ def launchGUI(prjname, guiargs):
     UpdateManager.updates.append(ProjectV10Update())
     UpdateManager.updates.append(ProjectV11Update())
     UpdateManager.updates.append(ProjectV12Update())
+    UpdateManager.updates.append(ProjectV13Update())
 
     # Define the shell.
     editor_tool = ProjectEditorTool(model_policy='one')
@@ -142,7 +144,8 @@ def launchGUI(prjname, guiargs):
                                     ProjectV5Schema(), ProjectV6Schema(),
                                     ProjectV7Schema(), ProjectV8Schema(),
                                     ProjectV9Schema(), ProjectV10Schema(),
-                                    ProjectV11Schema(), ProjectV12Schema()]),
+                                    ProjectV11Schema(), ProjectV12Schema(),
+                                    ProjectV13Schema()]),
                     VersionsTool],
             window_title_template="[view][*]")
 

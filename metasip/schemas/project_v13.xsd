@@ -3,7 +3,7 @@
 
     <xsd:annotation>
         <xsd:documentation xml:lang="en">
-            The schema for version 12 of a MetaSIP project.
+            The schema for version 13 of a MetaSIP project.
         </xsd:documentation>
     </xsd:annotation>
 
@@ -161,6 +161,7 @@
         </xsd:choice>
         <xsd:attribute name="access" type="AccessType"/>
         <xsd:attribute name="annos" type="AnnosType"/>
+        <xsd:attribute name="enumclass" type="xsd:boolean" default="0"/>
         <xsd:attribute name="features" type="FeaturesType"/>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="platforms" type="PlatformsType"/>

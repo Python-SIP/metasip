@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -1643,6 +1643,9 @@ class Enum(Code, Access):
         """
         s = "enum"
 
+        if self.enum_class:
+            s += " class"
+
         if self.name != '':
             s += " " + self.name
 
@@ -1656,6 +1659,9 @@ class Enum(Code, Access):
         f.blank()
 
         f.write("enum")
+
+        if self.enum_class:
+            f.write(" class")
 
         if self.name != '':
             f.write(" " + self.name)
@@ -1692,6 +1698,9 @@ class Enum(Code, Access):
 
         xml = Code.xmlAttributes(self)
         xml += Access.xmlAttributes(self)
+
+        if self.enum_class:
+            xml.append('enumclass="1"')
 
         xml.append('name="{0}"'.format(self.name))
 
