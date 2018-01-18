@@ -1,3 +1,6 @@
+v2.3 18th January 2018
+  - Enums can now be marked as C++11 enum classes using the properties dialog.
+
 v2.2 23rd November 2017
   - Bug fixes.
 
