@@ -60,7 +60,7 @@ class ScannerTool(SimpleViewTool):
                     Stretch(),
                     id='no_project'),
                 Splitter(
-                    Stack(id='project_views'),
+                    Stack(tab_bar='multiple', id='project_views'),
                     VBox(
                         Form(
                             ComboBox('working_version'),
@@ -106,6 +106,7 @@ class ScannerTool(SimpleViewTool):
                         Stretch(),
                         MessageArea()),
                     id='metasip.scanner.splitter'),
+                tab_bar='hidden',
                 controller_factory=ScannerController)
 
         # Create the view.
