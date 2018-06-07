@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,7 +13,6 @@
 from dip.model import implements, observe
 from dip.publish import ISubscriber
 from dip.shell import SimpleViewTool
-from dip.ui import IViewBinding
 
 from ...interfaces.project import IProject
 
@@ -48,20 +47,20 @@ class ScannerTool(SimpleViewTool):
 
         from dip.ui import (ComboBox, FilesystemLocationEditor, Form, Grid,
                 GroupBox, HBox, Label, LineEditor, MessageArea, PushButton,
-                Splitter, Stretch, VBox, ViewStack)
+                Splitter, Stack, Stretch, VBox)
 
         from .module_validator import ModuleValidator
         from .scanner_controller import ScannerController
         from .scanner_model import ScannerModel
 
         # The view factory.
-        view_factory = ViewStack(
+        view_factory = Stack(
                 VBox(
                     Label('no_project_text'),
                     Stretch(),
                     id='metasip.scanner.no_project'),
                 Splitter(
-                    ViewStack(id='metasip.scanner.project_views'),
+                    Stack(id='metasip.scanner.project_views'),
                     VBox(
                         Form(
                             ComboBox('working_version'),
@@ -73,14 +72,14 @@ class ScannerTool(SimpleViewTool):
                             VBox(
                                 Form(
                                     Label('header_directory_name',
-                                            label="Name"),
+                                            title="Name"),
                                     'suffix',
                                     'file_filter',
                                     'parser_arguments'),
                                 Grid(
                                     PushButton('scan'),
                                     PushButton('update_directory',
-                                            label="Update"),
+                                            title="Update"),
                                     PushButton('hide_ignored'),
                                     PushButton('show_ignored'),
                                     nr_columns=2)),
@@ -89,19 +88,19 @@ class ScannerTool(SimpleViewTool):
                         GroupBox(
                             VBox(
                                 Form(
-                                    Label('header_file_name', label="Name"),
+                                    Label('header_file_name', title="Name"),
                                     LineEditor('module',
                                             validator=ModuleValidator()),
                                     'ignored'),
                                 HBox(
                                     PushButton('parse'),
                                     PushButton('update_file',
-                                            label="Update"))),
+                                            title="Update"))),
                             title="Header File",
                             id='metasip.scanner.file_group'),
                         HBox(
-                            PushButton('new', label="New..."),
-                            PushButton('delete', label="Delete...",
+                            PushButton('new', title="New..."),
+                            PushButton('delete', title="Delete...",
                                     enabled=False),
                             PushButton('reset_workflow', enabled=False)),
                         Stretch(),
@@ -118,7 +117,7 @@ class ScannerTool(SimpleViewTool):
 
         event = change.new.event
         project = change.new.model
-        controller = IViewBinding(self.view).controller
+        controller = self.view.controller
 
         if event == 'dip.events.opened':
             controller.open_project(project)

@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -53,7 +53,7 @@ class ScannerController(Controller):
         self.current_project_ui = project_ui = self._find_view(project)
 
         # Make sure the project's view is current.
-        self.project_views_view.current_view = project_ui
+        self.view.metasip_scanner_project_views.current_view = project_ui
 
         # Configure the versions.
         self._update_from_versions()
@@ -68,7 +68,9 @@ class ScannerController(Controller):
     def close_project(self, project):
         """ Close a project. """
 
-        project_views = self.project_views_view.views
+        view = self.view
+
+        project_views = view.metasip_scanner_project_views.views
 
         # Remove the observers.
         observe('headers', project, self.__on_headers_changed, remove=True)
@@ -79,20 +81,21 @@ class ScannerController(Controller):
 
         # Hide the GUI if there are no more projects.
         if len(project_views) == 0:
-            self.view.current_view = self.no_project_view
+            view.current_view = view.no_project
 
     def open_project(self, project):
         """ Open a project. """
 
-        project_views = self.project_views_view.views
+        view = self.view
+
+        project_views = view.metasip_scanner_project_views.views
 
         # Show the GUI if it was previously hidden.
         if len(project_views) == 0:
-            self.view.current_view = self.splitter_view
+            view.current_view = view.metasip_scanner_splitter
 
         # Create the project specific part of the GUI.
-        view = ScannerView(self, project)
-        self.project_views_view.views.append(view)
+        project_views.append(ScannerView(self, project))
 
         # Observe any changes to the header directories and versions.
         observe('headers', project, self.__on_headers_changed)
@@ -106,6 +109,7 @@ class ScannerController(Controller):
             return
 
         model = self.model
+        view = self.view
 
         self._update_from_source_directory()
 
@@ -124,15 +128,15 @@ class ScannerController(Controller):
         else:
             module_enabled = True
 
-            if self.is_valid(self.module_editor):
+            if self.is_valid(view.module):
                 update_enabled = True
 
                 if model.source_directory != '' and model.module != '' and len(self.current_header_files) == 1:
                     parse_enabled = True
 
-        self.module_editor.enabled = module_enabled
-        self.parse_editor.enabled = parse_enabled
-        self.update_file_editor.enabled = update_enabled
+        view.module.enabled = module_enabled
+        view.parse.enabled = parse_enabled
+        view.update_file.enabled = update_enabled
 
         super().update_view()
 
@@ -171,6 +175,7 @@ class ScannerController(Controller):
                 header_directory = hdir
 
         model = self.model
+        view = self.view
 
         if header_directory is not None:
             self.current_header_directory = header_directory
@@ -178,25 +183,25 @@ class ScannerController(Controller):
             model.file_filter = header_directory.filefilter
             model.suffix = header_directory.inputdirsuffix
             model.parser_arguments = header_directory.parserargs
-            self.directory_group_view.enabled = True
-            self.delete_editor.enabled = True
+            view.metasip_scanner_directory_group.enabled = True
+            view.delete.enabled = True
         else:
             self.current_header_directory = None
             model.header_directory_name = ''
             model.file_filter = ''
             model.suffix = ''
             model.parser_arguments = ''
-            self.directory_group_view.enabled = False
-            self.delete_editor.enabled = False
+            view.metasip_scanner_directory_group.enabled = False
+            view.delete.enabled = False
 
         if len(header_files) != 0:
             # The delete button is enabled for a selected header directory, or
             # a single header file that is either ignored or unused.
             if len(header_files) > 1:
-                self.delete_editor.enabled = False
+                view.delete.enabled = False
             else:
                 hfile = header_files[0]
-                self.delete_editor.enabled = (hfile.ignored or len(hfile.versions) == 0)
+                view.delete.enabled = (hfile.ignored or len(hfile.versions) == 0)
 
             # Create an amalgamation of the selected header files.
             hfile = header_files[0]
@@ -220,20 +225,20 @@ class ScannerController(Controller):
             model.header_file_name = (", ").join(names)
             model.ignored = ignored
             model.module = module
-            self.file_group_view.enabled = True
+            view.metasip_scanner_file_group.enabled = True
         else:
             self.current_header_files = []
             model.header_file_name = ''
             model.ignored = False
             model.module = ''
-            self.file_group_view.enabled = False
+            view.metasip_scanner_file_group.enabled = False
 
         self._update_from_source_directory()
 
     def _find_view(self, project):
         """ Find the project specific part of the GUI for a project. """
 
-        for view in self.project_views_view.views:
+        for view in self.view.metasip_scanner_project_views.views:
             scanner_view = unadapted(view)
             if scanner_view.project is project:
                 return scanner_view
@@ -262,7 +267,7 @@ class ScannerController(Controller):
             question = "Are you sure you want to delete this header directory{0}?".format(has_cache)
 
         confirmed = Application.question(window_title, question,
-                self.delete_editor)
+                self.view.delete)
 
         if confirmed == 'yes':
             if len(self.current_header_files) != 0:
@@ -288,7 +293,7 @@ class ScannerController(Controller):
         window_title = "New Header Directory"
 
         # Get the name of the header directory.
-        (hname, ok) = QInputDialog.getText(unadapted(self.new_editor),
+        (hname, ok) = QInputDialog.getText(unadapted(self.view.new),
                 window_title, "Descriptive name")
 
         if ok:
@@ -297,11 +302,11 @@ class ScannerController(Controller):
             if hname == '':
                 Application.warning(window_title,
                         "The name of a header directory must not be blank.",
-                        unadapted(self.new_editor))
+                        unadapted(self.view.new))
             elif hname in [hdir.name for hdir in project.headers]:
                 Application.warning(window_title,
                         "'{0}' is already used as the name of a header directory.".format(hname),
-                        unadapted(self.new_editor))
+                        unadapted(self.view_new))
             else:
                 working_version = self._working_version_as_string()
 
@@ -327,7 +332,7 @@ class ScannerController(Controller):
 
         if not os.access(name, os.R_OK):
             Application.warning("Parse", "Unable to read {0}.".format(name),
-                    self.parse_editor)
+                    self.view.parse)
             return
 
         _, name, _ = self._read_header(name)
@@ -336,7 +341,7 @@ class ScannerController(Controller):
                 name)
 
         if phf is None:
-            Application.warning("Parse", parser.diagnostic, self.parse_editor)
+            Application.warning("Parse", parser.diagnostic, self.view.parse)
             return
 
         # Find the corresponding .sip file creating it if is a new header file.
@@ -746,26 +751,27 @@ class ScannerController(Controller):
         directories.
         """
 
+        view = self.view
+
         enabled = (len(self.current_project.headers) != 0)
 
-        self.scan_form_view.enabled = enabled
-        self.reset_workflow_editor.enabled = enabled
+        view.metasip_scanner_scan_form.enabled = enabled
+        view.reset_workflow.enabled = enabled
 
     def _update_from_source_directory(self):
         """ Update the GUI from the source directory. """
 
         model = self.model
+        view = self.view
 
-        scan_enabled = (model.source_directory != '' and self.current_header_directory is not None)
-        self.scan_editor.enabled = scan_enabled
+        view.scan.enabled = (model.source_directory != '' and self.current_header_directory is not None)
 
-        parse_enabled = (model.source_directory != '' and model.module != '' and len(self.current_header_files) == 1)
-        self.parse_editor.enabled = parse_enabled
+        view.parse.enabled = (model.source_directory != '' and model.module != '' and len(self.current_header_files) == 1)
 
     def _update_from_versions(self):
         """ Update the GUI from the current project's list of versions. """
 
-        optionselector = self.working_version_editor
+        optionselector = self.view.working_version
         versions = self.current_project.versions
 
         if len(versions) == 0:
