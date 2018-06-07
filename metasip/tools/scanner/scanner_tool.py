@@ -58,16 +58,16 @@ class ScannerTool(SimpleViewTool):
                 VBox(
                     Label('no_project_text'),
                     Stretch(),
-                    id='metasip.scanner.no_project'),
+                    id='no_project'),
                 Splitter(
-                    Stack(id='metasip.scanner.project_views'),
+                    Stack(id='project_views'),
                     VBox(
                         Form(
                             ComboBox('working_version'),
                             FilesystemLocationEditor('source_directory',
                                     id='metasip.scanner.source_directory',
                                     mode='directory'),
-                            id='metasip.scanner.scan_form'),
+                            id='scan_form'),
                         GroupBox(
                             VBox(
                                 Form(
@@ -84,7 +84,7 @@ class ScannerTool(SimpleViewTool):
                                     PushButton(id='show_ignored'),
                                     nr_columns=2)),
                             title="Header Directory",
-                            id='metasip.scanner.directory_group'),
+                            id='directory_group'),
                         GroupBox(
                             VBox(
                                 Form(
@@ -97,7 +97,7 @@ class ScannerTool(SimpleViewTool):
                                     PushButton(id='update_file',
                                             title="Update"))),
                             title="Header File",
-                            id='metasip.scanner.file_group'),
+                            id='file_group'),
                         HBox(
                             PushButton(id='new', title="New..."),
                             PushButton(id='delete', title="Delete...",

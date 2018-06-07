@@ -53,7 +53,7 @@ class ScannerController(Controller):
         self.current_project_ui = project_ui = self._find_view(project)
 
         # Make sure the project's view is current.
-        self.view.metasip_scanner_project_views.current_view = project_ui
+        self.view.project_views.current_view = project_ui
 
         # Configure the versions.
         self._update_from_versions()
@@ -70,7 +70,7 @@ class ScannerController(Controller):
 
         view = self.view
 
-        project_views = view.metasip_scanner_project_views.views
+        project_views = view.project_views.views
 
         # Remove the observers.
         observe('headers', project, self.__on_headers_changed, remove=True)
@@ -88,7 +88,7 @@ class ScannerController(Controller):
 
         view = self.view
 
-        project_views = view.metasip_scanner_project_views.views
+        project_views = view.project_views.views
 
         # Show the GUI if it was previously hidden.
         if len(project_views) == 0:
@@ -183,7 +183,7 @@ class ScannerController(Controller):
             model.file_filter = header_directory.filefilter
             model.suffix = header_directory.inputdirsuffix
             model.parser_arguments = header_directory.parserargs
-            view.metasip_scanner_directory_group.enabled = True
+            view.directory_group.enabled = True
             view.delete.enabled = True
         else:
             self.current_header_directory = None
@@ -191,7 +191,7 @@ class ScannerController(Controller):
             model.file_filter = ''
             model.suffix = ''
             model.parser_arguments = ''
-            view.metasip_scanner_directory_group.enabled = False
+            view.directory_group.enabled = False
             view.delete.enabled = False
 
         if len(header_files) != 0:
@@ -225,20 +225,20 @@ class ScannerController(Controller):
             model.header_file_name = (", ").join(names)
             model.ignored = ignored
             model.module = module
-            view.metasip_scanner_file_group.enabled = True
+            view.file_group.enabled = True
         else:
             self.current_header_files = []
             model.header_file_name = ''
             model.ignored = False
             model.module = ''
-            view.metasip_scanner_file_group.enabled = False
+            view.file_group.enabled = False
 
         self._update_from_source_directory()
 
     def _find_view(self, project):
         """ Find the project specific part of the GUI for a project. """
 
-        for view in self.view.metasip_scanner_project_views.views:
+        for view in self.view.project_views.views:
             scanner_view = unadapted(view)
             if scanner_view.project is project:
                 return scanner_view
@@ -754,7 +754,7 @@ class ScannerController(Controller):
 
         enabled = (len(self.current_project.headers) != 0)
 
-        view.metasip_scanner_scan_form.enabled = enabled
+        view.scan_form.enabled = enabled
         view.reset_workflow.enabled = enabled
 
     def _update_from_source_directory(self):
