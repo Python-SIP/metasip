@@ -60,13 +60,14 @@ class ScannerTool(SimpleViewTool):
                     Stretch(),
                     id='no_project'),
                 Splitter(
-                    Stack(tab_bar='multiple', id='project_views'),
+                    Stack(id='project_views', tab_bar='multiple'),
                     VBox(
                         Form(
                             ComboBox('working_version'),
                             FilesystemLocationEditor('source_directory',
                                     id='metasip.scanner.source_directory',
-                                    mode='directory'),
+                                    mode='directory',
+                                    remember=True),
                             id='scan_form'),
                         GroupBox(
                             VBox(
