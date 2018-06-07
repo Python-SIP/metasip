@@ -246,9 +246,9 @@ class ScannerController(Controller):
         # This should never happen.
         return None
 
-    @observe('model.delete')
-    def __on_delete_triggered(self, change):
-        """ Invoked when the Delete button is triggered. """
+    @observe('view.delete.value')
+    def __on_delete_changed(self, change):
+        """ Invoked when the Delete button is pressed. """
 
         project = self.current_project
 
@@ -278,16 +278,16 @@ class ScannerController(Controller):
 
             IDirty(project).dirty = True
 
-    @observe('model.hide_ignored')
-    def __on_hide_ignored_triggered(self, change):
-        """ Invoked when the Hide Ignored button is triggered. """
+    @observe('view.hide_ignored.value')
+    def __on_hide_ignored_changed(self, change):
+        """ Invoked when the Hide Ignored button is pressed. """
 
         self.current_project_ui.hide_ignored(self.current_header_directory,
                 hide=True)
 
-    @observe('model.new')
-    def __on_new_triggered(self, change):
-        """ Invoked when the New button is triggered. """
+    @observe('view.new.value')
+    def __on_new_changed(self, change):
+        """ Invoked when the New button is pressed. """
 
         project = self.current_project
         window_title = "New Header Directory"
@@ -315,9 +315,9 @@ class ScannerController(Controller):
 
                 IDirty(project).dirty = True
 
-    @observe('model.parse')
-    def __on_parse_triggered(self, change):
-        """ Invoked when the Parse button is triggered. """
+    @observe('view.parse.value')
+    def __on_parse_changed(self, change):
+        """ Invoked when the Parse button is pressed. """
 
         from ...GccXML import GccXMLParser
 
@@ -496,9 +496,9 @@ class ScannerController(Controller):
 
         return 'no_longer_working'
 
-    @observe('model.reset_workflow')
-    def __on_reset_workflow_triggered(self, change):
-        """ Invoked when the Reset Workflow button is triggered. """
+    @observe('view.reset_workflow.value')
+    def __on_reset_workflow_changed(self, change):
+        """ Invoked when the Reset Workflow button is pressed. """
 
         project = self.current_project
         working_version = self._working_version_as_string()
@@ -509,9 +509,9 @@ class ScannerController(Controller):
 
         IDirty(project).dirty = True
 
-    @observe('model.scan')
-    def __on_scan_triggered(self, change):
-        """ Invoked when the Scan button is triggered. """
+    @observe('view.scan.value')
+    def __on_scan_changed(self, change):
+        """ Invoked when the Scan button is pressed. """
 
         project = self.current_project
         hdir = self.current_header_directory
@@ -690,16 +690,16 @@ class ScannerController(Controller):
 
         return hfile
 
-    @observe('model.show_ignored')
-    def __on_show_ignored_triggered(self, change):
-        """ Invoked when the Show Ignored button is triggered. """
+    @observe('view.show_ignored.value')
+    def __on_show_ignored_changed(self, change):
+        """ Invoked when the Show Ignored button is pressed. """
 
         self.current_project_ui.hide_ignored(self.current_header_directory,
                 hide=False)
 
-    @observe('model.update_directory')
-    def __on_update_directory_triggered(self, change):
-        """ Invoked when the Update header directory button is triggered. """
+    @observe('view.update_directory.value')
+    def __on_update_directory_changed(self, change):
+        """ Invoked when the Update header directory button is pressed. """
 
         hdir = self.current_header_directory
         model = self.model
@@ -710,9 +710,9 @@ class ScannerController(Controller):
 
         IDirty(self.current_project).dirty = True
 
-    @observe('model.update_file')
-    def __on_update_file_triggered(self, change):
-        """ Invoked when the Update header file button is triggered. """
+    @observe('view.update_file.value')
+    def __on_update_file_changed(self, change):
+        """ Invoked when the Update header file button is pressed. """
 
         model = self.model
 
