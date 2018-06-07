@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -31,7 +31,7 @@ class ModulesTool(Model):
 
     # The delete module dialog.
     dialog_delete = Dialog(ComboBox('module', options='modules'),
-            window_title="Delete Module")
+            title="Delete Module")
 
     # The new module dialog.
     dialog_new = Dialog(
@@ -39,13 +39,13 @@ class ModulesTool(Model):
                     CheckBox('external',
                             label="The module is defined in another project"),
                     MessageArea()),
-            window_title="New Module")
+            title="New Module")
 
     # The rename module dialog.
     dialog_rename = Dialog(
             ComboBox('old_name', label="Module", options='modules'),
             LineEditor('module', label="New name"), MessageArea(),
-            window_title="Rename Module")
+            title="Rename Module")
 
     # The tool's identifier.
     id = 'metasip.tools.modules'

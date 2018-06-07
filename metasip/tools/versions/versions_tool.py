@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -31,18 +31,18 @@ class VersionsTool(Model):
 
     # The delete version dialog.
     dialog_delete = Dialog(ComboBox('version', options='versions'),
-            window_title="Delete Version")
+            title="Delete Version")
 
     # The new version dialog.
     dialog_new = Dialog('version',
             ComboBox('after', label="Add version after", options='versions'),
-            MessageArea(), window_title="New Version")
+            MessageArea(), title="New Version")
 
     # The rename version dialog.
     dialog_rename = Dialog(
             ComboBox('old_name', label="Version", options='versions'),
             LineEditor('version', label="New name"), MessageArea(),
-            window_title="Rename Version")
+            title="Rename Version")
 
     # The tool's identifier.
     id = 'metasip.tools.versions'

@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -81,12 +81,12 @@ class SchemaValidatorTool(Model):
     def validate_action(self):
         """ Invoked when the validate action is triggered. """
 
-        window_title=IAction(self.validate_action).plain_text
+        title = IAction(self.validate_action).plain_text
 
         model = dict(prompt=self.dialog_prompt, schema=None,
                 schemas=self.schemas, xml_file='')
 
-        view = self.dialog(model, window_title=window_title)
+        view = self.dialog(model, title=title)
 
         if IDialog(view).execute():
             from .schema_validator import (SchemaValidator,
@@ -102,15 +102,15 @@ class SchemaValidatorTool(Model):
             try:
                 validator.validate(schema_file, xml_file)
             except SchemaValidationException as e:
-                Application.warning(window_title, str(e), self.shell,
+                Application.warning(title, str(e), self.shell,
                         "File: {0}\nLine: {1}\nColumn: {2}".format(e.filename,
                                 e.line, e.column))
                 return
             except IOError as e:
-                Application.warning(window_title,
+                Application.warning(title,
                         "There was an i/o error validating the file.",
                         self.shell, str(e))
                 return
 
-            Application.information(window_title,
+            Application.information(title,
                     "{0} is valid.".format(xml_file), self.shell)

@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -23,7 +23,7 @@ class UpdateManager(Model):
     """
 
     # The title used in dialogs and wizards.
-    window_title = Str("Updating Project")
+    title = Str("Updating Project")
 
     def update(self, root, update_to):
         """ Update a project to a later format.
@@ -48,7 +48,7 @@ class UpdateManager(Model):
                     iupdates.append(iupdate)
                     break
             else:
-                Application.warning(self.window_title,
+                Application.warning(self.title,
                         "The project has format v{0} and needs to be updated "
                         "to v{1} but there is no update from v{2} to "
                         "v{3}.".format(update_from, update_to, format - 1,
@@ -99,7 +99,7 @@ class UpdateManager(Model):
             if not IWizard(wizard).execute():
                 return False
         else:
-            button = Application.question(self.window_title,
+            button = Application.question(self.title,
                     "The project has format v{0} and needs to be updated to "
                     "v{1}. Do you want to update it?".format(update_from,
                             update_to))

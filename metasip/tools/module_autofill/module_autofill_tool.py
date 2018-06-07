@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -74,14 +74,14 @@ class ModuleAutofillTool(Model):
     def autofill_action(self):
         """ Invoked when the auto-fill action is triggered. """
 
-        window_title=IAction(self.autofill_action).plain_text
+        title = IAction(self.autofill_action).plain_text
         project = self.subscription.model
         modules = project.modules
 
         model = dict(prompt=self.dialog_prompt, source_module=modules[0],
                 destination_module=modules[0], modules=modules)
 
-        view = self.dialog(model, window_title=window_title)
+        view = self.dialog(model, title=title)
 
         if IDialog(view).execute():
             from .autofill_module import autofill_module

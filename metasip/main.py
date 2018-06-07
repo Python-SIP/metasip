@@ -147,7 +147,7 @@ def launchGUI(prjname, guiargs):
                                     ProjectV11Schema(), ProjectV12Schema(),
                                     ProjectV13Schema()]),
                     VersionsTool],
-            window_title_template="[view][*]")
+            title_template="[view][*]")
 
     # Create the shell.
     view = view_factory()

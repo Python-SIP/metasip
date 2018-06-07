@@ -253,10 +253,10 @@ class ScannerController(Controller):
         project = self.current_project
 
         if len(self.current_header_files) != 0:
-            window_title = "Delete Header File"
+            title = "Delete Header File"
             question = "Are you sure you want to delete this header file?"
         else:
-            window_title = "Delete Header Directory"
+            title = "Delete Header Directory"
 
             has_cache = ""
             for hfile in self.current_header_directory.content:
@@ -266,8 +266,7 @@ class ScannerController(Controller):
 
             question = "Are you sure you want to delete this header directory{0}?".format(has_cache)
 
-        confirmed = Application.question(window_title, question,
-                self.view.delete)
+        confirmed = Application.question(title, question, self.view.delete)
 
         if confirmed == 'yes':
             if len(self.current_header_files) != 0:
@@ -290,21 +289,21 @@ class ScannerController(Controller):
         """ Invoked when the New button is pressed. """
 
         project = self.current_project
-        window_title = "New Header Directory"
+        title = "New Header Directory"
 
         # Get the name of the header directory.
         (hname, ok) = QInputDialog.getText(unadapted(self.view.new),
-                window_title, "Descriptive name")
+                title, "Descriptive name")
 
         if ok:
             hname = hname.strip()
 
             if hname == '':
-                Application.warning(window_title,
+                Application.warning(title,
                         "The name of a header directory must not be blank.",
                         unadapted(self.view.new))
             elif hname in [hdir.name for hdir in project.headers]:
-                Application.warning(window_title,
+                Application.warning(title,
                         "'{0}' is already used as the name of a header directory.".format(hname),
                         unadapted(self.view_new))
             else:

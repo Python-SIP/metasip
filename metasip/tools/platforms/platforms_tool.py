@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -32,16 +32,16 @@ class PlatformsTool(Model):
                     CheckBox('discard',
                             label="Discard any parts of the project that are "
                                     "only enabled for this platform")),
-            window_title="Delete Platform")
+            title="Delete Platform")
 
     # The new platform dialog.
-    dialog_new = Dialog('platform', MessageArea(), window_title="New Platform")
+    dialog_new = Dialog('platform', MessageArea(), title="New Platform")
 
     # The rename platform dialog.
     dialog_rename = Dialog(
             ComboBox('old_name', label="Platform", options='platforms'),
             LineEditor('platform', label="New name"), MessageArea(),
-            window_title="Rename Platform")
+            title="Rename Platform")
 
     # The tool's identifier.
     id = 'metasip.tools.platforms'

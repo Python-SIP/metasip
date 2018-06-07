@@ -469,21 +469,21 @@ class ProjectItem(EditorItem):
         """ Handle adding a new ignored namespace. """
 
         project = self._project
-        window_title = "Add Ignored Namespace"
+        title = "Add Ignored Namespace"
 
         # Get the name of the new ignored namespace.
-        (ns, ok) = QInputDialog.getText(self.treeWidget(), window_title,
+        (ns, ok) = QInputDialog.getText(self.treeWidget(), title,
                 "Ignored Namespace")
 
         if ok:
             ns = ns.strip()
 
             if ns == '':
-                Application.warning(window_title,
+                Application.warning(title,
                         "The name of the ignored namespace must not be blank.",
                         self.treeWidget())
             elif ns in project.ignorednamespaces:
-                Application.warning(window_title,
+                Application.warning(title,
                         "'{0}' is already used as the name of an ignored namespace.".format(ns),
                         self.treeWidget())
             else:

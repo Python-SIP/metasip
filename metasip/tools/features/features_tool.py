@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -32,7 +32,7 @@ class FeaturesTool(Model):
                     CheckBox('discard',
                             label="Discard any parts of the project that are "
                                     "only enabled for this feature")),
-            window_title="Delete Feature")
+            title="Delete Feature")
 
     # The new feature dialog.
     dialog_new = Dialog(
@@ -40,13 +40,13 @@ class FeaturesTool(Model):
                     CheckBox('external',
                             label="The feature is defined in another project"),
                     MessageArea()),
-            window_title="New Feature")
+            title="New Feature")
 
     # The rename feature dialog.
     dialog_rename = Dialog(
             ComboBox('old_name', label="Feature", options='features'),
             LineEditor('feature', label="New name"), MessageArea(),
-            window_title="Rename Feature")
+            title="Rename Feature")
 
     # The tool's identifier.
     id = 'metasip.tools.features'
