@@ -135,8 +135,9 @@ class PlatformsTool(Model):
         project = self.subscription.model
         model = dict(platform='')
 
-        dlg = self.dialog_new(model,
-                controller=PlatformController(project=project))
+        self.dialog_new.controller_factory = lambda model, view: PlatformController(model=model, view=view, project=project)
+
+        dlg = self.dialog_new(model)
 
         if IDialog(dlg).execute():
             project.platforms.append(model['platform'])
@@ -152,8 +153,9 @@ class PlatformsTool(Model):
         model = dict(platform='', old_name=project.platforms[0],
                 platforms=project.platforms)
 
-        dlg = self.dialog_rename(model,
-                controller=PlatformController(project=project))
+        self.dialog_rename.controller_factory = lambda model, view: PlatformController(model=model, view=view, project=project)
+
+        dlg = self.dialog_rename(model)
 
         if IDialog(dlg).execute():
             old_name = model['old_name']
@@ -199,7 +201,7 @@ class PlatformController(DialogController):
     def validate_view(self):
         """ Validate the view. """
 
-        platform = self.platform_editor.value
+        platform = self.view.platform.value
 
         message = validate_identifier(platform, "platform")
         if message != "":

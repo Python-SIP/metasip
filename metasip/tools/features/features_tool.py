@@ -148,8 +148,9 @@ class FeaturesTool(Model):
         project = self.subscription.model
         model = dict(feature='', external=False)
 
-        dlg = self.dialog_new(model,
-                controller=FeatureController(project=project))
+        self.dialog_new.controller_factory = lambda model, view: FeatureController(model=model, view=view, project=project)
+
+        dlg = self.dialog_new(model)
 
         if IDialog(dlg).execute():
             feature = model['feature']
@@ -174,8 +175,9 @@ class FeaturesTool(Model):
         model = dict(feature='', old_name=all_features[0],
                 features=all_features)
 
-        dlg = self.dialog_rename(model,
-                controller=FeatureController(project=project))
+        self.dialog_rename.controller_factory = lambda model, view: FeatureController(model=model, view=view, project=project)
+
+        dlg = self.dialog_rename(model)
 
         if IDialog(dlg).execute():
             old_name = model['old_name']
@@ -232,7 +234,7 @@ class FeatureController(DialogController):
     def validate_view(self):
         """ Validate the view. """
 
-        feature = self.feature_editor.value
+        feature = self.view.feature.value
 
         message = validate_identifier(feature, "feature")
         if message != "":

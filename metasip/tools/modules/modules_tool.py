@@ -112,8 +112,9 @@ class ModulesTool(Model):
         project = self.subscription.model
         model = dict(module='', external=False)
 
-        dlg = self.dialog_new(model,
-                controller=ModuleController(project=project))
+        self.dialog_new.controller_factory = lambda model, view: ModuleController(model=model, view=view, project=project)
+
+        dlg = self.dialog_new(model)
 
         if IDialog(dlg).execute():
             module = model['module']
@@ -136,8 +137,9 @@ class ModulesTool(Model):
         all_modules = self._all_modules(project)
         model = dict(module='', old_name=all_modules[0], modules=all_modules)
 
-        dlg = self.dialog_rename(model,
-                controller=ModuleController(project=project))
+        self.dialog_rename.controller_factory = lambda model, view: ModuleController(model=model, view=view, project=project)
+
+        dlg = self.dialog_rename(model)
 
         if IDialog(dlg).execute():
             old_name = model['old_name']
@@ -178,7 +180,7 @@ class ModuleController(DialogController):
     def validate_view(self):
         """ Validate the view. """
 
-        module = self.module_editor.value
+        module = self.view.module.value
 
         message = validate_identifier(module, "module")
         if message != "":

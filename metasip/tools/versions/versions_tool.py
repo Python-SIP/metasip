@@ -163,10 +163,11 @@ class VersionsTool(Model):
                 after=versions[-1] if len(versions) > 1 else None,
                 versions=versions)
 
-        controller=VersionController(project=project)
-        dlg = self.dialog_new(model, controller=controller)
+        self.dialog_new.controller_factory = lambda model, view: VersionController(model=model, view=view, project=project)
 
-        controller.after_editor.visible = (len(versions) > 1)
+        dlg = self.dialog_new(model)
+
+        dlg.after.visible = (len(versions) > 1)
 
         if IDialog(dlg).execute():
             version = model['version']
@@ -218,8 +219,9 @@ class VersionsTool(Model):
         model = dict(version='', old_name=project.versions[0],
                 versions=project.versions)
 
-        dlg = self.dialog_rename(model,
-                controller=VersionController(project=project))
+        self.dialog_rename.controller_factory = lambda model, view: VersionController(model=model, view=view, project=project)
+
+        dlg = self.dialog_rename(model)
 
         if IDialog(dlg).execute():
             old_name = model['old_name']
@@ -272,7 +274,7 @@ class VersionController(DialogController):
     def validate_view(self):
         """ Validate the view. """
 
-        version = self.version_editor.value
+        version = self.view.version.value
 
         message = validate_identifier(version, "version")
         if message != "":
