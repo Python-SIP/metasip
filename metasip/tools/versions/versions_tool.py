@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import implements, Instance, Model, observe
+from dip.model import implements, Model, observe
 from dip.publish import ISubscriber
 from dip.shell import IDirty, ITool
 from dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
@@ -21,6 +21,24 @@ from ...utils.project import ITagged_items, validate_identifier
 
 # FIXME: We should not need to know about the actual IProject implementation.
 from ...Project import HeaderFileVersion
+
+
+class VersionController(DialogController):
+    """ A controller for a dialog containing an editor for a version. """
+
+    def validate_view(self):
+        """ Validate the view. """
+
+        version = self.view.version.value
+
+        message = validate_identifier(version, "version")
+        if message != "":
+            return message
+
+        if version in self.model.project.versions:
+            return "A version has already been defined with the same name."
+
+        return ""
 
 
 @implements(ITool, ISubscriber)
@@ -36,13 +54,14 @@ class VersionsTool(Model):
     # The new version dialog.
     dialog_new = Dialog('version',
             ComboBox('after', label="Add version after", options='versions'),
-            MessageArea(), title="New Version")
+            MessageArea(), title="New Version",
+            controller_factory=VersionController)
 
     # The rename version dialog.
     dialog_rename = Dialog(
             ComboBox('old_name', label="Version", options='versions'),
             LineEditor('version', label="New name"), MessageArea(),
-            title="Rename Version")
+            title="Rename Version", controller_factory=VersionController)
 
     # The tool's identifier.
     id = 'metasip.tools.versions'
@@ -159,11 +178,9 @@ class VersionsTool(Model):
 
         project = self.subscription.model
         versions = project.versions
-        model = dict(version='',
+        model = dict(project=project, version='',
                 after=versions[-1] if len(versions) > 1 else None,
                 versions=versions)
-
-        self.dialog_new.controller_factory = lambda model, view: VersionController(model=model, view=view, project=project)
 
         dlg = self.dialog_new(model)
 
@@ -216,10 +233,8 @@ class VersionsTool(Model):
         """ Invoked when the rename version action is triggered. """
 
         project = self.subscription.model
-        model = dict(version='', old_name=project.versions[0],
+        model = dict(project=project, version='', old_name=project.versions[0],
                 versions=project.versions)
-
-        self.dialog_rename.controller_factory = lambda model, view: VersionController(model=model, view=view, project=project)
 
         dlg = self.dialog_rename(model)
 
@@ -263,24 +278,3 @@ class VersionsTool(Model):
 
         # Convert to a list while ignoring version-less items.
         return [item for item in ITagged_items(self.subscription.model) if len(item[0].versions) != 0]
-
-
-class VersionController(DialogController):
-    """ A controller for a dialog containing an editor for a version. """
-
-    # The project.
-    project = Instance(IProject)
-
-    def validate_view(self):
-        """ Validate the view. """
-
-        version = self.view.version.value
-
-        message = validate_identifier(version, "version")
-        if message != "":
-            return message
-
-        if version in self.project.versions:
-            return "A version has already been defined with the same name."
-
-        return ""

@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import implements, Instance, Model, observe
+from dip.model import implements, Model, observe
 from dip.publish import ISubscriber
 from dip.shell import IDirty, ITool
 from dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
@@ -18,6 +18,27 @@ from dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
 
 from ...interfaces.project import IProject
 from ...utils.project import ITagged_items, validate_identifier
+
+
+class FeatureController(DialogController):
+    """ A controller for a dialog containing an editor for a feature. """
+
+    def validate_view(self):
+        """ Validate the view. """
+
+        feature = self.view.feature.value
+
+        message = validate_identifier(feature, "feature")
+        if message != "":
+            return message
+
+        if feature in self.model.project.features:
+            return "A feature has already been defined with the same name."
+
+        if feature in self.model.project.externalfeatures:
+            return "An external feature has already been defined with the same name."
+
+        return ""
 
 
 @implements(ITool, ISubscriber)
@@ -40,13 +61,13 @@ class FeaturesTool(Model):
                     CheckBox('external',
                             label="The feature is defined in another project"),
                     MessageArea()),
-            title="New Feature")
+            title="New Feature", controller_factory=FeatureController)
 
     # The rename feature dialog.
     dialog_rename = Dialog(
             ComboBox('old_name', label="Feature", options='features'),
             LineEditor('feature', label="New name"), MessageArea(),
-            title="Rename Feature")
+            title="Rename Feature", controller_factory=FeatureController)
 
     # The tool's identifier.
     id = 'metasip.tools.features'
@@ -146,9 +167,7 @@ class FeaturesTool(Model):
         """ Invoked when the new feature action is triggered. """
 
         project = self.subscription.model
-        model = dict(feature='', external=False)
-
-        self.dialog_new.controller_factory = lambda model, view: FeatureController(model=model, view=view, project=project)
+        model = dict(project=project, feature='', external=False)
 
         dlg = self.dialog_new(model)
 
@@ -172,10 +191,8 @@ class FeaturesTool(Model):
 
         project = self.subscription.model
         all_features = self._all_features(project)
-        model = dict(feature='', old_name=all_features[0],
+        model = dict(project=project, feature='', old_name=all_features[0],
                 features=all_features)
-
-        self.dialog_rename.controller_factory = lambda model, view: FeatureController(model=model, view=view, project=project)
 
         dlg = self.dialog_rename(model)
 
@@ -223,27 +240,3 @@ class FeaturesTool(Model):
 
         # Convert to a list while ignoring featureless items.
         return [item for item in ITagged_items(self.subscription.model) if len(item[0].features) != 0]
-
-
-class FeatureController(DialogController):
-    """ A controller for a dialog containing an editor for a feature. """
-
-    # The project.
-    project = Instance(IProject)
-
-    def validate_view(self):
-        """ Validate the view. """
-
-        feature = self.view.feature.value
-
-        message = validate_identifier(feature, "feature")
-        if message != "":
-            return message
-
-        if feature in self.project.features:
-            return "A feature has already been defined with the same name."
-
-        if feature in self.project.externalfeatures:
-            return "An external feature has already been defined with the same name."
-
-        return ""

@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import implements, Instance, Model, observe
+from dip.model import implements, Model, observe
 from dip.publish import ISubscriber
 from dip.shell import IDirty, ITool
 from dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
@@ -18,6 +18,24 @@ from dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
 
 from ...interfaces.project import IProject
 from ...utils.project import ITagged_items, validate_identifier
+
+
+class PlatformController(DialogController):
+    """ A controller for a dialog containing an editor for a platform. """
+
+    def validate_view(self):
+        """ Validate the view. """
+
+        platform = self.view.platform.value
+
+        message = validate_identifier(platform, "platform")
+        if message != "":
+            return message
+
+        if platform in self.model.project.platforms:
+            return "A platform has already been defined with the same name."
+
+        return ""
 
 
 @implements(ITool, ISubscriber)
@@ -35,13 +53,14 @@ class PlatformsTool(Model):
             title="Delete Platform")
 
     # The new platform dialog.
-    dialog_new = Dialog('platform', MessageArea(), title="New Platform")
+    dialog_new = Dialog('platform', MessageArea(), title="New Platform",
+            controller_factory=PlatformController)
 
     # The rename platform dialog.
     dialog_rename = Dialog(
             ComboBox('old_name', label="Platform", options='platforms'),
             LineEditor('platform', label="New name"), MessageArea(),
-            title="Rename Platform")
+            title="Rename Platform", controller_factory=PlatformController)
 
     # The tool's identifier.
     id = 'metasip.tools.platforms'
@@ -133,9 +152,7 @@ class PlatformsTool(Model):
         """ Invoked when the new platform action is triggered. """
 
         project = self.subscription.model
-        model = dict(platform='')
-
-        self.dialog_new.controller_factory = lambda model, view: PlatformController(model=model, view=view, project=project)
+        model = dict(project=project, platform='')
 
         dlg = self.dialog_new(model)
 
@@ -150,10 +167,8 @@ class PlatformsTool(Model):
         """ Invoked when the rename platform action is triggered. """
 
         project = self.subscription.model
-        model = dict(platform='', old_name=project.platforms[0],
-                platforms=project.platforms)
-
-        self.dialog_rename.controller_factory = lambda model, view: PlatformController(model=model, view=view, project=project)
+        model = dict(project=project, platform='',
+                old_name=project.platforms[0], platforms=project.platforms)
 
         dlg = self.dialog_rename(model)
 
@@ -190,24 +205,3 @@ class PlatformsTool(Model):
 
         # Convert to a list while ignoring platform-less items.
         return [item for item in ITagged_items(self.subscription.model) if len(item[0].platforms) != 0]
-
-
-class PlatformController(DialogController):
-    """ A controller for a dialog containing an editor for a platform. """
-
-    # The project.
-    project = Instance(IProject)
-
-    def validate_view(self):
-        """ Validate the view. """
-
-        platform = self.view.platform.value
-
-        message = validate_identifier(platform, "platform")
-        if message != "":
-            return message
-
-        if platform in self.project.platforms:
-            return "A platform has already been defined with the same name."
-
-        return ""

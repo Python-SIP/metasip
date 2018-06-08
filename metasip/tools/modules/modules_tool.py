@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import implements, Instance, Model, observe
+from dip.model import implements, Model, observe
 from dip.publish import ISubscriber
 from dip.shell import IDirty, ITool
 from dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
@@ -21,6 +21,28 @@ from ...utils.project import validate_identifier
 
 # FIXME: We should not need to know about the actual IProject implementation.
 from ...Project import Module
+
+
+class ModuleController(DialogController):
+    """ A controller for a dialog containing an editor for a module. """
+
+    def validate_view(self):
+        """ Validate the view. """
+
+        module = self.view.module.value
+
+        message = validate_identifier(module, "module")
+        if message != "":
+            return message
+
+        for m in self.model.project.modules:
+            if m.name == module:
+                return "A module has already been defined with the same name."
+
+        if module in self.model.project.externalmodules:
+            return "An external module has already been defined with the same name."
+
+        return ""
 
 
 @implements(ITool, ISubscriber)
@@ -39,13 +61,13 @@ class ModulesTool(Model):
                     CheckBox('external',
                             label="The module is defined in another project"),
                     MessageArea()),
-            title="New Module")
+            title="New Module", controller_factory=ModuleController)
 
     # The rename module dialog.
     dialog_rename = Dialog(
             ComboBox('old_name', label="Module", options='modules'),
             LineEditor('module', label="New name"), MessageArea(),
-            title="Rename Module")
+            title="Rename Module", controller_factory=ModuleController)
 
     # The tool's identifier.
     id = 'metasip.tools.modules'
@@ -110,9 +132,7 @@ class ModulesTool(Model):
         """ Invoked when the new module action is triggered. """
 
         project = self.subscription.model
-        model = dict(module='', external=False)
-
-        self.dialog_new.controller_factory = lambda model, view: ModuleController(model=model, view=view, project=project)
+        model = dict(project=project, module='', external=False)
 
         dlg = self.dialog_new(model)
 
@@ -135,9 +155,8 @@ class ModulesTool(Model):
 
         project = self.subscription.model
         all_modules = self._all_modules(project)
-        model = dict(module='', old_name=all_modules[0], modules=all_modules)
-
-        self.dialog_rename.controller_factory = lambda model, view: ModuleController(model=model, view=view, project=project)
+        model = dict(project=project, module='', old_name=all_modules[0],
+                modules=all_modules)
 
         dlg = self.dialog_rename(model)
 
@@ -169,28 +188,3 @@ class ModulesTool(Model):
 
         return sorted(
                 [m.name for m in project.modules] + project.externalmodules)
-
-
-class ModuleController(DialogController):
-    """ A controller for a dialog containing an editor for a module. """
-
-    # The project.
-    project = Instance(IProject)
-
-    def validate_view(self):
-        """ Validate the view. """
-
-        module = self.view.module.value
-
-        message = validate_identifier(module, "module")
-        if message != "":
-            return message
-
-        for m in self.project.modules:
-            if m.name == module:
-                return "A module has already been defined with the same name."
-
-        if module in self.project.externalmodules:
-            return "An external module has already been defined with the same name."
-
-        return ""
