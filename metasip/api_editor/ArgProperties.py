@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -64,7 +64,7 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
             elif name == "DocValue":
                 le = self.docValue
             elif name == "Encoding":
-                self._encoding.setAnnotation(a)
+                self._encoding.setAnnotation(value)
             elif name == "GetWrapper":
                 cb = self.getWrapperCb
             elif name == "In":

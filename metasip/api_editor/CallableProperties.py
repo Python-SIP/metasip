@@ -176,7 +176,7 @@ class CallablePropertiesDialog(QDialog, Ui_CallablePropertiesBase):
             elif name == "DocType":
                 le = self.docType
             elif name == "Encoding":
-                self._encoding.setAnnotation(a)
+                self._encoding.setAnnotation(value)
             elif name == "Factory":
                 cb = self.factoryCb
             elif name == "HoldGIL":

@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -34,11 +34,8 @@ class Encoding(object):
         """
         Set the current annotation.
         """
-        _, encoding = anno.split('=')
-        encoding = encoding[1:-1]
-
-        for index, e in enumerate(self.ENCODINGS):
-            if encoding == e:
+        for index, encoding in enumerate(self.ENCODINGS):
+            if encoding == anno:
                 self._combo.setCurrentIndex(index)
                 break;
 

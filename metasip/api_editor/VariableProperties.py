@@ -45,7 +45,7 @@ class VariablePropertiesDialog(QDialog, Ui_VariablePropertiesBase):
             if name == "DocType":
                 le = self.docType
             elif name == "Encoding":
-                self._encoding.setAnnotation(a)
+                self._encoding.setAnnotation(value)
             elif name == "NoSetter":
                 cb = self.noSetterCb
             elif name == "NoTypeHint":
