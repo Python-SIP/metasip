@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#  14   Implemented by metasip v2.5.
+#       - added the /StrippedScopes/ argument annotation.
+#
 #  13   Implemented by metasip v2.3.
 #       - added enumclass to the Enum element.
 #
@@ -61,4 +64,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 13
+ProjectVersion = 14

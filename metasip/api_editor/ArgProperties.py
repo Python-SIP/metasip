@@ -84,6 +84,8 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
                 cb = self.resultSizeCb
             elif name == "SingleShot":
                 cb = self.singleShotCb
+            elif name == "ScopesStripped":
+                le = self.stripped
             elif name == "Transfer":
                 cb = self.transferCb
             elif name == "TransferBack":
@@ -167,6 +169,10 @@ class ArgPropertiesDialog(QDialog, Ui_ArgPropertiesBase):
 
         if self.singleShotCb.isChecked():
             alist.append("SingleShot")
+
+        s = str(self.stripped.text()).strip()
+        if s:
+            alist.append("ScopesStripped=" + s)
 
         if self.transferCb.isChecked():
             alist.append("Transfer")

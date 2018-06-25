@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>563</width>
-    <height>551</height>
+    <width>562</width>
+    <height>563</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -139,13 +139,20 @@
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QCheckBox" name="singleShotCb">
-        <property name="text">
-         <string>SingleShot</string>
-        </property>
-       </widget>
+       <layout class="QFormLayout" name="formLayout_5">
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="stripped"/>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>ScopesStripped</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
-      <item row="5" column="0" rowspan="3">
+      <item row="5" column="0" rowspan="4">
        <layout class="QFormLayout" name="formLayout">
         <item row="0" column="0">
          <widget class="QLabel" name="label_3">
@@ -180,34 +187,41 @@
        </layout>
       </item>
       <item row="5" column="1">
+       <widget class="QCheckBox" name="singleShotCb">
+        <property name="text">
+         <string>SingleShot</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
        <widget class="QCheckBox" name="transferCb">
         <property name="text">
          <string>Transfer</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="7" column="1">
        <widget class="QCheckBox" name="transferBackCb">
         <property name="text">
          <string>TransferBack</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="8" column="1">
        <widget class="QCheckBox" name="transferThisCb">
         <property name="text">
          <string>TransferThis</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
+      <item row="9" column="0">
        <widget class="QCheckBox" name="getWrapperCb">
         <property name="text">
          <string>GetWrapper</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="1" rowspan="4">
+      <item row="9" column="1" rowspan="4">
        <layout class="QFormLayout" name="formLayout_3">
         <item row="0" column="0">
          <widget class="QLabel" name="label_6">
@@ -241,21 +255,21 @@
         </item>
        </layout>
       </item>
-      <item row="9" column="0">
+      <item row="10" column="0">
        <widget class="QCheckBox" name="inCb">
         <property name="text">
          <string>In</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="0">
+      <item row="11" column="0">
        <widget class="QCheckBox" name="keepRefCb">
         <property name="text">
          <string>KeepReference</string>
         </property>
        </widget>
       </item>
-      <item row="11" column="0">
+      <item row="12" column="0">
        <widget class="QCheckBox" name="noCopyCb">
         <property name="text">
          <string>NoCopy</string>
@@ -292,8 +306,6 @@
   <zorder>buttonBox</zorder>
   <zorder>groupBox</zorder>
   <zorder>verticalSpacer</zorder>
-  <zorder>label_9</zorder>
-  <zorder>pyDefault</zorder>
  </widget>
  <tabstops>
   <tabstop>name</tabstop>
@@ -316,6 +328,7 @@
   <tabstop>pyIntCb</tabstop>
   <tabstop>ref</tabstop>
   <tabstop>resultSizeCb</tabstop>
+  <tabstop>stripped</tabstop>
   <tabstop>singleShotCb</tabstop>
   <tabstop>transferCb</tabstop>
   <tabstop>transferBackCb</tabstop>
@@ -323,7 +336,6 @@
   <tabstop>typeHint</tabstop>
   <tabstop>typeHintIn</tabstop>
   <tabstop>typeHintOut</tabstop>
-  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
  <connections>
