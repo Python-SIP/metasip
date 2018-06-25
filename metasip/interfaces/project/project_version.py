@@ -14,7 +14,7 @@
 #
 # History:
 #  14   Implemented by metasip v2.5.
-#       - added the /StrippedScopes/ argument annotation.
+#       - added the /ScopesStripped/ argument annotation.
 #
 #  13   Implemented by metasip v2.3.
 #       - added enumclass to the Enum element.

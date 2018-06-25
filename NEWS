@@ -1,6 +1,6 @@
 v2.5 ??? June 2018
   - Updated the project file format to v14.
-  - Added the /StrippedScopes/ argument annotation.
+  - Added the /ScopesStripped/ argument annotation.
 
 v2.4 17th June 2018
   - Changes for dip v0.5.
