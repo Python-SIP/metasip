@@ -212,6 +212,9 @@ class _Class(_ScopedItem, _Access):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
+        if self.name is None:
+            return
+
         if self.incomplete:
             scope.content.append(
                     OpaqueClass(name=self.name, container=scope,
