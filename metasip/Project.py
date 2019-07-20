@@ -945,11 +945,12 @@ class SipFile(Model):
         # implemented at the module level.  At the same time find the version
         # ranges that cover all the API items.
         vmap = self.project.vmap_create(False)
+        platforms = set()
+        features = set()
         need_header = False
 
         # This is a hack to handle the case of everything being contained in a
         # single ignored namespace.
-        # FIXME: Need to handle features as well as versions.
         api_items = self.content
         if len(api_items) == 1:
             api_item = api_items[0]
@@ -961,17 +962,25 @@ class SipFile(Model):
             if api_item.status != '':
                 continue
 
-            if vmap is not None and self.project.vmap_or_version_ranges(vmap, api_item.versions):
-                vmap = None
-                if need_header:
-                    break
-
             # Note that OperatorFunctions are handled within the class even if
             # they have global declarations.
             if isinstance(api_item, (Function, Variable, Enum)):
                 need_header = True
-                if vmap is None:
-                    break
+
+            if vmap is not None and self.project.vmap_or_version_ranges(vmap, api_item.versions):
+                vmap = None
+
+            if platforms is not None:
+                if api_item.platforms:
+                    platforms.update(api_item.platforms)
+                else:
+                    platforms = None
+
+            if features is not None:
+                if api_item.features:
+                    features.update(api_item.features)
+                else:
+                    features = None
 
         if need_header:
             if vmap is None:
@@ -979,19 +988,34 @@ class SipFile(Model):
             else:
                 need = self.project.vmap_to_version_ranges(vmap)
 
-            for vrange in need:
-                vrange_str = version_range(vrange)
+            vranges_str = [version_range(vr) for vr in need]
 
-                if vrange_str != '':
-                    f.write("%%If (%s)\n" % vrange_str, False)
+            plat_feat = []
 
-                f.write(
+            if platforms:
+                plat_feat.extend(platforms)
+
+            if features:
+                plat_feat.extend(features)
+
+            for vr_str in vranges_str:
+                if vr_str != '':
+                    f.write("%%If (%s)\n" % vr_str, False)
+
+            if plat_feat:
+                f.write("%%If (%s)\n" % " || ".join(plat_feat), False)
+
+            f.write(
 """%%ModuleCode
 #include <%s>
 %%End
 """ % self.name)
 
-                if vrange_str != '':
+            if plat_feat:
+                f.write("%End\n", False)
+
+            for vr_str in vranges_str:
+                if vr_str != '':
                     f.write("%End\n", False)
 
             f.blank()
@@ -2841,7 +2865,7 @@ def _sip_start_version(f, api_item):
         f.write("%%If (%s)\n" % " || ".join(api_item.platforms), False)
         nr_ends += 1
 
-    # Multiple platforms are logically and-ed.
+    # Multiple features are nested (ie. logically and-ed).
     for feature in api_item.features:
         f.write("%%If (%s)\n" % feature, False)
         nr_ends += 1
