@@ -33,17 +33,17 @@ class _DialogController(DialogController):
 
         # Configure the storage location editor according to the current
         # schema.
-        ixmlfileeditor = IStorageLocationEditor(self.xml_file_editor)
-        schema = IEditor(self.schema_editor).value
+        xml_file_editor = self.view.xml_file
+        schema = self.view.schema.value
 
         if schema is None:
-            ixmlfileeditor.enabled = False
+            xml_file_editor.enabled = False
         else:
-            ixmlfileeditor.enabled = True
+            xml_file_editor.enabled = True
 
             ifilterhints = IFilterHints(schema, exception=False)
             if ifilterhints is not None:
-                ixmlfileeditor.filter_hints = ifilterhints.filter
+                xml_file_editor.filter_hints = ifilterhints.filter
 
         # Do the normal validation.
         super().validate()
@@ -61,6 +61,7 @@ class SchemaValidatorTool(Model):
                     OptionList('schema', allow_none=False, options='schemas',
                             sorted=True),
                     StorageLocationEditor('xml_file', required=True)),
+            title="Validate Schema",
             controller_factory=_DialogController)
 
     # The prompt to use in the dialog.
@@ -86,7 +87,7 @@ class SchemaValidatorTool(Model):
         model = dict(prompt=self.dialog_prompt, schema=None,
                 schemas=self.schemas, xml_file='')
 
-        view = self.dialog(model, title=title)
+        view = self.dialog(model)
 
         if IDialog(view).execute():
             from .schema_validator import (SchemaValidator,
