@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -69,7 +69,7 @@ class PlatformsTool(Model):
     platform_delete = Action(enabled=False, text="Delete Platform...")
 
     # The new platform action.
-    platform_new = Action(enabled=False, text="New Platform...")
+    platform_new = Action(text="New Platform...")
 
     # The rename platform action.
     platform_rename = Action(enabled=False, text="Rename Platform...")
@@ -86,12 +86,10 @@ class PlatformsTool(Model):
     def __subscription_changed(self, change):
         """ Invoked when the subscription changes. """
 
-        is_active = (change.new.event == 'dip.events.active')
         are_platforms = (len(change.new.model.platforms) != 0)
 
-        IAction(self.platform_new).enabled = is_active
-        IAction(self.platform_rename).enabled = (is_active and are_platforms)
-        IAction(self.platform_delete).enabled = (is_active and are_platforms)
+        IAction(self.platform_rename).enabled = are_platforms
+        IAction(self.platform_delete).enabled = are_platforms
 
     @platform_delete.triggered
     def platform_delete(self):

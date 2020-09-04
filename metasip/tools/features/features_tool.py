@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -76,7 +76,7 @@ class FeaturesTool(Model):
     feature_delete = Action(enabled=False, text="Delete Feature...")
 
     # The new feature action.
-    feature_new = Action(enabled=False, text="New Feature...")
+    feature_new = Action(text="New Feature...")
 
     # The rename feature action.
     feature_rename = Action(enabled=False, text="Rename Feature...")
@@ -95,12 +95,10 @@ class FeaturesTool(Model):
 
         project = change.new.model
 
-        is_active = (change.new.event == 'dip.events.active')
         are_features = (len(project.features) + len(project.externalfeatures) != 0)
 
-        IAction(self.feature_new).enabled = is_active
-        IAction(self.feature_rename).enabled = (is_active and are_features)
-        IAction(self.feature_delete).enabled = (is_active and are_features)
+        IAction(self.feature_rename).enabled = are_features
+        IAction(self.feature_delete).enabled = are_features
 
     @feature_delete.triggered
     def feature_delete(self):

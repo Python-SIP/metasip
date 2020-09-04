@@ -73,7 +73,7 @@ class VersionsTool(Model):
     version_delete_all = Action(enabled=False, text="Delete All Versions")
 
     # The new version action.
-    version_new = Action(enabled=False, text="New Version...")
+    version_new = Action(text="New Version...")
 
     # The rename version action.
     version_rename = Action(enabled=False, text="Rename Version...")
@@ -91,13 +91,11 @@ class VersionsTool(Model):
     def __subscription_changed(self, change):
         """ Invoked when the subscription changes. """
 
-        is_active = (change.new.event == 'dip.events.active')
         are_versions = (len(change.new.model.versions) != 0)
 
-        IAction(self.version_new).enabled = is_active
-        IAction(self.version_rename).enabled = (is_active and are_versions)
-        IAction(self.version_delete).enabled = (is_active and are_versions)
-        IAction(self.version_delete_all).enabled = (is_active and are_versions)
+        IAction(self.version_rename).enabled = are_versions
+        IAction(self.version_delete).enabled = are_versions
+        IAction(self.version_delete_all).enabled = are_versions
 
     @version_delete.triggered
     def version_delete(self):

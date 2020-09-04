@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -76,7 +76,7 @@ class ModulesTool(Model):
     module_delete = Action(enabled=False, text="Delete Module...")
 
     # The new module action.
-    module_new = Action(enabled=False, text="New Module...")
+    module_new = Action(text="New Module...")
 
     # The rename module action.
     module_rename = Action(enabled=False, text="Rename Module...")
@@ -95,12 +95,10 @@ class ModulesTool(Model):
 
         project = change.new.model
 
-        is_active = (change.new.event == 'dip.events.active')
         are_modules = (len(project.modules) + len(project.externalmodules) != 0)
 
-        IAction(self.module_new).enabled = is_active
-        IAction(self.module_rename).enabled = (is_active and are_modules)
-        IAction(self.module_delete).enabled = (is_active and are_modules)
+        IAction(self.module_rename).enabled = are_modules
+        IAction(self.module_delete).enabled = are_modules
 
     @module_delete.triggered
     def module_delete(self):
