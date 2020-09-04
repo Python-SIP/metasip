@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -97,7 +97,6 @@ def launchGUI(prjname, guiargs):
             ProjectV13Schema, ProjectV14Schema)
     from metasip.tools.features import FeaturesTool
     from metasip.tools.logger import LoggerTool
-    from metasip.tools.module_autofill import ModuleAutofillTool
     from metasip.tools.modules import ModulesTool
     from metasip.tools.platforms import PlatformsTool
     from metasip.tools.scanner import ScannerTool
