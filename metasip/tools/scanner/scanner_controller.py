@@ -777,6 +777,7 @@ class ScannerController(Controller):
             optionselector.visible = False
         else:
             optionselector.options = reversed(versions)
+            optionselector.value = self.current_project_ui.working_version
             optionselector.visible = True
 
     def _working_version_as_string(self):
