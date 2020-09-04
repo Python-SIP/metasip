@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,8 +13,8 @@
 from dip.model import implements, Model, observe
 from dip.publish import ISubscriber
 from dip.shell import IDirty, ITool
-from dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
-        Dialog, IDialog, DialogController, LineEditor, MessageArea)
+from dip.ui import (Action, IAction, ActionCollection, Application, CheckBox,
+        ComboBox, Dialog, IDialog, DialogController, LineEditor, MessageArea)
 
 from ...interfaces.project import IProject
 from ...utils.project import ITagged_items, validate_identifier
@@ -69,6 +69,9 @@ class VersionsTool(Model):
     # The delete version action.
     version_delete = Action(enabled=False, text="Delete Version...")
 
+    # The delete all versions action.
+    version_delete_all = Action(enabled=False, text="Delete All Versions")
+
     # The new version action.
     version_new = Action(enabled=False, text="New Version...")
 
@@ -77,7 +80,8 @@ class VersionsTool(Model):
 
     # The collection of the tool's actions.
     versions_actions = ActionCollection(text="Versions",
-            actions=['version_new', 'version_rename', 'version_delete'],
+            actions=['version_new', 'version_rename', 'version_delete',
+                    'version_delete_all'],
             within='dip.ui.collections.edit')
 
     # The type of models we subscribe to.
@@ -93,6 +97,7 @@ class VersionsTool(Model):
         IAction(self.version_new).enabled = is_active
         IAction(self.version_rename).enabled = (is_active and are_versions)
         IAction(self.version_delete).enabled = (is_active and are_versions)
+        IAction(self.version_delete_all).enabled = (is_active and are_versions)
 
     @version_delete.triggered
     def version_delete(self):
@@ -105,70 +110,23 @@ class VersionsTool(Model):
         dlg = self.dialog_delete(model)
 
         if IDialog(dlg).execute():
-            version = model['version']
-            removing_first_version = (version == versions[0])
+            self._delete_version(model['version'], migrate_items=True)
+            self._update_actions()
 
-            # Delete from each API item it appears.
-            remove_items = []
+    @version_delete_all.triggered
+    def version_delete_all(self):
+        """ Invoked when the delete all versions action is triggered. """
 
-            for api_item, container in self._versioned_items():
-                remove_ranges = []
+        # Check with the user.
+        answer = Application.question(
+                IAction(self.version_delete_all).plain_text,
+                "All versions will be removed along with any API items that "
+                "are not part of the latest version.\n\nDo you wish to "
+                "continue?")
 
-                for r in api_item.versions:
-                    if r.startversion == version:
-                        # It now starts with the version after the one we are
-                        # deleting.  If that is the same as the end version
-                        # then we delete the API item.
-                        new_start = '' if versions[-1] == version else versions[versions.index(version) + 1]
-
-                        if new_start == r.endversion:
-                            remove_items.append((api_item, container))
-                            break
-
-                        r.startversion = new_start
-
-                    # If the start version is now what the first version will
-                    # now be then we clear it.
-                    if r.startversion != '' and removing_first_version and r.startversion == versions[1]:
-                        r.startversion = ''
-
-                    if r.endversion == version:
-                        # It now ends with the version after the one we are
-                        # deleting.
-                        new_end = '' if versions[-1] == version else versions[versions.index(version) + 1]
-
-                        r.endversion = new_end
-
-                    if r.startversion == '' and r.endversion == '':
-                        remove_ranges.append(r)
-                else:
-                    for r in remove_ranges:
-                        api_item.versions.remove(r)
-
-            for api_item, container in remove_items:
-                container.content.remove(api_item)
-
-            # Delete from the header file versions.
-            remove_hfile_versions = []
-            removing_last_version = (len(project.versions) == 1)
-
-            for hdir in project.headers:
-                for hfile in hdir.content:
-                    if removing_last_version:
-                        if len(hfile.versions) != 0:
-                            hfile.versions[0].version = ''
-                    else:
-                        for hfile_version in hfile.versions:
-                            if hfile_version.version == version:
-                                remove_hfile_versions.append((hfile_version, hfile))
-                                break
-
-            for hfile_version, hfile in remove_hfile_versions:
-                hfile.versions.remove(hfile_version)
-
-            # Delete from the project's list.
-            versions.remove(version)
-            IDirty(project).dirty = True
+        if answer == 'yes':
+            for version in list(self.subscription.model.versions):
+                self._delete_version(version, migrate_items=False)
 
             self._update_actions()
 
@@ -262,6 +220,80 @@ class VersionsTool(Model):
             project.versions[project.versions.index(old_name)] = new_name
             IDirty(project).dirty = True
 
+    def _delete_version(self, version, *, migrate_items):
+        """ Delete a version and all API items defined by it. """
+
+        project = self.subscription.model
+        versions = project.versions
+
+        removing_first_version = (version == versions[0])
+
+        # Delete from each API item it appears.
+        remove_items = []
+
+        for api_item, container in self._versioned_items():
+            remove_ranges = []
+
+            for r in api_item.versions:
+                if r.startversion == version:
+                    # It now starts with the version after the one we are
+                    # deleting.  If that is the same as the end version then we
+                    # delete the API item.
+                    new_start = '' if versions[-1] == version else versions[versions.index(version) + 1]
+
+                    if new_start == r.endversion:
+                        remove_items.append((api_item, container))
+                        break
+
+                    r.startversion = new_start
+
+                # If the start version is now what the first version will now
+                # be then we clear it.
+                if r.startversion != '' and removing_first_version and r.startversion == versions[1]:
+                    r.startversion = ''
+
+                if r.endversion == version:
+                    if migrate_items:
+                        # It now ends with the version after the one we are
+                        # deleting.
+                        new_end = '' if versions[-1] == version else versions[versions.index(version) + 1]
+
+                        r.endversion = new_end
+                    else:
+                        remove_items.append((api_item, container))
+                        break
+
+                if r.startversion == '' and r.endversion == '':
+                    remove_ranges.append(r)
+            else:
+                for r in remove_ranges:
+                    api_item.versions.remove(r)
+
+        for api_item, container in remove_items:
+            container.content.remove(api_item)
+
+        # Delete from the header file versions.
+        remove_hfile_versions = []
+        removing_last_version = (len(project.versions) == 1)
+
+        for hdir in project.headers:
+            for hfile in hdir.content:
+                if removing_last_version:
+                    if len(hfile.versions) != 0:
+                        hfile.versions[0].version = ''
+                else:
+                    for hfile_version in hfile.versions:
+                        if hfile_version.version == version:
+                            remove_hfile_versions.append((hfile_version, hfile))
+                            break
+
+        for hfile_version, hfile in remove_hfile_versions:
+            hfile.versions.remove(hfile_version)
+
+        # Delete from the project's list.
+        versions.remove(version)
+        IDirty(project).dirty = True
+
     def _update_actions(self):
         """ Update the enabled state of the rename and delete actions. """
 
@@ -269,6 +301,7 @@ class VersionsTool(Model):
 
         IAction(self.version_rename).enabled = are_versions
         IAction(self.version_delete).enabled = are_versions
+        IAction(self.version_delete_all).enabled = are_versions
 
     def _versioned_items(self):
         """ Returns a list of 2-tuples of all API items that are subject to a
