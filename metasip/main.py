@@ -135,7 +135,6 @@ def launchGUI(prjname, guiargs):
                             model_factories=[ProjectFactory()]),
                     lambda: editor_tool,
                     FeaturesTool,
-                    ModuleAutofillTool,
                     ModulesTool,
                     PlatformsTool,
                     ScannerTool,
