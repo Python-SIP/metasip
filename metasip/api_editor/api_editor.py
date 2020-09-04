@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -274,25 +274,6 @@ class ApiEditor(QTreeWidget):
 
         if len(invalid) > 0:
             self._stringDialog("Callables with Invalid Arguments", invalid)
-
-    def updateArgumentsFromWebXML(self, module):
-        """
-        Update any unnamed arguments of all callables contained in a module
-        from WebXML.
-
-        module is the module.
-        """
-        # FIXME: This is very broken.
-        undocumented, updated_args = self.project.updateArgumentsFromWebXML(
-                self.gui, module)
-
-        # Update the affected names.
-        for arg in updated_args:
-            arg._gui.draw_name()
-
-        # Show any undocumented callables.
-        if len(undocumented) > 0:
-            self._stringDialog("Undocumented Callables", undocumented)
 
     @staticmethod
     def _updateArgs(updated_args):
@@ -599,13 +580,7 @@ class ModuleItem(EditorItem, DropSite):
         if len(siblings) != 0:
             return None
 
-        return [("Update argument names from WebXML", self._updateFromWebXML),
-                ("Properties...", self._propertiesSlot)]
-
-    def _updateFromWebXML(self):
-        """ Update argument names from WebXML to all unnamed arguments. """
-
-        self.treeWidget().updateArgumentsFromWebXML(self.module)
+        return [("Properties...", self._propertiesSlot)]
 
     def _propertiesSlot(self):
         """ Handle the module's properties. """

@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,12 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-import glob
-import os
-
-from PyQt5.QtWidgets import QProgressDialog
-
-from dip.model import Dict, implements, Instance
+from dip.model import implements
 from dip.shell import BaseManagedModelTool, IManagedModelTool
 from dip.ui import IDisplay
 
@@ -32,9 +27,6 @@ class ProjectEditorTool(BaseManagedModelTool):
     # The tool's name used in model manager dialogs and wizards.
     name = "MetaSIP project editor"
 
-    # The dictionary of lists of argument names indexed by the C++ signature.
-    webxml = Dict()
-
     def create_views(self, model):
         """ Create the views for editing a model. """
 
@@ -46,35 +38,3 @@ class ProjectEditorTool(BaseManagedModelTool):
         """ Check that the tool can handle a model. """
 
         return isinstance(model, IProject)
-
-    def loadWebXML(self):
-        """ Load, if not already done, and return the WebXML data. """
-
-        return self.webxml
-
-    @webxml.default
-    def webxml(self):
-        """ Invoked to load the WebXML data. """
-
-        from .WebXML import WebXMLParser
-
-        # FIXME: Ask the user for the WebXML directory.
-        webxml_files = glob.glob(os.path.join(self.project.workingversion.webxmldir, '*.xml'))
-        progress = QProgressDialog(self)
-        progress.setWindowTitle("Parsing WebXML Files")
-        progress.setModal(True)
-        progress.setTotalSteps(len(webxml_files))
-        progress.setMinimumDuration(500)
-
-        webxml = {}
-
-        for step, webxml_file in enumerate(webxml_files):
-            progress.setLabelText(os.path.basename(webxml_file))
-            progress.setProgress(step)
-
-            parser = WebXMLParser()
-            parser.parse(webxml_file, webxml)
-
-        progress.setProgress(len(webxml_files))
-
-        return webxml

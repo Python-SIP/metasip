@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -281,77 +281,6 @@ class Project(Model):
             IDirty(self).dirty = True
 
         return updated
-
-    def updateArgumentsFromWebXML(self, ui, module):
-        """
-        Update any unnamed arguments of all callables contained in a module
-        from WebXML.  Returns a 2-tuple of a list of undocumented callables and
-        a list of updated Argument instances.
-
-        ui is the user interface.
-        module is the module.
-        """
-        undocumented = []
-        updated_args = []
-
-        webxml = ui.loadWebXML()
-
-        for hf in module:
-            for callable in self._get_unnamed_callables(hf):
-                # Convert the callable to the normalised form used by the
-                # WebXML key.
-
-                try:
-                    static = callable.static
-                except AttributeError:
-                    static = False
-
-                if static:
-                    static = 'static '
-                else:
-                    static = ''
-
-                try:
-                    const = callable.const
-                except AttributeError:
-                    const = False
-
-                if const:
-                    const = ' const'
-                else:
-                    const = ''
-
-                arg_types = []
-                arg_names = []
-                for arg in callable.args:
-                    assert type(arg) is Argument
-
-                    atype = arg.type.replace(' ', '')
-                    if atype.startswith('const'):
-                        atype = 'const ' + atype[5:]
-
-                    # Function pointers may contain a format character.
-                    if '%' in atype:
-                        atype = atype % ''
-
-                    arg_types.append(atype)
-                    arg_names.append(arg.name)
-
-                sig = '%s%s(%s)%s' % (static, self._fullName(callable), ', '.join(arg_types), const)
-
-                names = webxml.get(sig)
-                if names is None:
-                    undocumented.append(sig)
-                else:
-                    for name, arg in zip(names, callable.args):
-                        if arg.unnamed and name:
-                            arg.name = name
-                            updated_args.append(arg)
-
-        if len(updated_args) != 0:
-            IDirty(self).dirty = True
-
-        return undocumented, updated_args
 
     def _applyConventions(self, callable, update):
         """
