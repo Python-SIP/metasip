@@ -10,26 +10,13 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.io import IFilterHints
+from dip.io import IFilterHints, IoManager
 from dip.model import implements, Model
 from dip.publish import ISubscriber
 from dip.shell import ITool
-from dip.ui import (Action, IAction, Dialog, IDialog, DialogController,
-        StorageLocationEditor)
+from dip.ui import Action, Dialog, IDialog, StorageLocationEditor
 
 from ...interfaces.project import IProject
-
-
-class _DialogController(DialogController):
-    """ An internal class that implements the controller for the schema
-    validator dialog.
-    """
-
-    def validate(self):
-        """ Reimplemented to change the configuration of the dialog. """
-
-        # Do the normal validation.
-        super().validate()
 
 
 @implements(ITool, ISubscriber)
@@ -38,7 +25,7 @@ class ImportProjectTool(Model):
 
     # The tool's dialog.
     dialog = Dialog(StorageLocationEditor('project_file', required=True),
-            title="Import Project", controller_factory=_DialogController)
+            title="Import Project")
 
     # The tool's identifier.
     id = 'metasip.tools.import_project'
@@ -60,4 +47,13 @@ class ImportProjectTool(Model):
         view.project_file.filter = IFilterHints(self.subscription.model).filter
 
         if IDialog(view).execute():
-            print("Importing", model['project_file'])
+            # Create an empty project.
+            project = type(self.subscription.model)()
+
+            # Read the project to import.
+            io_manager = IoManager().instance
+            project = io_manager.read(project, model['project_file'],
+                    'metasip.formats.project')
+
+            if project is not None:
+                print("Importing", project, "to", self.subscription.model)
