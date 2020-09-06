@@ -275,6 +275,15 @@ class VersionsTool(Model):
         removing_last_version = (len(project.versions) == 1)
 
         for hdir in project.headers:
+            if version in hdir.scan:
+                hdir.scan.remove(version)
+
+            # If the versions to scan now just has a marker from when no
+            # versions were defined, remove the marker so it doesn't suggest
+            # that any remaining version needs scanning.
+            if len(hdir.scan) == 1 and hdir.scan[0] == '':
+                del hdir.scan[0]
+
             for hfile in hdir.content:
                 if removing_last_version:
                     if len(hfile.versions) != 0:
