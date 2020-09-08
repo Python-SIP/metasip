@@ -47,12 +47,14 @@ def load_batch_project(prjname):
     return prj
 
 
-def generate(prjname, gendir, latest_sip):
+def generate(prjname, modules, gendir, latest_sip):
     """
     Generate the .sip files for a project and return an exit code or 0 if there
     was no error.
 
     prjname is the name of the project file.
+    modules is a list of modules to generate the .sip files for.  None implies
+    all modules in the project.
     gendir is the directory in which to generate the .sip files.
     """
     if not os.path.isdir(gendir):
@@ -60,8 +62,23 @@ def generate(prjname, gendir, latest_sip):
 
     prj = load_batch_project(prjname)
 
+    if modules:
+        gen_modules = []
+
+        for module_name in modules:
+            for mod in prj.modules:
+                if mod.name == module_name:
+                    gen_modules.append(mod)
+                    break
+            else:
+                fatal(
+                        "There is no module '{0}' in the project".format(
+                                module_name))
+    else:
+        gen_modules = prj.modules
+
     # Generate each module.
-    for mod in prj.modules:
+    for mod in gen_modules:
         if not prj.generateModule(mod, gendir, latest_sip=latest_sip):
             fatal(prj.diagnostic)
 
@@ -204,9 +221,12 @@ def msipgen_main():
     parser.add_argument('-g',
             help="the directory to write the generated code to",
             dest='gendir', metavar='DIR', required=True)
+    parser.add_argument('-m',
+            help="the module to generated code for",
+            dest='modules', metavar='MODULE', action='append')
     parser.add_argument('-O', help="generate code for an older version of sip",
             dest='latest_sip', default=True, action='store_false')
 
     args = parser.parse_args()
 
-    return generate(args.project, args.gendir, args.latest_sip)
+    return generate(args.project, args.modules, args.gendir, args.latest_sip)
