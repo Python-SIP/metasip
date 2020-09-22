@@ -38,8 +38,6 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
                 self._base_type.setAnnotation(value)
             elif name == "PyName":
                 le = self.pyName
-            elif name == "Alias":
-                le = self.alias
             elif name == "NoScope":
                 cb = self.noScopeCb
             elif name == "NoTypeHint":
@@ -63,10 +61,6 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
         s = self.pyName.text().strip()
         if s != '':
             alist.append("PyName=" + s)
-
-        s = self.alias.text().strip()
-        if s != '':
-            alist.append("Alias=" + s)
 
         if self.noScopeCb.isChecked():
             alist.append("NoScope")
