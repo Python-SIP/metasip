@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>274</width>
-    <height>233</height>
+    <width>307</width>
+    <height>273</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,6 +31,16 @@
         </item>
         <item row="0" column="1">
          <widget class="QLineEdit" name="pyName"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>BaseType</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="baseTypeCb"/>
         </item>
        </layout>
       </item>
@@ -85,6 +95,7 @@
  </widget>
  <tabstops>
   <tabstop>pyName</tabstop>
+  <tabstop>BaseTypeCb</tabstop>
   <tabstop>enumClassCb</tabstop>
   <tabstop>noScopeCb</tabstop>
   <tabstop>noTypeHintCb</tabstop>

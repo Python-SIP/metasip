@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,42 +10,37 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module handles an enum's properties. """
-
-
 from PyQt5.QtWidgets import QDialog
 
 from .Designer.EnumPropertiesBase import Ui_EnumPropertiesBase
 from .Annos import split_annos
+from .BaseType import BaseType
 
 
 class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
-    """
-    This class implements the dialog for an enum's properties.
-    """
-    def __init__(self, enum, parent):
-        """
-        Initialise the dialog.
+    """ This class implements the dialog for an enum's properties. """
 
-        enum is the enum instance.
-        parent is the parent widget.
-        """
-        super(EnumPropertiesDialog, self).__init__(parent)
+    def __init__(self, enum, parent):
+        """ Initialise the dialog. """
+
+        super().__init__(parent)
 
         self.setupUi(self)
 
         # Initialise the dialog.
+        self._base_type = BaseType(self.baseTypeCb)
+
         for name, value in split_annos(enum.annos):
             le = None
             cb = None
 
-            if name == "PyName":
+            if name == "BaseType":
+                self._base_type.setAnnotation(value)
+            elif name == "PyName":
                 le = self.pyName
-
-            if name == "NoScope":
+            elif name == "NoScope":
                 cb = self.noScopeCb
-
-            if name == "NoTypeHint":
+            elif name == "NoTypeHint":
                 cb = self.noTypeHintCb
 
             if cb is not None:
@@ -60,6 +55,8 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
         Return a tuple of the dialog fields.
         """
         alist = []
+
+        self._base_type.annotation(alist)
 
         s = self.pyName.text().strip()
         if s != '':
