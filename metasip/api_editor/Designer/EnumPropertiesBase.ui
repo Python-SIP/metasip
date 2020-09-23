@@ -95,7 +95,7 @@
  </widget>
  <tabstops>
   <tabstop>pyName</tabstop>
-  <tabstop>BaseTypeCb</tabstop>
+  <tabstop>baseTypeCb</tabstop>
   <tabstop>enumClassCb</tabstop>
   <tabstop>noScopeCb</tabstop>
   <tabstop>noTypeHintCb</tabstop>
