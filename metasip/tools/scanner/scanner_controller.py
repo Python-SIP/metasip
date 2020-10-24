@@ -668,22 +668,27 @@ class ScannerController(Controller):
             hfile_version = HeaderFileVersion(version=working_version, md5=md5)
             hfile.versions.append(hfile_version)
 
-            # Find the immediately preceding version if there is one.
-            versions_sorted = sorted(hfile.versions,
-                    key=lambda v: self.current_project.versions.index(
-                            v.version))
+            # Check that the project has versions.
+            if self.current_project.versions:
+                # Find the immediately preceding version if there is one.
+                versions_sorted = sorted(hfile.versions,
+                        key=lambda v: self.current_project.versions.index(
+                                v.version))
 
-            prev_md5 = ''
-            prev_parse = True
-            for hfv in versions_sorted:
-                if hfv.version == working_version:
-                    break
+                prev_md5 = ''
+                prev_parse = True
+                for hfv in versions_sorted:
+                    if hfv.version == working_version:
+                        break
 
-                prev_md5 = hfv.md5
-                prev_parse = hfv.parse
+                    prev_md5 = hfv.md5
+                    prev_parse = hfv.parse
 
-            if prev_md5 == md5:
-                hfile_version.parse = prev_parse
+                if prev_md5 == md5:
+                    hfile_version.parse = prev_parse
+            else:
+                # It must be a new file of an unversioned project.
+                hfile_version.parse = True
 
             IDirty(self.current_project).dirty = True
 
