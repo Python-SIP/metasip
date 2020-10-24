@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -1024,9 +1024,9 @@ class _CodeContainer(Model):
     project = Instance(IProject)
 
 
-class GccXMLParser(ParserBase):
+class CastXMLParser(ParserBase):
     """
-    This class implements a C++ parser based on GCC-XML.  It should be used as
+    This class implements a C++ parser based on Cast-XML.  It should be used as
     an abstract class with a derived class handling any user interaction.
     """
     def classMap(self):
@@ -1053,10 +1053,15 @@ class GccXMLParser(ParserBase):
         hf is the header file instance.
         pathname is the name of the actual file to parse.
         """
+        import castxml
+
+        castxml_exe = os.path.join(os.path.dirname(castxml.__file__), 'data',
+                'bin', 'castxml')
+
         self._pathname = pathname
         iname = os.path.join(tempfile.gettempdir(), hf.name + '.tmp')
 
-        argv = ['castxml', '-x', 'c++', '-std=c++11', '--castxml-gccxml']
+        argv = [castxml_exe, '-x', 'c++', '-std=c++17', '--castxml-gccxml']
 
         if sys.platform == 'darwin':
             xcode = '/Applications/Xcode.app/Contents/Developer'
@@ -1071,8 +1076,8 @@ class GccXMLParser(ParserBase):
         argv.append(hdir.parserargs)
         argv.append(self._pathname)
 
-        # We use shell=True and a string argv for OS/X - but I don't understand
-        # why it's needed.
+        # We use shell=True and a string argv for macOS - but I don't
+        # understand why it's needed.
         args = ' '.join(argv)
 
         Logger.log(args)

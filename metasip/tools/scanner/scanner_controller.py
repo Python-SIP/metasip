@@ -318,13 +318,13 @@ class ScannerController(Controller):
     def __on_parse_changed(self, change):
         """ Invoked when the Parse button is pressed. """
 
-        from ...GccXML import GccXMLParser
+        from ...CastXML import CastXMLParser
 
         project = self.current_project
         hdir = self.current_header_directory
         hfile = self.current_header_files[0]
 
-        parser = GccXMLParser()
+        parser = CastXMLParser()
 
         name = os.path.join(self.model.source_directory, hdir.inputdirsuffix,
                 hfile.name)
