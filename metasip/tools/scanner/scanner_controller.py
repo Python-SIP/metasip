@@ -559,14 +559,22 @@ class ScannerController(Controller):
                     # itself.
                     if len(hfile.versions) == 1:
                         hdir.content.remove(hfile)
+                        self._remove_from_module(hfile)
+
+                        Logger.log(
+                                "{0} is no longer in the project and its API items have been removed".format(
+                                        hfile.name))
                     else:
+                        # FIXME: Go through the corresponding SipFile and make
+                        # sure that all top-level items have an upper version
+                        # set.
                         hfile.versions.remove(hfile_version)
 
-                    IDirty(project).dirty = True
+                        Logger.log(
+                                "{0} is no longer in the header directory".format(
+                                        hfile.name))
 
-                    Logger.log(
-                            "{0} is no longer in the header directory".format(
-                                    hfile.name))
+                    IDirty(project).dirty = True
 
                     break
 
@@ -574,6 +582,16 @@ class ScannerController(Controller):
         if working_version in hdir.scan:
             hdir.scan.remove(working_version)
             IDirty(project).dirty = True
+
+    def _remove_from_module(self, hfile):
+        """ Remove the .sip file corresponding to a header file. """
+
+        for mod in self.current_project.modules:
+            if mod.name == hfile.module:
+                for sfile in mod.content:
+                    if sfile.name == hfile.name:
+                        mod.content.remove(sfile)
+                        return
 
     def _scan_header_file(self, hpath):
         """ Scan a header file and return the header file instance.  hpath is
