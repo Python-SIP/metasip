@@ -2214,7 +2214,7 @@ class CodeItem(ContainerItem):
         dlg = EnumPropertiesDialog(code, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
-            (code.annos, code.enum_class) = dlg.fields()
+            (code.annos, ) = dlg.fields()
 
             self.set_dirty()
 

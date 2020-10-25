@@ -45,13 +45,6 @@
        </layout>
       </item>
       <item>
-       <widget class="QCheckBox" name="enumClassCb">
-        <property name="text">
-         <string>C++11 enum class</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QCheckBox" name="noScopeCb">
         <property name="text">
          <string>NoScope</string>

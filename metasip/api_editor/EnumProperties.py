@@ -48,8 +48,6 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
             elif le is not None:
                 le.setText(value)
 
-        self.enumClassCb.setChecked(enum.enum_class)
-
     def fields(self):
         """
         Return a tuple of the dialog fields.
@@ -68,4 +66,4 @@ class EnumPropertiesDialog(QDialog, Ui_EnumPropertiesBase):
         if self.noTypeHintCb.isChecked():
             alist.append("NoTypeHint")
 
-        return (",".join(alist), self.enumClassCb.isChecked())
+        return (','.join(alist), )

@@ -173,7 +173,7 @@ class _ScopedItem(object):
 
 class _Namespace(_ScopedItem):
     """
-    This class represents a GCC-XML namespace entity.
+    This class represents a Cast-XML namespace entity.
     """
     def transform(self, parser, scope):
         """
@@ -190,7 +190,7 @@ class _Namespace(_ScopedItem):
 
 class _Class(_ScopedItem, _Access):
     """
-    This class represents a GCC-XML class entity.
+    This class represents a Cast-XML class entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -245,7 +245,7 @@ class _Class(_ScopedItem, _Access):
 
 class _Struct(_ScopedItem, _Access):
     """
-    This class represents a GCC-XML struct entity.
+    This class represents a Cast-XML struct entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -322,7 +322,7 @@ class _ClassCallable(_Callable, _Access):
 
 class _Constructor(_ClassCallable):
     """
-    This class represents a GCC-XML constructor entity.
+    This class represents a Cast-XML constructor entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -358,7 +358,7 @@ class _Constructor(_ClassCallable):
 
 class _Destructor(_ScopedItem, _Access):
     """
-    This class represents a GCC-XML destructor entity.
+    This class represents a Cast-XML destructor entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -386,7 +386,7 @@ class _Destructor(_ScopedItem, _Access):
 
 class _Converter(_ClassCallable):
     """
-    This class represents a GCC-XML converter entity.
+    This class represents a Cast-XML converter entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -417,7 +417,7 @@ class _Converter(_ClassCallable):
 
 class _Method(_ClassCallable):
     """
-    This class represents a GCC-XML method entity.
+    This class represents a Cast-XML method entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -458,7 +458,7 @@ class _Method(_ClassCallable):
 
 class _OperatorMethod(_ClassCallable):
     """
-    This class represents a GCC-XML operatormethod entity.
+    This class represents a Cast-XML operatormethod entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -496,7 +496,7 @@ class _OperatorMethod(_ClassCallable):
 
 class _Function(_Callable):
     """
-    This class represents a GCC-XML function entity.
+    This class represents a Cast-XML function entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -528,7 +528,7 @@ class _Function(_Callable):
 
 class _OperatorFunction(_Callable):
     """
-    This class represents a GCC-XML operatorfunction entity.
+    This class represents a Cast-XML operatorfunction entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -558,7 +558,7 @@ class _OperatorFunction(_Callable):
 
 class _Variable(_ScopedItem, _Access):
     """
-    This class represents a GCC-XML variable entity.
+    This class represents a Cast-XML variable entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -592,7 +592,7 @@ class _Variable(_ScopedItem, _Access):
 
 class _Field(_Variable):
     """
-    This class represents a GCC-XML field entity.
+    This class represents a Cast-XML field entity.
     """
     def transform(self, parser, scope):
         """
@@ -611,7 +611,7 @@ class _Field(_Variable):
 
 class _Enumeration(_ScopedItem, _Access):
     """
-    This class represents a GCC-XML enumeration entity.
+    This class represents a Cast-XML enumeration entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -627,6 +627,7 @@ class _Enumeration(_ScopedItem, _Access):
         if self.name.startswith("."):
             self.name = ""
 
+        self.scoped = bool(int(attrs.get('scoped', '0')))
         self.values = []
 
     def transform(self, parser, scope):
@@ -641,7 +642,7 @@ class _Enumeration(_ScopedItem, _Access):
         if self.access.startswith("private"):
             return
 
-        tci = Enum(name=self.name, access=self.access)
+        tci = Enum(name=self.name, access=self.access, enum_class=self.scoped)
 
         for e in self.values:
             tci.content.append(EnumValue(name=e.name))
@@ -651,7 +652,7 @@ class _Enumeration(_ScopedItem, _Access):
 
 class _EnumValue(object):
     """
-    This class represents a GCC-XML enum value entity.
+    This class represents a Cast-XML enum value entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -665,7 +666,7 @@ class _EnumValue(object):
 
 class _Typedef(_ScopedItem):
     """
-    This class represents a GCC-XML typedef entity.
+    This class represents a Cast-XML typedef entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -710,7 +711,7 @@ class _Typedef(_ScopedItem):
 
 class _FunctionType(object):
     """
-    This class represents a GCC-XML function type entity.
+    This class represents a Cast-XML function type entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -741,7 +742,7 @@ class _FunctionType(object):
 
 class _FundamentalType(object):
     """
-    This class represents a GCC-XML fundamental type entity.
+    This class represents a Cast-XML fundamental type entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -762,7 +763,7 @@ class _FundamentalType(object):
         """
         assert prefix_ok is None
 
-        # Map some of GCC-XML's verbose types to something SIP can handle.
+        # Map some of Cast-XML's verbose types to something SIP can handle.
         type_map = {
             "short int": "short",
             "short unsigned int": "unsigned short",
@@ -775,7 +776,7 @@ class _FundamentalType(object):
 
 class _IndirectType(object):
     """
-    This class represents the base type for all GCC-XML indirect type
+    This class represents the base type for all Cast-XML indirect type
     entities, ie. those linked to other types through a type attribute.
     """
     def __init__(self, parser, attrs):
@@ -801,7 +802,7 @@ class _IndirectType(object):
 
 class _ReferenceType(_IndirectType):
     """
-    This class represents a GCC-XML reference type entity.
+    This class represents a Cast-XML reference type entity.
     """
     def asType(self, parser, prefix_ok):
         """
@@ -819,7 +820,7 @@ class _ReferenceType(_IndirectType):
 
 class _PointerType(_IndirectType):
     """
-    This class represents a GCC-XML pointer type entity.
+    This class represents a Cast-XML pointer type entity.
     """
     def asType(self, parser, prefix_ok):
         """
@@ -846,7 +847,7 @@ class _PointerType(_IndirectType):
 
 class _CvQualifiedType(_IndirectType):
     """
-    This class represents a GCC-XML reference type entity.
+    This class represents a Cast-XML reference type entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -878,7 +879,7 @@ class _CvQualifiedType(_IndirectType):
 
 class _Argument(object):
     """
-    This class represents a GCC-XML argument entity.
+    This class represents a Cast-XML argument entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -910,7 +911,7 @@ class _Argument(object):
 
 class _Ellipsis(object):
     """
-    This class represents a GCC-XML ellipsis entity.
+    This class represents a Cast-XML ellipsis entity.
     """
     def __init__(self, parser, attrs):
         """
@@ -936,11 +937,11 @@ VALUE_MAP = {
 
 def _transformArgs(parser, gargs, pargs):
     """
-    Transform a list of GCC-XML arguments and append them to a list of project
+    Transform a list of Cast-XML arguments and append them to a list of project
     arguments.
 
     parser is the parser instance.
-    gargs is the list of GCC-XML arguments.
+    gargs is the list of Cast-XML arguments.
     pargs is the list of project arguments.
     """
 
@@ -948,7 +949,7 @@ def _transformArgs(parser, gargs, pargs):
         if isinstance(a, _Ellipsis):
             pa = Argument(type="...")
         else:
-            # GCC-XML doesn't add the scope to default values of enums so we
+            # Cast-XML doesn't add the scope to default values of enums so we
             # try and fix it here.
             full_type = parser.asType(a.type_id)
             if full_type is None:
@@ -1061,7 +1062,7 @@ class CastXMLParser(ParserBase):
         self._pathname = pathname
         iname = os.path.join(tempfile.gettempdir(), hf.name + '.tmp')
 
-        argv = [castxml_exe, '-x', 'c++', '-std=c++17', '--castxml-gccxml']
+        argv = [castxml_exe, '-x', 'c++', '-std=c++17', '--castxml-output=1']
 
         if sys.platform == 'darwin':
             xcode = '/Applications/Xcode.app/Contents/Developer'
@@ -1120,10 +1121,10 @@ class CastXMLParser(ParserBase):
         Logger.log("Parsing %s output for %s" % (argv[0], self._pathname))
 
         # Initialise the parser state.  The first pass is to read in the
-        # GCC-XML output filtering out stuff we definately don't need.  The
+        # Cast-XML output filtering out stuff we definately don't need.  The
         # second pass is to convert it into the internal project format.  We
-        # need to do two passes because GCC-XML does not ensure that everything
-        # is defined by the time it is referenced.
+        # need to do two passes because Cast-XML does not ensure that
+        # everything is defined by the time it is referenced.
         self.byid = {}
         self.scopeditems = []
         self._rootns = None
@@ -1360,7 +1361,7 @@ class CastXMLParser(ParserBase):
     def transformScope(self, container, scope):
         """
         Transform a scope (either a namespace or a class) from the stripped
-        down GCC-XML format to the internal project format.
+        down Cast-XML format to the internal project format.
 
         container is the code container to add to.
         scope is the scope to convert.
