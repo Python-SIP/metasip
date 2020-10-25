@@ -243,11 +243,7 @@ class ApiEditor(QTreeWidget):
 
         prj_item is the part of the project.
         """
-        updated_args = self.project.acceptArgumentNames(prj_item)
-        self._updateArgs(updated_args)
-
-        if len(updated_args) != 0:
-            self.set_dirty()
+        self._updateArgs(self.project.acceptArgumentNames(prj_item))
 
     def nameArgumentsFromConventions(self, prj_item):
         """

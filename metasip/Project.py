@@ -442,33 +442,31 @@ class Project(Model):
         return '::'.join(names)
 
     def _get_unnamed_callables(self, part):
+        """ A generator for all the callables in a part of a project that has
+        unnamed arguments.
         """
-        A generator for all the checked callables in a part of a project.
 
-        part is the part of the project.
-        """
         ptype = type(part)
 
         if ptype is SipFile:
             for sub in part:
                 for callable in self._get_unnamed_callables(sub):
                     yield callable
-        elif not part.status:
-            if ptype is Function:
+        elif ptype is Function:
+            for arg in part.args:
+                if arg.unnamed and arg.default != '':
+                    yield part
+                    break
+        elif ptype in (Constructor, Method):
+            if part.access != 'private':
                 for arg in part.args:
                     if arg.unnamed and arg.default != '':
                         yield part
                         break
-            elif ptype in (Constructor, Method):
-                if part.access != 'private':
-                    for arg in part.args:
-                        if arg.unnamed and arg.default != '':
-                            yield part
-                            break
-            elif ptype in (Class, Namespace):
-                for sub in part:
-                    for callable in self._get_unnamed_callables(sub):
-                        yield callable
+        elif ptype in (Class, Namespace):
+            for sub in part:
+                for callable in self._get_unnamed_callables(sub):
+                    yield callable
 
     def save(self, saveas=None):
         """
