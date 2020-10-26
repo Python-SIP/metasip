@@ -1223,7 +1223,10 @@ class CodeItem(ContainerItem):
         expand = False
         s = self.code.status
 
-        if s == 'todo':
+        if s == 'removed':
+            text = "Removed"
+            expand = True
+        elif s == 'todo':
             text = "Todo"
             expand = True
         elif s == 'unknown':

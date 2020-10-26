@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -23,3 +23,4 @@ from .project_v11_update import ProjectV11Update
 from .project_v12_update import ProjectV12Update
 from .project_v13_update import ProjectV13Update
 from .project_v14_update import ProjectV14Update
+from .project_v15_update import ProjectV15Update

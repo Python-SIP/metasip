@@ -111,7 +111,7 @@ def launchGUI(prjname, guiargs):
             ProjectV3Schema, ProjectV4Schema, ProjectV5Schema, ProjectV6Schema,
             ProjectV7Schema, ProjectV8Schema, ProjectV9Schema,
             ProjectV10Schema, ProjectV11Schema, ProjectV12Schema,
-            ProjectV13Schema, ProjectV14Schema)
+            ProjectV13Schema, ProjectV14Schema, ProjectV15Schema)
     from metasip.tools.features import FeaturesTool
     from metasip.tools.import_project import ImportProjectTool
     from metasip.tools.logger import LoggerTool
@@ -124,7 +124,7 @@ def launchGUI(prjname, guiargs):
             ProjectV4Update, ProjectV5Update, ProjectV6Update, ProjectV7Update,
             ProjectV8Update, ProjectV9Update, ProjectV10Update,
             ProjectV11Update, ProjectV12Update, ProjectV13Update,
-            ProjectV14Update)
+            ProjectV14Update, ProjectV15Update)
 
     app = Application(guiargs)
     SettingsManager.load('riverbankcomputing.com')
@@ -143,6 +143,7 @@ def launchGUI(prjname, guiargs):
     UpdateManager.updates.append(ProjectV12Update())
     UpdateManager.updates.append(ProjectV13Update())
     UpdateManager.updates.append(ProjectV14Update())
+    UpdateManager.updates.append(ProjectV15Update())
 
     # Define the shell.
     editor_tool = ProjectEditorTool(model_policy='one')
@@ -164,7 +165,8 @@ def launchGUI(prjname, guiargs):
                                     ProjectV7Schema(), ProjectV8Schema(),
                                     ProjectV9Schema(), ProjectV10Schema(),
                                     ProjectV11Schema(), ProjectV12Schema(),
-                                    ProjectV13Schema(), ProjectV14Schema()]),
+                                    ProjectV13Schema(), ProjectV14Schema(),
+                                    ProjectV15Schema()]),
                     VersionsTool],
             title_template="[view][*]")
 

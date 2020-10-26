@@ -1,3 +1,12 @@
+v2.8.0 ??? ??? 2020
+  - Updated the project file format to v15.
+  - Removed the marking of enums as C++11 enum classes using the properties
+    dialog as this is now detected automatically.
+  - Added support for the /BaseType/ enum annotation.
+  - Removed the support for applying naming conventions.
+  - With unversioned projects, items that are no longer present are marked as
+    'Removed' without actually removing them.
+
 v2.7.0 17th September 2020
   - Added the '-m' command line option to msipgen.
   - Added the 'Import Project' tool.

@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#  15   Implemented by metasip v2.8.
+#       - added the 'removed' value of the 'status' attribute.
+#
 #  14   Implemented by metasip v2.5.
 #       - added the /ScopesStripped/ argument annotation.
 #
@@ -64,4 +67,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 14
+ProjectVersion = 15

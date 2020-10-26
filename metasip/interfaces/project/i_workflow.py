@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -19,4 +19,5 @@ class IWorkflow(Interface):
     """
 
     # The workflow status of the API item.
-    status = Enum('', 'ignored', 'todo', 'unknown', default='unknown')
+    status = Enum('', 'ignored', 'removed', 'todo', 'unknown',
+            default='unknown')

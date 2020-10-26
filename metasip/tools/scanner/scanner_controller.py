@@ -399,9 +399,12 @@ class ScannerController(Controller):
             else:
                 # The existing one doesn't exist in the working version.
                 if working_version == '':
-                    # Forget about it because there are no other versions that
-                    # might refer to it.
-                    dsc.content.remove(dsi)
+                    # If it is ignored then forget about it because there are
+                    # no other versions that might refer to it.
+                    if dsi.status == 'ignored':
+                        dsc.content.remove(dsi)
+                    else:
+                        dsi.status = 'removed'
                 else:
                     version_status = self._remove_working_version(dsi)
                     if version_status == 'no_longer_working':
@@ -560,19 +563,15 @@ class ScannerController(Controller):
                     if len(hfile.versions) == 1:
                         hdir.content.remove(hfile)
                         self._remove_from_module(hfile)
-
-                        Logger.log(
-                                "{0} is no longer in the project and its API items have been removed".format(
-                                        hfile.name))
                     else:
                         # FIXME: Go through the corresponding SipFile and make
                         # sure that all top-level items have an upper version
                         # set.
                         hfile.versions.remove(hfile_version)
 
-                        Logger.log(
-                                "{0} is no longer in the header directory".format(
-                                        hfile.name))
+                    Logger.log(
+                            "{0} is no longer in the header directory".format(
+                                    hfile.name))
 
                     IDirty(project).dirty = True
 
@@ -584,14 +583,17 @@ class ScannerController(Controller):
             IDirty(project).dirty = True
 
     def _remove_from_module(self, hfile):
-        """ Remove the .sip file corresponding to a header file. """
+        """ Handle the removal of a header file from the project. """
 
         for mod in self.current_project.modules:
             if mod.name == hfile.module:
                 for sfile in mod.content:
                     if sfile.name == hfile.name:
-                        mod.content.remove(sfile)
-                        return
+                        for code in list(sfile.content):
+                            if code.status == 'ignored':
+                                sfile.content.remove(code)
+                            else:
+                                code.status = 'removed'
 
     def _scan_header_file(self, hpath):
         """ Scan a header file and return the header file instance.  hpath is
