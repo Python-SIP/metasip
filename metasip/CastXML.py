@@ -1110,15 +1110,17 @@ class CastXMLParser(ParserBase):
             rc >>= 8
 
             if sig:
-                self.diagnostic = "%s killed by signal %d" % (argv[0], sig)
+                self.diagnostic = "{0} killed by signal {1}".format(argv[0],
+                        sig)
             else:
-                self.diagnostic = "%s failed with exit code %d" % (argv[0], rc)
+                self.diagnostic = "{0} failed with exit code {1}".format(
+                        argv[0], rc)
 
             Logger.log(self.diagnostic)
 
             return None
 
-        Logger.log("Parsing %s output for %s" % (argv[0], self._pathname))
+        Logger.log("Parsing XML for {0}".format(self._pathname))
 
         # Initialise the parser state.  The first pass is to read in the
         # Cast-XML output filtering out stuff we definately don't need.  The
