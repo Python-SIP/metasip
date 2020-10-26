@@ -243,37 +243,7 @@ class ApiEditor(QTreeWidget):
 
         prj_item is the part of the project.
         """
-        updated_args = self.project.acceptArgumentNames(prj_item)
-        self._updateArgs(updated_args)
-
-        if len(updated_args) != 0:
-            self.set_dirty()
-
-    def nameArgumentsFromConventions(self, prj_item):
-        """
-        Name the arguments of all callables contained in a part of the project
-        according to the conventions.
-
-        prj_item is the part of the project.
-        """
-        btn = QMessageBox.question(self, "Naming Conventions",
-                "Do you want to apply the naming conventions arguments rather "
-                "than just see what would be changed?",
-                QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
-
-        if btn != QMessageBox.Yes:
-            return
-
-        invalid, updated_args = self.project.nameArgumentsFromConventions(
-                prj_item, update=(btn == QMessageBox.Yes))
-
-        self._updateArgs(updated_args)
-
-        if len(updated_args) != 0:
-            self.set_dirty()
-
-        if len(invalid) > 0:
-            self._stringDialog("Callables with Invalid Arguments", invalid)
+        self._updateArgs(self.project.acceptArgumentNames(prj_item))
 
     @staticmethod
     def _updateArgs(updated_args):
@@ -857,7 +827,6 @@ class SipFileItem(ContainerItem):
                 ("%ExportedTypeHintCode", self._exportedTypeHintCodeSlot, ("ethc" not in self._editors)),
                 ("%TypeHintCode", self._typeHintCodeSlot, ("thc" not in self._editors)),
                 None,
-                ("Apply argument naming conventions...", self._nameFromConventions),
                 ("Accept argument names", self._acceptNames),
                 None,
                 ("Delete...", self._deleteFile, empty_sipfile)]
@@ -874,11 +843,6 @@ class SipFileItem(ContainerItem):
             self.set_dirty()
 
             self.parent_project_item().content.remove(self.sipfile)
-
-    def _nameFromConventions(self):
-        """ Apply the argument naming conventions to all unnamed arguments. """
-
-        self.treeWidget().nameArgumentsFromConventions(self.sipfile)
 
     def _acceptNames(self):
         """ Accept all argument names. """
@@ -1518,7 +1482,6 @@ class CodeItem(ContainerItem):
 
         if isinstance(self.code, (Class, Constructor, Function, Method)):
             menu.append(None)
-            menu.append(("Apply argument naming conventions...", self._nameFromConventions))
             menu.append(("Accept all argument names", self._acceptNames))
 
         # Add the extra menu items.
@@ -1537,11 +1500,6 @@ class CodeItem(ContainerItem):
         menu.append(("Delete", self._deleteCode, (not self._editors)))
 
         return menu
-
-    def _nameFromConventions(self):
-        """ Apply the argument naming conventions to all unnamed arguments. """
-
-        self.treeWidget().nameArgumentsFromConventions(self.code)
 
     def _acceptNames(self):
         """ Accept all argument names. """
@@ -2214,7 +2172,7 @@ class CodeItem(ContainerItem):
         dlg = EnumPropertiesDialog(code, self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
-            (code.annos, code.enum_class) = dlg.fields()
+            (code.annos, ) = dlg.fields()
 
             self.set_dirty()
 

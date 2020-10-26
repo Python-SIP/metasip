@@ -237,30 +237,6 @@ class Project(Model):
 
         return version_ranges
 
-    def nameArgumentsFromConventions(self, prj_item, update):
-        """
-        Name the arguments of all callables contained in a part of the project
-        according to the conventions.  Returns a 2-tuple of a list of callables
-        with invalid arguments and a list of updated Argument instances.
-
-        prj_item is the part of the project.
-        update is set if the project should be updated with the names.
-        """
-
-        invalid = []
-        updated = []
-
-        for callable in self._get_unnamed_callables(prj_item):
-            more_invalid, more_updated = self._applyConventions(callable,
-                    update)
-            invalid += more_invalid
-            updated += more_updated
-
-        if len(updated) != 0:
-            IDirty(self).dirty = True
-
-        return invalid, updated
-
     def acceptArgumentNames(self, prj_item):
         """
         Mark the arguments of all callables contained in a part of the project
@@ -282,193 +258,32 @@ class Project(Model):
 
         return updated
 
-    def _applyConventions(self, callable, update):
-        """
-        Apply the conventions to a callable.  Returns a 2-tuple of a list of
-        callables with invalid arguments and a list of updated Argument
-        instances.
-        """
-        invalid = []
-        updated = []
-        skip = False
-
-        # Make sure copy ctors don't have a named argument.
-        if type(callable) is Constructor:
-            if len(callable.args) == 1:
-                arg = callable.args[0]
-                atype = arg.type.replace(' ', '')
-
-                if atype == 'const%s&' % callable.name:
-                    skip = True
-
-                    if arg.name != '' and arg.default != '':
-                        if update:
-                            arg.name = ''
-                            arg.unnamed = False
-                            updated.append(arg)
-                        else:
-                            invalid.append("%s copy constructor has a named argument" % self._fullName(callable.container))
-
-        if type(callable) in (Function, Method):
-            if callable.name == 'event' or callable.name.endswith('Event'):
-                # Make sure single argument event handlers don't have a named
-                # argument.
-
-                if len(callable.args) == 1:
-                    skip = True
-
-                    arg = callable.args[0]
-
-                    if arg.default != '':
-                        if update:
-                            arg.unnamed = False
-                            updated.append(arg)
-
-                        if arg.name != '':
-                            if update:
-                                arg.name = ''
-                            else:
-                                invalid.append("%s() event handler has a named argument" % self._fullName(callable))
-
-        if not skip:
-            for arg in callable.args:
-                if arg.default == '':
-                    continue
-
-                if arg.unnamed:
-                    # Check that events are called 'event'.
-                    if self._argType(arg).endswith('Event*'):
-                        if update:
-                            arg.unnamed = False
-                            updated.append(arg)
-
-                        if arg.name != 'event':
-                            if update:
-                                arg.name = 'event'
-                            else:
-                                invalid.append("%s() event argument name '%s' is not 'event'" % (self._fullName(callable), arg.name))
-
-                        continue
-
-                    # Check that objects are called 'object' or 'parent'.
-                    if self._argType(arg) == 'QObject*':
-                        if update:
-                            arg.unnamed = False
-                            updated.append(arg)
-
-                        if arg.name not in ('object', 'parent'):
-                            if update:
-                                arg.name = 'object'
-                            else:
-                                invalid.append("%s() QObject argument name '%s' is not 'object' or 'parent'" % (self._fullName(callable), arg.name))
-
-                        continue
-
-                    # Check that widgets are called 'widget' or 'parent'.
-                    if self._argType(arg) == 'QWidget*':
-                        if update:
-                            arg.unnamed = False
-                            updated.append(arg)
-
-                        if arg.name not in ('widget', 'parent'):
-                            if update:
-                                arg.name = 'widget'
-                            else:
-                                invalid.append("%s() QWidget argument name '%s' is not 'widget' or 'parent'" % (self._fullName(callable), arg.name))
-
-                        continue
-
-                    # Check other common suffixes.
-                    suffixes = ("Index", "Device", "NamePool", "Handler",
-                            "Binding", "Mode")
-
-                    for s in suffixes:
-                        if self._argType(arg).endswith(s):
-                            if update:
-                                arg.unnamed = False
-                                updated.append(arg)
-
-                            lc_s = s[0].lower() + s[1:]
-                            if arg.name != lc_s:
-                                if update:
-                                    arg.name = lc_s
-                                else:
-                                    invalid.append("%s() '%s' argument name '%s' is not '%s'" % (self._fullName(callable), s, arg.name, lc_s))
-
-                    # Check for non-standard acronyms.
-                    acronyms = ("XML", "URI", "URL")
-
-                    for a in acronyms:
-                        if a in arg.name:
-                            if update:
-                                arg.unnamed = False
-                                updated.append(arg)
-
-                            lc_a = arg.name.replace(a, a[0] + a[1:].lower())
-                            if update:
-                                arg.name = lc_a
-                            else:
-                                invalid.append("%s() argument name '%s' should be '%s'" % (self._fullName(callable), arg.name, lc_a))
-
-                    # Check the callable has arguments with names and that they
-                    # are long enough that they don't need checking manually.
-                    if len(arg.name) <= 2:
-                        invalid.append("%s() argument name '%s' is too short" % (self._fullName(callable), arg.name))
-
-        return invalid, updated
-
-    @staticmethod
-    def _argType(arg):
-        """
-        Return the normalised C++ type of an argument.
-
-        arg is the argument.
-        """
-        return arg.type.replace(' ', '')
-
-    @staticmethod
-    def _fullName(item):
-        """
-        Return the C++ name of an item.
-
-        item is the item.
-        """
-        names = []
-
-        while type(item) is not SipFile:
-            names.insert(0, item.name)
-            item = item.container
-
-        return '::'.join(names)
-
     def _get_unnamed_callables(self, part):
+        """ A generator for all the callables in a part of a project that has
+        unnamed arguments.
         """
-        A generator for all the checked callables in a part of a project.
 
-        part is the part of the project.
-        """
         ptype = type(part)
 
         if ptype is SipFile:
             for sub in part:
                 for callable in self._get_unnamed_callables(sub):
                     yield callable
-        elif not part.status:
-            if ptype is Function:
+        elif ptype is Function:
+            for arg in part.args:
+                if arg.unnamed and arg.default != '':
+                    yield part
+                    break
+        elif ptype in (Constructor, Method):
+            if part.access != 'private':
                 for arg in part.args:
                     if arg.unnamed and arg.default != '':
                         yield part
                         break
-            elif ptype in (Constructor, Method):
-                if part.access != 'private':
-                    for arg in part.args:
-                        if arg.unnamed and arg.default != '':
-                            yield part
-                            break
-            elif ptype in (Class, Namespace):
-                for sub in part:
-                    for callable in self._get_unnamed_callables(sub):
-                        yield callable
+        elif ptype in (Class, Namespace):
+            for sub in part:
+                for callable in self._get_unnamed_callables(sub):
+                    yield callable
 
     def save(self, saveas=None):
         """

@@ -318,13 +318,13 @@ class ScannerController(Controller):
     def __on_parse_changed(self, change):
         """ Invoked when the Parse button is pressed. """
 
-        from ...GccXML import GccXMLParser
+        from ...CastXML import CastXMLParser
 
         project = self.current_project
         hdir = self.current_header_directory
         hfile = self.current_header_files[0]
 
-        parser = GccXMLParser()
+        parser = CastXMLParser()
 
         name = os.path.join(self.model.source_directory, hdir.inputdirsuffix,
                 hfile.name)
@@ -559,14 +559,22 @@ class ScannerController(Controller):
                     # itself.
                     if len(hfile.versions) == 1:
                         hdir.content.remove(hfile)
+                        self._remove_from_module(hfile)
+
+                        Logger.log(
+                                "{0} is no longer in the project and its API items have been removed".format(
+                                        hfile.name))
                     else:
+                        # FIXME: Go through the corresponding SipFile and make
+                        # sure that all top-level items have an upper version
+                        # set.
                         hfile.versions.remove(hfile_version)
 
-                    IDirty(project).dirty = True
+                        Logger.log(
+                                "{0} is no longer in the header directory".format(
+                                        hfile.name))
 
-                    Logger.log(
-                            "{0} is no longer in the header directory".format(
-                                    hfile.name))
+                    IDirty(project).dirty = True
 
                     break
 
@@ -574,6 +582,16 @@ class ScannerController(Controller):
         if working_version in hdir.scan:
             hdir.scan.remove(working_version)
             IDirty(project).dirty = True
+
+    def _remove_from_module(self, hfile):
+        """ Remove the .sip file corresponding to a header file. """
+
+        for mod in self.current_project.modules:
+            if mod.name == hfile.module:
+                for sfile in mod.content:
+                    if sfile.name == hfile.name:
+                        mod.content.remove(sfile)
+                        return
 
     def _scan_header_file(self, hpath):
         """ Scan a header file and return the header file instance.  hpath is
@@ -668,22 +686,27 @@ class ScannerController(Controller):
             hfile_version = HeaderFileVersion(version=working_version, md5=md5)
             hfile.versions.append(hfile_version)
 
-            # Find the immediately preceding version if there is one.
-            versions_sorted = sorted(hfile.versions,
-                    key=lambda v: self.current_project.versions.index(
-                            v.version))
+            # Check that the project has versions.
+            if self.current_project.versions:
+                # Find the immediately preceding version if there is one.
+                versions_sorted = sorted(hfile.versions,
+                        key=lambda v: self.current_project.versions.index(
+                                v.version))
 
-            prev_md5 = ''
-            prev_parse = True
-            for hfv in versions_sorted:
-                if hfv.version == working_version:
-                    break
+                prev_md5 = ''
+                prev_parse = True
+                for hfv in versions_sorted:
+                    if hfv.version == working_version:
+                        break
 
-                prev_md5 = hfv.md5
-                prev_parse = hfv.parse
+                    prev_md5 = hfv.md5
+                    prev_parse = hfv.parse
 
-            if prev_md5 == md5:
-                hfile_version.parse = prev_parse
+                if prev_md5 == md5:
+                    hfile_version.parse = prev_parse
+            else:
+                # It must be a new file of an unversioned project.
+                hfile_version.parse = True
 
             IDirty(self.current_project).dirty = True
 
