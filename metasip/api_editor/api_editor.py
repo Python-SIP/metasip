@@ -388,7 +388,7 @@ class ProjectItem(EditorItem):
             nr_steps += len(module.content)
 
         # Display the progress dialog.
-        progress = QProgressDialog( "Processing...", None, 0, nr_steps)
+        progress = QProgressDialog( "Building the GUI...", None, 0, nr_steps)
         progress.setWindowTitle(project.name)
         progress.setValue(0)
 
@@ -1418,70 +1418,103 @@ class CodeItem(ContainerItem):
             menu.append(None)
 
             if thcslot:
-                menu.append(("%TypeHeaderCode", self._typeheaderCodeSlot, ("thc" not in self._editors)))
+                self._add_directive(menu, '%TypeHeaderCode',
+                        self.code.typeheadercode, self._typeheaderCodeSlot,
+                        'thc')
 
             if tcslot:
-                menu.append(("%TypeCode", self._typeCodeSlot, ("tc" not in self._editors)))
+                self._add_directive(menu, '%TypeCode', self.code.typecode,
+                        self._typeCodeSlot, 'tc')
 
             if thicslot:
-                menu.append(("%TypeHintCode", self._typehintCodeSlot, ("thic" not in self._editors)))
+                self._add_directive(menu, '%TypeHintCode',
+                        self.code.typehintcode, self._typehintCodeSlot, 'thic')
 
             if fcslot:
-                menu.append(("%FinalisationCode", self._finalCodeSlot, ("fc" not in self._editors)))
+                self._add_directive(menu, '%FinalisationCode',
+                        self.code.finalisationcode, self._finalCodeSlot, 'fc')
 
             if sccslot:
-                menu.append(("%ConvertToSubClassCode", self._subclassCodeSlot, ("scc" not in self._editors)))
+                self._add_directive(menu, '%ConvertToSubClassCode',
+                        self.code.subclasscode, self._subclassCodeSlot, 'scc')
 
             if cttcslot:
-                menu.append(("%ConvertToTypeCode", self._convToTypeCodeSlot, ("cttc" not in self._editors)))
+                self._add_directive(menu, '%ConvertToTypeCode',
+                        self.code.convtotypecode, self._convToTypeCodeSlot,
+                        'cttc')
 
             if cftcslot:
-                menu.append(("%ConvertFromTypeCode", self._convFromTypeCodeSlot, ("cftc" not in self._editors)))
+                self._add_directive(menu, '%ConvertFromTypeCode',
+                        self.code.convfromtypecode, self._convFromTypeCodeSlot,
+                        'cftc')
 
             if mcslot:
-                menu.append(("%MethodCode", self._methodCodeSlot, ("mc" not in self._editors)))
+                self._add_directive(menu, '%MethodCode', self.code.methcode,
+                        self._methodCodeSlot, 'mc')
 
             if vccslot:
-                menu.append(("%VirtualCatcherCode", self._virtualCatcherCodeSlot, ("vcc" not in self._editors)))
+                self._add_directive(menu, '%VirtualCatcherCode',
+                        self.code.virtcode, self._virtualCatcherCodeSlot,
+                        'vcc')
 
             if acslot:
-                menu.append(("%AccessCode", self._accessCodeSlot, ("ac" not in self._editors)))
+                self._add_directive(menu, '%AccessCode', self.code.accesscode,
+                        self._accessCodeSlot, 'ac')
 
             if gcslot:
-                menu.append(("%GetCode", self._getCodeSlot, ("gc" not in self._editors)))
+                self._add_directive(menu, '%GetCode', self.code.getcode,
+                        self._getCodeSlot, 'gc')
 
             if scslot:
-                menu.append(("%SetCode", self._setCodeSlot, ("sc" not in self._editors)))
+                self._add_directive(menu, '%SetCode', self.code.setcode,
+                        self._setCodeSlot, 'sc')
 
             if gctcslot:
-                menu.append(("%GCTraverseCode", self._gcTraverseCodeSlot, ("gctc" not in self._editors)))
+                self._add_directive(menu, '%GCTraverseCode',
+                        self.code.gctraversecode, self._gcTraverseCodeSlot,
+                        'gctc')
 
             if gcccslot:
-                menu.append(("%GCClearCode", self._gcClearCodeSlot, ("gccc" not in self._editors)))
+                self._add_directive(menu, '%GCClearCode',
+                        self.code.gcclearcode, self._gcClearCodeSlot, 'gccc')
 
             if bigetbslot:
-                menu.append(("%BIGetBufferCode", self._biGetBufCodeSlot, ("bigetb" not in self._editors)))
+                self._add_directive(menu, '%BIGetBufferCode',
+                        self.code.bigetbufcode, self._biGetBufCodeSlot,
+                        'bigetb')
 
             if birelbslot:
-                menu.append(("%BIReleaseBufferCode", self._biRelBufCodeSlot, ("birelb" not in self._editors)))
+                self._add_directive(menu, '%BIReleaseBufferCode',
+                        self.code.birelbufcode, self._biRelBufCodeSlot,
+                        'birelb')
 
             if birbslot:
-                menu.append(("%BIGetReadBufferCode", self._biReadBufCodeSlot, ("birb" not in self._editors)))
+                self._add_directive(menu, '%BIGetReadBufferCode',
+                        self.code.bireadbufcode, self._biReadBufCodeSlot,
+                        'birb')
 
             if biwbslot:
-                menu.append(("%BIGetWriteBufferCode", self._biWriteBufCodeSlot, ("biwb" not in self._editors)))
+                self._add_directive(menu, '%BIGetWriteBufferCode',
+                        self.code.biwritebufcode, self._biWriteBufCodeSlot,
+                        'biwb')
 
             if biscslot:
-                menu.append(("%BIGetSegCountCode", self._biSegCountCodeSlot, ("bisc" not in self._editors)))
+                self._add_directive(menu, '%BIGetSegCountCode',
+                        self.code.bisegcountcode, self._biSegCountCodeSlot,
+                        'bisc')
 
             if bicbslot:
-                menu.append(("%BIGetCharBufferCode", self._biCharBufCodeSlot, ("bicb" not in self._editors)))
+                self._add_directive(menu, '%BIGetCharBufferCode',
+                        self.code.bicharbufcode, self._biCharBufCodeSlot,
+                        'bicb')
 
             if pickslot:
-                menu.append(("%PickleCode", self._pickleCodeSlot, ("pick" not in self._editors)))
+                self._add_directive(menu, '%PickleCode', self.code.picklecode,
+                        self._pickleCodeSlot, 'pick')
 
             if dsslot:
-                menu.append(("%Docstring", self._docstringSlot, ("ds" not in self._editors)))
+                self._add_directive(menu, '%Docstring', self.code.docstring,
+                        self._docstringSlot, 'ds')
 
         if isinstance(self.code, (Class, Constructor, Function, Method)):
             menu.append(None)
@@ -1491,10 +1524,13 @@ class CodeItem(ContainerItem):
         menu.append(None)
         menu.append(("Versions...", self._versionsSlot,
                 len(project.versions) != 0))
-        menu.append(("Platform Tags...", self._platformTagsSlot,
-                len(project.platforms) != 0))
-        menu.append(("Feature Tags...", self._featureTagsSlot,
-                (len(project.features) != 0 or len(project.externalfeatures) != 0)))
+        menu.append(
+                (self._flagged_text("Platform Tags...", self.code.platforms),
+                        self._platformTagsSlot, len(project.platforms) != 0))
+        menu.append(
+                (self._flagged_text("Feature Tags...", self.code.features),
+                        self._featureTagsSlot,
+                        (len(project.features) != 0 or len(project.externalfeatures) != 0)))
 
         if pslot:
             menu.append(("Properties...", pslot))
@@ -1503,6 +1539,22 @@ class CodeItem(ContainerItem):
         menu.append(("Delete", self._deleteCode, (not self._editors)))
 
         return menu
+
+    def _add_directive(self, menu, name, flag, slot, editor):
+        """ Add the entry for a directive to a menu. """
+
+        menu.append(
+                (self._flagged_text(name + '...', flag), slot,
+                        (editor not in self._editors)))
+
+    @staticmethod
+    def _flagged_text(text, flag):
+        """ Return a (possibly) flagged version of a piece of text. """
+
+        if flag:
+            text += ' \N{small orange diamond}'
+
+        return text
 
     def _acceptNames(self):
         """ Accept all argument names. """

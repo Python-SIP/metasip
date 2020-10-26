@@ -75,7 +75,8 @@ class ProjectParser:
             # Progress will be reported against .sip files.
             nr_steps = len(root.findall('.//SipFile'))
 
-            self._progress = QProgressDialog("Loading...", None, 0, nr_steps)
+            self._progress = QProgressDialog("Reading the project...", None, 0,
+                    nr_steps)
             self._progress.setWindowTitle(project.name)
             self._progress.setValue(0)
         else:
