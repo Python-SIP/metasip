@@ -1,4 +1,4 @@
-v2.8.0 ??? October 2020
+v2.8.0 28th October 2020
   - Updated the project file format to v15.
   - Multiple items can now be deleted at the same time.
   - The context menu of an item now has a visual indicator that there is
