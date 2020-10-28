@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -20,8 +20,8 @@ from dip.model import Instance, List, observe, unadapted
 from dip.shell import IDirty
 from dip.ui import Application, Controller
 
-from ...interfaces.project import (ICodeContainer, IEnum, IHeaderDirectory,
-        IHeaderFile, IProject)
+from ...interfaces.project import (ICallable, ICodeContainer, IConstructor,
+        IEnum, IHeaderDirectory, IHeaderFile, IProject)
 from ...logger import Logger
 from ...Project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
         ManualCode, Project, SipFile, VersionRange)
@@ -443,7 +443,24 @@ class ScannerController(Controller):
                         VersionRange(startversion=startversion,
                                 endversion=endversion))
 
-            dsc.content.append(ssi)
+            # Try and place the new item with any similar one.
+            pos = -1
+            for idx, code in enumerate(dsc.content):
+                if type(code) is not type(ssi):
+                    continue
+
+                if isinstance(ssi, IConstructor):
+                    pos = idx
+                    break
+                    
+                if isinstance(ssi, ICallable) and code.name == ssi.name:
+                    pos = idx
+                    break
+                    
+            if pos >= 0:
+                dsc.content.insert(pos, ssi)
+            else:
+                dsc.content.append(ssi)
 
     def _add_working_version(self, api_item):
         """ Add the working version to an item's version ranges. """
