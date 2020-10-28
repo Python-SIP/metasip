@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -53,7 +53,6 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
         self.callSuperInitCb.setCurrentIndex(idx)
 
         self.virtualErrorHandler.setText(mod.virtualerrorhandler)
-        self.version.setText(mod.version)
 
         if mod.uselimitedapi:
             self.limitedAPIcb.setCheckState(Qt.Checked)
@@ -79,7 +78,6 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
         adddirectives = self.additionalDirectives.toPlainText().strip()
         callsuperinit = self.callSuperInitCb.currentText().lower()
         virtualerrorhandler = self.virtualErrorHandler.text().strip()
-        version = self.version.text().strip()
         uselimitedapi = (self.limitedAPIcb.checkState() == Qt.Checked)
 
         il = []
@@ -94,4 +92,4 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
                 il.append(self._ilistall[i])
 
         return (odirsuff, il, adddirectives, callsuperinit,
-                virtualerrorhandler, version, uselimitedapi)
+                virtualerrorhandler, uselimitedapi)

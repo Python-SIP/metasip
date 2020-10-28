@@ -47,6 +47,7 @@ class ProjectV15Update(Model):
             is the view returned by create_view().
         """
 
-        # The v15 format adds the 'removed' value of the 'status' attribute so
-        # we just need to bump the version number.
+        # The v15 format removes the 'version' attribute of the <Module>
+        # element and adds the 'removed' value of the 'status' attribute so we
+        # just need to bump the version number.
         root.set('version', str(self.updates_to))

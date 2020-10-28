@@ -14,6 +14,7 @@
 #
 # History:
 #  15   Implemented by metasip v2.8.
+#       - removed the 'version' attribute of the Module element.
 #       - added the 'removed' value of the 'status' attribute.
 #
 #  14   Implemented by metasip v2.5.

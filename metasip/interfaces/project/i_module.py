@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Riverbank Computing Limited.
+# Copyright (c) 2020 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -43,10 +43,6 @@ class IModule(Interface):
 
     # Set if the limited Python API should be used.
     uselimitedapi = Bool()
-
-    # The version number of the module ABI.
-    # FIXME: Convert to Int.
-    version = Str()
 
     # The default virtual error handler.
     virtualerrorhandler = Str()

@@ -384,9 +384,6 @@ class Project(Model):
             if mod.virtualerrorhandler != '':
                 f.write(' virtualerrorhandler="%s"' % mod.virtualerrorhandler)
 
-            if mod.version != '':
-                f.write(' version="%s"' % mod.version)
-
             if mod.uselimitedapi:
                 f.write(' uselimitedapi="1"')
 
@@ -489,11 +486,6 @@ class Project(Model):
                 virtualerrorhandler = ", default_VirtualErrorHandler=%s" % mod.virtualerrorhandler
             else:
                 virtualerrorhandler = ""
-
-            if mod.version != '':
-                version = ", version=%s" % mod.version
-            else:
-                version = ""
 
             if mod.uselimitedapi:
                 uselimitedapi = ", use_limited_api=True"

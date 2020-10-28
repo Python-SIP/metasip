@@ -560,7 +560,7 @@ class ModuleItem(EditorItem, DropSite):
                 self.treeWidget())
 
         if dlg.exec_() == QDialog.Accepted:
-            (mod.outputdirsuffix, mod.imports, mod.directives, mod.callsuperinit, mod.virtualerrorhandler, mod.version, mod.uselimitedapi) = dlg.fields()
+            (mod.outputdirsuffix, mod.imports, mod.directives, mod.callsuperinit, mod.virtualerrorhandler, mod.uselimitedapi) = dlg.fields()
 
             self.set_dirty()
 
