@@ -829,7 +829,7 @@ class SipFileItem(ContainerItem):
                 None,
                 ("Accept argument names", self._acceptNames),
                 None,
-                ("Delete...", self._deleteFile, empty_sipfile)]
+                ("Delete", self._deleteFile, empty_sipfile)]
 
     def _deleteFile(self):
         """ Delete an empty .sip file. """
