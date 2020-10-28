@@ -1308,6 +1308,9 @@ class CodeItem(ContainerItem):
             menu.append(("Versions...", self._versionsSlot,
                     (len(project.versions) != 0)))
 
+            menu.append(None)
+            menu.append(("Delete", self._deleteCode, (not self._editors)))
+
             return menu
 
         # Handle the manual code part of the menu.
@@ -1617,17 +1620,19 @@ class CodeItem(ContainerItem):
 
     def _deleteCode(self):
         """
-        Slot to handle the deletion of a code item.
+        Slot to handle the deletion of one or more code items.
         """
+        what = "this part" if len(self._targets) == 1 else "these parts"
         ans = QMessageBox.question(self.treeWidget(), "Delete Code",
-                "Are you sure you want to delete this code?",
+                "Are you sure you want to delete {0} of the API?".format(what),
                 QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
 
         if ans == QMessageBox.Yes:
-            # Mark as dirty before removing it.
+            # Mark as dirty before removing them.
             self.set_dirty()
 
-            self.parent_project_item().content.remove(self.code)
+            for target in self._targets:
+                self.parent_project_item().content.remove(target.code)
 
     def _accessCodeSlot(self):
         """
