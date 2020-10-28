@@ -1,11 +1,15 @@
-v2.8.0 ??? ??? 2020
+v2.8.0 ??? October 2020
   - Updated the project file format to v15.
+  - Multiple items can now be deleted at the same time.
+  - The context menu of an item now has a visual indicator that there is
+    attached handwritten code or tags.
   - Removed the marking of enums as C++11 enum classes using the properties
     dialog as this is now detected automatically.
   - Added support for the /BaseType/ enum annotation.
   - Removed the support for applying naming conventions.
   - With unversioned projects, items that are no longer present are marked as
     'Removed' without actually removing them.
+  - Removed support for the version number of a module.
 
 v2.7.0 17th September 2020
   - Added the '-m' command line option to msipgen.
