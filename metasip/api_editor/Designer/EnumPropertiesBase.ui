@@ -89,7 +89,6 @@
  <tabstops>
   <tabstop>pyName</tabstop>
   <tabstop>baseTypeCb</tabstop>
-  <tabstop>enumClassCb</tabstop>
   <tabstop>noScopeCb</tabstop>
   <tabstop>noTypeHintCb</tabstop>
  </tabstops>
