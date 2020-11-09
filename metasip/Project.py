@@ -492,7 +492,7 @@ class Project(Model):
             else:
                 uselimitedapi = ""
 
-            f.write("%%Module(name=%s%s%s%s, keyword_arguments=\"Optional\"%s%s)\n\n" % (rname, mod.name, callsuperinit, virtualerrorhandler, uselimitedapi, version))
+            f.write("%%Module(name=%s%s%s%s, keyword_arguments=\"Optional\"%s)\n\n" % (rname, mod.name, callsuperinit, virtualerrorhandler, uselimitedapi))
         else:
             f.write("%%Module %s%s 0\n\n" % (rname, mod.name))
 
