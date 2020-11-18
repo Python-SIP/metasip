@@ -3,3 +3,4 @@ syntax: glob
 *.pyc
 metasip.egg-info
 metasip/version.py
+metasip/api_editor/Designer/*.py

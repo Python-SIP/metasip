@@ -923,18 +923,6 @@ class _Ellipsis(object):
         pass
 
 
-# Default values that are mapped to something SIP can handle.
-VALUE_MAP = {
-    'AlignLeft':                                'Qt::AlignLeft',
-    'DisplayRole':                              'Qt::DisplayRole',
-    'EditRole':                                 'Qt::EditRole',
-    'black':                                    'Qt::black',
-    'white':                                    'Qt::white',
-    'operator|(MatchStartsWith, MatchWrap)':    'Qt::MatchStartsWith|Qt::MatchWrap',
-    'QUrlTwoFlags<QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption>(PrettyDecoded)':  'QUrl::PrettyDecoded',
-    'FullyEncoded':                             'QUrl::FullyEncoded'}
-
-
 def _transformArgs(parser, gargs, pargs):
     """
     Transform a list of Cast-XML arguments and append them to a list of project
@@ -959,59 +947,7 @@ def _transformArgs(parser, gargs, pargs):
             if full_type.endswith('::QPrivateSignal'):
                 continue
 
-            # Remove any QFlags<>.
-            if full_type.startswith('QFlags<'):
-                min_type = full_type[7:-1]
-            else:
-                min_type = full_type
-
-            default = a.default
-
-            # Map any problematic defaults.
-            mapped_default = VALUE_MAP.get(default)
-
-            if mapped_default is not None:
-                default = mapped_default
-            elif (default and ("::" in min_type) and ("::" not in default) and
-                ("()" not in default) and
-                (default not in ("0", "NULL", "true", "TRUE", "false", "FALSE"))):
-                default = min_type[:min_type.rfind("::")] + "::" + default
-            else:
-                # Older versions used to provide a default value of an enum as
-                # class::enumerator.  Newer versions provide it as
-                # class::enum::enumerator.  We could just replace the old style
-                # with the new style but we don't know if older compilers could
-                # deal with the generated code.  Instead we replace the new
-                # style with the old style.
-                type_parts = min_type.split('::')
-                default_parts = default.split('::')
-
-                if len(type_parts) + 1 == len(default_parts):
-                        remove_enum = False
-
-                        if type_parts == default_parts[:-1]:
-                            remove_enum = True
-                        elif default_parts[-2].endswith('Flag'):
-                            # The default may be a particular flag value so
-                            # convert it to the QFlags name and try again.
-                            default_parts[-2] = default_parts[-2][:-4]
-
-                            if type_parts == default_parts[:-1]:
-                                remove_enum = True
-                        elif type_parts[-1].endswith('s'):
-                            # The default may still be a particular flag value
-                            # so see if the type is a plural of the type of the
-                            # default and try again.
-                            type_parts[-1] = type_parts[-1][:-1]
-
-                            if type_parts == default_parts[:-1]:
-                                remove_enum = True
-
-                        if remove_enum:
-                            del default_parts[-2]
-                            default = '::'.join(default_parts)
-
-            pa = Argument(type=full_type, name=a.name, default=default)
+            pa = Argument(type=full_type, name=a.name, default=a.default)
 
         pargs.append(pa)
 
