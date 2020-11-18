@@ -39,6 +39,7 @@ from .PlatformPicker import PlatformPickerDialog
 from .FeaturePicker import FeaturePickerDialog
 from .ManualCode import ManualCodeDialog
 from .Generations import GenerationsDialog
+from .MoveHeader import MoveHeaderDialog
 
 
 class ApiEditor(QTreeWidget):
@@ -806,6 +807,8 @@ class SipFileItem(ContainerItem):
         if len(siblings) != 0:
             return None
 
+        multiple_modules = (len(self.treeWidget().project.modules) > 0)
+
         empty_sipfile = True
         for code in self.sipfile.content:
             if code.status != 'ignored':
@@ -829,7 +832,23 @@ class SipFileItem(ContainerItem):
                 None,
                 ("Accept argument names", self._acceptNames),
                 None,
+                ("Move to...", self._moveFile, multiple_modules),
                 ("Delete", self._deleteFile, empty_sipfile)]
+
+    def _moveFile(self):
+        """ Move a .sip file to a different module. """
+
+        tree = self.treeWidget()
+        src = self.parent_project_item()
+        sip_file = self.sipfile
+
+        dst = MoveHeaderDialog(tree.project, src, sip_file, tree).exec()
+        if dst is not None:
+            # Mark as dirty before moving it.
+            self.set_dirty()
+
+            src.content.remove(sip_file)
+            dst.content.append(sip_file)
 
     def _deleteFile(self):
         """ Delete an empty .sip file. """
