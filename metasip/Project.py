@@ -1710,8 +1710,9 @@ class Method(ClassCallable):
         if self.const:
             s += " const"
 
-        if self.final:
-            s += " final"
+        # Note that we don't include 'final' because this is implemented as an
+        # annotation (because it isn't handled by Cast-XML) and so would always
+        # cause a comparison to fail.
 
         if self.abstract:
             s += " = 0"
