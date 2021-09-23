@@ -1001,7 +1001,7 @@ class CastXMLParser(ParserBase):
         argv = [castxml_exe, '-x', 'c++', '-std=c++17', '--castxml-output=1']
 
         if sys.platform == 'darwin':
-            xcode = '/Applications/Xcode.app/Contents/Developer'
+            xcode = subprocess.check_output(('xcode-select', '-p')).decode().strip()
 
             argv.append('-isysroot')
             argv.append(xcode + '/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk')

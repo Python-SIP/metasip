@@ -1,3 +1,9 @@
+v2.9.2 10th April 2021
+  - 'xcode-select' is run to determine the path to Xcode.
+
+v2.9.1 31st December 2020
+  - Bug fixes.
+
 v2.9.0 22nd December 2020
   - SIP files can now be moved to a different module.
 
