@@ -2213,7 +2213,7 @@ class Namespace(Code):
         """
         Return a user friendly representation of the namespace.
         """
-        return "namespace " + self.name
+        return "namespace " + self.name + self.sipAnnos()
 
     def sip(self, f, sf, latest_sip):
         """ Write the namespace to a .sip file. """
@@ -2225,7 +2225,7 @@ class Namespace(Code):
         if not ignore:
             f.blank()
 
-            f.write("namespace " + self.name + "\n{\n")
+            f.write("namespace " + self.name + self.sipAnnos() + "\n{\n")
 
             f.write("%TypeHeaderCode\n", False)
 

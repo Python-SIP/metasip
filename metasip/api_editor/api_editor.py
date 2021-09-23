@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2021 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -29,6 +29,7 @@ from .ExternalEditor import ExternalEditor
 from .ArgProperties import ArgPropertiesDialog
 from .CallableProperties import CallablePropertiesDialog
 from .ClassProperties import ClassPropertiesDialog
+from .NamespaceProperties import NamespacePropertiesDialog
 from .OpaqueClassProperties import OpaqueClassPropertiesDialog
 from .VariableProperties import VariablePropertiesDialog
 from .EnumProperties import EnumPropertiesDialog
@@ -1369,6 +1370,8 @@ class CodeItem(ContainerItem):
             mcslot = True
             pslot = self._callablePropertiesSlot
             dsslot = True
+        elif isinstance(self.code, Namespace):
+            pslot = self._namespacePropertiesSlot
         elif isinstance(self.code, OpaqueClass):
             pslot = self._opaqueClassPropertiesSlot
         elif isinstance(self.code, Namespace):
@@ -2177,6 +2180,20 @@ class CodeItem(ContainerItem):
             (code.features, ) = dlg.fields()
 
             self.set_dirty()
+
+    def _namespacePropertiesSlot(self):
+        """
+        Slot to handle the properties for namespaces.
+        """
+        code = self.code
+        dlg = NamespacePropertiesDialog(code, self.treeWidget())
+
+        if dlg.exec_() == QDialog.Accepted:
+            (code.annos, ) = dlg.fields()
+
+            self.set_dirty()
+
+            self.setText(ApiEditor.NAME, self.code.user())
 
     def _opaqueClassPropertiesSlot(self):
         """

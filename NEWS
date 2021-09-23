@@ -1,3 +1,6 @@
+v2.10.0 23rd September 2021
+  - The /NoPyQtQMetaObject/ annotation can now be specified for namespaces.
+
 v2.9.2 10th April 2021
   - 'xcode-select' is run to determine the path to Xcode.
 

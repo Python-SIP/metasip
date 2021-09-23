@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2021 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -367,7 +367,7 @@ class ProjectParser:
         ns = Namespace(name=elem.get('name'), container=scope,
                 platforms=elem.get('platforms', '').split(),
                 features=elem.get('features', '').split(),
-                status=elem.get('status', ''),
+                annos=elem.get('annos', ''), status=elem.get('status', ''),
                 versions=self.get_versions(project, elem))
 
         for child in elem:
