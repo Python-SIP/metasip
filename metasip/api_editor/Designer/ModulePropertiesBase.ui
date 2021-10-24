@@ -63,11 +63,25 @@
      <item row="4" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>Use the limited Python API</string>
+        <string>#define PY_SSIZE_T_CLEAN</string>
        </property>
       </widget>
      </item>
      <item row="4" column="1">
+      <widget class="QCheckBox" name="ssizetCleanCb">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Use the limited Python API</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
       <widget class="QCheckBox" name="limitedAPIcb">
        <property name="text">
         <string/>

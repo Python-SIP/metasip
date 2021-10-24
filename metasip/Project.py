@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2021 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -387,6 +387,9 @@ class Project(Model):
             if mod.uselimitedapi:
                 f.write(' uselimitedapi="1"')
 
+            if mod.pyssizetclean:
+                f.write(' pyssizetclean="1"')
+
             if len(mod.imports) != 0:
                 f.write(' imports="{0}"'.format(' '.join(mod.imports)))
 
@@ -492,7 +495,12 @@ class Project(Model):
             else:
                 uselimitedapi = ""
 
-            f.write("%%Module(name=%s%s%s%s, keyword_arguments=\"Optional\"%s)\n\n" % (rname, mod.name, callsuperinit, virtualerrorhandler, uselimitedapi))
+            if mod.pyssizetclean:
+                pyssizetclean = ", py_ssize_t_clean=True"
+            else:
+                pyssizetclean = ""
+
+            f.write("%%Module(name=%s%s%s%s, keyword_arguments=\"Optional\"%s%s)\n\n" % (rname, mod.name, callsuperinit, virtualerrorhandler, uselimitedapi, pyssizetclean))
         else:
             f.write("%%Module %s%s 0\n\n" % (rname, mod.name))
 

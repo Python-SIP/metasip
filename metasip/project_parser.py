@@ -349,6 +349,7 @@ class ProjectParser:
         mod = Module(name=elem.get('name'),
                 outputdirsuffix=elem.get('outputdirsuffix', ''),
                 callsuperinit=callsuperinit,
+                pyssizetclean=bool(int(elem.get('pyssizetclean', '0'))),
                 uselimitedapi=bool(int(elem.get('uselimitedapi', '0'))),
                 virtualerrorhandler=elem.get('virtualerrorhandler', ''),
                 imports=elem.get('imports', '').split())

@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2021 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,6 +13,9 @@
 # The current project file format version number.
 #
 # History:
+#  16   Implemented by metasip v2.11.
+#       - added pyssizetclean to the Module element.
+#
 #  15   Implemented by metasip v2.8.
 #       - removed the 'version' attribute of the Module element.
 #       - added the 'removed' value of the 'status' attribute.
@@ -68,4 +71,4 @@
 #   1   Implemented prior to metasip v1.0.
 #
 #   0   The original undocumented version.
-ProjectVersion = 15
+ProjectVersion = 16

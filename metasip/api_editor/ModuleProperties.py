@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2021 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -57,6 +57,9 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
         if mod.uselimitedapi:
             self.limitedAPIcb.setCheckState(Qt.Checked)
 
+        if mod.pyssizetclean:
+            self.ssizetCleanCb.setCheckState(Qt.Checked)
+
         layout = QGridLayout()
 
         for i, itm in enumerate(self._ilistall):
@@ -79,6 +82,7 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
         callsuperinit = self.callSuperInitCb.currentText().lower()
         virtualerrorhandler = self.virtualErrorHandler.text().strip()
         uselimitedapi = (self.limitedAPIcb.checkState() == Qt.Checked)
+        pyssizetclean = (self.ssizetCleanCb.checkState() == Qt.Checked)
 
         il = []
 
@@ -92,4 +96,4 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
                 il.append(self._ilistall[i])
 
         return (odirsuff, il, adddirectives, callsuperinit,
-                virtualerrorhandler, uselimitedapi)
+                virtualerrorhandler, uselimitedapi, pyssizetclean)

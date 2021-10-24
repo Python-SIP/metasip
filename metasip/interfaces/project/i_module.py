@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2021 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -40,6 +40,9 @@ class IModule(Interface):
     # The optional suffix added to the output directory to create the full name
     # of the directory where the generated .sip files will be placed.
     outputdirsuffix = Str()
+
+    # Set if the module is PY_SSIZE_T_CLEAN.
+    pyssizetclean = Bool()
 
     # Set if the limited Python API should be used.
     uselimitedapi = Bool()

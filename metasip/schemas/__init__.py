@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Riverbank Computing Limited.
+# Copyright (c) 2021 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -25,3 +25,4 @@ from .project_v12_schema import ProjectV12Schema
 from .project_v13_schema import ProjectV13Schema
 from .project_v14_schema import ProjectV14Schema
 from .project_v15_schema import ProjectV15Schema
+from .project_v16_schema import ProjectV16Schema
