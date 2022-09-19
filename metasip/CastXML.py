@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2022 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -1005,8 +1005,6 @@ class CastXMLParser(ParserBase):
 
             argv.append('-isysroot')
             argv.append(xcode + '/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk')
-
-            argv.append('-I' + xcode + '/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1')
 
         argv.append('-o')
         argv.append(iname)
