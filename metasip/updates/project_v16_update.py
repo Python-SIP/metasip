@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -20,6 +20,9 @@ class ProjectV16Update(Model):
     """ The ProjectV16Update class implements the update of a project from v15
     to v16.
     """
+
+    # The update is optional.
+    required_update = False
 
     # The project format version number that this will update to (from the
     # immediately previous format).

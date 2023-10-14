@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Int, Interface, Str
+from dip.model import Bool, Int, Interface, Str
 
 
 class IUpdate(Interface):
@@ -18,6 +18,10 @@ class IUpdate(Interface):
 
     # The instruction to the user for completing the view (if there is one).
     instruction = Str()
+
+    # Set if the update is required, ie. the previous version of the project
+    # cannot still be supported.
+    required_update = Bool(True)
 
     # The project format version number that this will update to (from the
     # immediately previous format).

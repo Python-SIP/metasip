@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -24,6 +24,26 @@ class UpdateManager(Model):
 
     # The title used in dialogs and wizards.
     title = Str("Updating Project")
+
+    def update_is_required(self, root):
+        """ See if a project needs to be updated.
+
+        :param root:
+            is the root element of the project.
+        :return:
+            True if any update to the current version is required.
+        """
+
+        # Just check that all updates to a later version aren't required.
+        update_from = int(root.get('version'))
+
+        for update in self.updates:
+            iupdate = IUpdate(update)
+
+            if iupdate.updates_to > update_from and iupdate.required_update:
+                return True
+
+        return False
 
     def update(self, root, update_to):
         """ Update a project to a later format.
