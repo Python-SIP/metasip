@@ -1,5 +1,5 @@
-v2.11.3 19th September 2022
-  - Bug fixes.
+v2.11.3 14th October 2023
+  - Workarounds for Xcode v14.3.
 
 v2.11.2 21st November 2021
   - Added support for 'UIntEnum' as a base type for an enum.
