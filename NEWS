@@ -1,3 +1,14 @@
+v2.11.3 14th October 2023
+  - Workarounds for Xcode v14.3.
+  - A project with an older version number can be opened so long as all
+    intermediate updates are optional.
+
+v2.11.2 21st November 2021
+  - Added support for 'UIntEnum' as a base type for an enum.
+
+v2.11.1 21st November 2021
+  - A broken release.
+
 v2.11.0 24th October 2021
   - Updated the project file format to v16.
   - Added support for specifying that modules #define PY_SSIZE_T_CLEAN.

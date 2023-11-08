@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -59,11 +59,11 @@ class ProjectParser:
                     "The project was created with a later version of metasip",
                     project.name)
 
-        if version < ProjectVersion:
+        if version < ProjectVersion and UpdateManager.update_is_required(root):
             if QApplication.instance() is None:
                 raise FormatError(
                         "The project was created with an earlier version of "
-                        "metasip", project.name)
+                        "metasip and must be updated", project.name)
 
             if not UpdateManager.update(root, ProjectVersion):
                 return False

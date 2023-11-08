@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -19,12 +19,11 @@ from dip.model import implements, Instance, Model, Str
 from dip.shell import IDirty
 
 from .logger import Logger
-from .interfaces.project import (ProjectVersion, IArgument, IClass,
-        IConstructor, IDestructor, IEnum, IEnumValue, IFunction,
-        IHeaderDirectory, IHeaderFile, IHeaderFileVersion, IManualCode,
-        IMethod, IModule, INamespace, IOpaqueClass, IOperatorCast,
-        IOperatorFunction, IOperatorMethod, IProject, ISipFile, ITagged,
-        ITypedef, IVariable, IVersionRange)
+from .interfaces.project import (IArgument, IClass, IConstructor, IDestructor,
+        IEnum, IEnumValue, IFunction, IHeaderDirectory, IHeaderFile,
+        IHeaderFileVersion, IManualCode, IMethod, IModule, INamespace,
+        IOpaqueClass, IOperatorCast, IOperatorFunction, IOperatorMethod,
+        IProject, ISipFile, ITagged, ITypedef, IVariable, IVersionRange)
 
 
 class Annotations(Model):
@@ -342,9 +341,9 @@ class Project(Model):
         else:
             ins = ''
 
-        # Write the project using the current format version.
+        # Write the project.
         f.write('<?xml version="1.0"?>\n')
-        f.write('<Project version="%u" rootmodule="%s"%s%s%s%s%s%s>\n' % (ProjectVersion, self.rootmodule, vers, plat, feat, xmod, xf, ins))
+        f.write('<Project version="%u" rootmodule="%s"%s%s%s%s%s%s>\n' % (self.version, self.rootmodule, vers, plat, feat, xmod, xf, ins))
 
         f += 1
 

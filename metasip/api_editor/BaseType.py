@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2021 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,7 +13,7 @@
 class BaseType:
     """ This class implements helpers for the BaseType annotation. """
 
-    BASE_TYPES = ("Enum", "Flag", "IntEnum", "IntFlag")
+    BASE_TYPES = ("Enum", "Flag", "IntEnum", "UIntEnum", "IntFlag")
 
     def __init__(self, combo):
         """ Initialise the combo-box. """

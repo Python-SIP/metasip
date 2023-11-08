@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -21,6 +21,15 @@ class IUpdateManager(Interface):
 
     # The list of available updates.
     updates = List(IUpdate)
+
+    def update_is_required(self, root):
+        """ See if a project needs to be updated.
+
+        :param root:
+            is the root element of the project.
+        :return:
+            True if any update to the current version is required.
+        """
 
     def update(self, root, update_to):
         """ Update a project to a later format.

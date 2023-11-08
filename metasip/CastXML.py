@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2022 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -1001,12 +1001,14 @@ class CastXMLParser(ParserBase):
         argv = [castxml_exe, '-x', 'c++', '-std=c++17', '--castxml-output=1']
 
         if sys.platform == 'darwin':
+            # Workaround issues with Xcode v14.3 (and possibly later).
+            argv.append('-Dat_quick_exit=atexit')
+            argv.append('-Dquick_exit=exit')
+
             xcode = subprocess.check_output(('xcode-select', '-p')).decode().strip()
 
             argv.append('-isysroot')
             argv.append(xcode + '/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk')
-
-            argv.append('-I' + xcode + '/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1')
 
         argv.append('-o')
         argv.append(iname)
