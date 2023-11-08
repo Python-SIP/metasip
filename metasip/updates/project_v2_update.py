@@ -14,7 +14,7 @@ from xml.etree import ElementTree
 
 from ..dip.model import implements, Model
 
-from PyQt5.QtWidgets import QComboBox
+from PyQt6.QtWidgets import QComboBox
 
 from ..interfaces import IUpdate
 

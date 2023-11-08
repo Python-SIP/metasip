@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -20,11 +20,7 @@ import os.path
 import urllib.parse
 
 # FIXME: replace with proper toolkit support.
-from .... import TOOLKIT
-if TOOLKIT == 'qt4':
-    from PyQt4.QtCore import QDir, QFile, QFileInfo
-else:
-    from PyQt5.QtCore import QDir, QFile, QFileInfo
+from PyQt6.QtCore import QDir, QFile, QFileInfo
 
 from ....model import implements
 

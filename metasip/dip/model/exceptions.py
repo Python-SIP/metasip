@@ -22,7 +22,7 @@ class ValidationError(TypeError):
     def __init__(self, *types, message):
         """ Initialise the exception.
 
-        :param \*types:
+        :param types:
             the types that attempted to validate the value.
         :param message:
             the text of the message describing the detail of the error.

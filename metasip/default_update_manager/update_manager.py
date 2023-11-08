@@ -87,10 +87,10 @@ class UpdateManager(Model):
                 need_wizard = True
 
         if need_wizard:
-            from PyQt5.QtWidgets import QLabel
+            from PyQt6.QtWidgets import QLabel
 
-            from dip.pui import Wizard, WizardPage
-            from dip.ui import IWizard
+            from ..dip.pui import Wizard, WizardPage
+            from ..dip.ui import IWizard
 
             intro = WizardPage(
                     view=QLabel("The project has format v{0} and needs to be "

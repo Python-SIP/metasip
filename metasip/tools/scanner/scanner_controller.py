@@ -14,7 +14,7 @@ import glob
 import hashlib
 import os
 
-from PyQt5.QtWidgets import QInputDialog
+from PyQt6.QtWidgets import QInputDialog
 
 from ...dip.model import Instance, List, observe, unadapted
 from ...dip.shell import IDirty

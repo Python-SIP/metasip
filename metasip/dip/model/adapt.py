@@ -31,7 +31,7 @@ def adapt(*adapted, to):
     interfaces that are not already present in the adapter are automatically
     added.
 
-    :param \*adapted:
+    :param adapted:
         is the list of types of object to be adapted.
     :param to:
         is the interface (or list of interfaces) that the object is adapted to.

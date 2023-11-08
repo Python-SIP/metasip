@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,7 +13,7 @@
 """ This module handles argument properties. """
 
 
-from PyQt5.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog
 
 from .Designer.ArgPropertiesBase import Ui_ArgPropertiesBase
 from .Annos import split_annos

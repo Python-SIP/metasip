@@ -10,9 +10,9 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt5.QtCore import QByteArray, QMimeData, Qt
-from PyQt5.QtGui import QDrag
-from PyQt5.QtWidgets import (QApplication, QDialog, QInputDialog, QMenu,
+from PyQt6.QtCore import QByteArray, QMimeData, Qt
+from PyQt6.QtGui import QDrag
+from PyQt6.QtWidgets import (QApplication, QDialog, QInputDialog, QMenu,
         QMessageBox, QProgressDialog, QTreeWidget, QTreeWidgetItem,
         QTreeWidgetItemIterator, QVBoxLayout)
 
@@ -130,7 +130,7 @@ class ApiEditor(QTreeWidget):
                         action.setCheckable(True)
                         action.setChecked(checked)
 
-                menu.exec_(ev.globalPos())
+                menu.exec(ev.globalPos())
 
                 ev.accept()
                 return
@@ -168,7 +168,7 @@ class ApiEditor(QTreeWidget):
 
         drag = QDrag(self)
         drag.setMimeData(mime)
-        drag.exec_()
+        drag.exec()
 
     def dragEnterEvent(self, ev):
         """
@@ -451,7 +451,7 @@ class ProjectItem(EditorItem):
         prj = self._project
         dlg = ProjectPropertiesDialog(prj, self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (prj.rootmodule, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
 
             self.set_dirty()
@@ -561,7 +561,7 @@ class ModuleItem(EditorItem, DropSite):
         dlg = ModulePropertiesDialog(self.treeWidget().project, mod,
                 self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (mod.outputdirsuffix, mod.imports, mod.directives, mod.callsuperinit, mod.virtualerrorhandler, mod.uselimitedapi, mod.pyssizetclean) = dlg.fields()
 
             self.set_dirty()
@@ -875,7 +875,7 @@ class SipFileItem(ContainerItem):
         """
         dlg = ManualCodeDialog("", self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (precis, ) = dlg.fields()
 
             if precis:
@@ -1136,7 +1136,7 @@ class Argument(EditorItem):
         arg = self.arg
         dlg = ArgPropertiesDialog(arg, self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (arg.name, arg.unnamed, arg.pydefault, arg.pytype, arg.annos) = dlg.fields()
 
             self.set_dirty()
@@ -1592,7 +1592,7 @@ class CodeItem(ContainerItem):
         """
         dlg = ManualCodeDialog("", self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (precis, ) = dlg.fields()
 
             if precis:
@@ -1609,7 +1609,7 @@ class CodeItem(ContainerItem):
         """
         dlg = ManualCodeDialog(self.code.precis, self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (precis, ) = dlg.fields()
 
             if self.code.precis != precis:
@@ -2146,7 +2146,7 @@ class CodeItem(ContainerItem):
         dlg = GenerationsDialog(self.treeWidget().project, self.code,
                 self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (startversion, endversion) = dlg.fields()
 
             for itm in self._targets:
@@ -2163,7 +2163,7 @@ class CodeItem(ContainerItem):
         dlg = PlatformPickerDialog(self.treeWidget().project, code,
                 self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (code.platforms, ) = dlg.fields()
 
             self.set_dirty()
@@ -2176,7 +2176,7 @@ class CodeItem(ContainerItem):
         dlg = FeaturePickerDialog(self.treeWidget().project, code,
                 self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (code.features, ) = dlg.fields()
 
             self.set_dirty()
@@ -2188,7 +2188,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = NamespacePropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
@@ -2202,7 +2202,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = OpaqueClassPropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
@@ -2216,7 +2216,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = ClassPropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (code.pybases, code.annos) = dlg.fields()
 
             self.set_dirty()
@@ -2230,7 +2230,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = CallablePropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (pytype, pyargs, final, code.annos) = dlg.fields()
 
             if hasattr(code, "pytype") and code.pytype is not None:
@@ -2253,7 +2253,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = VariablePropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
@@ -2267,7 +2267,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = EnumPropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
@@ -2281,7 +2281,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = EnumValuePropertiesDialog(self.code, self.treeWidget())
 
-        if dlg.exec_() == QDialog.Accepted:
+        if dlg.exec() == QDialog.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()

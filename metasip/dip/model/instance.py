@@ -26,7 +26,7 @@ class Instance(CollectionTypeFactory):
     def __init__(self, *types, default=None, allow_none=True, allow_rebind=True, getter=None, setter=None, **metadata):
         """ Initialise the object.
 
-        :param \*types:
+        :param types:
             the allowable types of the instance.  If no types are specified
             then an instance of any type is allowed.  If any type is a string
             then it is the "full" name of the type.  The string form allows
@@ -42,7 +42,7 @@ class Instance(CollectionTypeFactory):
             is the optional attribute getter.
         :param setter:
             is the optional attribute setter.
-        :param \*\*metadata:
+        :param metadata:
             is additional meta-data stored with the type.
         """
 

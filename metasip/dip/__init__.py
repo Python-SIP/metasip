@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -27,4 +27,4 @@ if sys.hexversion < 0x03050000:
 
 
 # The name of the toolkit to use.
-TOOLKIT = os.environ.get('DIP_TOOLKIT', 'qt5')
+TOOLKIT = os.environ.get('DIP_TOOLKIT', 'qt6')

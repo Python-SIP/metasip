@@ -37,7 +37,7 @@ class Str(ValueTypeFactory):
             is the optional attribute getter.
         :param setter:
             is the optional attribute setter.
-        :param \*\*metadata:
+        :param metadata:
             is additional meta-data stored with the type.
         """
 

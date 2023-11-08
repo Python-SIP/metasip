@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -19,11 +19,7 @@
 import base64
 import pickle
 
-from .... import TOOLKIT
-if TOOLKIT == 'qt4':
-    from PyQt4.QtCore import QXmlStreamReader
-else:
-    from PyQt5.QtCore import QXmlStreamReader
+from PyQt6.QtCore import QXmlStreamReader
 
 from ....model import (Any, Bool, Dict, Enum, Float, get_model_types, Instance,
         Int, List, Model, Set, Str, Tuple)
@@ -70,7 +66,7 @@ class XmlDecoder(Model):
         :param model:
             is the model to populate from the decoded byte stream.
         :param reader:
-            is the :class:`~PyQt5.QtCore.QXmlStreamReader` instance.
+            is the :class:`~PyQt6.QtCore.QXmlStreamReader` instance.
         :param location:
             is the storage location where the encoded model is being read from.
             It is mainly used for error reporting.
@@ -103,7 +99,7 @@ class XmlDecoder(Model):
         :param model:
             is the model to populate from the decoded byte stream.
         :param reader:
-            is the :class:`~PyQt5.QtCore.QXmlStreamReader` instance.
+            is the :class:`~PyQt6.QtCore.QXmlStreamReader` instance.
         :param source:
             is an iterator that will return the byte stream to be decoded.
         :param location:
@@ -124,7 +120,7 @@ class XmlDecoder(Model):
         :param model_types:
             is the dict of the model's types.
         :param reader:
-            is the :class:`~PyQt5.QtCore.QXmlStreamReader` instance.
+            is the :class:`~PyQt6.QtCore.QXmlStreamReader` instance.
         :param source:
             is an iterator that will return the byte stream to be decoded.
         :param location:

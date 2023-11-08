@@ -29,7 +29,7 @@ class Trigger(TypeFactory):
     def __init__(self, **metadata):
         """ Initialise the object.
 
-        :param \*\*metadata:
+        :param metadata:
             is additional meta-data stored with the type.
         """
 

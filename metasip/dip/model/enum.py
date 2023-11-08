@@ -26,7 +26,7 @@ class Enum(ValueTypeFactory):
     def __init__(self, *members, default=None, allow_none=False, allow_rebind=True, getter=None, setter=None, **metadata):
         """ Initialise the object.
 
-        :param \*members:
+        :param members:
             the list of members.
         :param default:
             the default attribute value.  If omitted then the first member is
@@ -40,7 +40,7 @@ class Enum(ValueTypeFactory):
             is the optional attribute getter.
         :param setter:
             is the optional attribute setter.
-        :param \*\*metadata:
+        :param metadata:
             is additional meta-data stored with the type.
         """
 

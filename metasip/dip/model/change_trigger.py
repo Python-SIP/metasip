@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -17,11 +17,7 @@
 
 
 # FIXME: replace with proper toolkit support.
-from .. import TOOLKIT
-if TOOLKIT == 'qt4':
-    from PyQt4.QtCore import pyqtSignal, QCoreApplication, QObject
-else:
-    from PyQt5.QtCore import pyqtSignal, QCoreApplication, QObject
+from PyQt6.QtCore import pyqtSignal, QCoreApplication, QObject
 
 
 class ChangeTrigger(QObject):

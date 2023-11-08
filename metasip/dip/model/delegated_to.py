@@ -29,7 +29,7 @@ class DelegatedTo(ValueTypeFactory):
 
         :param to:
             is the :term:`attribute path` of the attribute to delegate to.
-        :param \*\*metadata:
+        :param metadata:
             is additional meta-data stored with the type.
         """
 

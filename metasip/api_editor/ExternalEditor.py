@@ -13,10 +13,10 @@
 """ This module implements the interface to an external editor. """
 
 
-from PyQt5.QtCore import pyqtSignal, QEvent, QFile, QObject, QTextStream
-from PyQt5.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog,
+from PyQt6.QtCore import pyqtSignal, QEvent, QFile, QObject, QTextStream
+from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog,
         QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout)
-from PyQt5.Qsci import QsciLexerCPP, QsciScintilla
+from PyQt6.Qsci import QsciLexerCPP, QsciScintilla
 
 from ..dip.settings import SettingsManager
 from ..dip.ui import IDialog

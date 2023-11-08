@@ -10,8 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt5.QtCore import QFile, QIODevice, QUrl
-from PyQt5.QtXmlPatterns import (QAbstractMessageHandler, QSourceLocation,
+from PyQt6.QtCore import QFile, QIODevice, QUrl
+from PyQt6.QtXmlPatterns import (QAbstractMessageHandler, QSourceLocation,
         QXmlSchema, QXmlSchemaValidator)
 
 from ...dip.model import Instance, Model, Str
@@ -37,7 +37,7 @@ class _MessageHandler(QAbstractMessageHandler, Model):
 
 class SchemaValidator(Model):
     """ The SchemaValidator class implements an XML schema validator using
-    PyQt5's QXmlSchemaValidator.
+    PyQt6's QXmlSchemaValidator.
     """
 
     # The message handler.

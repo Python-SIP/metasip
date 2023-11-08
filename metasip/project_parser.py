@@ -12,7 +12,7 @@
 
 from xml.etree import ElementTree
 
-from PyQt5.QtWidgets import QApplication, QProgressDialog
+from PyQt6.QtWidgets import QApplication, QProgressDialog
 
 from .dip.io import FormatError
 from .dip.shell import IDirty

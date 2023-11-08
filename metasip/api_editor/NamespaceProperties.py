@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,7 +13,7 @@
 """ This module handles a namespace's properties. """
 
 
-from PyQt5.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog
 
 from .Designer.NamespacePropertiesBase import Ui_NamespacePropertiesBase
 from .Annos import split_annos

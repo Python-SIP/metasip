@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -27,11 +27,7 @@ from .value_type_factory import Uninitialized, ValueTypeFactory
 
 # Handle specific toolkits differently so that models can be used as mixins.
 # FIXME: replace with proper toolkit support.
-from .. import TOOLKIT
-if TOOLKIT == 'qt4':
-    from PyQt4.QtCore import QObject
-else:
-    from PyQt5.QtCore import QObject
+from PyQt6.QtCore import QObject
 
 
 class MetaModel(type(QObject)):

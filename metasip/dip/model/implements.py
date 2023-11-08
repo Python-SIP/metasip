@@ -28,7 +28,7 @@ def implements(*interfaces):
     interface.  The decorator will automatically add any attributes of an
     interface that are not already present in the class.
 
-    :param \*interfaces:
+    :param interfaces:
         are the interfaces that the class implements.
     """
 

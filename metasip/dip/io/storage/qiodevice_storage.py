@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -17,11 +17,7 @@
 
 
 # FIXME: replace with proper toolkit support.
-from ... import TOOLKIT
-if TOOLKIT == 'qt4':
-    from PyQt4.QtCore import QIODevice
-else:
-    from PyQt5.QtCore import QIODevice
+from PyQt6.QtCore import QIODevice
 
 from ...model import Int
 
@@ -30,7 +26,7 @@ from .. import BaseStorage, StorageError
 
 class QIODeviceStorage(BaseStorage):
     """ The QIODeviceStorage class is an abstract base class for storage that
-    is accessed via a :class:`~PyQt5.QtCore.QIODevice`.
+    is accessed via a :class:`~PyQt6.QtCore.QIODevice`.
     """
 
     # The number of bytes to read at a time.

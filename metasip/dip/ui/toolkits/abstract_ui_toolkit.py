@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -185,7 +185,7 @@ class AbstractUIToolkit(Model):
             is ``True`` if the view is to be used as a top-level widget.
         :return:
             the editor.  Any factory properties will be applied to an internal
-            :class:`~PyQt5.QtWidgets.QLineEdit`.
+            :class:`~PyQt6.QtWidgets.QLineEdit`.
         """
 
         raise NotImplementedError
@@ -586,7 +586,7 @@ class AbstractUIToolkit(Model):
             is ``True`` if the view is to be used as a top-level widget.
         :return:
             the editor.  Any factory properties will be applied to an internal
-            :class:`~PyQt5.QtWidgets.QLineEdit`.
+            :class:`~PyQt6.QtWidgets.QLineEdit`.
         """
 
         raise NotImplementedError
