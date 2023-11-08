@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Instance, Int, Interface, List, Str
+from ...dip.model import Instance, Int, Interface, List, Str
 
 from .i_header_directory import IHeaderDirectory
 from .i_module import IModule

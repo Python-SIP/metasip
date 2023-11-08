@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,10 +10,10 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import adapt, Adapter, DelegatedTo, observe
-from dip.io import IFilterHints
-from dip.shell import IManagedModel
-from dip.ui import IDisplay
+from .dip.model import adapt, Adapter, DelegatedTo, observe
+from .dip.io import IFilterHints
+from .dip.shell import IManagedModel
+from .dip.ui import IDisplay
 
 from .Project import Project, Module
 

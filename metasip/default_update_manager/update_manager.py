@@ -10,8 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import implements, Model, Str
-from dip.ui import Application
+from ..dip.model import implements, Model, Str
+from ..dip.ui import Application
 
 from ..interfaces import IUpdate, IUpdateManager
 

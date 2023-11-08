@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2013 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,8 +13,8 @@
 import os
 import tempfile
 
-from dip.io import ICodec, StorageError
-from dip.model import implements, Model
+from .dip.io import ICodec, StorageError
+from .dip.model import implements, Model
 
 from .interfaces.project import IProject
 from .project_parser import ProjectParser

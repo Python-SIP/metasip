@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -15,7 +15,7 @@ import subprocess
 import sys
 import tempfile
 
-from dip.model import implements, Instance, Model
+from .dip.model import implements, Instance, Model
 
 from .interfaces.project import ICodeContainer, IProject
 

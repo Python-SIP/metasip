@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,9 +10,9 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.io import IFilterHints
-from dip.model import implements, Model
-from dip.ui import IDisplay
+from ..dip.io import IFilterHints
+from ..dip.model import implements, Model
+from ..dip.ui import IDisplay
 
 from ..interfaces import ISchema
 

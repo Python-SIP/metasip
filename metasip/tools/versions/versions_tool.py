@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,10 +10,10 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import implements, Model, observe
-from dip.publish import ISubscriber
-from dip.shell import IDirty, ITool
-from dip.ui import (Action, IAction, ActionCollection, Application, CheckBox,
+from ...dip.model import implements, Model, observe
+from ...dip.publish import ISubscriber
+from ...dip.shell import IDirty, ITool
+from ...dip.ui import (Action, IAction, ActionCollection, Application, CheckBox,
         ComboBox, Dialog, IDialog, DialogController, LineEditor, MessageArea)
 
 from ...interfaces.project import IProject

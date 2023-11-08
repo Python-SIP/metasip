@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -14,8 +14,8 @@ import argparse
 import sys
 import os
 
-from dip.io import IoManager, StorageError
-from dip.io.storage.filesystem import FilesystemStorageFactory
+from .dip.io import IoManager, StorageError
+from .dip.io.storage.filesystem import FilesystemStorageFactory
 
 from . import Project, ProjectCodec
 
@@ -97,14 +97,14 @@ def launchGUI(prjname, guiargs):
         the exit code or 0 if there was no error.
     """
 
-    from dip.io import StorageError
-    from dip.settings import SettingsManager
-    from dip.shell import IShell
-    from dip.shell.shells.main_window import MainWindowShell
-    from dip.shell.tools.dirty import DirtyTool
-    from dip.shell.tools.model_manager import ModelManagerTool
-    from dip.shell.tools.quit import QuitTool
-    from dip.ui import Application
+    from .dip.io import StorageError
+    from .dip.settings import SettingsManager
+    from .dip.shell import IShell
+    from .dip.shell.shells.main_window import MainWindowShell
+    from .dip.shell.tools.dirty import DirtyTool
+    from .dip.shell.tools.model_manager import ModelManagerTool
+    from .dip.shell.tools.quit import QuitTool
+    from .dip.ui import Application
 
     from metasip import ProjectEditorTool, ProjectFactory, UpdateManager
     from metasip.schemas import (ProjectV1Schema, ProjectV2Schema,

@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -13,10 +13,10 @@
 import os
 import sys
 
-from dip.io import IFilterHints
-from dip.model import implements, List, Model, Str
-from dip.shell import ITool
-from dip.ui import (Action, IAction, Application, Dialog, IDialog,
+from ...dip.io import IFilterHints
+from ...dip.model import implements, List, Model, Str
+from ...dip.shell import ITool
+from ...dip.ui import (Action, IAction, Application, Dialog, IDialog,
         DialogController, IEditor, Label, OptionList, StorageLocationEditor,
         IStorageLocationEditor, VBox)
 

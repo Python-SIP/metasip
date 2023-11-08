@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -14,7 +14,7 @@ from PyQt5.QtCore import QFile, QIODevice, QUrl
 from PyQt5.QtXmlPatterns import (QAbstractMessageHandler, QSourceLocation,
         QXmlSchema, QXmlSchemaValidator)
 
-from dip.model import Instance, Model, Str
+from ...dip.model import Instance, Model, Str
 
 
 class _MessageHandler(QAbstractMessageHandler, Model):

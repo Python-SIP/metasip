@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -12,8 +12,8 @@
 
 from PyQt5.QtWidgets import QAbstractSlider, QApplication, QPlainTextEdit
 
-from dip.model import unadapted
-from dip.shell import SimpleViewTool
+from ...dip.model import unadapted
+from ...dip.shell import SimpleViewTool
 
 from ... import Logger
 

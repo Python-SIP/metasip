@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -16,9 +16,9 @@ from PyQt5.QtWidgets import (QApplication, QDialog, QInputDialog, QMenu,
         QMessageBox, QProgressDialog, QTreeWidget, QTreeWidgetItem,
         QTreeWidgetItemIterator, QVBoxLayout)
 
-from dip.model import observe
-from dip.shell import IDirty
-from dip.ui import Application
+from ..dip.model import observe
+from ..dip.shell import IDirty
+from ..dip.ui import Application
 
 from ..Project import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,

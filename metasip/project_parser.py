@@ -14,8 +14,8 @@ from xml.etree import ElementTree
 
 from PyQt5.QtWidgets import QApplication, QProgressDialog
 
-from dip.io import FormatError
-from dip.shell import IDirty
+from .dip.io import FormatError
+from .dip.shell import IDirty
 
 from .interfaces.project import ProjectVersion
 from .Project import (Argument, Class, Constructor, Destructor, Enum,

@@ -15,8 +15,8 @@ import hashlib
 import fnmatch
 from xml.sax import saxutils
 
-from dip.model import implements, Instance, Model, Str
-from dip.shell import IDirty
+from .dip.model import implements, Instance, Model, Str
+from .dip.shell import IDirty
 
 from .logger import Logger
 from .interfaces.project import (IArgument, IClass, IConstructor, IDestructor,

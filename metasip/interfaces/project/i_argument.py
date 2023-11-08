@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Bool, Str
+from ...dip.model import Bool, Str
 
 from .i_annos import IAnnos
 

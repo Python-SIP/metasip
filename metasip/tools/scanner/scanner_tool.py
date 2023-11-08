@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,9 +10,9 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import implements, observe
-from dip.publish import ISubscriber
-from dip.shell import SimpleViewTool
+from ...dip.model import implements, observe
+from ...dip.publish import ISubscriber
+from ...dip.shell import SimpleViewTool
 
 from ...interfaces.project import IProject
 
@@ -45,7 +45,7 @@ class ScannerTool(SimpleViewTool):
     def view(self):
         """ Invoked to create the tool's view. """
 
-        from dip.ui import (ComboBox, FilesystemLocationEditor, Form, Grid,
+        from ...dip.ui import (ComboBox, FilesystemLocationEditor, Form, Grid,
                 GroupBox, HBox, Label, LineEditor, MessageArea, PushButton,
                 Splitter, Stack, Stretch, VBox)
 

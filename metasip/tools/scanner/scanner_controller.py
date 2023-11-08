@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -16,9 +16,9 @@ import os
 
 from PyQt5.QtWidgets import QInputDialog
 
-from dip.model import Instance, List, observe, unadapted
-from dip.shell import IDirty
-from dip.ui import Application, Controller
+from ...dip.model import Instance, List, observe, unadapted
+from ...dip.shell import IDirty
+from ...dip.ui import Application, Controller
 
 from ...interfaces.project import (ICallable, ICodeContainer, IConstructor,
         IEnum, IHeaderDirectory, IHeaderFile, IProject)

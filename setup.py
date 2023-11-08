@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -36,9 +36,6 @@ setup(
         author_email='info@riverbankcomputing.com',
         url='https://www.riverbankcomputing.com/software/metasip/',
         license='GPL3',
-        # Note that dip v0.5 is required but we can't specify that as a
-        # dependency as it will pick up another package with the same name from
-        # PyPI.
         install_requires=['PyQt5', 'QScintilla'],
         packages=find_packages(),
         entry_points={

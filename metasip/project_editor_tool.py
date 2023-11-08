@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,9 +10,9 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import implements
-from dip.shell import BaseManagedModelTool, IManagedModelTool
-from dip.ui import IDisplay
+from .dip.model import implements
+from .dip.shell import BaseManagedModelTool, IManagedModelTool
+from .dip.ui import IDisplay
 
 from .interfaces.project import IProject
 

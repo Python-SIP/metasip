@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -18,8 +18,8 @@ from PyQt5.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog,
         QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout)
 from PyQt5.Qsci import QsciLexerCPP, QsciScintilla
 
-from dip.settings import SettingsManager
-from dip.ui import IDialog
+from ..dip.settings import SettingsManager
+from ..dip.ui import IDialog
 
 
 class ExternalEditor(QObject):

@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from dip.model import Bool, Int, Interface, Str
+from ..dip.model import Bool, Int, Interface, Str
 
 
 class IUpdate(Interface):
