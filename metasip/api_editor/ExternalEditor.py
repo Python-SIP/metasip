@@ -10,9 +10,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module implements the interface to an external editor. """
-
-
 from PyQt6.QtCore import pyqtSignal, QEvent, QFile, QObject, QTextStream
 from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog,
         QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout)
@@ -73,7 +70,7 @@ class ExternalEditor(QObject):
 
         layout.addWidget(ed)
 
-        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        bbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok|QDialogButtonBox.StandardButton.Cancel)
         bbox.accepted.connect(self._on_accepted)
         bbox.rejected.connect(self._on_rejected)
         layout.addWidget(bbox)
@@ -93,7 +90,7 @@ class ExternalEditor(QObject):
     def eventFilter(self, obj, event):
         """ Reimplemented to handle any dialog close events. """
 
-        if event.type() == QEvent.Close:
+        if event.type() is QEvent.Type.Close:
             self._on_rejected()
 
         return super().eventFilter(obj, event)

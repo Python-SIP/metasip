@@ -60,7 +60,7 @@ class QIODeviceStorage(BaseStorage):
 
         device = self.qiodevice(location)
 
-        if not device.open(QIODevice.ReadOnly):
+        if not device.open(QIODevice.OpenModeFlag.ReadOnly):
             raise StorageError(device.errorString(), location)
 
         def reader():
@@ -93,7 +93,7 @@ class QIODeviceStorage(BaseStorage):
 
         device = self.qiodevice(location)
 
-        if not device.open(QIODevice.WriteOnly):
+        if not device.open(QIODevice.OpenModeFlag.WriteOnly):
             raise StorageError(device.errorString(), location)
 
         codec = self.encoder_for_model(model, location)

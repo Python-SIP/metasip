@@ -75,7 +75,7 @@ class CollectionEditorAdapter(ViewWidgetAdapter):
         # Find an invalid item giving preference to the current cell.
         itm = model.itemFromIndex(tree_view.currentIndex())
 
-        reason = '' if itm is None else itm.data(Qt.UserRole)
+        reason = '' if itm is None else itm.data(Qt.ItemDataRole.UserRole)
         if reason == '':
             for row_nr in range(model.rowCount()):
                 for col_nr in range(model.columnCount()):
@@ -83,7 +83,7 @@ class CollectionEditorAdapter(ViewWidgetAdapter):
                     if itm is None:
                         continue
 
-                    reason = itm.data(Qt.UserRole)
+                    reason = itm.data(Qt.ItemDataRole.UserRole)
                     if reason != '':
                         break
 
@@ -117,8 +117,8 @@ class CollectionEditorAdapter(ViewWidgetAdapter):
         tree_view = self.adaptee
         model = self.tk_q_model
 
-        model.itemFromIndex(tree_view.currentIndex()).setData(Qt.UserRole,
-                invalid_reason)
+        model.itemFromIndex(tree_view.currentIndex()).setData(
+                Qt.ItemDataRole.UserRole, invalid_reason)
 
     @tk_q_model.default
     def tk_q_model(self):
@@ -140,7 +140,7 @@ class CollectionEditorAdapter(ViewWidgetAdapter):
 
         for col_nr in range(model.columnCount()):
             itm = model.item(row_nr, col_nr)
-            if itm.flags() & Qt.ItemIsEditable:
+            if itm.flags() & Qt.ItemFlag.ItemIsEditable:
                 index = model.indexFromItem(itm)
 
                 tree_view.setCurrentIndex(index)
@@ -199,9 +199,9 @@ class CollectionEditorAdapter(ViewWidgetAdapter):
                 flags = itm.flags()
 
                 if value:
-                    flags &= ~Qt.ItemIsEditable
+                    flags &= ~Qt.ItemFlag.ItemIsEditable
                 elif col.editable:
-                    flags |= Qt.ItemIsEditable
+                    flags |= Qt.ItemFlag.ItemIsEditable
 
                 itm.setFlags(flags)
 
@@ -255,10 +255,11 @@ class CollectionEditorAdapter(ViewWidgetAdapter):
             itm = QStandardItem()
 
             if not self.read_only and col.editable:
-                itm.setFlags(itm.flags() | Qt.ItemIsEditable)
+                itm.setFlags(itm.flags() | Qt.ItemFlag.ItemIsEditable)
 
-            itm.setData(self.tk_get_cell(row_value, col, col_nr), Qt.EditRole)
-            itm.setData('', Qt.UserRole)
+            itm.setData(self.tk_get_cell(row_value, col, col_nr),
+                    Qt.ItemDataRole.EditRole)
+            itm.setData('', Qt.ItemDataRole.UserRole)
 
             model.setItem(row_nr, col_nr, itm)
 
@@ -289,7 +290,7 @@ class CollectionEditorAdapter(ViewWidgetAdapter):
         del self._value[:]
 
         for row_nr in range(model.rowCount()):
-            item_values = [model.item(row_nr, col_nr).data(Qt.EditRole)
+            item_values = [model.item(row_nr, col_nr).data(Qt.ItemDataRole.EditRole)
                     for col_nr in range(model.columnCount())]
 
             self._value.append(self.tk_new_element(item_values))

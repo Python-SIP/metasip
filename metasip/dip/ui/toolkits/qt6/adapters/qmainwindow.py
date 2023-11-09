@@ -34,10 +34,11 @@ class QMainWindowIMainWindowAdapter(SingleViewContainerWidgetAdapter):
 
     # Map toolkit independent dock areas to the Qt specific equivalents.
     _area_map = {
-            'left': Qt.LeftDockWidgetArea,
-            'right': Qt.RightDockWidgetArea,
-            'top': Qt.TopDockWidgetArea,
-            'bottom': Qt.BottomDockWidgetArea}
+        'left': Qt.DockWidgetArea.LeftDockWidgetArea,
+        'right': Qt.DockWidgetArea.RightDockWidgetArea,
+        'top': Qt.DockWidgetArea.TopDockWidgetArea,
+        'bottom': Qt.DockWidgetArea.BottomDockWidgetArea
+    }
 
     def all_views(self):
         """ Create a generator that will return this view and any views

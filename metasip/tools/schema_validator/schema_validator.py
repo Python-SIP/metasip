@@ -55,7 +55,7 @@ class SchemaValidator(Model):
         """
 
         xsd_file = QFile(xsd)
-        if not xsd_file.open(QIODevice.ReadOnly):
+        if not xsd_file.open(QIODevice.OpenModeFlag.ReadOnly):
             raise IOError("unable to open schema file {0}".format(xsd))
 
         xsd = QXmlSchema()
@@ -66,7 +66,7 @@ class SchemaValidator(Model):
             raise SchemaValidationException(self.message_handler)
 
         xml_file = QFile(xml)
-        if not xml_file.open(QIODevice.ReadOnly):
+        if not xml_file.open(QIODevice.OpenModeFlag.ReadOnly):
             raise IOError("unable to open XML file {0}".format(xml))
 
         validator = QXmlSchemaValidator(xsd)

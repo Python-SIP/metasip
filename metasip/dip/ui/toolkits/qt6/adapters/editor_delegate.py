@@ -73,7 +73,7 @@ class EditorDelegate(QStyledItemDelegate):
         interface rather than requiring editors to implement a user property.
         """
 
-        data = index.data(Qt.EditRole)
+        data = index.data(Qt.ItemDataRole.EditRole)
         if data is not None:
             editor = from_QWidget(editor)
 
@@ -86,7 +86,7 @@ class EditorDelegate(QStyledItemDelegate):
 
         editor = from_QWidget(editor)
 
-        model.setData(index, IEditor(editor).value, Qt.EditRole)
+        model.setData(index, IEditor(editor).value, Qt.ItemDataRole.EditRole)
 
     def _editor_closed(self, editor, hint):
         """ Invoked when a delegated editor is closed. """

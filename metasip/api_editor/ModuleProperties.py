@@ -55,10 +55,10 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
         self.virtualErrorHandler.setText(mod.virtualerrorhandler)
 
         if mod.uselimitedapi:
-            self.limitedAPIcb.setCheckState(Qt.Checked)
+            self.limitedAPIcb.setCheckState(Qt.CheckState.Checked)
 
         if mod.pyssizetclean:
-            self.ssizetCleanCb.setCheckState(Qt.Checked)
+            self.ssizetCleanCb.setCheckState(Qt.CheckState.Checked)
 
         layout = QGridLayout()
 
@@ -68,7 +68,7 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
             if mod.name == itm:
                 cb.setEnabled(False)
             elif itm in mod.imports:
-                cb.setCheckState(Qt.Checked)
+                cb.setCheckState(Qt.CheckState.Checked)
 
             layout.addWidget(cb, i // 2, i % 2)
 
@@ -81,8 +81,8 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
         adddirectives = self.additionalDirectives.toPlainText().strip()
         callsuperinit = self.callSuperInitCb.currentText().lower()
         virtualerrorhandler = self.virtualErrorHandler.text().strip()
-        uselimitedapi = (self.limitedAPIcb.checkState() == Qt.Checked)
-        pyssizetclean = (self.ssizetCleanCb.checkState() == Qt.Checked)
+        uselimitedapi = (self.limitedAPIcb.checkState() is Qt.CheckState.Checked)
+        pyssizetclean = (self.ssizetCleanCb.checkState() is Qt.CheckState.Checked)
 
         il = []
 
@@ -92,7 +92,7 @@ class ModulePropertiesDialog(QDialog, Ui_ModulePropertiesBase):
 
         for i in range(layout.count()):
             cb = layout.itemAt(i).widget()
-            if cb.checkState() == Qt.Checked:
+            if cb.checkState() is Qt.CheckState.Checked:
                 il.append(self._ilistall[i])
 
         return (odirsuff, il, adddirectives, callsuperinit,

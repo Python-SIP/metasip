@@ -64,11 +64,11 @@ class ApiEditor(QTreeWidget):
 
         # Tweak the tree widget.
         self.setHeaderLabels(["Name", "Access", "Status", "Versions"])
-        self.setSelectionMode(self.ExtendedSelection)
+        self.setSelectionMode(self.SelectionMode.ExtendedSelection)
         self.setDragEnabled(True)
         self.viewport().setAcceptDrops(True)
         self.setDropIndicatorShown(True)
-        self.setDragDropMode(self.InternalMove)
+        self.setDragDropMode(self.DragDropMode.InternalMove)
 
         self.dragged = None
 
@@ -295,7 +295,7 @@ class DropSite():
     def __init__(self):
         """ Initialise the instance. """
 
-        self.setFlags(self.flags() | Qt.ItemIsDropEnabled)
+        self.setFlags(self.flags() | Qt.ItemFlag.ItemIsDropEnabled)
 
     def droppable(self, source):
         """ Determine if an item can be dropped.
@@ -319,7 +319,7 @@ class DropSite():
 
 
 # Each QTreeWidgetItem has a unique key used in the DND support.
-_item_id = QTreeWidgetItem.UserType
+_item_id = QTreeWidgetItem.ItemType.UserType
 
 
 class EditorItem(QTreeWidgetItem):
@@ -474,7 +474,7 @@ class ProjectItem(EditorItem):
     def _sort(self):
         """ Sort the modules. """
 
-        self.sortChildren(ApiEditor.NAME, Qt.AscendingOrder)
+        self.sortChildren(ApiEditor.NAME, Qt.SortOrder.AscendingOrder)
 
 
 class ModuleItem(EditorItem, DropSite):
@@ -570,7 +570,7 @@ class ModuleItem(EditorItem, DropSite):
         """ Invoked when the name changes. """
 
         self.setText(ApiEditor.NAME, change.new)
-        self.parent().sortChildren(ApiEditor.NAME, Qt.AscendingOrder)
+        self.parent().sortChildren(ApiEditor.NAME, Qt.SortOrder.AscendingOrder)
 
     def __on_content_changed(self, change):
         """ Invoked when the content changes. """
@@ -856,9 +856,10 @@ class SipFileItem(ContainerItem):
 
         ans = QMessageBox.question(self.treeWidget(), "Delete header file",
                 "Are you sure you want to delete this header file?",
-                QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
+                QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No)
 
-        if ans == QMessageBox.Yes:
+        if ans is QMessageBox.StandardButton.Yes:
             # Mark as dirty before removing it.
             self.set_dirty()
 
@@ -1103,7 +1104,7 @@ class Argument(EditorItem):
 
         super().__init__(parent)
 
-        self.setFlags(Qt.ItemIsEnabled)
+        self.setFlags(Qt.ItemFlag.ItemIsEnabled)
 
         self.draw_name()
 
@@ -1647,9 +1648,10 @@ class CodeItem(ContainerItem):
         what = "this part" if len(self._targets) == 1 else "these parts"
         ans = QMessageBox.question(self.treeWidget(), "Delete Code",
                 "Are you sure you want to delete {0} of the API?".format(what),
-                QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
+                QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No)
 
-        if ans == QMessageBox.Yes:
+        if ans is QMessageBox.StandardButton.Yes:
             # Mark as dirty before removing them.
             self.set_dirty()
 

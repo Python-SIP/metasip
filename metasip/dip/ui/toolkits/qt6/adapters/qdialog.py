@@ -27,8 +27,12 @@ from .single_view_container_adapters import SingleViewContainerWidgetAdapter
 
 
 # The map of dip dialog buttons to the Qt equivalents.
-_button_map = {'ok': QDialogButtonBox.Ok, 'cancel': QDialogButtonBox.Cancel,
-        'yes': QDialogButtonBox.Yes, 'no': QDialogButtonBox.No}
+_button_map = {
+    'ok': QDialogButtonBox.StandardButton.Ok,
+    'cancel': QDialogButtonBox.StandardButton.Cancel,
+    'yes': QDialogButtonBox.StandardButton.Yes,
+    'no': QDialogButtonBox.StandardButton.No
+}
 
 
 @adapt(QDialog, to=IDialog)
@@ -43,9 +47,13 @@ class QDialogIDialogAdapter(SingleViewContainerWidgetAdapter):
 
     # These are all the button roles that require a valid view in order to be
     # enabled.
-    _valid_roles = (QDialogButtonBox.AcceptRole,
-            QDialogButtonBox.DestructiveRole, QDialogButtonBox.ActionRole,
-            QDialogButtonBox.YesRole, QDialogButtonBox.ApplyRole)
+    _valid_roles = (
+        QDialogButtonBox.ButtonRole.AcceptRole,
+        QDialogButtonBox.ButtonRole.DestructiveRole,
+        QDialogButtonBox.ButtonRole.ActionRole,
+        QDialogButtonBox.ButtonRole.YesRole,
+        QDialogButtonBox.ButtonRole.ApplyRole
+    )
 
     def configure(self, properties):
         """ Configure the widget. """

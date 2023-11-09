@@ -60,7 +60,7 @@ class QCheckBoxICheckBoxAdapter(EditorWidgetAdapter):
     def value(self):
         """ Invoked to get the editor's value. """
 
-        return self.adaptee.checkState() != Qt.Unchecked
+        return self.adaptee.checkState() is not Qt.CheckState.Unchecked
 
     @value.setter
     def value(self, value):
@@ -72,10 +72,11 @@ class QCheckBoxICheckBoxAdapter(EditorWidgetAdapter):
         self.tk_editor_old_value = value
 
         blocked = widget.blockSignals(True)
-        widget.setCheckState(Qt.Checked if value else Qt.Unchecked)
+        widget.setCheckState(
+                Qt.CheckState.Checked if value else Qt.CheckState.Unchecked)
         widget.blockSignals(blocked)
 
     def _on_state_changed(self, state):
         """ Invoked when the state changes. """
 
-        self.tk_editor_notify(state != Qt.Unchecked)
+        self.tk_editor_notify(state is not Qt.CheckState.Unchecked)

@@ -89,7 +89,7 @@ class Toolkit(AbstractUIToolkit):
             the action.
         """
 
-        return QAction("&Close", None, shortcut=QKeySequence.Close)
+        return QAction("&Close", None, shortcut=QKeySequence.StandardKey.Close)
 
     def combo_box(self, parent, top_level):
         """ Create an editor that can be adapted to the
@@ -158,8 +158,8 @@ class Toolkit(AbstractUIToolkit):
         parent = as_QWidget_parent(parent)
 
         if detail != '':
-            msg_box = QMessageBox(QMessageBox.Critical, title, text,
-                    parent=parent, detailedText=detail)
+            msg_box = QMessageBox(QMessageBox.StandardButton.Critical, title,
+                    text, parent=parent, detailedText=detail)
             msg_box.exec()
         else:
             QMessageBox.critical(parent, title, text)
@@ -445,7 +445,7 @@ class Toolkit(AbstractUIToolkit):
             the action.
         """
 
-        return QAction("&New...", None, shortcut=QKeySequence.New)
+        return QAction("&New...", None, shortcut=QKeySequence.StandardKey.New)
 
     def open_action(self):
         """ Create an action, i.e. an object that can be adapted to the
@@ -455,7 +455,8 @@ class Toolkit(AbstractUIToolkit):
             the action.
         """
 
-        return QAction("&Open...", None, shortcut=QKeySequence.Open)
+        return QAction("&Open...", None,
+                shortcut=QKeySequence.StandardKey.Open)
 
     def option_list(self, parent, top_level):
         """ Create an editor that can be adapted to the
@@ -486,9 +487,11 @@ class Toolkit(AbstractUIToolkit):
         return QPushButton()
 
     # The map of dip message box buttons to the Qt equivalents.
-    _button_map = {'yes': QMessageBox.Yes, 'no': QMessageBox.No,
-            'cancel': QMessageBox.Cancel, 'save': QMessageBox.Save,
-            'discard': QMessageBox.Discard}
+    _button_map = {'yes': QMessageBox.StandardButton.Yes,
+            'no': QMessageBox.StandardButton.No,
+            'cancel': QMessageBox.StandardButton.Cancel,
+            'save': QMessageBox.StandardButton.Save,
+            'discard': QMessageBox.StandardButton.Discard}
 
     @classmethod
     def _qbutton_from_button(cls, button):
@@ -531,8 +534,8 @@ class Toolkit(AbstractUIToolkit):
                 qdefault = qbutton
 
         if detail != '':
-            msg_box = QMessageBox(QMessageBox.Question, title, text, qbuttons,
-                    parent, detailedText=detail)
+            msg_box = QMessageBox(QMessageBox.StandardButton.Question, title,
+                    text, qbuttons, parent, detailedText=detail)
             msg_box.setDefaultButton(qdefault)
             answer = msg_box.exec()
         else:
@@ -554,8 +557,8 @@ class Toolkit(AbstractUIToolkit):
             the action.
         """
 
-        return QAction("&Quit", None, menuRole=QAction.QuitRole,
-                shortcut=QKeySequence.Quit)
+        return QAction("&Quit", None, menuRole=QAction.MenuRole.QuitRole,
+                shortcut=QKeySequence.StandardKey.Quit)
 
     def radio_buttons(self, parent, top_level):
         """ Create an editor that can be adapted to the
@@ -591,7 +594,7 @@ class Toolkit(AbstractUIToolkit):
             the action.
         """
 
-        return QAction("&Save", None, shortcut=QKeySequence.Save)
+        return QAction("&Save", None, shortcut=QKeySequence.StandardKey.Save)
 
     def save_as_action(self):
         """ Create an action, i.e. an object that can be adapted to the
@@ -602,7 +605,8 @@ class Toolkit(AbstractUIToolkit):
             the action.
         """
 
-        return QAction("Save &As...", None, shortcut=QKeySequence.SaveAs)
+        return QAction("Save &As...", None,
+                shortcut=QKeySequence.StandardKey.SaveAs)
 
     def spin_box(self, parent, top_level):
         """ Create an editor that can be adapted to the
@@ -739,8 +743,8 @@ class Toolkit(AbstractUIToolkit):
         parent = as_QWidget_parent(parent)
 
         if detail != '':
-            msg_box = QMessageBox(QMessageBox.Warning, title, text,
-                    parent=parent, detailedText=detail)
+            msg_box = QMessageBox(QMessageBox.StandardButton.Warning, title,
+                    text, parent=parent, detailedText=detail)
             msg_box.exec()
         else:
             QMessageBox.warning(parent, title, text)
@@ -793,7 +797,8 @@ class Toolkit(AbstractUIToolkit):
 
         layout.addWidget(QLineEdit())
         layout.addWidget(QToolButton(
-                icon=QApplication.style().standardIcon(QStyle.SP_DirIcon),
+                icon=QApplication.style().standardIcon(
+                        QStyle.StandardPixmap.SP_DirIcon),
                 toolTip="Browse"))
 
         if top_level:

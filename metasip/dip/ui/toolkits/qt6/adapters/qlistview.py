@@ -68,7 +68,7 @@ class QListViewIOptionListAdapter(EditorWidgetAdapter):
 
         for row in range(model.rowCount()):
             itm = model.item(row)
-            option = itm.data(Qt.UserRole)
+            option = itm.data(Qt.ItemDataRole.UserRole)
 
             idx = self.options.index(option)
 
@@ -106,7 +106,7 @@ class QListViewIOptionListAdapter(EditorWidgetAdapter):
                 as_str = self._option_as_str(option)
 
             itm = QStandardItem(as_str)
-            itm.setData(option, Qt.UserRole)
+            itm.setData(option, Qt.ItemDataRole.UserRole)
 
             model.setItem(idx, 0, itm)
 
@@ -186,7 +186,7 @@ class QListViewIOptionListAdapter(EditorWidgetAdapter):
         itm = self._tk_model.itemFromIndex(
                 self.adaptee.selectionModel().currentIndex())
 
-        return None if itm is None else itm.data(Qt.UserRole)
+        return None if itm is None else itm.data(Qt.ItemDataRole.UserRole)
 
     def _set_value(self, value):
         """ Set the editor's value. """
@@ -200,7 +200,7 @@ class QListViewIOptionListAdapter(EditorWidgetAdapter):
             for row_nr in range(model.rowCount()):
                 itm = model.item(row_nr)
 
-                if itm.data(Qt.UserRole) == value:
+                if itm.data(Qt.ItemDataRole.UserRole) == value:
                     break
             else:
                 raise ValueError("'{0}' is not a valid option".format(value))

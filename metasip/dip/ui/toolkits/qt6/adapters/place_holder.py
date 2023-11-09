@@ -16,7 +16,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt6.QtWidgets import QAction, QMenu
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QMenu
 
 from .....model import unadapted
 from .....ui import IMenu

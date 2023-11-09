@@ -18,7 +18,8 @@
 
 import sys
 
-from PyQt6.QtWidgets import QAction, QMenu
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QMenu
 
 from .....model import adapt, observe, unadapted
 from .....ui import IAction, IActionCollection, IMenu
@@ -179,7 +180,7 @@ class QMenuIMenuAdapter(ViewWidgetAdapter):
                 if submenu is None:
                     # On macOS the quit action is in the system menu so ignore
                     # it.
-                    if sys.platform == 'darwin' and action.menuRole() == QAction.QuitRole:
+                    if sys.platform == 'darwin' and action.menuRole() is QAction.MenuRole.QuitRole:
                         continue
 
                     if not isinstance(action, PlaceHolder):

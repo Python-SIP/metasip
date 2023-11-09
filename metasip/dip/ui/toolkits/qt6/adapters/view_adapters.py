@@ -343,7 +343,7 @@ class CloseEventFilter(QObject):
     def eventFilter(self, obj, event):
         """ Reimplemented to handle any close events. """
 
-        if event.type() == QEvent.Close:
+        if event.type() is QEvent.Type.Close:
             view = IView(obj)
 
             for handler in self._widget_adapter.close_request_handlers:
@@ -373,7 +373,7 @@ class ShowEventFilter(QObject):
     def eventFilter(self, obj, event):
         """ Reimplemented to handle any show events. """
 
-        if event.type() == QEvent.Show:
+        if event.type() is QEvent.Type.Show:
             notify_observers('ready', self._widget_adapter, True, False)
 
             self._widget_adapter._tk_view_remove_show_event_filter()

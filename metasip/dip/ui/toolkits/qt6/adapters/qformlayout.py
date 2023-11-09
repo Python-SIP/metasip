@@ -36,9 +36,9 @@ class FormAdapterMixin(Model):
 
         views = []
         for row in range(layout.rowCount()):
-            itm = layout.itemAt(row, QFormLayout.FieldRole)
+            itm = layout.itemAt(row, QFormLayout.ItemRole.FieldRole)
             if itm is None:
-                itm = layout.itemAt(row, QFormLayout.SpanningRole)
+                itm = layout.itemAt(row, QFormLayout.ItemRole.SpanningRole)
                 if itm is None:
                     continue
 
@@ -106,9 +106,9 @@ class VisibilityEventFilter(QObject):
 
         event_type = event.type()
 
-        if event_type == QEvent.Hide:
+        if event_type is QEvent.Type.Hide:
             self.parent().labelForField(obj).setVisible(False)
-        elif event_type == QEvent.Show:
+        elif event_type is QEvent.Type.Show:
             label = self.parent().labelForField(obj)
             # FIXME: This doesn't seem to come into effect until the window is
             #        activated.

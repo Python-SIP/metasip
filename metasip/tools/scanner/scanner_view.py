@@ -31,7 +31,7 @@ class ScannerView(QTreeWidget):
 
         self.setHeaderLabels(["Name", "Status"])
 
-        self.setSelectionMode(self.ExtendedSelection)
+        self.setSelectionMode(self.SelectionMode.ExtendedSelection)
         self.itemSelectionChanged.connect(self.refresh_selection)
 
         self._controller = controller
@@ -111,7 +111,7 @@ class ScannerItem(QTreeWidgetItem):
     def sort(self):
         """ Sort the item's children. """
 
-        self.sortChildren(ScannerView.NAME, Qt.AscendingOrder)
+        self.sortChildren(ScannerView.NAME, Qt.SortOrder.AscendingOrder)
 
 
 class ProjectItem(ScannerItem):
