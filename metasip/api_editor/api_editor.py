@@ -25,7 +25,8 @@ from ..Project import (Class, Constructor, Destructor, Method, Function,
         ManualCode, Module, OpaqueClass, OperatorCast, Namespace, VersionRange,
         version_range)
 
-from .dialogs import FeaturesDialog, PlatformsDialog, VersionsDialog
+from .dialogs import (EnumPropertiesDialog, FeaturesDialog, PlatformsDialog,
+        VersionsDialog)
 
 from .ExternalEditor import ExternalEditor
 from .ArgProperties import ArgPropertiesDialog
@@ -34,7 +35,6 @@ from .ClassProperties import ClassPropertiesDialog
 from .NamespaceProperties import NamespacePropertiesDialog
 from .OpaqueClassProperties import OpaqueClassPropertiesDialog
 from .VariableProperties import VariablePropertiesDialog
-from .EnumProperties import EnumPropertiesDialog
 from .EnumValueProperties import EnumValuePropertiesDialog
 from .ModuleProperties import ModulePropertiesDialog
 from .ProjectProperties import ProjectPropertiesDialog
@@ -1435,7 +1435,7 @@ class CodeItem(ContainerItem):
             scslot = True
             pslot = self._variablePropertiesSlot
         elif isinstance(self.code, Enum):
-            pslot = self._enumPropertiesSlot
+            pslot = self._handle_enum_properties
         elif isinstance(self.code, EnumValue):
             pslot = self._enumValuePropertiesSlot
 
@@ -2144,8 +2144,8 @@ class CodeItem(ContainerItem):
     def _handle_versions(self):
         """ Slot to handle the versions. """
 
-        dialog = VersionsDialog(self.code, self.treeWidget().project,
-                "Versions", self.treeWidget())
+        dialog = VersionsDialog(self.code, "Versions", self.treeWidget(),
+                project=self.treeWidget().project)
 
         versions = dialog.exec()
         if versions is not None:
@@ -2160,8 +2160,8 @@ class CodeItem(ContainerItem):
     def _handle_platforms(self):
         """ Slot to handle the platforms. """
 
-        dialog = PlatformsDialog(self.code, self.treeWidget().project,
-                "Platform Tags", self.treeWidget())
+        dialog = PlatformsDialog(self.code, "Platform Tags", self.treeWidget(),
+                project=self.treeWidget().project)
 
         platforms = dialog.exec()
         if platforms is not None:
@@ -2171,9 +2171,8 @@ class CodeItem(ContainerItem):
     def _handle_features(self):
         """ Slot to handle the features. """
 
-        code = self.code
-        dialog = FeaturesDialog(self.code, self.treeWidget().project,
-                "Feature Tags", self.treeWidget())
+        dialog = FeaturesDialog(self.code, "Feature Tags", self.treeWidget(),
+                project=self.treeWidget().project)
 
         features = dialog.exec()
         if features is not None:
@@ -2259,18 +2258,17 @@ class CodeItem(ContainerItem):
 
             self.setText(ApiEditor.NAME, self.code.user())
 
-    def _enumPropertiesSlot(self):
-        """
-        Slot to handle the properties for enums.
-        """
-        code = self.code
-        dlg = EnumPropertiesDialog(code, self.treeWidget())
+    def _handle_enum_properties(self):
+        """ Slot to handle the properties for enums. """
 
-        if dlg.exec() is QDialog.DialogCode.Accepted:
-            (code.annos, ) = dlg.fields()
+        dialog = EnumPropertiesDialog(self.code, "Enum Properties",
+                self.treeWidget())
 
+        properties = dialog.exec()
+        if properties is not None:
+            annos, = properties
+            self.code.annos = annos
             self.set_dirty()
-
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _enumValuePropertiesSlot(self):

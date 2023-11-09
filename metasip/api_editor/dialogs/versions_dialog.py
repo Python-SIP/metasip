@@ -19,14 +19,6 @@ class VersionsDialog(BaseDialog):
     """ This class implements the dialog for select the start and end versions.
     """
 
-    def __init__(self, api_item, project, title, parent):
-        """ Initialise the dialog. """
-
-        # FIXME: Support multiple version ranges.
-        self._api_item = api_item
-
-        super().__init__(project, title, parent)
-
     def populate(self):
         """ Populate the dialog's layout. """
 
@@ -51,12 +43,12 @@ class VersionsDialog(BaseDialog):
 
         end_combo_box.addItem("Latest", '')
 
-        if len(self._api_item.versions) == 0:
+        if len(self.api_item.versions) == 0:
             api_start = ''
             api_end = ''
         else:
-            api_start = self._api_item.versions[0].startversion
-            api_end = self._api_item.versions[0].endversion
+            api_start = self.api_item.versions[0].startversion
+            api_end = self.api_item.versions[0].endversion
 
         if api_start == '':
             start_index = 0
