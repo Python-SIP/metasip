@@ -25,6 +25,8 @@ from ..Project import (Class, Constructor, Destructor, Method, Function,
         ManualCode, Module, OpaqueClass, OperatorCast, Namespace, VersionRange,
         version_range)
 
+from .dialogs import PlatformPickerDialog
+
 from .ExternalEditor import ExternalEditor
 from .ArgProperties import ArgPropertiesDialog
 from .CallableProperties import CallablePropertiesDialog
@@ -36,7 +38,6 @@ from .EnumProperties import EnumPropertiesDialog
 from .EnumValueProperties import EnumValuePropertiesDialog
 from .ModuleProperties import ModulePropertiesDialog
 from .ProjectProperties import ProjectPropertiesDialog
-from .PlatformPicker import PlatformPickerDialog
 from .FeaturePicker import FeaturePickerDialog
 from .ManualCode import ManualCodeDialog
 from .Generations import GenerationsDialog
@@ -451,7 +452,7 @@ class ProjectItem(EditorItem):
         prj = self._project
         dlg = ProjectPropertiesDialog(prj, self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (prj.rootmodule, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
 
             self.set_dirty()
@@ -561,7 +562,7 @@ class ModuleItem(EditorItem, DropSite):
         dlg = ModulePropertiesDialog(self.treeWidget().project, mod,
                 self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (mod.outputdirsuffix, mod.imports, mod.directives, mod.callsuperinit, mod.virtualerrorhandler, mod.uselimitedapi, mod.pyssizetclean) = dlg.fields()
 
             self.set_dirty()
@@ -876,7 +877,7 @@ class SipFileItem(ContainerItem):
         """
         dlg = ManualCodeDialog("", self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (precis, ) = dlg.fields()
 
             if precis:
@@ -1137,7 +1138,7 @@ class Argument(EditorItem):
         arg = self.arg
         dlg = ArgPropertiesDialog(arg, self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (arg.name, arg.unnamed, arg.pydefault, arg.pytype, arg.annos) = dlg.fields()
 
             self.set_dirty()
@@ -1552,7 +1553,7 @@ class CodeItem(ContainerItem):
                 len(project.versions) != 0))
         menu.append(
                 (self._flagged_text("Platform Tags...", self.code.platforms),
-                        self._platformTagsSlot, len(project.platforms) != 0))
+                        self._handle_platforms, len(project.platforms) != 0))
         menu.append(
                 (self._flagged_text("Feature Tags...", self.code.features),
                         self._featureTagsSlot,
@@ -1593,7 +1594,7 @@ class CodeItem(ContainerItem):
         """
         dlg = ManualCodeDialog("", self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (precis, ) = dlg.fields()
 
             if precis:
@@ -1610,7 +1611,7 @@ class CodeItem(ContainerItem):
         """
         dlg = ManualCodeDialog(self.code.precis, self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (precis, ) = dlg.fields()
 
             if self.code.precis != precis:
@@ -2148,7 +2149,7 @@ class CodeItem(ContainerItem):
         dlg = GenerationsDialog(self.treeWidget().project, self.code,
                 self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (startversion, endversion) = dlg.fields()
 
             for itm in self._targets:
@@ -2157,17 +2158,15 @@ class CodeItem(ContainerItem):
 
             self.set_dirty()
 
-    def _platformTagsSlot(self):
-        """
-        Slot to handle the platform tags.
-        """
-        code = self.code
-        dlg = PlatformPickerDialog(self.treeWidget().project, code,
-                self.treeWidget())
+    def _handle_platforms(self):
+        """ Slot to handle the platforms. """
 
-        if dlg.exec() == QDialog.Accepted:
-            (code.platforms, ) = dlg.fields()
+        dialog = PlatformPickerDialog(self.code, self.treeWidget().project,
+                "Platform Tags", self.treeWidget())
 
+        platforms = dialog.exec()
+        if platforms is not None:
+            self.code.platforms = platforms
             self.set_dirty()
 
     def _featureTagsSlot(self):
@@ -2178,7 +2177,7 @@ class CodeItem(ContainerItem):
         dlg = FeaturePickerDialog(self.treeWidget().project, code,
                 self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (code.features, ) = dlg.fields()
 
             self.set_dirty()
@@ -2190,7 +2189,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = NamespacePropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
@@ -2204,7 +2203,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = OpaqueClassPropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
@@ -2218,7 +2217,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = ClassPropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (code.pybases, code.annos) = dlg.fields()
 
             self.set_dirty()
@@ -2232,7 +2231,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = CallablePropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (pytype, pyargs, final, code.annos) = dlg.fields()
 
             if hasattr(code, "pytype") and code.pytype is not None:
@@ -2255,7 +2254,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = VariablePropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
@@ -2269,7 +2268,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = EnumPropertiesDialog(code, self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()
@@ -2283,7 +2282,7 @@ class CodeItem(ContainerItem):
         code = self.code
         dlg = EnumValuePropertiesDialog(self.code, self.treeWidget())
 
-        if dlg.exec() == QDialog.Accepted:
+        if dlg.exec() is QDialog.DialogCode.Accepted:
             (code.annos, ) = dlg.fields()
 
             self.set_dirty()

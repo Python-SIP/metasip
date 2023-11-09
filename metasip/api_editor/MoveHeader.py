@@ -47,7 +47,7 @@ class MoveHeaderDialog(QDialog, Ui_MoveHeaderBase):
         user cancelled.
         """
 
-        if super().exec() == QDialog.Rejected:
+        if super().exec() is QDialog.DialogCode.Rejected:
             return None
 
         return self.destCb.currentData()
