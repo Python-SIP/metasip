@@ -107,19 +107,12 @@ def launchGUI(prjname, guiargs):
     from .dip.ui import Application
 
     from metasip import ProjectEditorTool, ProjectFactory, UpdateManager
-    from metasip.schemas import (ProjectV1Schema, ProjectV2Schema,
-            ProjectV3Schema, ProjectV4Schema, ProjectV5Schema, ProjectV6Schema,
-            ProjectV7Schema, ProjectV8Schema, ProjectV9Schema,
-            ProjectV10Schema, ProjectV11Schema, ProjectV12Schema,
-            ProjectV13Schema, ProjectV14Schema, ProjectV15Schema,
-            ProjectV16Schema)
     from metasip.tools.features import FeaturesTool
     from metasip.tools.import_project import ImportProjectTool
     from metasip.tools.logger import LoggerTool
     from metasip.tools.modules import ModulesTool
     from metasip.tools.platforms import PlatformsTool
     from metasip.tools.scanner import ScannerTool
-    from metasip.tools.schema_validator import SchemaValidatorTool
     from metasip.tools.versions import VersionsTool
     from metasip.updates import (ProjectV2Update, ProjectV3Update,
             ProjectV4Update, ProjectV5Update, ProjectV6Update, ProjectV7Update,
@@ -160,15 +153,6 @@ def launchGUI(prjname, guiargs):
                     ModulesTool,
                     PlatformsTool,
                     ScannerTool,
-                    lambda: SchemaValidatorTool(
-                            schemas=[ProjectV1Schema(), ProjectV2Schema(),
-                                    ProjectV3Schema(), ProjectV4Schema(),
-                                    ProjectV5Schema(), ProjectV6Schema(),
-                                    ProjectV7Schema(), ProjectV8Schema(),
-                                    ProjectV9Schema(), ProjectV10Schema(),
-                                    ProjectV11Schema(), ProjectV12Schema(),
-                                    ProjectV13Schema(), ProjectV14Schema(),
-                                    ProjectV15Schema(), ProjectV16Schema()]),
                     VersionsTool],
             title_template="[view][*]")
 
