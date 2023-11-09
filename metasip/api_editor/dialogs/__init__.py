@@ -10,5 +10,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .feature_picker_dialog import FeaturePickerDialog
-from .platform_picker_dialog import PlatformPickerDialog
+from .features_dialog import FeaturesDialog
+from .platforms_dialog import PlatformsDialog
+from .versions_dialog import VersionsDialog

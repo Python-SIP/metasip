@@ -25,7 +25,7 @@ from ..Project import (Class, Constructor, Destructor, Method, Function,
         ManualCode, Module, OpaqueClass, OperatorCast, Namespace, VersionRange,
         version_range)
 
-from .dialogs import FeaturePickerDialog, PlatformPickerDialog
+from .dialogs import FeaturesDialog, PlatformsDialog, VersionsDialog
 
 from .ExternalEditor import ExternalEditor
 from .ArgProperties import ArgPropertiesDialog
@@ -39,7 +39,6 @@ from .EnumValueProperties import EnumValuePropertiesDialog
 from .ModuleProperties import ModulePropertiesDialog
 from .ProjectProperties import ProjectPropertiesDialog
 from .ManualCode import ManualCodeDialog
-from .Generations import GenerationsDialog
 from .MoveHeader import MoveHeaderDialog
 
 
@@ -1326,7 +1325,7 @@ class CodeItem(ContainerItem):
 
         if len(siblings) != 0:
             menu.append(None)
-            menu.append(("Versions...", self._versionsSlot,
+            menu.append(("Versions...", self._handle_versions,
                     (len(project.versions) != 0)))
 
             menu.append(None)
@@ -1548,7 +1547,7 @@ class CodeItem(ContainerItem):
 
         # Add the extra menu items.
         menu.append(None)
-        menu.append(("Versions...", self._versionsSlot,
+        menu.append(("Versions...", self._handle_versions,
                 len(project.versions) != 0))
         menu.append(
                 (self._flagged_text("Platform Tags...", self.code.platforms),
@@ -2142,25 +2141,26 @@ class CodeItem(ContainerItem):
 
         del self._editors["vcc"]
 
-    def _versionsSlot(self):
+    def _handle_versions(self):
         """ Slot to handle the versions. """
 
-        dlg = GenerationsDialog(self.treeWidget().project, self.code,
-                self.treeWidget())
+        dialog = VersionsDialog(self.code, self.treeWidget().project,
+                "Versions", self.treeWidget())
 
-        if dlg.exec() is QDialog.DialogCode.Accepted:
-            (startversion, endversion) = dlg.fields()
+        versions = dialog.exec()
+        if versions is not None:
+            (start_version, end_version) = versions
 
             for itm in self._targets:
-                itm.code.versions = [VersionRange(startversion=startversion,
-                        endversion=endversion)]
+                itm.code.versions = [VersionRange(startversion=start_version,
+                        endversion=end_version)]
 
             self.set_dirty()
 
     def _handle_platforms(self):
         """ Slot to handle the platforms. """
 
-        dialog = PlatformPickerDialog(self.code, self.treeWidget().project,
+        dialog = PlatformsDialog(self.code, self.treeWidget().project,
                 "Platform Tags", self.treeWidget())
 
         platforms = dialog.exec()
@@ -2172,7 +2172,7 @@ class CodeItem(ContainerItem):
         """ Slot to handle the features. """
 
         code = self.code
-        dialog = FeaturePickerDialog(self.code, self.treeWidget().project,
+        dialog = FeaturesDialog(self.code, self.treeWidget().project,
                 "Feature Tags", self.treeWidget())
 
         features = dialog.exec()

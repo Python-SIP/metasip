@@ -15,14 +15,14 @@ from PyQt6.QtWidgets import QCheckBox, QDialog
 from .base_dialog import BaseDialog
 
 
-class PlatformPickerDialog(BaseDialog):
+class PlatformsDialog(BaseDialog):
     """ This class implements the dialog for selecting a number of platforms.
     """
 
-    def __init__(self, code, project, title, parent):
+    def __init__(self, api_item, project, title, parent):
         """ Initialise the dialog. """
 
-        self._code = code
+        self._api_item = api_item
 
         super().__init__(project, title, parent)
 
@@ -34,7 +34,7 @@ class PlatformPickerDialog(BaseDialog):
         for platform_nr, platform in enumerate(self.project.platforms):
             check_box = QCheckBox(platform)
 
-            if platform in self._code.platforms:
+            if platform in self._api_item.platforms:
                 check_box.setChecked(True)
 
             layout.insertWidget(platform_nr, check_box)

@@ -15,16 +15,16 @@ from PyQt6.QtWidgets import QComboBox, QDialog, QGridLayout, QLabel
 from .base_dialog import BaseDialog
 
 
-class FeaturePickerDialog(BaseDialog):
+class FeaturesDialog(BaseDialog):
     """ This class implements the dialog for selecting a number of features.
     """
 
     FEATURE_VALUES = ("Unset", "Set", "Inverted")
 
-    def __init__(self, code, project, title, parent):
+    def __init__(self, api_item, project, title, parent):
         """ Initialise the dialog. """
 
-        self._code = code
+        self._api_item = api_item
 
         super().__init__(project, title, parent)
 
@@ -48,7 +48,7 @@ class FeaturePickerDialog(BaseDialog):
             grid.addWidget(state, row, 1)
             self._features.append((state, feature))
 
-            for f in self._code.features:
+            for f in self._api_item.features:
                 if f.startswith('!') and feature == f[1:]:
                     state.setCurrentIndex(2)
                 elif feature == f:
