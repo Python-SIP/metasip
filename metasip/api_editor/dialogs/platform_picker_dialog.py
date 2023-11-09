@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt6.QtWidgets import QDialog, QCheckBox
+from PyQt6.QtWidgets import QCheckBox, QDialog
 
 from .base_dialog import BaseDialog
 
@@ -24,9 +24,7 @@ class PlatformPickerDialog(BaseDialog):
 
         self._code = code
 
-        super().__init__(project, parent)
-
-        self.setWindowTitle(title)
+        super().__init__(project, title, parent)
 
     def populate(self):
         """ Populate the dialog's layout. """

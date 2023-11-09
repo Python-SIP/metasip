@@ -17,12 +17,14 @@ from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QSizePolicy,
 class BaseDialog(QDialog):
     """ A base class for other dialogs that handles common functionality. """
 
-    def __init__(self, project, parent):
+    def __init__(self, project, title, parent):
         """ Initialise the dialog. """
 
         self.project = project
 
         super().__init__(parent)
+
+        self.setWindowTitle(title)
 
         layout = QVBoxLayout()
         self.setLayout(layout)

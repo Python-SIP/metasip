@@ -25,7 +25,7 @@ from ..Project import (Class, Constructor, Destructor, Method, Function,
         ManualCode, Module, OpaqueClass, OperatorCast, Namespace, VersionRange,
         version_range)
 
-from .dialogs import PlatformPickerDialog
+from .dialogs import FeaturePickerDialog, PlatformPickerDialog
 
 from .ExternalEditor import ExternalEditor
 from .ArgProperties import ArgPropertiesDialog
@@ -38,7 +38,6 @@ from .EnumProperties import EnumPropertiesDialog
 from .EnumValueProperties import EnumValuePropertiesDialog
 from .ModuleProperties import ModulePropertiesDialog
 from .ProjectProperties import ProjectPropertiesDialog
-from .FeaturePicker import FeaturePickerDialog
 from .ManualCode import ManualCodeDialog
 from .Generations import GenerationsDialog
 from .MoveHeader import MoveHeaderDialog
@@ -1556,7 +1555,7 @@ class CodeItem(ContainerItem):
                         self._handle_platforms, len(project.platforms) != 0))
         menu.append(
                 (self._flagged_text("Feature Tags...", self.code.features),
-                        self._featureTagsSlot,
+                        self._handle_features,
                         (len(project.features) != 0 or len(project.externalfeatures) != 0)))
 
         if pslot:
@@ -2169,17 +2168,16 @@ class CodeItem(ContainerItem):
             self.code.platforms = platforms
             self.set_dirty()
 
-    def _featureTagsSlot(self):
-        """
-        Slot to handle the feature tags.
-        """
+    def _handle_features(self):
+        """ Slot to handle the features. """
+
         code = self.code
-        dlg = FeaturePickerDialog(self.treeWidget().project, code,
-                self.treeWidget())
+        dialog = FeaturePickerDialog(self.code, self.treeWidget().project,
+                "Feature Tags", self.treeWidget())
 
-        if dlg.exec() is QDialog.DialogCode.Accepted:
-            (code.features, ) = dlg.fields()
-
+        features = dialog.exec()
+        if features is not None:
+            self.code.features = features
             self.set_dirty()
 
     def _namespacePropertiesSlot(self):
