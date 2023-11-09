@@ -36,7 +36,7 @@ class PlatformsDialog(BaseDialog):
         """ Return the list of platforms or None if the dialog was cancelled.
         """
 
-        if super().exec() is QDialog.DialogCode.Rejected:
+        if super().exec() == int(QDialog.DialogCode.Rejected):
             return None
 
         layout = self.layout()

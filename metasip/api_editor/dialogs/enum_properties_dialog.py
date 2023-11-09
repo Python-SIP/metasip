@@ -68,7 +68,7 @@ class EnumPropertiesDialog(BaseDialog):
         cancelled.
         """
 
-        if super().exec() is QDialog.DialogCode.Rejected:
+        if super().exec() == int(QDialog.DialogCode.Rejected):
             return None
 
         annos_list = []

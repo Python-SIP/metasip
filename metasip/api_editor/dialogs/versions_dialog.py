@@ -74,7 +74,7 @@ class VersionsDialog(BaseDialog):
         dialog was cancelled.
         """
 
-        if super().exec() is QDialog.DialogCode.Rejected:
+        if super().exec() == int(QDialog.DialogCode.Rejected):
             return None
 
         start_combo_box = self._start_combo_box

@@ -50,7 +50,7 @@ class FeaturesDialog(BaseDialog):
     def exec(self):
         """ Return a list of features or None if the dialog was cancelled. """
 
-        if super().exec() is QDialog.DialogCode.Rejected:
+        if super().exec() == int(QDialog.DialogCode.Rejected):
             return None
 
         features = []
