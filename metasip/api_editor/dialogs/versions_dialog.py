@@ -10,7 +10,9 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt6.QtWidgets import QComboBox, QDialog, QFormLayout
+from PyQt6.QtWidgets import QComboBox, QFormLayout
+
+from ...Project import VersionRange
 
 from .base_dialog import BaseDialog
 
@@ -43,6 +45,18 @@ class VersionsDialog(BaseDialog):
 
         end_combo_box.addItem("Latest", '')
 
+        form.addRow("Starting version", start_combo_box)
+        form.addRow("Ending version", end_combo_box)
+
+        self._start_combo_box = start_combo_box
+        self._end_combo_box = end_combo_box
+
+    def set_fields(self):
+        """ Set the dialog's fields from the API item. """
+
+        # Note that we ignore (and eventually discard) anything other than the
+        # first version range.
+
         if len(self.api_item.versions) == 0:
             api_start = ''
             api_end = ''
@@ -60,22 +74,11 @@ class VersionsDialog(BaseDialog):
         else:
             end_index = self.project.versions.index(api_end) - 1
 
-        start_combo_box.setCurrentIndex(start_index)
-        end_combo_box.setCurrentIndex(end_index)
+        self._start_combo_box.setCurrentIndex(start_index)
+        self._end_combo_box.setCurrentIndex(end_index)
 
-        form.addRow("Starting version", start_combo_box)
-        form.addRow("Ending version", end_combo_box)
-
-        self._start_combo_box = start_combo_box
-        self._end_combo_box = end_combo_box
-
-    def exec(self):
-        """ Return a 2-tuple of the start and end versions or None if the
-        dialog was cancelled.
-        """
-
-        if super().exec() == int(QDialog.DialogCode.Rejected):
-            return None
+    def get_fields(self):
+        """ Update the API item from the dialog's fields. """
 
         start_combo_box = self._start_combo_box
         end_combo_box = self._end_combo_box
@@ -83,4 +86,4 @@ class VersionsDialog(BaseDialog):
         start_version = start_combo_box.itemData(start_combo_box.currentIndex())
         end_version = end_combo_box.itemData(end_combo_box.currentIndex())
 
-        return (start_version, end_version)
+        self.api_item.versions = [VersionRange(startversion=start_version, endversion=end_version)]

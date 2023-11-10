@@ -13,5 +13,6 @@
 from .enum_properties_dialog import EnumPropertiesDialog
 from .features_dialog import FeaturesDialog
 from .move_header_dialog import MoveHeaderDialog
+from .namespace_properties_dialog import NamespacePropertiesDialog
 from .platforms_dialog import PlatformsDialog
 from .versions_dialog import VersionsDialog

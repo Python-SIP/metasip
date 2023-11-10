@@ -37,7 +37,7 @@ class MoveHeaderDialog(BaseDialog):
 
         self._dst_module = dst_module
 
-    def exec(self):
+    def get_destination_module(self):
         """ Return the destination module or None if the dialog was cancelled.
         """
 

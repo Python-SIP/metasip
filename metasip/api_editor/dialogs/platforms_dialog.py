@@ -24,29 +24,26 @@ class PlatformsDialog(BaseDialog):
 
         layout = self.layout()
 
-        for platform_nr, platform in enumerate(self.project.platforms):
+        self._platforms = []
+
+        for platform in self.project.platforms:
             check_box = QCheckBox(platform)
+            layout.addWidget(check_box)
+            self._platforms.append((check_box, platform))
 
-            if platform in self.api_item.platforms:
-                check_box.setChecked(True)
+    def set_fields(self):
+        """ Set the dialog's fields from the API item. """
 
-            layout.insertWidget(platform_nr, check_box)
+        for check_box, platform in self._platforms:
+            check_box.setChecked(platform in self.api_item.platforms)
 
-    def exec(self):
-        """ Return the list of platforms or None if the dialog was cancelled.
-        """
-
-        if super().exec() == int(QDialog.DialogCode.Rejected):
-            return None
-
-        layout = self.layout()
+    def get_fields(self):
+        """ Update the API item from the dialog's fields. """
 
         platforms = []
 
-        for platform_nr in range(layout.count()):
-            check_box = layout.itemAt(platform_nr).widget()
+        for check_box, platform in self._platforms:
+            if check_box.isChecked():
+                platforms.append(platform)
 
-            if isinstance(check_box, QCheckBox) and check_box.isChecked():
-                platforms.append(self.project.platforms[platform_nr])
-
-        return platforms
+        self.api_item.platforms = platforms

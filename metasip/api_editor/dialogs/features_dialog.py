@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt6.QtWidgets import QComboBox, QDialog, QGridLayout, QLabel
+from PyQt6.QtWidgets import QComboBox, QGridLayout, QLabel
 
 from .base_dialog import BaseDialog
 
@@ -33,34 +33,38 @@ class FeaturesDialog(BaseDialog):
         self._features = []
 
         for row, feature in enumerate(all_features):
-            name = QLabel(feature)
-            grid.addWidget(name, row, 0)
+            grid.addWidget(QLabel(feature), row, 0)
 
-            state = QComboBox()
-            state.insertItems(0, self.FEATURE_VALUES)
-            grid.addWidget(state, row, 1)
-            self._features.append((state, feature))
+            combo_box = QComboBox()
+            combo_box.insertItems(0, self.FEATURE_VALUES)
+            grid.addWidget(combo_box, row, 1)
+            self._features.append((combo_box, feature))
 
+    def set_fields(self):
+        """ Set the dialog's fields from the API item. """
+
+        for combo_box, _ in self._features:
             for f in self.api_item.features:
                 if f.startswith('!') and feature == f[1:]:
-                    state.setCurrentIndex(2)
+                    index = 2
                 elif feature == f:
-                    state.setCurrentIndex(1)
+                    index = 1
+                else:
+                    index = 0
 
-    def exec(self):
-        """ Return a list of features or None if the dialog was cancelled. """
+                combo_box.setCurrentIndex(index)
 
-        if super().exec() == int(QDialog.DialogCode.Rejected):
-            return None
+    def get_fields(self):
+        """ Update the API item from the dialog's fields. """
 
         features = []
 
-        for state, feature in self._features:
-            state_index = state.currentIndex()
+        for combo_box, feature in self._features:
+            index = combo_box.currentIndex()
 
-            if state_index == 2:
+            if index == 2:
                 features.append('!' + feature)
-            elif state_index == 1:
+            elif index == 1:
                 features.append(feature)
 
-        return features
+        self.api_item.features = features

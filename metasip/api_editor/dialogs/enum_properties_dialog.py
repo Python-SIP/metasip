@@ -10,8 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDialog, QFormLayout,
-        QGroupBox, QLineEdit, QVBoxLayout)
+from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGroupBox,
+        QLineEdit, QVBoxLayout)
 
 from ..Annos import split_annos
 from ..BaseType import BaseType
@@ -48,28 +48,26 @@ class EnumPropertiesDialog(BaseDialog):
         no_type_hint = QCheckBox("NoTypeHint")
         group_box_layout.addWidget(no_type_hint)
 
-        for name, value in split_annos(self.api_item.annos):
-            if name == 'PyName':
-                py_name.setText(value)
-            elif name == 'BaseType':
-                base_type_helper.setAnnotation(value)
-            elif name == 'NoScope':
-                no_scope.setChecked(True)
-            elif name == 'NoTypeHint':
-                no_type_hint.setChecked(True)
-
         self._py_name = py_name
         self._base_type_helper = base_type_helper
         self._no_scope = no_scope
         self._no_type_hint = no_type_hint
 
-    def exec(self):
-        """ Return the tuple of the enum's properties or None if the dialog was
-        cancelled.
-        """
+    def set_fields(self):
+        """ Set the dialog's fields from the API item. """
 
-        if super().exec() == int(QDialog.DialogCode.Rejected):
-            return None
+        for name, value in split_annos(self.api_item.annos):
+            if name == 'PyName':
+                self._py_name.setText(value)
+            elif name == 'BaseType':
+                self._base_type_helper.setAnnotation(value)
+            elif name == 'NoScope':
+                self._no_scope.setChecked(True)
+            elif name == 'NoTypeHint':
+                self._no_type_hint.setChecked(True)
+
+    def get_fields(self):
+        """ Update the API item from the dialog's fields. """
 
         annos_list = []
 
@@ -85,4 +83,4 @@ class EnumPropertiesDialog(BaseDialog):
         if self._no_type_hint.isChecked():
             annos_list.append('NoTypeHint')
 
-        return (','.join(annos_list), )
+        self.api_item.annos = ','.join(annos_list)

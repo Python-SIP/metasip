@@ -47,3 +47,32 @@ class BaseDialog(QDialog):
         """ Reimplemented by a sub-class to populate the dialog's layout. """
 
         raise NotImplementedError
+
+    def update(self):
+        """ Return True if the API item was updated or False if the dialog was
+        cancelled.
+        """
+
+        self.set_fields()
+
+        if self.exec() == int(QDialog.DialogCode.Rejected):
+            return False
+
+        self.get_fields()
+
+        return True
+
+    def set_fields(self):
+        """ Normally reimplemented by a sub-class to set the dialog's fields
+        from the API item.
+        """
+
+        # This default implementation does nothing.
+        pass
+
+    def get_fields(self):
+        """ Reimplemented by a sub-class to update the API item from the
+        dialog's fields.
+        """
+
+        raise NotImplementedError

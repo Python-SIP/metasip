@@ -26,13 +26,12 @@ from ..Project import (Class, Constructor, Destructor, Method, Function,
         version_range)
 
 from .dialogs import (EnumPropertiesDialog, FeaturesDialog, MoveHeaderDialog,
-        PlatformsDialog, VersionsDialog)
+        NamespacePropertiesDialog, PlatformsDialog, VersionsDialog)
 
 from .ExternalEditor import ExternalEditor
 from .ArgProperties import ArgPropertiesDialog
 from .CallableProperties import CallablePropertiesDialog
 from .ClassProperties import ClassPropertiesDialog
-from .NamespaceProperties import NamespacePropertiesDialog
 from .OpaqueClassProperties import OpaqueClassPropertiesDialog
 from .VariableProperties import VariablePropertiesDialog
 from .EnumValueProperties import EnumValuePropertiesDialog
@@ -842,7 +841,7 @@ class SipFileItem(ContainerItem):
         dialog = MoveHeaderDialog(src_module, "Move Header File",
                 self.treeWidget(), project=self.treeWidget().project)
 
-        dst_module = dialog.exec()
+        dst_module = dialog.get_destination_module()
         if dst_module is not None:
             # Mark as dirty before moving it.
             self.set_dirty()
@@ -1371,7 +1370,7 @@ class CodeItem(ContainerItem):
             pslot = self._callablePropertiesSlot
             dsslot = True
         elif isinstance(self.code, Namespace):
-            pslot = self._namespacePropertiesSlot
+            pslot = self._handle_namespace_properties
         elif isinstance(self.code, OpaqueClass):
             pslot = self._opaqueClassPropertiesSlot
         elif isinstance(self.code, Namespace):
@@ -2147,13 +2146,11 @@ class CodeItem(ContainerItem):
         dialog = VersionsDialog(self.code, "Versions", self.treeWidget(),
                 project=self.treeWidget().project)
 
-        versions = dialog.exec()
-        if versions is not None:
-            (start_version, end_version) = versions
-
+        if dialog.update():
+            # Apply the version range to all targets.
             for itm in self._targets:
-                itm.code.versions = [VersionRange(startversion=start_version,
-                        endversion=end_version)]
+                if itm.code is not self.code:
+                    itm.code.versions = list(self.code.versions)
 
             self.set_dirty()
 
@@ -2163,9 +2160,7 @@ class CodeItem(ContainerItem):
         dialog = PlatformsDialog(self.code, "Platform Tags", self.treeWidget(),
                 project=self.treeWidget().project)
 
-        platforms = dialog.exec()
-        if platforms is not None:
-            self.code.platforms = platforms
+        if dialog.update():
             self.set_dirty()
 
     def _handle_features(self):
@@ -2174,23 +2169,17 @@ class CodeItem(ContainerItem):
         dialog = FeaturesDialog(self.code, "Feature Tags", self.treeWidget(),
                 project=self.treeWidget().project)
 
-        features = dialog.exec()
-        if features is not None:
-            self.code.features = features
+        if dialog.update():
             self.set_dirty()
 
-    def _namespacePropertiesSlot(self):
-        """
-        Slot to handle the properties for namespaces.
-        """
-        code = self.code
-        dlg = NamespacePropertiesDialog(code, self.treeWidget())
+    def _handle_namespace_properties(self):
+        """ Slot to handle the properties for namespaces. """
 
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (code.annos, ) = dlg.fields()
+        dialog = NamespacePropertiesDialog(self.code, "Namespace Properties",
+                self.treeWidget())
 
+        if dialog.update():
             self.set_dirty()
-
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _opaqueClassPropertiesSlot(self):
@@ -2264,10 +2253,7 @@ class CodeItem(ContainerItem):
         dialog = EnumPropertiesDialog(self.code, "Enum Properties",
                 self.treeWidget())
 
-        properties = dialog.exec()
-        if properties is not None:
-            annos, = properties
-            self.code.annos = annos
+        if dialog.update():
             self.set_dirty()
             self.setText(ApiEditor.NAME, self.code.user())
 
