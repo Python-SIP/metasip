@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,40 +10,30 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module handles the Encoding annotation. """
-
-
-class Encoding(object):
-    """
-    This class implements helpers for the Encoding annotation.
-    """
+class Encoding:
+    """ This class implements helpers for the Encoding annotation. """
 
     ENCODINGS = ("Default", "None", "ASCII", "Latin-1", "UTF-8")
 
     def __init__(self, combo):
-        """
-        Initialise the combo-box.
+        """ Initialise the combo-box. """
 
-        combo is the combo-box.
-        """
         combo.addItems(self.ENCODINGS)
 
         self._combo = combo
 
     def setAnnotation(self, anno):
-        """
-        Set the current annotation.
-        """
+        """ Set the current annotation. """
+
         for index, encoding in enumerate(self.ENCODINGS):
             if encoding == anno:
                 self._combo.setCurrentIndex(index)
-                break;
+                break
 
-    def annotation(self, alist):
-        """
-        Get the current annotation.
-        """
+    def annotation(self, annos_list):
+        """ Get the current annotation. """
+
         encoding = str(self._combo.currentText())
 
         if encoding != "Default":
-            alist.append('Encoding="%s"' % encoding)
+            annos_list.append(f'Encoding="{encoding}"')

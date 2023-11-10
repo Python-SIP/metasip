@@ -30,10 +30,8 @@ class NamespacePropertiesDialog(BaseDialog):
         group_box.setLayout(group_box_layout)
         layout.addWidget(group_box)
 
-        pyqt_no_qmetaobject = QCheckBox("PyQtNoQMetaObject")
-        group_box_layout.addWidget(pyqt_no_qmetaobject)
-
-        self._pyqt_no_qmetaobject = pyqt_no_qmetaobject
+        self._pyqt_no_qmetaobject = QCheckBox('PyQtNoQMetaObject')
+        group_box_layout.addWidget(self._pyqt_no_qmetaobject)
 
     def set_fields(self):
         """ Set the dialog's fields from the API item. """

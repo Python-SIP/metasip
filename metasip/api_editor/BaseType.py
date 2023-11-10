@@ -30,10 +30,10 @@ class BaseType:
                 self._combo.setCurrentIndex(index)
                 break;
 
-    def annotation(self, alist):
+    def annotation(self, annos_list):
         """ Get the current annotation. """
 
         base_type = str(self._combo.currentText())
 
         if base_type != "Enum":
-            alist.append('BaseType=%s' % base_type)
+            annos_list.append('BaseType=' + base_type)

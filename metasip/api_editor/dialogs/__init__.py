@@ -10,6 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from .argument_properties_dialog import ArgumentPropertiesDialog
 from .enum_properties_dialog import EnumPropertiesDialog
 from .features_dialog import FeaturesDialog
 from .move_header_dialog import MoveHeaderDialog

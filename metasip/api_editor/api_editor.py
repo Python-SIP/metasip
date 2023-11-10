@@ -25,11 +25,11 @@ from ..Project import (Class, Constructor, Destructor, Method, Function,
         ManualCode, Module, OpaqueClass, OperatorCast, Namespace, VersionRange,
         version_range)
 
-from .dialogs import (EnumPropertiesDialog, FeaturesDialog, MoveHeaderDialog,
-        NamespacePropertiesDialog, PlatformsDialog, VersionsDialog)
+from .dialogs import (ArgumentPropertiesDialog, EnumPropertiesDialog,
+        FeaturesDialog, MoveHeaderDialog, NamespacePropertiesDialog,
+        PlatformsDialog, VersionsDialog)
 
 from .ExternalEditor import ExternalEditor
-from .ArgProperties import ArgPropertiesDialog
 from .CallableProperties import CallablePropertiesDialog
 from .ClassProperties import ClassPropertiesDialog
 from .OpaqueClassProperties import OpaqueClassPropertiesDialog
@@ -1126,18 +1126,15 @@ class Argument(EditorItem):
         if len(siblings) != 0:
             return None
 
-        return [("Properties...", self._propertiesSlot)]
+        return [("Properties...", self._handle_argument_properties)]
 
-    def _propertiesSlot(self):
-        """
-        Slot to handle the argument's properties.
-        """
-        arg = self.arg
-        dlg = ArgPropertiesDialog(arg, self.treeWidget())
+    def _handle_argument_properties(self):
+        """ Slot to handle the argument's properties. """
 
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (arg.name, arg.unnamed, arg.pydefault, arg.pytype, arg.annos) = dlg.fields()
+        dialog = ArgumentPropertiesDialog(self.arg, "Argument Properties",
+                self.treeWidget())
 
+        if dialog.update():
             self.set_dirty()
 
             self.draw_name()

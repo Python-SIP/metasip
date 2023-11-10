@@ -35,23 +35,18 @@ class EnumPropertiesDialog(BaseDialog):
         form = QFormLayout()
         group_box_layout.addLayout(form)
 
-        py_name = QLineEdit()
-        form.addRow("PyName", py_name)
+        self._py_name = QLineEdit()
+        form.addRow('PyName', self._py_name)
 
         base_type = QComboBox()
-        form.addRow("BaseType", base_type)
-        base_type_helper = BaseType(base_type)
+        form.addRow('BaseType', base_type)
+        self._base_type_helper = BaseType(base_type)
 
-        no_scope = QCheckBox("NoScope")
-        group_box_layout.addWidget(no_scope)
+        self._no_scope = QCheckBox('NoScope')
+        group_box_layout.addWidget(self._no_scope)
 
-        no_type_hint = QCheckBox("NoTypeHint")
-        group_box_layout.addWidget(no_type_hint)
-
-        self._py_name = py_name
-        self._base_type_helper = base_type_helper
-        self._no_scope = no_scope
-        self._no_type_hint = no_type_hint
+        self._no_type_hint = QCheckBox('NoTypeHint')
+        group_box_layout.addWidget(self._no_type_hint)
 
     def set_fields(self):
         """ Set the dialog's fields from the API item. """

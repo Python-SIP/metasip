@@ -28,14 +28,12 @@ class MoveHeaderDialog(BaseDialog):
         form = QFormLayout()
         layout.addLayout(form)
 
-        dst_module = QComboBox()
-        form.addRow("Destination module", dst_module)
+        self._dst_module = QComboBox()
+        form.addRow("Destination module", self._dst_module)
 
         for module in sorted(self.project.modules, key=lambda m: m.name):
             if module is not self.api_item:
                 dst_module.addItem(module.name, module)
-
-        self._dst_module = dst_module
 
     def get_destination_module(self):
         """ Return the destination module or None if the dialog was cancelled.

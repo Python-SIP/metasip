@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,12 +10,9 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-""" This module handles annotations. """
-
-
 def split_annos(anno_s):
     """ Split a number of annotations represented as a string into a sequence
-    if name/value pairs.
+    of 2-tuple name/value pairs.
     """
 
     # Handle the trvial case.
