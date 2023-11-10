@@ -41,6 +41,7 @@ class ArgumentPropertiesDialog(BaseDialog):
 
         self._py_type = QLineEdit()
         form.addRow("Python type", self._py_type)
+
         self._py_default = QLineEdit()
         form.addRow("Python default value", self._py_default)
 

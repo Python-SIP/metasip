@@ -25,12 +25,11 @@ from ..Project import (Class, Constructor, Destructor, Method, Function,
         ManualCode, Module, OpaqueClass, OperatorCast, Namespace, VersionRange,
         version_range)
 
-from .dialogs import (ArgumentPropertiesDialog, EnumPropertiesDialog,
-        FeaturesDialog, MoveHeaderDialog, NamespacePropertiesDialog,
-        PlatformsDialog, VersionsDialog)
+from .dialogs import (ArgumentPropertiesDialog, CallablePropertiesDialog,
+        EnumPropertiesDialog, FeaturesDialog, MoveHeaderDialog,
+        NamespacePropertiesDialog, PlatformsDialog, VersionsDialog)
 
 from .ExternalEditor import ExternalEditor
-from .CallableProperties import CallablePropertiesDialog
 from .ClassProperties import ClassPropertiesDialog
 from .OpaqueClassProperties import OpaqueClassPropertiesDialog
 from .VariableProperties import VariablePropertiesDialog
@@ -1364,7 +1363,7 @@ class CodeItem(ContainerItem):
             menu.append(("Modify manual code body...", self._bodyManualCode, ("mcb" not in self._editors)))
 
             mcslot = True
-            pslot = self._callablePropertiesSlot
+            pslot = self._handle_callable_properties
             dsslot = True
         elif isinstance(self.code, Namespace):
             pslot = self._handle_namespace_properties
@@ -1394,22 +1393,22 @@ class CodeItem(ContainerItem):
             dsslot = True
         elif isinstance(self.code, Constructor):
             mcslot = True
-            pslot = self._callablePropertiesSlot
+            pslot = self._handle_callable_properties
             dsslot = True
         elif isinstance(self.code, Destructor):
             mcslot = True
             vccslot = True
-            pslot = self._callablePropertiesSlot
+            pslot = self._handle_callable_properties
         elif isinstance(self.code, OperatorCast):
             mcslot = True
-            pslot = self._callablePropertiesSlot
+            pslot = self._handle_callable_properties
         elif isinstance(self.code, Method):
             mcslot = True
 
             if self.code.virtual:
                 vccslot = True
 
-            pslot = self._callablePropertiesSlot
+            pslot = self._handle_callable_properties
             dsslot = True
         elif isinstance(self.code, OperatorMethod):
             mcslot = True
@@ -1417,14 +1416,14 @@ class CodeItem(ContainerItem):
             if self.code.virtual:
                 vccslot = True
 
-            pslot = self._callablePropertiesSlot
+            pslot = self._handle_callable_properties
         elif isinstance(self.code, Function):
             mcslot = True
-            pslot = self._callablePropertiesSlot
+            pslot = self._handle_callable_properties
             dsslot = True
         elif isinstance(self.code, OperatorFunction):
             mcslot = True
-            pslot = self._callablePropertiesSlot
+            pslot = self._handle_callable_properties
         elif isinstance(self.code, Variable):
             acslot = True
             gcslot = True
@@ -2207,27 +2206,14 @@ class CodeItem(ContainerItem):
 
             self.setText(ApiEditor.NAME, self.code.user())
 
-    def _callablePropertiesSlot(self):
-        """
-        Slot to handle the properties for callables.
-        """
-        code = self.code
-        dlg = CallablePropertiesDialog(code, self.treeWidget())
+    def _handle_callable_properties(self):
+        """ Slot to handle the properties for callables. """
 
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (pytype, pyargs, final, code.annos) = dlg.fields()
+        dialog = CallablePropertiesDialog(self.code, 'Placeholder',
+                self.treeWidget())
 
-            if hasattr(code, "pytype") and code.pytype is not None:
-                code.pytype = pytype
-
-            if hasattr(code, "pyargs"):
-                code.pyargs = pyargs
-
-            if hasattr(code, "final"):
-                code.final = final
-
+        if dialog.update():
             self.set_dirty()
-
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _variablePropertiesSlot(self):
