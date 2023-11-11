@@ -43,7 +43,7 @@ class FeaturesDialog(BaseDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
-        for combo_box, _ in self._features:
+        for combo_box, feature in self._features:
             for f in self.api_item.features:
                 if f.startswith('!') and feature == f[1:]:
                     index = 2

@@ -26,11 +26,11 @@ from ..Project import (Class, Constructor, Destructor, Method, Function,
         version_range)
 
 from .dialogs import (ArgumentPropertiesDialog, CallablePropertiesDialog,
-        EnumPropertiesDialog, FeaturesDialog, MoveHeaderDialog,
-        NamespacePropertiesDialog, PlatformsDialog, VersionsDialog)
+        ClassPropertiesDialog, EnumPropertiesDialog, FeaturesDialog,
+        MoveHeaderDialog, NamespacePropertiesDialog, PlatformsDialog,
+        VersionsDialog)
 
 from .ExternalEditor import ExternalEditor
-from .ClassProperties import ClassPropertiesDialog
 from .OpaqueClassProperties import OpaqueClassPropertiesDialog
 from .VariableProperties import VariablePropertiesDialog
 from .EnumValueProperties import EnumValuePropertiesDialog
@@ -1389,7 +1389,7 @@ class CodeItem(ContainerItem):
             bicbslot = True
             pickslot = True
             xaslot = True
-            pslot = self._classPropertiesSlot
+            pslot = self._handle_class_properties
             dsslot = True
         elif isinstance(self.code, Constructor):
             mcslot = True
@@ -2192,18 +2192,14 @@ class CodeItem(ContainerItem):
 
             self.setText(ApiEditor.NAME, self.code.user())
 
-    def _classPropertiesSlot(self):
-        """
-        Slot to handle the properties for classes.
-        """
-        code = self.code
-        dlg = ClassPropertiesDialog(code, self.treeWidget())
+    def _handle_class_properties(self):
+        """ Slot to handle the properties for classes. """
 
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (code.pybases, code.annos) = dlg.fields()
+        dialog = ClassPropertiesDialog(self.code, "Class Properties",
+                self.treeWidget())
 
+        if dialog.update():
             self.set_dirty()
-
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _handle_callable_properties(self):

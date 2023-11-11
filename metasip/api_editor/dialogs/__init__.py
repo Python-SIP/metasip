@@ -12,6 +12,7 @@
 
 from .argument_properties_dialog import ArgumentPropertiesDialog
 from .callable_properties_dialog import CallablePropertiesDialog
+from .class_properties_dialog import ClassPropertiesDialog
 from .enum_properties_dialog import EnumPropertiesDialog
 from .features_dialog import FeaturesDialog
 from .move_header_dialog import MoveHeaderDialog
