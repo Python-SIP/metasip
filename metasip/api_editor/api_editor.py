@@ -27,15 +27,15 @@ from ..Project import (Class, Constructor, Destructor, Method, Function,
 
 from .dialogs import (ArgumentPropertiesDialog, CallablePropertiesDialog,
         ClassPropertiesDialog, EnumPropertiesDialog,
-        EnumMemberPropertiesDialog, FeaturesDialog, MoveHeaderDialog,
-        NamespacePropertiesDialog, PlatformsDialog, VersionsDialog)
+        EnumMemberPropertiesDialog, FeaturesDialog, ManualCodeDialog,
+        MoveHeaderDialog, NamespacePropertiesDialog, PlatformsDialog,
+        VersionsDialog)
 
 from .ExternalEditor import ExternalEditor
 from .OpaqueClassProperties import OpaqueClassPropertiesDialog
 from .VariableProperties import VariablePropertiesDialog
 from .ModuleProperties import ModulePropertiesDialog
 from .ProjectProperties import ProjectPropertiesDialog
-from .ManualCode import ManualCodeDialog
 
 
 class ApiEditor(QTreeWidget):
@@ -814,7 +814,7 @@ class SipFileItem(ContainerItem):
         return [("Hide Ignored", self._hideIgnoredSlot),
                 ("Show Ignored", self._showIgnoredSlot),
                 None,
-                ("Add manual code...", self._addManualCode),
+                ("Add manual code...", self._handle_add_manual_code),
                 None,
                 ("%ExportedHeaderCode", self._exportedHeaderCodeSlot, ("ehc" not in self._editors)),
                 ("%ModuleHeaderCode", self._moduleHeaderCodeSlot, ("mhc" not in self._editors)),
@@ -866,20 +866,17 @@ class SipFileItem(ContainerItem):
 
         self.treeWidget().acceptArgumentNames(self.sipfile)
 
-    def _addManualCode(self):
-        """
-        Slot to handle the creation of manual code.
-        """
-        dlg = ManualCodeDialog("", self.treeWidget())
+    def _handle_add_manual_code(self):
+        """ Slot to handle the creation of manual code. """
 
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (precis, ) = dlg.fields()
+        manual_code = ManualCode()
 
-            if precis:
-                mc = ManualCode(precis=precis)
-                self.sipfile.content.insert(0, mc)
+        dialog = ManualCodeDialog(manual_code, "Add Manual Code",
+                self.treeWidget())
 
-                self.set_dirty()
+        if dialog.update():
+            self.sipfile.content.insert(0, manual_code)
+            self.set_dirty()
 
     def _exportedHeaderCodeSlot(self):
         """
@@ -1329,7 +1326,7 @@ class CodeItem(ContainerItem):
 
         # Handle the manual code part of the menu.
         menu.append(None)
-        menu.append(("Add manual code...", self._addManualCode))
+        menu.append(("Add manual code...", self._handle_add_manual_code))
 
         # See what extra menu items are needed.
         thcslot = False
@@ -1358,7 +1355,7 @@ class CodeItem(ContainerItem):
         dsslot = None
 
         if isinstance(self.code, ManualCode):
-            menu.append(("Modify manual code...", self._precisManualCode))
+            menu.append(("Modify manual code...", self._handle_modify_manual_code))
             menu.append(("Modify manual code body...", self._bodyManualCode, ("mcb" not in self._editors)))
 
             mcslot = True
@@ -1580,37 +1577,30 @@ class CodeItem(ContainerItem):
 
         self.treeWidget().acceptArgumentNames(self.code)
 
-    def _addManualCode(self):
-        """
-        Slot to handle the creation of manual code.
-        """
-        dlg = ManualCodeDialog("", self.treeWidget())
+    def _handle_add_manual_code(self):
+        """ Slot to handle the addition of manual code. """
 
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (precis, ) = dlg.fields()
+        manual_code = ManualCode()
 
-            if precis:
-                mc = ManualCode(precis=precis)
+        dialog = ManualCodeDialog(manual_code, "Add Manual Code",
+                self.treeWidget())
 
-                parent_content = self.parent_project_item().content
-                parent_content.insert(parent_content.index(self.code) + 1, mc)
-
-                self.set_dirty()
-
-    def _precisManualCode(self):
-        """
-        Slot to handle the update of the manual code.
-        """
-        dlg = ManualCodeDialog(self.code.precis, self.treeWidget())
-
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (precis, ) = dlg.fields()
-
-            if self.code.precis != precis:
-                self.code.precis = precis
-                self.draw_name()
-
+        if dialog.update():
+            parent_content = self.parent_project_item().content
+            parent_content.insert(parent_content.index(self.code) + 1,
+                    manual_code)
             self.set_dirty()
+
+    def _handle_modify_manual_code(self):
+        """ Slot to handle the update of the manual code. """
+
+        dialog = ManualCodeDialog(self.code, "Modify Manual Code",
+                self.treeWidget())
+
+        if dialog.update():
+            self.set_dirty()
+
+            self.draw_name()
 
     def _bodyManualCode(self):
         """
