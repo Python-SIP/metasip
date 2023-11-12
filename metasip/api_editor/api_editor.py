@@ -26,14 +26,13 @@ from ..Project import (Class, Constructor, Destructor, Method, Function,
         version_range)
 
 from .dialogs import (ArgumentPropertiesDialog, CallablePropertiesDialog,
-        ClassPropertiesDialog, EnumPropertiesDialog, FeaturesDialog,
-        MoveHeaderDialog, NamespacePropertiesDialog, PlatformsDialog,
-        VersionsDialog)
+        ClassPropertiesDialog, EnumPropertiesDialog,
+        EnumMemberPropertiesDialog, FeaturesDialog, MoveHeaderDialog,
+        NamespacePropertiesDialog, PlatformsDialog, VersionsDialog)
 
 from .ExternalEditor import ExternalEditor
 from .OpaqueClassProperties import OpaqueClassPropertiesDialog
 from .VariableProperties import VariablePropertiesDialog
-from .EnumValueProperties import EnumValuePropertiesDialog
 from .ModuleProperties import ModulePropertiesDialog
 from .ProjectProperties import ProjectPropertiesDialog
 from .ManualCode import ManualCodeDialog
@@ -1432,7 +1431,7 @@ class CodeItem(ContainerItem):
         elif isinstance(self.code, Enum):
             pslot = self._handle_enum_properties
         elif isinstance(self.code, EnumValue):
-            pslot = self._enumValuePropertiesSlot
+            pslot = self._handle_enum_member_properties
 
         if thcslot or thicslot or tcslot or cttcslot or cftcslot or fcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
             menu.append(None)
@@ -2236,18 +2235,14 @@ class CodeItem(ContainerItem):
             self.set_dirty()
             self.setText(ApiEditor.NAME, self.code.user())
 
-    def _enumValuePropertiesSlot(self):
-        """
-        Slot to handle the properties for enum values.
-        """
-        code = self.code
-        dlg = EnumValuePropertiesDialog(self.code, self.treeWidget())
+    def _handle_enum_member_properties(self):
+        """ Slot to handle the properties for enum members. """
 
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (code.annos, ) = dlg.fields()
+        dialog = EnumMemberPropertiesDialog(self.code,
+                "Enum Member Properties", self.treeWidget())
 
+        if dialog.update():
             self.set_dirty()
-
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _setStatusChecked(self):

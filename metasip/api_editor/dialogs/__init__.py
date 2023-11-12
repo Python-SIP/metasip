@@ -14,6 +14,7 @@ from .argument_properties_dialog import ArgumentPropertiesDialog
 from .callable_properties_dialog import CallablePropertiesDialog
 from .class_properties_dialog import ClassPropertiesDialog
 from .enum_properties_dialog import EnumPropertiesDialog
+from .enum_member_properties_dialog import EnumMemberPropertiesDialog
 from .features_dialog import FeaturesDialog
 from .move_header_dialog import MoveHeaderDialog
 from .namespace_properties_dialog import NamespacePropertiesDialog
