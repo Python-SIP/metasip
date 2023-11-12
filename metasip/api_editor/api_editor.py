@@ -28,13 +28,12 @@ from ..Project import (Class, Constructor, Destructor, Method, Function,
 from .dialogs import (ArgumentPropertiesDialog, CallablePropertiesDialog,
         ClassPropertiesDialog, EnumPropertiesDialog,
         EnumMemberPropertiesDialog, FeaturesDialog, ManualCodeDialog,
-        MoveHeaderDialog, NamespacePropertiesDialog, PlatformsDialog,
-        VersionsDialog)
+        ModulePropertiesDialog, MoveHeaderDialog, NamespacePropertiesDialog,
+        PlatformsDialog, VersionsDialog)
 
 from .ExternalEditor import ExternalEditor
 from .OpaqueClassProperties import OpaqueClassPropertiesDialog
 from .VariableProperties import VariablePropertiesDialog
-from .ModuleProperties import ModulePropertiesDialog
 from .ProjectProperties import ProjectPropertiesDialog
 
 
@@ -547,18 +546,15 @@ class ModuleItem(EditorItem, DropSite):
         if len(siblings) != 0:
             return None
 
-        return [("Properties...", self._propertiesSlot)]
+        return [("Properties...", self._handle_module_properties)]
 
-    def _propertiesSlot(self):
+    def _handle_module_properties(self):
         """ Handle the module's properties. """
 
-        mod = self.module
-        dlg = ModulePropertiesDialog(self.treeWidget().project, mod,
-                self.treeWidget())
+        dialog = ModulePropertiesDialog(self.module, "Module Properties",
+                self.treeWidget(), project=self.treeWidget().project)
 
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (mod.outputdirsuffix, mod.imports, mod.directives, mod.callsuperinit, mod.virtualerrorhandler, mod.uselimitedapi, mod.pyssizetclean) = dlg.fields()
-
+        if dialog.update():
             self.set_dirty()
 
     def __on_name_changed(self, change):
