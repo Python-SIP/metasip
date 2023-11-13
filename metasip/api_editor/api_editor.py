@@ -30,10 +30,9 @@ from .dialogs import (ArgumentPropertiesDialog, CallablePropertiesDialog,
         EnumMemberPropertiesDialog, FeaturesDialog, ManualCodeDialog,
         ModulePropertiesDialog, MoveHeaderDialog, NamespacePropertiesDialog,
         OpaqueClassPropertiesDialog, PlatformsDialog, ProjectPropertiesDialog,
-        VersionsDialog)
+        VariablePropertiesDialog, VersionsDialog)
 
 from .ExternalEditor import ExternalEditor
-from .VariableProperties import VariablePropertiesDialog
 
 
 class ApiEditor(QTreeWidget):
@@ -1416,7 +1415,7 @@ class CodeItem(ContainerItem):
             acslot = True
             gcslot = True
             scslot = True
-            pslot = self._variablePropertiesSlot
+            pslot = self._handle_variable_properties
         elif isinstance(self.code, Enum):
             pslot = self._handle_enum_properties
         elif isinstance(self.code, EnumValue):
@@ -2189,18 +2188,14 @@ class CodeItem(ContainerItem):
             self.set_dirty()
             self.setText(ApiEditor.NAME, self.code.user())
 
-    def _variablePropertiesSlot(self):
-        """
-        Slot to handle the properties for variables.
-        """
-        code = self.code
-        dlg = VariablePropertiesDialog(code, self.treeWidget())
+    def _handle_variable_properties(self):
+        """ Slot to handle the properties for variables. """
 
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (code.annos, ) = dlg.fields()
+        dialog = VariablePropertiesDialog(self.code, "Variable Properties",
+                self.treeWidget())
 
+        if dialog.update():
             self.set_dirty()
-
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _handle_enum_properties(self):
