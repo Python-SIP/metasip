@@ -22,4 +22,5 @@ from .move_header_dialog import MoveHeaderDialog
 from .namespace_properties_dialog import NamespacePropertiesDialog
 from .opaque_class_properties_dialog import OpaqueClassPropertiesDialog
 from .platforms_dialog import PlatformsDialog
+from .project_properties_dialog import ProjectPropertiesDialog
 from .versions_dialog import VersionsDialog

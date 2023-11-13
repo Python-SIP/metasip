@@ -29,11 +29,11 @@ from .dialogs import (ArgumentPropertiesDialog, CallablePropertiesDialog,
         ClassPropertiesDialog, EnumPropertiesDialog,
         EnumMemberPropertiesDialog, FeaturesDialog, ManualCodeDialog,
         ModulePropertiesDialog, MoveHeaderDialog, NamespacePropertiesDialog,
-        OpaqueClassPropertiesDialog, PlatformsDialog, VersionsDialog)
+        OpaqueClassPropertiesDialog, PlatformsDialog, ProjectPropertiesDialog,
+        VersionsDialog)
 
 from .ExternalEditor import ExternalEditor
 from .VariableProperties import VariablePropertiesDialog
-from .ProjectProperties import ProjectPropertiesDialog
 
 
 class ApiEditor(QTreeWidget):
@@ -409,7 +409,7 @@ class ProjectItem(EditorItem):
             return None
 
         return [("Add Ignored Namespace...", self._ignorednamespaceSlot),
-                ("Properties...", self._propertiesSlot)]
+                ("Properties...", self._handle_project_properties)]
 
     def _ignorednamespaceSlot(self):
         """ Handle adding a new ignored namespace. """
@@ -437,16 +437,13 @@ class ProjectItem(EditorItem):
                 project.ignorednamespaces.append(ns)
                 self.set_dirty()
 
-    def _propertiesSlot(self):
-        """
-        Handle the project's properties.
-        """
-        prj = self._project
-        dlg = ProjectPropertiesDialog(prj, self.treeWidget())
+    def _handle_project_properties(self):
+        """ Handle the project's properties. """
 
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (prj.rootmodule, prj.ignorednamespaces, prj.sipcomments) = dlg.fields()
+        dialog = ProjectPropertiesDialog(self._project, "Project Properties",
+                self.treeWidget())
 
+        if dialog.update():
             self.set_dirty()
 
     def __on_modules_changed(self, change):

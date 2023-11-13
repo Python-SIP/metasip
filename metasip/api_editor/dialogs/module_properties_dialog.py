@@ -35,6 +35,7 @@ class ModulePropertiesDialog(BaseDialog):
         form.addRow("Output directory suffix", self._output_dir_suffix)
 
         self._directives = QPlainTextEdit()
+        self._directives.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         form.addRow("Addional directives", self._directives)
 
         self._call_super_init = QComboBox()
