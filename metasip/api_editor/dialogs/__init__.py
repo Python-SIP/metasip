@@ -20,5 +20,6 @@ from .manual_code_dialog import ManualCodeDialog
 from .module_properties_dialog import ModulePropertiesDialog
 from .move_header_dialog import MoveHeaderDialog
 from .namespace_properties_dialog import NamespacePropertiesDialog
+from .opaque_class_properties_dialog import OpaqueClassPropertiesDialog
 from .platforms_dialog import PlatformsDialog
 from .versions_dialog import VersionsDialog

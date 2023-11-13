@@ -29,10 +29,9 @@ from .dialogs import (ArgumentPropertiesDialog, CallablePropertiesDialog,
         ClassPropertiesDialog, EnumPropertiesDialog,
         EnumMemberPropertiesDialog, FeaturesDialog, ManualCodeDialog,
         ModulePropertiesDialog, MoveHeaderDialog, NamespacePropertiesDialog,
-        PlatformsDialog, VersionsDialog)
+        OpaqueClassPropertiesDialog, PlatformsDialog, VersionsDialog)
 
 from .ExternalEditor import ExternalEditor
-from .OpaqueClassProperties import OpaqueClassPropertiesDialog
 from .VariableProperties import VariablePropertiesDialog
 from .ProjectProperties import ProjectPropertiesDialog
 
@@ -1360,7 +1359,7 @@ class CodeItem(ContainerItem):
         elif isinstance(self.code, Namespace):
             pslot = self._handle_namespace_properties
         elif isinstance(self.code, OpaqueClass):
-            pslot = self._opaqueClassPropertiesSlot
+            pslot = self._handle_opaque_class_properties
         elif isinstance(self.code, Namespace):
             thcslot = True
         elif isinstance(self.code, Class):
@@ -2163,18 +2162,14 @@ class CodeItem(ContainerItem):
             self.set_dirty()
             self.setText(ApiEditor.NAME, self.code.user())
 
-    def _opaqueClassPropertiesSlot(self):
-        """
-        Slot to handle the properties for opaque classes.
-        """
-        code = self.code
-        dlg = OpaqueClassPropertiesDialog(code, self.treeWidget())
+    def _handle_opaque_class_properties(self):
+        """ Slot to handle the properties for opaque classes. """
 
-        if dlg.exec() == int(QDialog.DialogCode.Accepted):
-            (code.annos, ) = dlg.fields()
+        dialog = OpaqueClassPropertiesDialog(self.code,
+                "Opaque Class Properties", self.treeWidget())
 
+        if dialog.update():
             self.set_dirty()
-
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _handle_class_properties(self):
