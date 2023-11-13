@@ -32,7 +32,7 @@ from .dialogs import (ArgumentPropertiesDialog, CallablePropertiesDialog,
         OpaqueClassPropertiesDialog, PlatformsDialog, ProjectPropertiesDialog,
         VariablePropertiesDialog, VersionsDialog)
 
-from .ExternalEditor import ExternalEditor
+from .external_editor import ExternalEditor
 
 
 class ApiEditor(QTreeWidget):

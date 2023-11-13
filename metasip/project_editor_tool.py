@@ -30,7 +30,7 @@ class ProjectEditorTool(BaseManagedModelTool):
     def create_views(self, model):
         """ Create the views for editing a model. """
 
-        from .api_editor import ApiEditor
+        from .gui import ApiEditor
 
         return [ApiEditor(model)]
 
