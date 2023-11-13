@@ -13,9 +13,8 @@
 from PyQt6.QtWidgets import (QCheckBox, QFormLayout, QGroupBox, QLineEdit,
         QVBoxLayout)
 
-from ..Annos import split_annos
-
 from .base_dialog import BaseDialog
+from .helpers import split_annos
 
 
 class EnumMemberPropertiesDialog(BaseDialog):

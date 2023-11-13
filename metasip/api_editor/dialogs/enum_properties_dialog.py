@@ -13,10 +13,8 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGroupBox,
         QLineEdit, QVBoxLayout)
 
-from ..Annos import split_annos
-from ..BaseType import BaseType
-
 from .base_dialog import BaseDialog
+from .helpers import BaseType, split_annos
 
 
 class EnumPropertiesDialog(BaseDialog):

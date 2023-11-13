@@ -10,6 +10,64 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+class BaseType:
+    """ This class implements helpers for the BaseType annotation. """
+
+    BASE_TYPES = ('Enum', 'Flag', 'IntEnum', 'UIntEnum', 'IntFlag')
+
+    def __init__(self, combo):
+        """ Initialise the combo-box. """
+
+        combo.addItems(self.BASE_TYPES)
+
+        self._combo = combo
+
+    def setAnnotation(self, anno):
+        """ Set the current annotation. """
+
+        for index, base_type in enumerate(self.BASE_TYPES):
+            if base_type == anno:
+                self._combo.setCurrentIndex(index)
+                break;
+
+    def annotation(self, annos_list):
+        """ Get the current annotation. """
+
+        base_type = str(self._combo.currentText())
+
+        if base_type != 'Enum':
+            annos_list.append('BaseType=' + base_type)
+
+
+class Encoding:
+    """ This class implements helpers for the Encoding annotation. """
+
+    ENCODINGS = ('Default', 'None', 'ASCII', 'Latin-1', 'UTF-8')
+
+    def __init__(self, combo):
+        """ Initialise the combo-box. """
+
+        combo.addItems(self.ENCODINGS)
+
+        self._combo = combo
+
+    def setAnnotation(self, anno):
+        """ Set the current annotation. """
+
+        for index, encoding in enumerate(self.ENCODINGS):
+            if encoding == anno:
+                self._combo.setCurrentIndex(index)
+                break
+
+    def annotation(self, annos_list):
+        """ Get the current annotation. """
+
+        encoding = str(self._combo.currentText())
+
+        if encoding != 'Default':
+            annos_list.append(f'Encoding="{encoding}"')
+
+
 def split_annos(anno_s):
     """ Split a number of annotations represented as a string into a sequence
     of 2-tuple name/value pairs.

@@ -16,10 +16,8 @@ from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGridLayout,
 from ...Project import (Constructor, Destructor, Method, OperatorMethod,
         Function, OperatorFunction, ManualCode)
 
-from ..Annos import split_annos
-from ..Encoding import Encoding
-
 from .base_dialog import BaseDialog
+from .helpers import Encoding, split_annos
 
 
 class CallablePropertiesDialog(BaseDialog):

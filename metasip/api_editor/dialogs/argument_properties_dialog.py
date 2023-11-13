@@ -13,10 +13,8 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGridLayout,
         QGroupBox, QHBoxLayout, QLabel, QLineEdit)
 
-from ..Annos import split_annos
-from ..Encoding import Encoding
-
 from .base_dialog import BaseDialog
+from .helpers import Encoding, split_annos
 
 
 class ArgumentPropertiesDialog(BaseDialog):
