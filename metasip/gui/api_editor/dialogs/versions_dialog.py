@@ -12,7 +12,7 @@
 
 from PyQt6.QtWidgets import QComboBox, QFormLayout
 
-from ...Project import VersionRange
+from ....Project import VersionRange
 
 from .base_dialog import BaseDialog
 

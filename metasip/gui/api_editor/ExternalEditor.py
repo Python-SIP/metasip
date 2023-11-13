@@ -15,8 +15,8 @@ from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog,
         QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout)
 from PyQt6.Qsci import QsciLexerCPP, QsciScintilla
 
-from ..dip.settings import SettingsManager
-from ..dip.ui import IDialog
+from ...dip.settings import SettingsManager
+from ...dip.ui import IDialog
 
 
 class ExternalEditor(QObject):
