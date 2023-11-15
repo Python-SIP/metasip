@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -71,7 +71,7 @@ class ViewFactory(Model):
     def __init__(self, **properties):
         """ Initialize the factory.
 
-        :param \*\*properties:
+        :param properties:
             are keyword arguments used as property names and values that are
             applied to each toolkit view created by the factory.
         """

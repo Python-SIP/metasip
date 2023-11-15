@@ -61,7 +61,7 @@ class LoggerTool(SimpleViewTool):
 
         # Make sure the new message is visible.
         qview.verticalScrollBar().triggerAction(
-                QAbstractSlider.SliderToMaximum)
+                QAbstractSlider.SliderAction.SliderToMaximum)
 
         # Update the screen so that individual messages appear as soon as they
         # are logged.

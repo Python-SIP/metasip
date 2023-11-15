@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -46,13 +46,13 @@ class ContainerFactory(ViewFactory):
     def __init__(self, *contents, **properties):
         """ Initialise the factory.
 
-        :param \*contents:
+        :param contents:
             is the list of the view's contents.  An individual item can either
             be a :class:`~dip.ui.ViewFactory` instance or a string.  Strings
             are are assumed to be the names of attributes within a model.  Such
             names may include one or more periods to specify an
             :term:`attribute path`.
-        :param \*\*properties:
+        :param properties:
             are keyword arguments used as property names and values that are
             applied to each toolkit view created by the factory.
         """

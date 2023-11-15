@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -31,7 +31,7 @@ class ActionCollection(ValueTypeFactory):
     def __init__(self, *action_ids, id=None, text='', within='', **metadata):
         """ Initialise the object.
 
-        :param \*action_ids:
+        :param action_ids:
             is the list of the identifiers of actions contained in the
             collection.
         :param id:
@@ -44,7 +44,7 @@ class ActionCollection(ValueTypeFactory):
         :param within:
             is the identifier of an optional action collection that this
             collection will be placed within.
-        :param \*\*metadata:
+        :param metadata:
             is additional meta-data stored with the type.
         """
 

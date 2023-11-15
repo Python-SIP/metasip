@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -65,7 +65,7 @@ class Action(ValueTypeFactory):
         :param within:
             is the identifier of an optional collection of actions that this
             action will be placed within.
-        :param \*\*metadata:
+        :param metadata:
             is additional meta-data stored with the type.
         """
 

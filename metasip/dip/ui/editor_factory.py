@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -50,7 +50,7 @@ class EditorFactory(ViewFactory):
             the name of the attribute that the editor is bound to.  It should
             only be an empty string if the factory is being used to create a
             delegate.
-        :param \*\*properties:
+        :param properties:
             are keyword arguments used as property names and values that are
             applied to the editor.
         """

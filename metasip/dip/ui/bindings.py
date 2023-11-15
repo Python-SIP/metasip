@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -38,7 +38,7 @@ class Bindings(Model):
     def __init__(self, **bindings):
         """ Initialise the bindings.
 
-        :param \*\*bindings:
+        :param bindings:
             the bindings specified as keyword arguments.  The argument name is
             the object name of the widget that the attribute will be bound to.
             The argument value is the binding.  If the argument value is a

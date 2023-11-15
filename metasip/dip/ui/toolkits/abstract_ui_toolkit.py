@@ -48,7 +48,7 @@ class AbstractUIToolkit(Model):
 
         :param argv:
             is the sequence of command line arguments.
-        :param \*\*properties:
+        :param properties:
             are the keyword arguments used as toolkit specific property names
             and values that are used to configure the application.
         :return:
