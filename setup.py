@@ -36,10 +36,10 @@ setup(
         author_email='info@riverbankcomputing.com',
         url='https://www.riverbankcomputing.com/software/metasip/',
         license='GPL3',
-        install_requires=['PyQt5', 'QScintilla'],
+        install_requires=['PyQt6', 'QScintilla'],
         packages=find_packages(),
         entry_points={
-            'console_scripts':  ['msipgen = metasip.main:msipgen_main'],
-            'gui_scripts':      ['msip = metasip.main:msip_main']
+            'console_scripts':  ['msipgen = metasip.main:main'],
+            'gui_scripts':      ['msip = metasip.gui.main:main']
         }
      )

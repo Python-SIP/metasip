@@ -20,186 +20,8 @@ from .dip.io.storage.filesystem import FilesystemStorageFactory
 from . import Project, ProjectCodec
 
 
-# Configure the i/o manager so we can use it for reading and writing projects
-# to the filesystem.
-IoManager.codecs.append(ProjectCodec())
-IoManager.storage_factories.append(FilesystemStorageFactory())
-
-
-def load_batch_project(prjname):
-    """ Load an existing project in anticipation of doing some batch
-    processing.
-
-    :param prjname:
-        is the location of the project.
-    :return:
-        the project.
-    """
-
-    if not prjname:
-        fatal("Specify the name of an existing project file")
-
-    try:
-        prj = IoManager.read(Project(), prjname, 'metasip.formats.project')
-    except StorageError as e:
-        fatal(e.error)
-
-    return prj
-
-
-def generate(prjname, modules, gendir, latest_sip):
-    """
-    Generate the .sip files for a project and return an exit code or 0 if there
-    was no error.
-
-    prjname is the name of the project file.
-    modules is a list of modules to generate the .sip files for.  None implies
-    all modules in the project.
-    gendir is the directory in which to generate the .sip files.
-    """
-    if not os.path.isdir(gendir):
-        fatal("%s is not an existing directory" % gendir)
-
-    prj = load_batch_project(prjname)
-
-    if modules:
-        gen_modules = []
-
-        for module_name in modules:
-            for mod in prj.modules:
-                if mod.name == module_name:
-                    gen_modules.append(mod)
-                    break
-            else:
-                fatal(
-                        "There is no module '{0}' in the project".format(
-                                module_name))
-    else:
-        gen_modules = prj.modules
-
-    # Generate each module.
-    for mod in gen_modules:
-        if not prj.generateModule(mod, gendir, latest_sip=latest_sip):
-            fatal(prj.diagnostic)
-
-    # No error if we have got this far.
-    return 0
-
-
-def launchGUI(prjname, guiargs):
-    """ Launch the GUI for a project.
-
-    :param prjname:
-        is the name of the project file.  It is None if there is none.
-    :param guiargs:
-        is a sequence of additional toolkit-specific arguments.
-    :return:
-        the exit code or 0 if there was no error.
-    """
-
-    from .dip.io import StorageError
-    from .dip.settings import SettingsManager
-    from .dip.shell import IShell
-    from .dip.shell.shells.main_window import MainWindowShell
-    from .dip.shell.tools.dirty import DirtyTool
-    from .dip.shell.tools.model_manager import ModelManagerTool
-    from .dip.shell.tools.quit import QuitTool
-    from .dip.ui import Application
-
-    from metasip import ProjectEditorTool, ProjectFactory, UpdateManager
-    from metasip.tools.features import FeaturesTool
-    from metasip.tools.import_project import ImportProjectTool
-    from metasip.tools.logger import LoggerTool
-    from metasip.tools.modules import ModulesTool
-    from metasip.tools.platforms import PlatformsTool
-    from metasip.tools.scanner import ScannerTool
-    from metasip.tools.versions import VersionsTool
-    from metasip.updates import (ProjectV2Update, ProjectV3Update,
-            ProjectV4Update, ProjectV5Update, ProjectV6Update, ProjectV7Update,
-            ProjectV8Update, ProjectV9Update, ProjectV10Update,
-            ProjectV11Update, ProjectV12Update, ProjectV13Update,
-            ProjectV14Update, ProjectV15Update, ProjectV16Update)
-
-    app = Application(guiargs)
-    SettingsManager.load('riverbankcomputing.com')
-
-    # Add the project updates.
-    UpdateManager.updates.append(ProjectV2Update())
-    UpdateManager.updates.append(ProjectV3Update())
-    UpdateManager.updates.append(ProjectV4Update())
-    UpdateManager.updates.append(ProjectV5Update())
-    UpdateManager.updates.append(ProjectV6Update())
-    UpdateManager.updates.append(ProjectV7Update())
-    UpdateManager.updates.append(ProjectV8Update())
-    UpdateManager.updates.append(ProjectV9Update())
-    UpdateManager.updates.append(ProjectV10Update())
-    UpdateManager.updates.append(ProjectV11Update())
-    UpdateManager.updates.append(ProjectV12Update())
-    UpdateManager.updates.append(ProjectV13Update())
-    UpdateManager.updates.append(ProjectV14Update())
-    UpdateManager.updates.append(ProjectV15Update())
-    UpdateManager.updates.append(ProjectV16Update())
-
-    # Define the shell.
-    editor_tool = ProjectEditorTool(model_policy='one')
-
-    view_factory = MainWindowShell(main_area_policy='single',
-            tool_factories=[LoggerTool, DirtyTool, QuitTool,
-                    lambda: ModelManagerTool(
-                            model_factories=[ProjectFactory()]),
-                    lambda: editor_tool,
-                    FeaturesTool,
-                    ImportProjectTool,
-                    ModulesTool,
-                    PlatformsTool,
-                    ScannerTool,
-                    VersionsTool],
-            title_template="[view][*]")
-
-    # Create the shell.
-    view = view_factory()
-
-    # Handle any project passed on the command line.
-    if prjname is not None:
-        try:
-            IShell(view).open('metasip.tools.project_editor', prjname,
-                    'metasip.formats.project')
-        except StorageError as e:
-            Application.warning("Open",
-                    "There was an error opening {0}.".format(prjname),
-                    detail=str(e))
-
-    SettingsManager.restore(view.all_views())
-    view.visible = True
-    rc = app.execute()
-    SettingsManager.save(view.all_views())
-
-    return rc
-
-
-def fatal(msg):
-    """
-    Display an error message and exit with a return code of 1.
-
-    msg is the text of the message, excluding newlines.
-    """
-    sys.stderr.write("msipgen: %s\n" % msg)
-    sys.exit(1)
-
-
-def msip_main():
-    """ The entry point for the setuptools generated msip wrapper. """
-
-    # Parse the command line.
-    parser = argparse.ArgumentParser()
-    parser.add_argument('project', help="the project to edit", nargs='?')
-    args = parser.parse_args()
-
-    return launchGUI(args.project, sys.argv)
-
-
-def msipgen_main():
-    """ The entry point for the setuptools generated msipgen wrapper. """
+def main():
+    """ The entry point for the msipgen console script. """
 
     # Parse the command line.
     parser = argparse.ArgumentParser()
@@ -208,7 +30,7 @@ def msipgen_main():
             nargs='?')
     parser.add_argument('-g',
             help="the directory to write the generated code to",
-            dest='gendir', metavar='DIR', required=True)
+            dest='output_dir', metavar='DIR', required=True)
     parser.add_argument('-m',
             help="the module to generated code for",
             dest='modules', metavar='MODULE', action='append')
@@ -217,4 +39,64 @@ def msipgen_main():
 
     args = parser.parse_args()
 
-    return generate(args.project, args.modules, args.gendir, args.latest_sip)
+    return _generate(args.project, args.modules, args.output_dir,
+            args.latest_sip)
+
+
+def _generate(project_name, modules, output_dir, latest_sip):
+    """ Generate the .sip files for a project and return an exit code or 0 if
+    there was no error.
+    """
+
+    # Configure the i/o manager for reading and writing projects to the
+    # filesystem.
+    IoManager.codecs.append(ProjectCodec())
+    IoManager.storage_factories.append(FilesystemStorageFactory())
+
+    if not os.path.isdir(output_dir):
+        _fatal(f"{output_dir} is not an existing directory")
+
+    project = _load_project(project_name)
+
+    if modules:
+        gen_modules = []
+
+        for module_name in modules:
+            for mod in project.modules:
+                if mod.name == module_name:
+                    gen_modules.append(mod)
+                    break
+            else:
+                _fatal(f"There is no module '{module_name}' in the project")
+    else:
+        gen_modules = project.modules
+
+    # Generate each module.
+    for mod in gen_modules:
+        if not project.generateModule(mod, output_dir, latest_sip=latest_sip):
+            _fatal(project.diagnostic)
+
+    # No error if we have got this far.
+    return 0
+
+
+def _load_project(project_name):
+    """ Load an existing project. """
+
+    if not project_name:
+        _fatal("Specify the name of an existing project file")
+
+    try:
+        project = IoManager.read(Project(), project_name,
+                'metasip.formats.project')
+    except StorageError as e:
+        _fatal(e.error)
+
+    return project
+
+
+def _fatal(msg):
+    """ Display an error message and exit with a return code of 1. """
+
+    sys.stderr.write(f"msipgen: {msg}\n")
+    sys.exit(1)
