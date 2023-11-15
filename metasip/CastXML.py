@@ -990,15 +990,10 @@ class CastXMLParser(ParserBase):
         hf is the header file instance.
         pathname is the name of the actual file to parse.
         """
-        import castxml
-
-        castxml_exe = os.path.join(os.path.dirname(castxml.__file__), 'data',
-                'bin', 'castxml')
-
         self._pathname = pathname
         iname = os.path.join(tempfile.gettempdir(), hf.name + '.tmp')
 
-        argv = [castxml_exe, '-x', 'c++', '-std=c++17', '--castxml-output=1']
+        argv = ['castxml', '-x', 'c++', '-std=c++17', '--castxml-output=1']
 
         if sys.platform == 'darwin':
             # Workaround issues with Xcode v14.3 (and possibly later).
