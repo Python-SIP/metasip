@@ -12,14 +12,14 @@
 
 import os
 
-from ....dip.io import IFilterHints, IoManager
-from ....dip.model import implements, Model
-from ....dip.publish import ISubscriber
-from ....dip.shell import IDirty, ITool
-from ....dip.ui import (Action, Application, Dialog, IDialog,
+from ...dip.io import IFilterHints, IoManager
+from ...dip.model import implements, Model
+from ...dip.publish import ISubscriber
+from ...dip.shell import IDirty, ITool
+from ...dip.ui import (Action, Application, Dialog, IDialog,
         StorageLocationEditor)
 
-from ....interfaces.project import IHeaderDirectory, IModule, IProject
+from ...interfaces.project import IHeaderDirectory, IModule, IProject
 
 
 @implements(ITool, ISubscriber)

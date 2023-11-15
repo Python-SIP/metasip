@@ -12,10 +12,10 @@
 
 from PyQt6.QtWidgets import QAbstractSlider, QApplication, QPlainTextEdit
 
-from ....dip.model import unadapted
-from ....dip.shell import SimpleViewTool
+from ...dip.model import unadapted
+from ...dip.shell import SimpleViewTool
 
-from .... import Logger
+from ... import Logger
 
 
 class LoggerTool(SimpleViewTool):
