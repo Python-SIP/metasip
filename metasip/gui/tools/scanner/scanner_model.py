@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from ...dip.model import Bool, Instance, Model, Str
+from ....dip.model import Bool, Instance, Model, Str
 
 
 class ScannerModel(Model):

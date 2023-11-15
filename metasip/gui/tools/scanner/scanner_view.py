@@ -13,7 +13,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem
 
-from ...dip.model import observe
+from ....dip.model import observe
 
 
 class ScannerView(QTreeWidget):

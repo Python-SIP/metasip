@@ -10,17 +10,17 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from ...dip.model import implements, Model, observe
-from ...dip.publish import ISubscriber
-from ...dip.shell import IDirty, ITool
-from ...dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
+from ....dip.model import implements, Model, observe
+from ....dip.publish import ISubscriber
+from ....dip.shell import IDirty, ITool
+from ....dip.ui import (Action, IAction, ActionCollection, CheckBox, ComboBox,
         Dialog, IDialog, DialogController, Form, LineEditor, MessageArea, VBox)
 
-from ...interfaces.project import IProject
-from ...utils.project import validate_identifier
+from ....interfaces.project import IProject
+from ....utils.project import validate_identifier
 
 # FIXME: We should not need to know about the actual IProject implementation.
-from ...Project import Module
+from ....Project import Module
 
 
 class ModuleController(DialogController):

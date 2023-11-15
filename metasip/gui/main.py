@@ -23,19 +23,21 @@ from ..dip.shell.tools.model_manager import ModelManagerTool
 from ..dip.shell.tools.quit import QuitTool
 from ..dip.ui import Application
 
-from .. import (Project, ProjectCodec, ProjectEditorTool, ProjectFactory,
-        UpdateManager)
-from ..tools.features import FeaturesTool
-from ..tools.import_project import ImportProjectTool
-from ..tools.logger import LoggerTool
-from ..tools.modules import ModulesTool
-from ..tools.platforms import PlatformsTool
-from ..tools.scanner import ScannerTool
-from ..tools.versions import VersionsTool
+from .. import Project, ProjectCodec, ProjectFactory, UpdateManager
 from ..updates import (ProjectV2Update, ProjectV3Update, ProjectV4Update,
         ProjectV5Update, ProjectV6Update, ProjectV7Update, ProjectV8Update,
         ProjectV9Update, ProjectV10Update, ProjectV11Update, ProjectV12Update,
         ProjectV13Update, ProjectV14Update, ProjectV15Update, ProjectV16Update)
+
+from .tools.features import FeaturesTool
+from .tools.import_project import ImportProjectTool
+from .tools.logger import LoggerTool
+from .tools.modules import ModulesTool
+from .tools.platforms import PlatformsTool
+from .tools.scanner import ScannerTool
+from .tools.versions import VersionsTool
+
+from .project_editor_tool import ProjectEditorTool
 
 
 def main():

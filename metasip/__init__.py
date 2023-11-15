@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -12,7 +12,6 @@
 
 from .logger import Logger
 from .Project import Project
-from .project_editor_tool import ProjectEditorTool
 from .project_factory import ProjectFactory
 from .project_codec import ProjectCodec
 from .update_manager import UpdateManager

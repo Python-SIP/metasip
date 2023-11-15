@@ -16,14 +16,14 @@ import os
 
 from PyQt6.QtWidgets import QInputDialog
 
-from ...dip.model import Instance, List, observe, unadapted
-from ...dip.shell import IDirty
-from ...dip.ui import Application, Controller
+from ....dip.model import Instance, List, observe, unadapted
+from ....dip.shell import IDirty
+from ....dip.ui import Application, Controller
 
-from ...interfaces.project import (ICallable, ICodeContainer, IConstructor,
+from ....interfaces.project import (ICallable, ICodeContainer, IConstructor,
         IEnum, IHeaderDirectory, IHeaderFile, IProject)
-from ...logger import Logger
-from ...Project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
+from ....logger import Logger
+from ....Project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
         ManualCode, Project, SipFile, VersionRange)
 
 from .scanner_view import ScannerView

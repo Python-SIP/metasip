@@ -10,11 +10,11 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .dip.model import implements
-from .dip.shell import BaseManagedModelTool, IManagedModelTool
-from .dip.ui import IDisplay
+from ..dip.model import implements
+from ..dip.shell import BaseManagedModelTool, IManagedModelTool
+from ..dip.ui import IDisplay
 
-from .interfaces.project import IProject
+from ..interfaces.project import IProject
 
 
 @implements(IManagedModelTool, IDisplay)
@@ -30,7 +30,7 @@ class ProjectEditorTool(BaseManagedModelTool):
     def create_views(self, model):
         """ Create the views for editing a model. """
 
-        from .gui import ApiEditor
+        from .api_editor import ApiEditor
 
         return [ApiEditor(model)]
 

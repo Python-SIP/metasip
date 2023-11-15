@@ -10,8 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from ...dip.model import implements, Model
-from ...dip.ui import IValidator
+from ....dip.model import implements, Model
+from ....dip.ui import IValidator
 
 
 @implements(IValidator)
