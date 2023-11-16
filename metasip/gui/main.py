@@ -29,14 +29,8 @@ from ..updates import (ProjectV2Update, ProjectV3Update, ProjectV4Update,
         ProjectV9Update, ProjectV10Update, ProjectV11Update, ProjectV12Update,
         ProjectV13Update, ProjectV14Update, ProjectV15Update, ProjectV16Update)
 
-from .tools.features_tool import FeaturesTool
-from .tools.import_project_tool import ImportProjectTool
-from .tools.logger_tool import LoggerTool
-from .tools.modules_tool import ModulesTool
-from .tools.platforms_tool import PlatformsTool
-from .tools.scanner_tool import ScannerTool
-from .tools.versions_tool import VersionsTool
-
+from .tools import (FeaturesTool, ImportProjectTool, LoggerTool, ModulesTool,
+        PlatformsTool, ScannerTool, VersionsTool)
 from .project_editor_tool import ProjectEditorTool
 
 
