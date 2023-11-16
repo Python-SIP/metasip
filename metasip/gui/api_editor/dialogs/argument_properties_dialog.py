@@ -13,17 +13,15 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGridLayout,
         QGroupBox, QHBoxLayout, QLabel, QLineEdit)
 
-from .base_dialog import BaseDialog
+from .abstract_dialog import AbstractDialog
 from .helpers import Encoding, split_annos
 
 
-class ArgumentPropertiesDialog(BaseDialog):
+class ArgumentPropertiesDialog(AbstractDialog):
     """ This class implements the dialog for argument properties. """
 
-    def populate(self):
+    def populate(self, layout):
         """ Populate the dialog's layout. """
-
-        layout = self.layout()
 
         name_layout = QHBoxLayout()
         layout.addLayout(name_layout)

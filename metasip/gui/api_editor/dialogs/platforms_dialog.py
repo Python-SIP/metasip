@@ -12,17 +12,15 @@
 
 from PyQt6.QtWidgets import QCheckBox, QDialog
 
-from .base_dialog import BaseDialog
+from .abstract_dialog import AbstractDialog
 
 
-class PlatformsDialog(BaseDialog):
+class PlatformsDialog(AbstractDialog):
     """ This class implements the dialog for selecting a number of platforms.
     """
 
-    def populate(self):
+    def populate(self, layout):
         """ Populate the dialog's layout. """
-
-        layout = self.layout()
 
         self._platforms = []
 

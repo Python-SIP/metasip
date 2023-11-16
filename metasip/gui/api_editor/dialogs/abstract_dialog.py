@@ -10,12 +10,16 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from abc import ABC, abstractmethod
+
 from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QSizePolicy,
         QSpacerItem, QVBoxLayout)
 
 
-class BaseDialog(QDialog):
-    """ A base class for other dialogs that handles common functionality. """
+class AbstractDialog(ABC):
+    """ An abstract base class for other dialogs that handles common
+    functionality.
+    """
 
     def __init__(self, api_item, title, parent, project=None):
         """ Initialise the dialog. """
@@ -23,14 +27,14 @@ class BaseDialog(QDialog):
         self.api_item = api_item
         self.project = project
 
-        super().__init__(parent)
+        self.dialog = QDialog(parent)
 
-        self.setWindowTitle(title)
+        self.dialog.setWindowTitle(title)
 
         layout = QVBoxLayout()
-        self.setLayout(layout)
+        self.dialog.setLayout(layout)
 
-        self.populate()
+        self.populate(layout)
 
         spacer = QSpacerItem(1, 1, QSizePolicy.Policy.Minimum,
                 QSizePolicy.Policy.Expanding)
@@ -39,14 +43,15 @@ class BaseDialog(QDialog):
         button_box = QDialogButtonBox(
                 QDialogButtonBox.StandardButton.Cancel |
                 QDialogButtonBox.StandardButton.Ok)
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
+        button_box.accepted.connect(self.dialog.accept)
+        button_box.rejected.connect(self.dialog.reject)
         layout.addWidget(button_box)
 
-    def populate(self):
+    @abstractmethod
+    def populate(self, layout):
         """ Reimplemented by a sub-class to populate the dialog's layout. """
 
-        raise NotImplementedError
+        ...
 
     def update(self):
         """ Return True if the API item was updated or False if the dialog was
@@ -55,7 +60,7 @@ class BaseDialog(QDialog):
 
         self.set_fields()
 
-        if self.exec() == int(QDialog.DialogCode.Rejected):
+        if self.dialog.exec() == int(QDialog.DialogCode.Rejected):
             return False
 
         self.get_fields()
@@ -75,4 +80,5 @@ class BaseDialog(QDialog):
         dialog's fields.
         """
 
-        raise NotImplementedError
+        # This default implementation does nothing.
+        pass

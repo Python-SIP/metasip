@@ -14,16 +14,14 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QComboBox, QGridLayout, QLabel, QLineEdit,
         QPlainTextEdit, QPushButton)
 
-from .base_dialog import BaseDialog
+from .abstract_dialog import AbstractDialog
 
 
-class ProjectPropertiesDialog(BaseDialog):
+class ProjectPropertiesDialog(AbstractDialog):
     """ This class implements the dialog for a project's properties. """
 
-    def populate(self):
+    def populate(self, layout):
         """ Populate the dialog's layout. """
-
-        layout = self.layout()
 
         grid_layout = QGridLayout()
         layout.addLayout(grid_layout)

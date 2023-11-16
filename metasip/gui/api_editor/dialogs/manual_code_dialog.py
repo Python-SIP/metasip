@@ -12,16 +12,14 @@
 
 from PyQt6.QtWidgets import QFormLayout, QLineEdit
 
-from .base_dialog import BaseDialog
+from .abstract_dialog import AbstractDialog
 
 
-class ManualCodeDialog(BaseDialog):
+class ManualCodeDialog(AbstractDialog):
     """ This class implements the dialog for manual code. """
 
-    def populate(self):
+    def populate(self, layout):
         """ Populate the dialog's layout. """
-
-        layout = self.layout()
 
         form = QFormLayout()
         layout.addLayout(form)

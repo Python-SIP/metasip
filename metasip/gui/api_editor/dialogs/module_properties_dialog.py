@@ -13,20 +13,18 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGridLayout,
         QGroupBox, QLineEdit, QPlainTextEdit)
 
-from .base_dialog import BaseDialog
+from .abstract_dialog import AbstractDialog
 
 
-class ModulePropertiesDialog(BaseDialog):
+class ModulePropertiesDialog(AbstractDialog):
     """ This class implements the dialog for a module's properties. """
 
-    def populate(self):
+    def populate(self, layout):
         """ Populate the dialog's layout. """
 
         self._all_imports = list(self.project.externalmodules)
         self._all_imports.extend([m.name for m in self.project.modules])
         self._all_imports.sort()
-
-        layout = self.layout()
 
         form = QFormLayout()
         layout.addLayout(form)

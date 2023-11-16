@@ -13,17 +13,15 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGroupBox,
         QLineEdit, QVBoxLayout)
 
-from .base_dialog import BaseDialog
+from .abstract_dialog import AbstractDialog
 from .helpers import Encoding, split_annos
 
 
-class VariablePropertiesDialog(BaseDialog):
+class VariablePropertiesDialog(AbstractDialog):
     """ This class implements the dialog for a variables's properties. """
 
-    def populate(self):
+    def populate(self, layout):
         """ Populate the dialog's layout. """
-
-        layout = self.layout()
 
         group_box = QGroupBox("Annotations")
         layout.addWidget(group_box)

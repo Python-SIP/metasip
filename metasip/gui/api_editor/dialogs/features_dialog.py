@@ -12,19 +12,17 @@
 
 from PyQt6.QtWidgets import QComboBox, QGridLayout, QLabel
 
-from .base_dialog import BaseDialog
+from .abstract_dialog import AbstractDialog
 
 
-class FeaturesDialog(BaseDialog):
+class FeaturesDialog(AbstractDialog):
     """ This class implements the dialog for selecting a number of features.
     """
 
     FEATURE_VALUES = ("Unset", "Set", "Inverted")
 
-    def populate(self):
+    def populate(self, layout):
         """ Populate the dialog's layout. """
-
-        layout = self.layout()
 
         grid = QGridLayout()
         layout.insertLayout(0, grid)

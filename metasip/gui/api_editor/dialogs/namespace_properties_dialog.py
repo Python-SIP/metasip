@@ -12,17 +12,15 @@
 
 from PyQt6.QtWidgets import QCheckBox, QDialog, QGroupBox, QVBoxLayout
 
-from .base_dialog import BaseDialog
+from .abstract_dialog import AbstractDialog
 from .helpers import split_annos
 
 
-class NamespacePropertiesDialog(BaseDialog):
+class NamespacePropertiesDialog(AbstractDialog):
     """ This class implements the dialog for a namespace's properties. """
 
-    def populate(self):
+    def populate(self, layout):
         """ Populate the dialog's layout. """
-
-        layout = self.layout()
 
         group_box = QGroupBox("Annotations")
         group_box_layout = QVBoxLayout()

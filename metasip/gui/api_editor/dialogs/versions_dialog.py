@@ -14,17 +14,15 @@ from PyQt6.QtWidgets import QComboBox, QFormLayout
 
 from ....Project import VersionRange
 
-from .base_dialog import BaseDialog
+from .abstract_dialog import AbstractDialog
 
 
-class VersionsDialog(BaseDialog):
+class VersionsDialog(AbstractDialog):
     """ This class implements the dialog for select the start and end versions.
     """
 
-    def populate(self):
+    def populate(self, layout):
         """ Populate the dialog's layout. """
-
-        layout = self.layout()
 
         form = QFormLayout()
         layout.addLayout(form)

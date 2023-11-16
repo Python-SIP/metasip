@@ -13,17 +13,15 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGroupBox,
         QLineEdit, QVBoxLayout)
 
-from .base_dialog import BaseDialog
+from .abstract_dialog import AbstractDialog
 from .helpers import BaseType, split_annos
 
 
-class EnumPropertiesDialog(BaseDialog):
+class EnumPropertiesDialog(AbstractDialog):
     """ This class implements the dialog for an enum's properties. """
 
-    def populate(self):
+    def populate(self, layout):
         """ Populate the dialog's layout. """
-
-        layout = self.layout()
 
         group_box = QGroupBox("Annotations")
         group_box_layout = QVBoxLayout()
