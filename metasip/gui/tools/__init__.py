@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -10,6 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from .abstract_tool import ToolLocation
+from .api_editor_tool import ApiEditorTool
 from .features_tool import FeaturesTool
 from .import_project_tool import ImportProjectTool
 from .logger_tool import LoggerTool

@@ -17,8 +17,7 @@ from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QSizePolicy,
 
 
 class AbstractDialog(ABC):
-    """ An abstract base class for other dialogs that handles common
-    functionality.
+    """ An abstract base class for dialogs that handles common functionality.
     """
 
     def __init__(self, api_item, title, parent, project=None):

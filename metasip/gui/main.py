@@ -15,7 +15,6 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from .api_editor import ApiEditor
 from .project_ui import ProjectUi
 from .shell import Shell
 from .utils import warning
@@ -23,7 +22,6 @@ from .utils import warning
 from ..dip.settings import SettingsManager
 from ..dip.shell import IShell
 from ..dip.shell.shells.main_window import MainWindowShell
-from ..dip.shell.tools.dirty import DirtyTool
 from ..dip.shell.tools.quit import QuitTool
 
 from .. import UpdateManager
@@ -33,8 +31,8 @@ from ..updates import (ProjectV2Update, ProjectV3Update, ProjectV4Update,
         ProjectV9Update, ProjectV10Update, ProjectV11Update, ProjectV12Update,
         ProjectV13Update, ProjectV14Update, ProjectV15Update, ProjectV16Update)
 
-from .tools import (FeaturesTool, ImportProjectTool, LoggerTool, ModulesTool,
-        PlatformsTool, ScannerTool, VersionsTool)
+from .tools import (ApiEditorTool, FeaturesTool, ImportProjectTool, LoggerTool,
+        ModulesTool, PlatformsTool, ScannerTool, VersionsTool)
 
 
 def main():
@@ -69,7 +67,7 @@ def main():
 
     # Define the shell.
     #shell_factory = MainWindowShell(main_area_policy='single',
-    #        tool_factories=[LoggerTool, DirtyTool, QuitTool,
+    #        tool_factories=[LoggerTool, QuitTool,
     #                lambda: editor_tool,
     #                FeaturesTool,
     #                ImportProjectTool,
@@ -79,8 +77,14 @@ def main():
     #                VersionsTool],
     #        title_template="[view][*]")
 
+    # Load any project.
+    project = Project.factory(project_name, ui=ProjectUi())
+
     # Create the shell.
-    shell = Shell(ApiEditor(Project.factory(project_name, ui=ProjectUi())))
+    shell = Shell(ApiEditorTool)
+
+    # Set the project in the shell.
+    shell.project = project
 
     # Handle any project passed on the command line.
     #if project_name is not None:

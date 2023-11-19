@@ -10,4 +10,4 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .api_editor import ApiEditor
+from .api_editor_tool import ApiEditorTool

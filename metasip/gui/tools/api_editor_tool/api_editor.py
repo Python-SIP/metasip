@@ -16,10 +16,10 @@ from PyQt6.QtWidgets import (QApplication, QDialog, QInputDialog, QMenu,
         QMessageBox, QProgressDialog, QTreeWidget, QTreeWidgetItem,
         QTreeWidgetItemIterator, QVBoxLayout)
 
-from ...dip.model import observe
-from ...dip.ui import Application
+from ....dip.model import observe
+from ....dip.ui import Application
 
-from ...project import (Class, Constructor, Destructor, Method, Function,
+from ....project import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
         ManualCode, Module, OpaqueClass, OperatorCast, Namespace, VersionRange,
         version_range)
@@ -35,26 +35,22 @@ from .external_editor import ExternalEditor
 
 
 class ApiEditor(QTreeWidget):
-    """ This class implements the main API editor. """
+    """ This class implements the API editor. """
 
     MIME_FORMAT = 'application/x-item'
 
     # The column numbers.
     (NAME, ACCESS, STATUS, VERSIONS) = range(4)
 
-    def __init__(self, project):
-        """ Initialise the editor.
+    def __init__(self, tool):
+        """ Initialise the editor. """
 
-        :param project:
-            is the project.
-        """
+        super().__init__()
 
-        super().__init__(objectName='metasip.api_editor.explorer')
-
-        self.project = project
+        self.tool = tool
 
         # Tweak the tree widget.
-        self.setHeaderLabels(["Name", "Access", "Status", "Versions"])
+        self.setHeaderLabels(("Name", "Access", "Status", "Versions"))
         self.setSelectionMode(self.SelectionMode.ExtendedSelection)
         self.setDragEnabled(True)
         self.viewport().setAcceptDrops(True)
@@ -63,12 +59,18 @@ class ApiEditor(QTreeWidget):
 
         self.dragged = None
 
+    def set_project(self, project):
+        """ Set the current project. """
+
+        self.project = project
+
+        # TODO - remove any old items.
         ProjectItem(project, self)
 
     def set_dirty(self):
         """ Mark the project as having been modified. """
 
-        self.project.dirty = True
+        self.tool.shell.dirty = True
 
     def contextMenuEvent(self, ev):
         """
