@@ -21,7 +21,7 @@ from ...interfaces.project import IProject
 from ...utils.project import ITagged_items, validate_identifier
 
 # FIXME: We should not need to know about the actual IProject implementation.
-from ...Project import HeaderFileVersion
+from ...project import HeaderFileVersion
 
 
 class VersionController(DialogController):

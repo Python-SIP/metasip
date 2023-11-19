@@ -16,7 +16,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from ..io import IStorageLocation
+#from ..io import IStorageLocation
 from ..model import Bool, Instance, List, Str
 from ..ui import IView
 
@@ -29,7 +29,7 @@ class IManagedModel(IDirty):
 
     # The :term:`storage location` of the model.  It will be ``None`` if it is
     # not stored.  It will be updated automatically.
-    location = Instance(IStorageLocation)
+    #location = Instance(IStorageLocation)
 
     # The identifier of the model's native format.
     native_format = Str()

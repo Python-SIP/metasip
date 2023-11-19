@@ -14,16 +14,15 @@ from xml.etree import ElementTree
 
 from PyQt6.QtWidgets import QApplication, QProgressDialog
 
-from .dip.io import FormatError
-from .dip.shell import IDirty
+from ..exceptions import UserException
+from ..interfaces.project import ProjectVersion
+from ..update_manager import UpdateManager
 
-from .interfaces.project import ProjectVersion
-from .Project import (Argument, Class, Constructor, Destructor, Enum,
+from .project import (Argument, Class, Constructor, Destructor, Enum,
         EnumValue, Function, HeaderDirectory, HeaderFile, HeaderFileVersion,
         ManualCode, Method, Module, Namespace, OpaqueClass, OperatorCast,
         OperatorFunction, OperatorMethod, Project, SipFile, Typedef, Variable,
         VersionRange)
-from .update_manager import UpdateManager
 
 
 class ProjectParser:
@@ -55,20 +54,20 @@ class ProjectParser:
         version = int(version)
 
         if version > ProjectVersion:
-            raise FormatError(
+            raise UserException(
                     "The project was created with a later version of metasip",
                     project.name)
 
         if version < ProjectVersion and UpdateManager.update_is_required(root):
             if QApplication.instance() is None:
-                raise FormatError(
+                raise UserException(
                         "The project was created with an earlier version of "
                         "metasip and must be updated", project.name)
 
             if not UpdateManager.update(root, ProjectVersion):
                 return False
 
-            IDirty(project).dirty = True
+            project.dirty = True
 
         # Create a progress dialog if there is a GUI.
         if QApplication.instance() is not None:

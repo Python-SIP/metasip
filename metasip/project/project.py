@@ -15,11 +15,10 @@ import hashlib
 import fnmatch
 from xml.sax import saxutils
 
-from .dip.model import implements, Instance, Model, Str
-from .dip.shell import IDirty
+from ..dip.model import Bool, implements, Instance, Model, Str
 
-from .logger import Logger
-from .interfaces.project import (IArgument, IClass, IConstructor, IDestructor,
+from ..logger import Logger
+from ..interfaces.project import (IArgument, IClass, IConstructor, IDestructor,
         IEnum, IEnumValue, IFunction, IHeaderDirectory, IHeaderFile,
         IHeaderFileVersion, IManualCode, IMethod, IModule, INamespace,
         IOpaqueClass, IOperatorCast, IOperatorFunction, IOperatorMethod,
@@ -164,6 +163,9 @@ class Project(Model):
     # The filename of the project.
     name = Str()
 
+    # Set if the project has been updated.
+    dirty = Bool()
+
     def vmap_create(self, initial):
         """ Return a version map with each entry set to an initial value. """
 
@@ -253,7 +255,7 @@ class Project(Model):
                     updated.append(arg)
 
         if len(updated) != 0:
-            IDirty(self).dirty = True
+            self.dirty = True
 
         return updated
 
@@ -283,6 +285,21 @@ class Project(Model):
             for sub in part:
                 for callable in self._get_unnamed_callables(sub):
                     yield callable
+
+    @classmethod
+    def factory(cls, project_name):
+        """ Return a project from an optional project file. """
+
+        project = cls()
+
+        if project_name:
+            # Avoid a circular import.
+            from .project_parser import ProjectParser
+
+            project.name = project_name
+            ProjectParser().parse(project)
+
+        return project
 
     def save(self, saveas=None):
         """
@@ -442,23 +459,19 @@ class Project(Model):
 
         return os.path.basename(root)
 
-    def generateModule(self, mod, od, latest_sip=True):
-        """
-        Generate the output for a module.  Return True if there was no error.
+    def generate_module(self, module, output_dir, latest_sip=True):
+        """ Generate the output for a module. """
 
-        mod is the module instance.
-        od is the root of the output directory.
-        """
         # Remember the root directory used.
-        od = os.path.abspath(od)
+        output_dir = os.path.abspath(output_dir)
 
         # Generate each applicable .sip file.
         sfnames = []
-        for sf in mod.content:
-            f = self._createSipFile(od, mod, sf)
+        for sf in module.content:
+            f = self._createSipFile(output_dir, module, sf)
 
             if f is None:
-                return False
+                raise UserException(self.diagnostic)
 
             Logger.log("Generating %s" % f.name)
             sf.sip(f, latest_sip)
@@ -466,10 +479,10 @@ class Project(Model):
 
             f.close()
 
-        f = self._createSipFile(od, mod)
+        f = self._createSipFile(output_dir, module)
 
         if f is None:
-            return False
+            raise UserException(self.diagnostic)
 
         Logger.log("Generating %s" % f.name)
 
@@ -479,34 +492,34 @@ class Project(Model):
             rname += "."
 
         if latest_sip:
-            if mod.callsuperinit != 'undefined':
-                callsuperinit = ", call_super_init=%s" % ('True' if mod.callsuperinit == 'yes' else 'False')
+            if module.callsuperinit != 'undefined':
+                callsuperinit = ", call_super_init=%s" % ('True' if module.callsuperinit == 'yes' else 'False')
             else:
                 callsuperinit = ""
 
-            if mod.virtualerrorhandler != '':
-                virtualerrorhandler = ", default_VirtualErrorHandler=%s" % mod.virtualerrorhandler
+            if module.virtualerrorhandler != '':
+                virtualerrorhandler = ", default_VirtualErrorHandler=%s" % module.virtualerrorhandler
             else:
                 virtualerrorhandler = ""
 
-            if mod.uselimitedapi:
+            if module.uselimitedapi:
                 uselimitedapi = ", use_limited_api=True"
             else:
                 uselimitedapi = ""
 
-            if mod.pyssizetclean:
+            if module.pyssizetclean:
                 pyssizetclean = ", py_ssize_t_clean=True"
             else:
                 pyssizetclean = ""
 
-            f.write("%%Module(name=%s%s%s%s, keyword_arguments=\"Optional\"%s%s)\n\n" % (rname, mod.name, callsuperinit, virtualerrorhandler, uselimitedapi, pyssizetclean))
+            f.write("%%Module(name=%s%s%s%s, keyword_arguments=\"Optional\"%s%s)\n\n" % (rname, module.name, callsuperinit, virtualerrorhandler, uselimitedapi, pyssizetclean))
         else:
-            f.write("%%Module %s%s 0\n\n" % (rname, mod.name))
+            f.write("%%Module %s%s 0\n\n" % (rname, module.name))
 
         top_level_module = True
 
-        if len(mod.imports) != 0:
-            for m in mod.imports:
+        if len(module.imports) != 0:
+            for m in module.imports:
                 f.write("%%Import %s/%smod.sip\n" % (m, m))
 
                 if m not in self.externalmodules:
@@ -530,16 +543,14 @@ class Project(Model):
 
                 f.write("\n")
 
-        if mod.directives:
-            f.write(mod.directives)
+        if module.directives:
+            f.write(module.directives)
             f.write("\n\n")
 
         for inc in sfnames:
             f.write("%%Include %s\n" % inc)
 
         f.close()
-
-        return True
 
     def _createSipFile(self, od, mod, sf=None):
         """

@@ -10,5 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .logger import Logger
-from .update_manager import UpdateManager
+from .project import (Access, Class, Constructor, Destructor, Enum, EnumValue,
+        Function, HeaderFileVersion, ManualCode, Method, Module, Namespace,
+        OperatorCast, OpaqueClass, OperatorFunction, OperatorMethod, Project,
+        Variable, version_range, VersionRange)

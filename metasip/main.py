@@ -14,10 +14,8 @@ import argparse
 import sys
 import os
 
-from .dip.io import IoManager, StorageError
-from .dip.io.storage.filesystem import FilesystemStorageFactory
-
-from . import Project, ProjectCodec
+from .exceptions import UserException
+from .project import Project
 
 
 def main():
@@ -39,8 +37,10 @@ def main():
 
     args = parser.parse_args()
 
-    return _generate(args.project, args.modules, args.output_dir,
-            args.latest_sip)
+    try:
+        _generate(args.project, args.modules, args.output_dir, args.latest_sip)
+    except Exception as e:
+        _handle_exception(e)
 
 
 def _generate(project_name, modules, output_dir, latest_sip):
@@ -48,55 +48,52 @@ def _generate(project_name, modules, output_dir, latest_sip):
     there was no error.
     """
 
-    # Configure the i/o manager for reading and writing projects to the
-    # filesystem.
-    IoManager.codecs.append(ProjectCodec())
-    IoManager.storage_factories.append(FilesystemStorageFactory())
-
     if not os.path.isdir(output_dir):
-        _fatal(f"{output_dir} is not an existing directory")
+        raise UserException(f"{output_dir} is not an existing directory")
 
-    project = _load_project(project_name)
+    if not project_name:
+        raise UserException("Specify the name of an existing project file")
+
+    project = Project.factory(project_name)
 
     if modules:
         gen_modules = []
 
         for module_name in modules:
-            for mod in project.modules:
-                if mod.name == module_name:
-                    gen_modules.append(mod)
+            for module in project.modules:
+                if module.name == module_name:
+                    gen_modules.append(module)
                     break
             else:
-                _fatal(f"There is no module '{module_name}' in the project")
+                raise UserException(
+                        f"There is no module '{module_name}' in the project")
     else:
         gen_modules = project.modules
 
     # Generate each module.
-    for mod in gen_modules:
-        if not project.generateModule(mod, output_dir, latest_sip=latest_sip):
-            _fatal(project.diagnostic)
-
-    # No error if we have got this far.
-    return 0
+    for module in gen_modules:
+        project.generate_module(module, output_dir, latest_sip=latest_sip):
 
 
-def _load_project(project_name):
-    """ Load an existing project. """
+def _handle_exception(e):
+    """ Tell the user about an exception. """
 
-    if not project_name:
-        _fatal("Specify the name of an existing project file")
+    if isinstance(e, UserException):
+        # An "expected" exception.
+        if e.detail is not None:
+            message = "{0}: {1}".format(e.text, e.detail)
+        else:
+            message = e.text
 
-    try:
-        project = IoManager.read(Project(), project_name,
-                'metasip.formats.project')
-    except StorageError as e:
-        _fatal(e.error)
+        print("{0}: {1}".format(os.path.basename(sys.argv[0]), message),
+                file=sys.stderr)
 
-    return project
+        sys.exit(1)
 
+    # An internal error.
+    print(
+            "{0}: An internal error occurred...".format(
+                    os.path.basename(sys.argv[0])),
+            file=sys.stderr)
 
-def _fatal(msg):
-    """ Display an error message and exit with a return code of 1. """
-
-    sys.stderr.write(f"msipgen: {msg}\n")
-    sys.exit(1)
+    raise e

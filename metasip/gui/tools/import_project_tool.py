@@ -12,12 +12,12 @@
 
 import os
 
-from ...dip.io import IFilterHints, IoManager
+#from ...dip.io import IFilterHints, IoManager
 from ...dip.model import implements, Model
 from ...dip.publish import ISubscriber
 from ...dip.shell import IDirty, ITool
-from ...dip.ui import (Action, Application, Dialog, IDialog,
-        StorageLocationEditor)
+from ...dip.ui import (Action, Application, Dialog, IDialog)
+        #StorageLocationEditor)
 
 from ...interfaces.project import IHeaderDirectory, IModule, IProject
 
@@ -27,8 +27,8 @@ class ImportProjectTool(Model):
     """ The ImportProjectTool implements a tool importing another project. """
 
     # The tool's dialog.
-    dialog = Dialog(StorageLocationEditor('project_file', required=True),
-            title="Import Project")
+    #dialog = Dialog(StorageLocationEditor('project_file', required=True),
+    #        title="Import Project")
 
     # The tool's identifier.
     id = 'metasip.tools.import_project'

@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of dip.
 #
@@ -55,7 +55,6 @@ from .i_single_view_container import ISingleViewContainer
 from .i_spin_box import ISpinBox
 from .i_splitter import ISplitter
 from .i_stack import IStack
-from .i_storage_location_editor import IStorageLocationEditor
 from .i_table_editor import ITableEditor
 from .i_text_editor import ITextEditor
 from .i_tool_button import IToolButton
@@ -103,8 +102,6 @@ from .single_subview_container_factory import SingleSubviewContainerFactory
 from .spin_box import SpinBox
 from .splitter import Splitter
 from .stack import Stack
-from .storage_location_editor import StorageLocationEditor
-from .storage_location_validator import StorageLocationValidator
 from .stretch import Stretch
 from .string_validator import StringValidator
 from .table_column import TableColumn

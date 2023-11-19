@@ -10,20 +10,15 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .dip.model import implements, Model
-from .dip.ui import IDisplay
+class UserException(Exception):
+    """ An exception capturing user friendly information. """
 
+    def __init__(self, text, *, detail=None):
+        """ Initialise the exception with its user friendly text and the
+        optional detail.
+        """
 
-@implements(IDisplay)
-class ProjectFactory(Model):
-    """ A Project factory that implements the IDisplay interface. """
+        super().__init__()
 
-    # The model type name used in model manager dialogs and wizards.
-    name = "MetaSIP project"
-
-    def __call__(self):
-        """ Invoked to create a project instance. """
-
-        from .Project import Project
-
-        return Project()
+        self.text = text
+        self.detail = detail

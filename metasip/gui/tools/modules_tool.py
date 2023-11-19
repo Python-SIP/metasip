@@ -20,7 +20,7 @@ from ...interfaces.project import IProject
 from ...utils.project import validate_identifier
 
 # FIXME: We should not need to know about the actual IProject implementation.
-from ...Project import Module
+from ...project import Module
 
 
 class ModuleController(DialogController):

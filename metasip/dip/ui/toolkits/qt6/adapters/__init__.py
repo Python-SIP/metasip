@@ -18,7 +18,6 @@
 
 from . import filesystem_location_editor
 from . import radio_buttons
-from . import storage_location_editor
 
 from . import qaction
 from . import qapplication

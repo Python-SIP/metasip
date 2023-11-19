@@ -16,7 +16,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from ..io import IoManager
+#from ..io import IoManager
 from ..model import Adapter, get_attribute_types, observe
 from ..publish import IPublisher, ISubscriber
 from ..ui import Action, ActionCollection, Application, IContainer, IView
