@@ -16,6 +16,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 
 from .api_editor import ApiEditor
+from .project_ui import ProjectUi
 from .shell import Shell
 from .utils import warning
 
@@ -79,7 +80,7 @@ def main():
     #        title_template="[view][*]")
 
     # Create the shell.
-    shell = Shell(ApiEditor(Project.factory(project_name)))
+    shell = Shell(ApiEditor(Project.factory(project_name, ui=ProjectUi())))
 
     # Handle any project passed on the command line.
     #if project_name is not None:

@@ -10,6 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from .abstract_project_ui import AbstractProjectUi
 from .project import (Access, Class, Constructor, Destructor, Enum, EnumValue,
         Function, HeaderFileVersion, ManualCode, Method, Module, Namespace,
         OperatorCast, OpaqueClass, OperatorFunction, OperatorMethod, Project,

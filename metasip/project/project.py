@@ -287,7 +287,7 @@ class Project(Model):
                     yield callable
 
     @classmethod
-    def factory(cls, project_name):
+    def factory(cls, project_name, ui=None):
         """ Return a project from an optional project file. """
 
         project = cls()
@@ -297,7 +297,7 @@ class Project(Model):
             from .project_parser import ProjectParser
 
             project.name = project_name
-            ProjectParser().parse(project)
+            ProjectParser(ui).parse(project)
 
         return project
 

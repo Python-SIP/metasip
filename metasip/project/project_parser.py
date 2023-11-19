@@ -12,8 +12,6 @@
 
 from xml.etree import ElementTree
 
-from PyQt6.QtWidgets import QApplication, QProgressDialog
-
 from ..exceptions import UserException
 from ..interfaces.project import ProjectVersion
 from ..update_manager import UpdateManager
@@ -28,14 +26,13 @@ from .project import (Argument, Class, Constructor, Destructor, Enum,
 class ProjectParser:
     """ This is the project file parser. """
 
-    def parse(self, project):
-        """ Parse a project file.
+    def __init__(self, ui):
+        """ Initialise the parser. """
 
-        :param project:
-            is the project.
-        :return:
-            True if the project was parsed or False if the user cancelled.
-        """
+        self._ui = ui
+
+    def parse(self, project):
+        """ Populate a project from its project file. """
 
         # Load the file.
         tree = ElementTree.parse(project.name)
@@ -46,42 +43,30 @@ class ProjectParser:
         version = root.get('version')
 
         if root.tag != 'Project' or version is None:
-            raise FormatError(
-                    "The file doesn't appear to be a valid metasip project",
-                    project.name)
+            raise UserException(
+                    f"{project.name} doesn't appear to be a valid metasip project")
 
         # Check the version.
         version = int(version)
 
         if version > ProjectVersion:
             raise UserException(
-                    "The project was created with a later version of metasip",
-                    project.name)
+                    f"{project.name} was created with a later version of metasip")
 
         if version < ProjectVersion and UpdateManager.update_is_required(root):
-            if QApplication.instance() is None:
+            if self._ui is None:
                 raise UserException(
-                        "The project was created with an earlier version of "
-                        "metasip and must be updated", project.name)
+                        f"{project.name} was created with an earlier version of metasip and must be updated")
 
-            if not UpdateManager.update(root, ProjectVersion):
-                return False
-
+            UpdateManager.update(root, ProjectVersion)
             project.dirty = True
 
-        # Create a progress dialog if there is a GUI.
-        if QApplication.instance() is not None:
-            # Progress will be reported against .sip files.
-            nr_steps = len(root.findall('.//SipFile'))
+        # Initialise any UI.
+        if self._ui is not None:
+            # Each .sup file is a step of the load.
+            self._ui.load_starting(project, len(root.findall('.//SipFile')))
 
-            self._progress = QProgressDialog("Reading the project...", None, 0,
-                    nr_steps)
-            self._progress.setWindowTitle(project.name)
-            self._progress.setValue(0)
-        else:
-            self._progress = None
-
-        # Read the project.
+        # Load the project.
         project.version = version
         project.rootmodule = root.get('rootmodule', '')
         project.versions = root.get('versions', '').split()
@@ -93,15 +78,13 @@ class ProjectParser:
 
         for child in root:
             if child.tag == 'Literal':
-                self.add_literal(project, child)
+                self._add_literal(project, child)
             elif child.tag == 'HeaderDirectory':
-                self.add_header_directory(project, child)
+                self._add_header_directory(project, child)
             elif child.tag == 'Module':
-                self.add_module(project, child)
+                self._add_module(project, child)
 
-        return True
-
-    def add_argument(self, callable, elem):
+    def _add_argument(self, callable, elem):
         """ Add an element defining an argument to a callable. """
 
         arg = Argument(type=elem.get('type'), name=elem.get('name', ''),
@@ -113,7 +96,7 @@ class ProjectParser:
 
         callable.args.append(arg)
 
-    def add_class(self, project, scope, elem):
+    def _add_class(self, project, scope, elem):
         """ Add an element defining a class to a scope. """
 
         cls = Class(name=elem.get('name'), container=scope,
@@ -127,41 +110,41 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Constructor':
-                self.add_constructor(project, cls, child)
+                self._add_constructor(project, cls, child)
             elif child.tag == 'Destructor':
-                self.add_destructor(project, cls, child)
+                self._add_destructor(project, cls, child)
             elif child.tag == 'Literal':
-                self.add_literal(cls, child)
+                self._add_literal(cls, child)
             elif child.tag == 'Method':
-                self.add_method(project, cls, child)
+                self._add_method(project, cls, child)
             elif child.tag == 'OperatorCast':
-                self.add_operator_cast(project, cls, child)
+                self._add_operator_cast(project, cls, child)
             elif child.tag == 'OperatorMethod':
-                self.add_operator_method(project, cls, child)
+                self._add_operator_method(project, cls, child)
             else:
-                self.add_code(project, cls, child)
+                self._add_code(project, cls, child)
 
         scope.content.append(cls)
 
-    def add_code(self, project, scope, elem):
+    def _add_code(self, project, scope, elem):
         """ Add an element defining scoped code to a scope. """
 
         if elem.tag == 'Class':
-            self.add_class(project, scope, elem)
+            self._add_class(project, scope, elem)
         elif elem.tag == 'Enum':
-            self.add_enum(project, scope, elem)
+            self._add_enum(project, scope, elem)
         elif elem.tag == 'ManualCode':
-            self.add_manual_code(project, scope, elem)
+            self._add_manual_code(project, scope, elem)
         elif elem.tag == 'Namespace':
-            self.add_namespace(project, scope, elem)
+            self._add_namespace(project, scope, elem)
         elif elem.tag == 'OpaqueClass':
-            self.add_opaque_class(project, scope, elem)
+            self._add_opaque_class(project, scope, elem)
         elif elem.tag == 'Typedef':
-            self.add_typedef(project, scope, elem)
+            self._add_typedef(project, scope, elem)
         elif elem.tag == 'Variable':
-            self.add_variable(project, scope, elem)
+            self._add_variable(project, scope, elem)
 
-    def add_constructor(self, project, cls, elem):
+    def _add_constructor(self, project, cls, elem):
         """ Add an element defining a constructor to a class. """
 
         cn = Constructor(name=elem.get('name'), container=cls,
@@ -175,13 +158,13 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Argument':
-                self.add_argument(cn, child)
+                self._add_argument(cn, child)
             elif child.tag == 'Literal':
-                self.add_literal(cn, child)
+                self._add_literal(cn, child)
 
         cls.content.append(cn)
 
-    def add_destructor(self, project, cls, elem):
+    def _add_destructor(self, project, cls, elem):
         """ Add an element defining a destructor to a class. """
 
         ds = Destructor(name=elem.get('name'), container=cls,
@@ -194,11 +177,11 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Literal':
-                self.add_literal(ds, child)
+                self._add_literal(ds, child)
 
         cls.content.append(ds)
 
-    def add_enum(self, project, scope, elem):
+    def _add_enum(self, project, scope, elem):
         """ Add an element defining an enum to a scope. """
 
         en = Enum(name=elem.get('name'), container=scope,
@@ -211,11 +194,11 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'EnumValue':
-                self.add_enum_value(project, en, child)
+                self._add_enum_value(project, en, child)
 
         scope.content.append(en)
 
-    def add_enum_value(self, project, en, elem):
+    def _add_enum_value(self, project, en, elem):
         """ Add an element defining an enum value to an enum. """
 
         ev = EnumValue(name=elem.get('name'),
@@ -226,7 +209,7 @@ class ProjectParser:
 
         en.content.append(ev)
 
-    def add_function(self, project, hf, elem):
+    def _add_function(self, project, hf, elem):
         """ Add an element defining a function to a header file. """
 
         fn = Function(name=elem.get('name'), container=hf,
@@ -239,13 +222,13 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Argument':
-                self.add_argument(fn, child)
+                self._add_argument(fn, child)
             elif child.tag == 'Literal':
-                self.add_literal(fn, child)
+                self._add_literal(fn, child)
 
         hf.content.append(fn)
 
-    def add_header_directory(self, project, elem):
+    def _add_header_directory(self, project, elem):
         """ Add an element defining a header directory to a project. """
 
         scan = elem.get('scan')
@@ -263,11 +246,11 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'HeaderFile':
-                self.add_header_file(project, hdir, child)
+                self._add_header_file(project, hdir, child)
 
         project.headers.append(hdir)
 
-    def add_header_file(self, project, hdir, elem):
+    def _add_header_file(self, project, hdir, elem):
         """ Add an element defining a header file to a header directory. """
 
         hf = HeaderFile(project=project, name=elem.get('name'),
@@ -276,11 +259,11 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'HeaderFileVersion':
-                self.add_header_file_version(project, hf, child)
+                self._add_header_file_version(project, hf, child)
 
         hdir.content.append(hf)
 
-    def add_header_file_version(self, project, hf, elem):
+    def _add_header_file_version(self, project, hf, elem):
         """ Add an element defining a header file version to a header file. """
 
         hfv = HeaderFileVersion(md5=elem.get('md5'),
@@ -289,12 +272,12 @@ class ProjectParser:
 
         hf.versions.append(hfv)
 
-    def add_literal(self, model, elem):
+    def _add_literal(self, model, elem):
         """ Add an element defining some literal text to a model. """
 
         setattr(model, elem.get('type'), elem.text.strip())
 
-    def add_manual_code(self, project, scope, elem):
+    def _add_manual_code(self, project, scope, elem):
         """ Add an element defining manual code to a scope. """
 
         mc = ManualCode(precis=elem.get('precis'), container=scope,
@@ -306,11 +289,11 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Literal':
-                self.add_literal(mc, child)
+                self._add_literal(mc, child)
 
         scope.content.append(mc)
 
-    def add_method(self, project, cls, elem):
+    def _add_method(self, project, cls, elem):
         """ Add an element defining a method to a class. """
 
         mt = Method(name=elem.get('name'), container=cls,
@@ -328,13 +311,13 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Argument':
-                self.add_argument(mt, child)
+                self._add_argument(mt, child)
             elif child.tag == 'Literal':
-                self.add_literal(mt, child)
+                self._add_literal(mt, child)
 
         cls.content.append(mt)
 
-    def add_module(self, project, elem):
+    def _add_module(self, project, elem):
         """ Add an element defining a module to a project. """
 
         callsuperinit = int(elem.get('callsuperinit', '-1'))
@@ -355,13 +338,13 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Literal':
-                self.add_literal(mod, child)
+                self._add_literal(mod, child)
             elif child.tag == 'SipFile':
-                self.add_sip_file(project, mod, child)
+                self._add_sip_file(project, mod, child)
 
         project.modules.append(mod)
 
-    def add_namespace(self, project, scope, elem):
+    def _add_namespace(self, project, scope, elem):
         """ Add an element defining a namespace to a scope. """
 
         ns = Namespace(name=elem.get('name'), container=scope,
@@ -372,17 +355,17 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Function':
-                self.add_function(project, ns, child)
+                self._add_function(project, ns, child)
             elif child.tag == 'Literal':
-                self.add_literal(ns, child)
+                self._add_literal(ns, child)
             elif child.tag == 'OperatorFunction':
-                self.add_operator_function(project, ns, child)
+                self._add_operator_function(project, ns, child)
             else:
-                self.add_code(project, ns, child)
+                self._add_code(project, ns, child)
 
         scope.content.append(ns)
 
-    def add_opaque_class(self, project, scope, elem):
+    def _add_opaque_class(self, project, scope, elem):
         """ Add an element defining an opaque class to a scope. """
 
         oc = OpaqueClass(name=elem.get('name'), container=scope,
@@ -394,7 +377,7 @@ class ProjectParser:
 
         scope.content.append(oc)
 
-    def add_operator_cast(self, project, cls, elem):
+    def _add_operator_cast(self, project, cls, elem):
         """ Add an element defining an operator cast to a class. """
 
         oc = OperatorCast(name=elem.get('name'), container=cls,
@@ -407,13 +390,13 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Argument':
-                self.add_argument(oc, child)
+                self._add_argument(oc, child)
             elif child.tag == 'Literal':
-                self.add_literal(oc, child)
+                self._add_literal(oc, child)
 
         cls.content.append(oc)
 
-    def add_operator_function(self, project, hf, elem):
+    def _add_operator_function(self, project, hf, elem):
         """ Add an element defining an operator function to a header file. """
 
         fn = OperatorFunction(name=elem.get('name'), container=hf,
@@ -426,13 +409,13 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Argument':
-                self.add_argument(fn, child)
+                self._add_argument(fn, child)
             elif child.tag == 'Literal':
-                self.add_literal(fn, child)
+                self._add_literal(fn, child)
 
         hf.content.append(fn)
 
-    def add_operator_method(self, project, cls, elem):
+    def _add_operator_method(self, project, cls, elem):
         """ Add an element defining an operator method to a class. """
 
         mt = OperatorMethod(name=elem.get('name'), container=cls,
@@ -448,34 +431,33 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Argument':
-                self.add_argument(mt, child)
+                self._add_argument(mt, child)
             elif child.tag == 'Literal':
-                self.add_literal(mt, child)
+                self._add_literal(mt, child)
 
         cls.content.append(mt)
 
-    def add_sip_file(self, project, mod, elem):
+    def _add_sip_file(self, project, mod, elem):
         """ Add an element defining a .sip file to a module. """
 
         sf = SipFile(project=project, name=elem.get('name'))
 
         for child in elem:
             if child.tag == 'Function':
-                self.add_function(project, sf, child)
+                self._add_function(project, sf, child)
             elif child.tag == 'Literal':
-                self.add_literal(sf, child)
+                self._add_literal(sf, child)
             elif child.tag == 'OperatorFunction':
-                self.add_operator_function(project, sf, child)
+                self._add_operator_function(project, sf, child)
             else:
-                self.add_code(project, sf, child)
+                self._add_code(project, sf, child)
 
         mod.content.append(sf)
 
-        if self._progress is not None:
-            self._progress.setValue(self._progress.value() + 1)
-            QApplication.processEvents()
+        if self._ui is not None:
+            self._ui.load_step()
 
-    def add_typedef(self, project, scope, elem):
+    def _add_typedef(self, project, scope, elem):
         """ Add an element defining a typedef to a scope. """
 
         td = Typedef(name=elem.get('name'), container=scope,
@@ -487,7 +469,7 @@ class ProjectParser:
 
         scope.content.append(td)
 
-    def add_variable(self, project, scope, elem):
+    def _add_variable(self, project, scope, elem):
         """ Add an element defining a variable to a scope. """
 
         var = Variable(name=elem.get('name'), container=scope,
@@ -501,7 +483,7 @@ class ProjectParser:
 
         for child in elem:
             if child.tag == 'Literal':
-                self.add_literal(var, child)
+                self._add_literal(var, child)
 
         scope.content.append(var)
 
