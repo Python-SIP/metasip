@@ -15,22 +15,19 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from ..dip.shell import IShell
-from ..dip.shell.shells.main_window import MainWindowShell
-from ..dip.shell.tools.quit import QuitTool
-
-from .. import UpdateManager
+#from .. import UpdateManager
 from ..exceptions import UserException
 from ..project import Project
-from ..updates import (ProjectV2Update, ProjectV3Update, ProjectV4Update,
-        ProjectV5Update, ProjectV6Update, ProjectV7Update, ProjectV8Update,
-        ProjectV9Update, ProjectV10Update, ProjectV11Update, ProjectV12Update,
-        ProjectV13Update, ProjectV14Update, ProjectV15Update, ProjectV16Update)
+#from ..updates import (ProjectV2Update, ProjectV3Update, ProjectV4Update,
+#        ProjectV5Update, ProjectV6Update, ProjectV7Update, ProjectV8Update,
+#        ProjectV9Update, ProjectV10Update, ProjectV11Update, ProjectV12Update,
+#        ProjectV13Update, ProjectV14Update, ProjectV15Update, ProjectV16Update)
 
 from .project_ui import ProjectUi
 from .shell import Shell
-from .tools import (ApiEditorTool, FeaturesTool, ImportProjectTool, LoggerTool,
-        ModulesTool, PlatformsTool, ScannerTool, VersionsTool)
+from .tools import ApiEditorTool
+#from .tools import (FeaturesTool, ImportProjectTool, LoggerTool,
+#        ModulesTool, PlatformsTool, ScannerTool, VersionsTool)
 from .utils import warning
 
 
@@ -69,8 +66,7 @@ def main():
 
     # Define the shell.
     #shell_factory = MainWindowShell(main_area_policy='single',
-    #        tool_factories=[LoggerTool, QuitTool,
-    #                lambda: editor_tool,
+    #        tool_factories=[LoggerTool,
     #                FeaturesTool,
     #                ImportProjectTool,
     #                ModulesTool,
