@@ -16,9 +16,10 @@ from PyQt6.QtWidgets import QMessageBox
 def warning(title, text, detail=None, parent=None):
     """ Display a warning message to the user. """
 
-    if detail is None:
-        QMessageBox.warning(parent, title, text)
-    else:
-        message_box = QMessageBox(QMessageBox.StandardButton.Warning, title,
-                text, parent=parent, detailedText=detail)
-        message_box.exec()
+    message_box = QMessageBox(QMessageBox.StandardButton.Warning, title, text,
+            parent=parent)
+
+    if detail:
+        message_box.setDetailedText(detail)
+
+    message_box.exec()

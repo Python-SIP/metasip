@@ -41,6 +41,13 @@ class AbstractTool(ABC):
         ...
 
     @property
+    @abstractmethod
+    def name(self):
+        """ Get the internal unique name of the tool. """
+
+        ...
+
+    @property
     def project(self, project):
         """ Get the current project. """
 
@@ -51,6 +58,18 @@ class AbstractTool(ABC):
         """ Set the current project. """
 
         self._project = project
+
+    def restore_state(self, settings):
+        """ Restore the tool's state from the settings. """
+
+        # This default implementation does nothing.
+        pass
+
+    def save_state(self, settings):
+        """ Save the tool's state in the settings. """
+
+        # This default implementation does nothing.
+        pass
 
     @property
     @abstractmethod

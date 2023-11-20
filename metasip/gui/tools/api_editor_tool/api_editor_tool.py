@@ -32,6 +32,12 @@ class ApiEditorTool(AbstractTool):
         return ToolLocation.CENTRE
 
     @property
+    def name(self):
+        """ Get the internal unique name of the tool. """
+
+        return 'metasip.tools.api_editor'
+
+    @property
     def project(self):
         """ Get the current project. """
 
@@ -44,6 +50,18 @@ class ApiEditorTool(AbstractTool):
         AbstractTool.project.fset(self, project)
 
         self._api_editor.set_project(project)
+
+    def restore_state(self, settings):
+        """ Restore the tool's state from the settings. """
+
+        state = settings.value(self.name)
+        if state is not None:
+            self._api_editor.widget_state = state
+
+    def save_state(self, settings):
+        """ Save the tool's state in the settings. """
+
+        settings.setValue(self.name, self._api_editor.widget_state)
 
     @property
     def title(self):

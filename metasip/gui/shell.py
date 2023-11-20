@@ -10,8 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDockWidget, QMainWindow
+from PyQt6.QtCore import QSettings, Qt
+from PyQt6.QtWidgets import QDockWidget, QMainWindow, QMessageBox
 
 from .tools import ToolLocation
 
@@ -33,7 +33,8 @@ class Shell:
         self._project = None
 
         # Create the widget that implements the shell.
-        self._shell_widget = QMainWindow()
+        self._shell_widget = _ShellWidget(self._handle_close_event)
+        self._shell_widget.setObjectName('metasip.shell')
 
         # Create the tools.
         self._tools = []
@@ -46,9 +47,24 @@ class Shell:
             else:
                 self._shell_widget.addDockWidget(
                         self._LOCATION_MAP[tool.location],
-                        QDockWidget(tool.title, tool.widget))
+                        QDockWidget(tool.title, tool.widget,
+                                objectName=tool.name))
 
             self._tools.append(tool)
+
+        # Restore the state now the GUI has been built.
+        settings = QSettings()
+
+        for tool in self._tools:
+            tool.restore_state(settings)
+
+        setting = settings.value('state')
+        if setting is not None:
+            self._shell_widget.restoreState(setting)
+
+        setting = settings.value('geometry')
+        if setting is not None:
+            self._shell_widget.restoreGeometry(setting)
 
     @property
     def dirty(self):
@@ -87,3 +103,51 @@ class Shell:
 
         self._shell_widget.show()
 
+    def _close_allowed(self):
+        """ Return True if the GUI can be closed. """
+
+        # Ask the user unless the project hasn't been modified.
+        if not self._project.dirty:
+            return True
+
+        button = QMessageBox.question(self._shell_widget, "Quit",
+                "The project has been modified. Do you really want to quit?")
+
+        return button is QMessageBox.StandardButton.Yes
+
+    def _handle_close_event(self):
+        """ Handle a close event and return True if the event should be
+        accepted.
+        """
+
+        if self._close_allowed():
+            # Save the settings.
+            settings = QSettings()
+            settings.setValue('geometry', self._shell_widget.saveGeometry())
+            settings.setValue('state', self._shell_widget.saveState())
+
+            for tool in self._tools:
+                tool.save_state(settings)
+
+            return True
+
+        return False
+
+
+class _ShellWidget(QMainWindow):
+    """ The widget that implements the shell. """
+
+    def __init__(self, close_event_handler):
+        """ Initialise the widget. """
+
+        super().__init__()
+
+        self._close_event_handler = close_event_handler
+
+    def closeEvent(self, event):
+        """ Reimplemented to save the state of the GUI. """
+
+        if self._close_event_handler():
+            event.accept()
+        else:
+            event.ignore()

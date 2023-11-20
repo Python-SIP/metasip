@@ -72,6 +72,18 @@ class ApiEditor(QTreeWidget):
 
         self.tool.shell.dirty = True
 
+    @property
+    def widget_state(self):
+        """ Get the widget's state. """
+
+        return self.header().saveState()
+
+    @widget_state.setter
+    def widget_state(self, state):
+        """ Set the widget's state. """
+
+        self.header().restoreState(state)
+
     def contextMenuEvent(self, ev):
         """
         Reimplemented to handle a context menu event.

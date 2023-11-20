@@ -15,24 +15,23 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from .project_ui import ProjectUi
-from .shell import Shell
-from .utils import warning
-
-from ..dip.settings import SettingsManager
 from ..dip.shell import IShell
 from ..dip.shell.shells.main_window import MainWindowShell
 from ..dip.shell.tools.quit import QuitTool
 
 from .. import UpdateManager
+from ..exceptions import UserException
 from ..project import Project
 from ..updates import (ProjectV2Update, ProjectV3Update, ProjectV4Update,
         ProjectV5Update, ProjectV6Update, ProjectV7Update, ProjectV8Update,
         ProjectV9Update, ProjectV10Update, ProjectV11Update, ProjectV12Update,
         ProjectV13Update, ProjectV14Update, ProjectV15Update, ProjectV16Update)
 
+from .project_ui import ProjectUi
+from .shell import Shell
 from .tools import (ApiEditorTool, FeaturesTool, ImportProjectTool, LoggerTool,
         ModulesTool, PlatformsTool, ScannerTool, VersionsTool)
+from .utils import warning
 
 
 def main():
@@ -45,8 +44,11 @@ def main():
 
     project_name = args.project
 
-    app = QApplication(sys.argv)
-    #SettingsManager.load('riverbankcomputing.com')
+    app = QApplication(sys.argv, applicationName='metasip',
+            organizationDomain='riverbankcomputing.com',
+            organizationName='Riverbank Computing')
+
+    sys.excepthook = _exception_hook
 
     # Add the project updates.
     #UpdateManager.updates.append(ProjectV2Update())
@@ -86,18 +88,23 @@ def main():
     # Set the project in the shell.
     shell.project = project
 
-    # Handle any project passed on the command line.
-    #if project_name is not None:
-    #    try:
-    #        IShell(shell).open('metasip.tools.project_editor', project_name,
-    #                'metasip.formats.project')
-    #    except StorageError as e:
-    #        warning("Open", f"There was an error opening {project_name}.",
-    #                detail=str(e))
-
-    #SettingsManager.restore(shell.all_views())
+    # Launch the GUI.
     shell.show()
-    rc = app.exec()
-    #SettingsManager.save(shell.all_views())
+    return app.exec()
 
-    return rc
+
+def _exception_hook(exc_type, exc_value, exc_tb):
+    """ Handle an exception. """
+
+    if isinstance(exc_value, UserException):
+        from .utils import warning
+
+        warning('metasip', exc_value.text, detail=exc_value.detail)
+    else:
+        import traceback
+
+        tb = ''.join(traceback.format_exception(exc_type, exc_value, exc_tb))
+
+        print(tb, file=sys.stderr)
+
+        QApplication.exit(1)
