@@ -11,7 +11,7 @@
 
 
 from PyQt6.QtCore import QSettings, Qt
-from PyQt6.QtWidgets import QDockWidget, QMainWindow, QMessageBox
+from PyQt6.QtWidgets import QDockWidget, QMainWindow, QMenuBar, QMessageBox
 
 from .tools import ToolLocation
 
@@ -38,6 +38,7 @@ class Shell:
 
         # Create the tools.
         self._tools = []
+        menus = {}
 
         for tool_factory in tool_factories:
             tool = tool_factory(self)
@@ -50,7 +51,31 @@ class Shell:
                         QDockWidget(tool.title, tool.widget,
                                 objectName=tool.name))
 
+            # Add any actions to the menus.
+            menu_name, actions = tool.actions
+            if menu_name:
+                menu_actions = menus.setdefault(menu_name, [])
+                if len(menu_actions) != 0:
+                    # This will turn into a separator.
+                    menu_actions.append(None)
+
+                menu_actions.extend(actions)
+
             self._tools.append(tool)
+
+        # Create the menu bar.
+        menu_bar = QMenuBar()
+
+        for menu_name, actions in menus.items():
+            menu = menu_bar.addMenu(menu_name)
+
+            for action in actions:
+                if action is None:
+                    menu.addSeperator()
+                else:
+                    menu.addAction(action)
+
+        self._shell_widget.setMenuBar(menu_bar)
 
         # Restore the state now the GUI has been built.
         settings = QSettings()
@@ -76,6 +101,9 @@ class Shell:
     def dirty(self, state):
         """ Set the dirty state. """
 
+        # We do this here in case the project name has changed.
+        self._shell_widget.setWindowTitle(self._project.name + '[*]')
+
         self._project.dirty = state
         self._shell_widget.setWindowModified(state)
 
@@ -94,33 +122,45 @@ class Shell:
         for tool in self._tools:
             tool.project = project
 
-        self._shell_widget.setWindowTitle(project.name + '[*]')
-
         self.dirty = False
 
-    def show(self):
-        """ Make the shell visible. """
-
-        self._shell_widget.show()
-
-    def _close_allowed(self):
-        """ Return True if the GUI can be closed. """
+    def save_project(self):
+        """ Return True if any current project was saved. """
 
         # Ask the user unless the project hasn't been modified.
         if not self._project.dirty:
             return True
 
         button = QMessageBox.question(self._shell_widget, "Quit",
-                "The project has been modified. Do you really want to quit?")
+                "The project has been modified. Do you want to save or discard the changes?",
+                QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Save)
 
-        return button is QMessageBox.StandardButton.Yes
+        if button is QMessageBox.StandardButton.Cancel:
+            return False
+
+        if button is QMessageBox.StandardButton.Save:
+            save_unsuccessful = False
+
+            for tool in self._tools:
+                if not tool.save_data():
+                    save_unsuccessful = True
+
+            if save_unsuccessful:
+                return False
+
+        return True
+
+    def show(self):
+        """ Make the shell visible. """
+
+        self._shell_widget.show()
 
     def _handle_close_event(self):
         """ Handle a close event and return True if the event should be
         accepted.
         """
 
-        if self._close_allowed():
+        if self.save_project():
             # Save the settings.
             settings = QSettings()
             settings.setValue('geometry', self._shell_widget.saveGeometry())

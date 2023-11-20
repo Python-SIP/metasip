@@ -34,6 +34,15 @@ class AbstractTool(ABC):
         self._project = None
 
     @property
+    def actions(self):
+        """ Get the destination menu and sequence of actions handled by the
+        tool.
+        """
+
+        # This default implementation does nothing.
+        return None, ()
+
+    @property
     @abstractmethod
     def location(self):
         """ Get the location of the tool in the shell. """
@@ -64,6 +73,12 @@ class AbstractTool(ABC):
 
         # This default implementation does nothing.
         pass
+
+    def save_data(self):
+        """ Save the tool's data and return True if there was no error. """
+
+        # This default implementation does nothing.
+        return True
 
     def save_state(self, settings):
         """ Save the tool's state in the settings. """

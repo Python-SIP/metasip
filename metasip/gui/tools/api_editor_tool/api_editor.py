@@ -62,9 +62,10 @@ class ApiEditor(QTreeWidget):
     def set_project(self, project):
         """ Set the current project. """
 
+        self.clear()
+
         self.project = project
 
-        # TODO - remove any old items.
         ProjectItem(project, self)
 
     def set_dirty(self):

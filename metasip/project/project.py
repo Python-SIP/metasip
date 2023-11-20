@@ -287,16 +287,18 @@ class Project(Model):
                     yield callable
 
     @classmethod
-    def factory(cls, project_name, ui=None):
+    def factory(cls, project_name=None, ui=None):
         """ Return a project from an optional project file. """
 
         project = cls()
 
-        if project_name:
+        if project_name is None:
+            project.name = os.path.abspath("Untitled.msp")
+        else:
             # Avoid a circular import.
             from .project_parser import ProjectParser
 
-            project.name = project_name
+            project.name = os.path.abspath(project_name)
             ProjectParser(ui).parse(project)
 
         return project
