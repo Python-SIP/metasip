@@ -15,9 +15,6 @@ from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog,
         QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout)
 from PyQt6.Qsci import QsciLexerCPP, QsciScintilla
 
-from ....dip.settings import SettingsManager
-from ....dip.ui import IDialog
-
 
 class ExternalEditor(QObject):
     """
@@ -82,7 +79,6 @@ class ExternalEditor(QObject):
         # Load the text.
         ed.setText(text)
 
-        SettingsManager.restore(IDialog(dlg).all_views())
         dlg.installEventFilter(self)
         dlg.show()
         dlg.raise_()
@@ -120,15 +116,11 @@ class ExternalEditor(QObject):
     def _on_accepted(self):
         """ Invoked when the user accepts the edited text. """
 
-        SettingsManager.save(IDialog(self._dialog).all_views())
-
         self.editDone.emit(True, self._editor.text())
         self._dialog.deleteLater()
 
     def _on_rejected(self):
         """ Invoked when the user rejects the edited text. """
-
-        SettingsManager.save(IDialog(self._dialog).all_views())
 
         self.editDone.emit(False, '')
         self._dialog.deleteLater()
