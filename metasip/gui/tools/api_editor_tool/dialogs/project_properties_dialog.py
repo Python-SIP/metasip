@@ -14,7 +14,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QComboBox, QGridLayout, QLabel, QLineEdit,
         QPlainTextEdit, QPushButton)
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
 
 
 class ProjectPropertiesDialog(AbstractDialog):
@@ -46,22 +46,24 @@ class ProjectPropertiesDialog(AbstractDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
-        self._root_module.setText(self.api_item.rootmodule)
+        self._root_module.setText(self.model.rootmodule)
 
-        for namespace in self.api_item.ignorednamespaces:
+        for namespace in self.model.ignorednamespaces:
             self._ignored_namespaces.addItem(namespace)
 
         self._enable_namespace_button()
 
-        self._sip_comments.setPlainText(self.api_item.sipcomments)
+        self._sip_comments.setPlainText(self.model.sipcomments)
 
     def get_fields(self):
         """ Update the API item from the dialog's fields. """
 
-        self.api_item.rootmodule = self._root_module.text().strip()
-        self.api_item.ignorednamespaces = [self._ignored_namespaces.itemText(i)
+        self.model.rootmodule = self._root_module.text().strip()
+        self.model.ignorednamespaces = [self._ignored_namespaces.itemText(i)
                 for i in range(self._ignored_namespaces.count())]
-        self.api_item.sipcomments = self._sip_comments.toPlainText().strip()
+        self.model.sipcomments = self._sip_comments.toPlainText().strip()
+
+        return True
 
     def _handle_remove_namespace(self):
         """ Remove the current ignored namespace from the list. """

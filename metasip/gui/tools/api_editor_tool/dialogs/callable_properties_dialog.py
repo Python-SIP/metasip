@@ -16,7 +16,8 @@ from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGridLayout,
 from .....project import (Constructor, Destructor, Method, OperatorMethod,
         Function, OperatorFunction, ManualCode)
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
+
 from .helpers import Encoding, split_annos
 
 
@@ -147,7 +148,7 @@ class CallablePropertiesDialog(AbstractDialog):
         self._imatmul = QCheckBox('__imatmul__')
         group_box_layout.addWidget(self._imatmul, 14, 1)
 
-        if isinstance(self.api_item, Constructor):
+        if isinstance(self.model, Constructor):
             self.setWindowTitle("Constructor Properties")
 
             self._py_type.setEnabled(False)
@@ -173,7 +174,7 @@ class CallablePropertiesDialog(AbstractDialog):
             self._py_name.setEnabled(False)
             self._type_hint.setEnabled(False)
 
-        elif isinstance(self.api_item, Destructor):
+        elif isinstance(self.model, Destructor):
             self.setWindowTitle("Destructor Properties")
 
             self._py_type.setEnabled(False)
@@ -206,13 +207,13 @@ class CallablePropertiesDialog(AbstractDialog):
             self._py_name.setEnabled(False)
             self._type_hint.setEnabled(False)
 
-        elif isinstance(self.api_item, Method):
+        elif isinstance(self.model, Method):
             self.setWindowTitle("Method Properties")
 
             self._default.setEnabled(False)
             self._no_derived.setEnabled(False)
 
-        elif isinstance(self.api_item, OperatorMethod):
+        elif isinstance(self.model, OperatorMethod):
             self.setWindowTitle("Operator Method Properties")
 
             self._abort_on_exception.setEnabled(False)
@@ -226,7 +227,7 @@ class CallablePropertiesDialog(AbstractDialog):
             self._no_derived.setEnabled(False)
             self._py_name.setEnabled(False)
 
-        elif isinstance(self.api_item, Function):
+        elif isinstance(self.model, Function):
             self.setWindowTitle("Function Properties")
 
             self._abort_on_exception.setEnabled(False)
@@ -241,7 +242,7 @@ class CallablePropertiesDialog(AbstractDialog):
             self._transfer.setEnabled(False)
             self._transfer_this.setEnabled(False)
 
-        elif isinstance(self.api_item, OperatorFunction):
+        elif isinstance(self.model, OperatorFunction):
             self.setWindowTitle("Operator Function Properties")
 
             self._abort_on_exception.setEnabled(False)
@@ -258,7 +259,7 @@ class CallablePropertiesDialog(AbstractDialog):
             self._transfer_this.setEnabled(False)
             self._py_name.setEnabled(False)
 
-        elif isinstance(self.api_item, ManualCode):
+        elif isinstance(self.model, ManualCode):
             self.setWindowTitle("Manual Code Properties")
 
             self._py_type.setEnabled(False)
@@ -268,19 +269,19 @@ class CallablePropertiesDialog(AbstractDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
-        if isinstance(self.api_item, Constructor):
-            self._py_args.setText(self.api_item.pyargs)
+        if isinstance(self.model, Constructor):
+            self._py_args.setText(self.model.pyargs)
 
-        elif isinstance(self.api_item, Method):
-            self._py_type.setText(self.api_item.pytype)
-            self._py_args.setText(self.api_item.pyargs)
-            self._final.setChecked(self.api_item.final)
+        elif isinstance(self.model, Method):
+            self._py_type.setText(self.model.pytype)
+            self._py_args.setText(self.model.pyargs)
+            self._final.setChecked(self.model.final)
 
-        elif isinstance(self.api_item, (OperatorMethod, Function, OperatorFunction)):
-            self._py_type.setText(self.api_item.pytype)
-            self._py_args.setText(self.api_item.pyargs)
+        elif isinstance(self.model, (OperatorMethod, Function, OperatorFunction)):
+            self._py_type.setText(self.model.pytype)
+            self._py_args.setText(self.model.pyargs)
 
-        for name, value in split_annos(self.api_item.annos):
+        for name, value in split_annos(self.model.annos):
             if name == 'AbortOnException':
                 self._abort_on_exception.setChecked(True)
             elif name == 'AllowNone':
@@ -345,17 +346,17 @@ class CallablePropertiesDialog(AbstractDialog):
             elif name == 'TypeHint':
                 self._type_hint.setText(value)
 
-    def get_data(self):
+    def get_fields(self):
         """ Update the API item from the dialog's fields. """
 
-        if hasattr(self.api_item, 'pytype') and self.api_item.pytype is not None:
-            self.api_item.pytype = self._py_type.text().strip()
+        if hasattr(self.model, 'pytype') and self.model.pytype is not None:
+            self.model.pytype = self._py_type.text().strip()
 
-        if hasattr(self.api_item, 'pyargs'):
-            self.api_item.pyargs = self._py_args.text().strip()
+        if hasattr(self.model, 'pyargs'):
+            self.model.pyargs = self._py_args.text().strip()
 
-        if hasattr(self.api_item, 'final'):
-            self.api_item.final = self._final.isChecked()
+        if hasattr(self.model, 'final'):
+            self.model.final = self._final.isChecked()
 
         annos_list = []
 
@@ -459,4 +460,6 @@ class CallablePropertiesDialog(AbstractDialog):
         if type_hint:
             annos_list.append(f'TypeHint="{type_hint}"')
 
-        self.api_item.annos = ','.join(annos_list)
+        self.model.annos = ','.join(annos_list)
+
+        return True

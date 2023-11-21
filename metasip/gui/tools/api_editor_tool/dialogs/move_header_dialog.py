@@ -12,7 +12,7 @@
 
 from PyQt6.QtWidgets import QComboBox, QDialog, QFormLayout
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
 
 
 class MoveHeaderDialog(AbstractDialog):
@@ -30,7 +30,7 @@ class MoveHeaderDialog(AbstractDialog):
         form.addRow("Destination module", self._dst_module)
 
         for module in sorted(self.project.modules, key=lambda m: m.name):
-            if module is not self.api_item:
+            if module is not self.model:
                 self._dst_module.addItem(module.name, module)
 
     def get_destination_module(self):

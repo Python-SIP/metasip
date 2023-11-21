@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import QFileDialog
 
 from ....project import Project
 
-from ...project_ui import ProjectUi
+from ...helpers import ProjectUi
 
 from ..abstract_tool import AbstractTool, ToolLocation
 

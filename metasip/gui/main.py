@@ -23,12 +23,11 @@ from ..project import Project
 #        ProjectV9Update, ProjectV10Update, ProjectV11Update, ProjectV12Update,
 #        ProjectV13Update, ProjectV14Update, ProjectV15Update, ProjectV16Update)
 
-from .project_ui import ProjectUi
+from .helpers import ProjectUi, warning
 from .shell import Shell
 from .tools import ApiEditorTool
 #from .tools import (FeaturesTool, ImportProjectTool, LoggerTool,
 #        ModulesTool, PlatformsTool, ScannerTool, VersionsTool)
-from .utils import warning
 
 
 def main():

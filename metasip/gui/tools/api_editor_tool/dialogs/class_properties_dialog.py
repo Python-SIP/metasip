@@ -13,7 +13,8 @@
 from PyQt6.QtWidgets import (QCheckBox, QFormLayout, QGridLayout, QGroupBox,
         QLineEdit)
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
+
 from .helpers import split_annos
 
 
@@ -100,9 +101,9 @@ class ClassPropertiesDialog(AbstractDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
-        self._py_bases.setText(self.api_item.pybases)
+        self._py_bases.setText(self.model.pybases)
 
-        for name, value in split_annos(self.api_item.annos):
+        for name, value in split_annos(self.model.annos):
             if name == 'Abstract':
                 self._abstract.setChecked(True)
             elif name == 'AllowNone':
@@ -141,7 +142,7 @@ class ClassPropertiesDialog(AbstractDialog):
     def get_fields(self):
         """ Update the API item from the dialog's fields. """
 
-        self.api_item.pybases = ' '.join(self._py_bases.text().strip().split())
+        self.model.pybases = ' '.join(self._py_bases.text().strip().split())
 
         annos_list = []
 
@@ -205,4 +206,6 @@ class ClassPropertiesDialog(AbstractDialog):
         if pyqt_interface:
             annos_list.append('PyQtInterface=' + pyqt_interface)
 
-        self.api_item.annos = ','.join(annos_list)
+        self.model.annos = ','.join(annos_list)
+
+        return True

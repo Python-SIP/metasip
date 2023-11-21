@@ -12,7 +12,8 @@
 
 from PyQt6.QtWidgets import QCheckBox, QGroupBox, QVBoxLayout
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
+
 from .helpers import split_annos
 
 
@@ -33,7 +34,7 @@ class OpaqueClassPropertiesDialog(AbstractDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
-        for name, value in split_annos(self.api_item.annos):
+        for name, value in split_annos(self.model.annos):
             if name == 'External':
                 self._external.setChecked(True)
 
@@ -45,4 +46,6 @@ class OpaqueClassPropertiesDialog(AbstractDialog):
         if self._external.isChecked():
             annos_list.append('External')
 
-        self.api_item.annos = ','.join(annos_list)
+        self.model.annos = ','.join(annos_list)
+
+        return True

@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import QComboBox, QFormLayout
 
 from .....project import VersionRange
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
 
 
 class VersionsDialog(AbstractDialog):
@@ -55,12 +55,12 @@ class VersionsDialog(AbstractDialog):
         # Note that we ignore (and eventually discard) anything other than the
         # first version range.
 
-        if len(self.api_item.versions) == 0:
+        if len(self.model.versions) == 0:
             api_start = ''
             api_end = ''
         else:
-            api_start = self.api_item.versions[0].startversion
-            api_end = self.api_item.versions[0].endversion
+            api_start = self.model.versions[0].startversion
+            api_end = self.model.versions[0].endversion
 
         if api_start == '':
             start_index = 0
@@ -84,4 +84,6 @@ class VersionsDialog(AbstractDialog):
         start_version = start_combo_box.itemData(start_combo_box.currentIndex())
         end_version = end_combo_box.itemData(end_combo_box.currentIndex())
 
-        self.api_item.versions = [VersionRange(startversion=start_version, endversion=end_version)]
+        self.model.versions = [VersionRange(startversion=start_version, endversion=end_version)]
+
+        return True

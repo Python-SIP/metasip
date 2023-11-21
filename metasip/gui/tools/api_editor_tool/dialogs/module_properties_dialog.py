@@ -13,7 +13,7 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGridLayout,
         QGroupBox, QLineEdit, QPlainTextEdit)
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
 
 
 class ModulePropertiesDialog(AbstractDialog):
@@ -61,38 +61,38 @@ class ModulePropertiesDialog(AbstractDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
-        self._output_dir_suffix.setText(self.api_item.outputdirsuffix)
-        self._directives.setPlainText(self.api_item.directives)
+        self._output_dir_suffix.setText(self.model.outputdirsuffix)
+        self._directives.setPlainText(self.model.directives)
 
-        if self.api_item.callsuperinit == 'undefined':
+        if self.model.callsuperinit == 'undefined':
             idx = 0
-        elif self.api_item.callsuperinit == 'no':
+        elif self.model.callsuperinit == 'no':
             idx = 1
         else:
             idx = 2
 
         self._call_super_init.setCurrentIndex(idx)
 
-        self._virtual_error_handler.setText(self.api_item.virtualerrorhandler)
-        self._use_limited_api.setChecked(self.api_item.uselimitedapi)
-        self._py_ssizet_clean.setChecked(self.api_item.pyssizetclean)
+        self._virtual_error_handler.setText(self.model.virtualerrorhandler)
+        self._use_limited_api.setChecked(self.model.uselimitedapi)
+        self._py_ssizet_clean.setChecked(self.model.pyssizetclean)
 
         for i in range(self._imports_layout.count()):
             check_box = self._imports_layout.itemAt(i).widget()
             module_name = check_box.text()
 
-            check_box.setEnabled(module_name != self.api_item.name)
-            check_box.setChecked(module_name in self.api_item.imports)
+            check_box.setEnabled(module_name != self.model.name)
+            check_box.setChecked(module_name in self.model.imports)
 
     def get_fields(self):
         """ Update the API item from the dialog's fields. """
 
-        self.api_item.outputdirsuffix = self._output_dir_suffix.text().strip()
-        self.api_item.directives = self._directives.toPlainText().strip()
-        self.api_item.callsuperinit = self._call_super_init.currentText().lower()
-        self.api_item.virtualerrorhandler = self._virtual_error_handler.text().strip()
-        self.api_item.pyssizetclean = self._py_ssizet_clean.isChecked()
-        self.api_item.uselimitedapi = self._use_limited_api.isChecked()
+        self.model.outputdirsuffix = self._output_dir_suffix.text().strip()
+        self.model.directives = self._directives.toPlainText().strip()
+        self.model.callsuperinit = self._call_super_init.currentText().lower()
+        self.model.virtualerrorhandler = self._virtual_error_handler.text().strip()
+        self.model.pyssizetclean = self._py_ssizet_clean.isChecked()
+        self.model.uselimitedapi = self._use_limited_api.isChecked()
 
         imports_list = []
 
@@ -100,4 +100,6 @@ class ModulePropertiesDialog(AbstractDialog):
             if self._imports_layout.itemAt(i).widget().isChecked():
                 imports_list.append(self._all_imports[i])
 
-        self.api_item.imports = imports_list
+        self.model.imports = imports_list
+
+        return True

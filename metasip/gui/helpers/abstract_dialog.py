@@ -17,13 +17,12 @@ from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QSizePolicy,
 
 
 class AbstractDialog(ABC):
-    """ An abstract base class for dialogs that handles common functionality.
-    """
+    """ An abstract base class for dialogs that update a model. """
 
-    def __init__(self, api_item, title, parent, project=None):
+    def __init__(self, model, title, parent, project=None):
         """ Initialise the dialog. """
 
-        self.api_item = api_item
+        self.model = model
         self.project = project
 
         self.dialog = QDialog(parent)
@@ -42,7 +41,7 @@ class AbstractDialog(ABC):
         button_box = QDialogButtonBox(
                 QDialogButtonBox.StandardButton.Cancel |
                 QDialogButtonBox.StandardButton.Ok)
-        button_box.accepted.connect(self.dialog.accept)
+        button_box.accepted.connect(self._handle_accept)
         button_box.rejected.connect(self.dialog.reject)
         layout.addWidget(button_box)
 
@@ -53,31 +52,34 @@ class AbstractDialog(ABC):
         ...
 
     def update(self):
-        """ Return True if the API item was updated or False if the dialog was
+        """ Return True if the model was updated or False if the dialog was
         cancelled.
         """
 
         self.set_fields()
 
-        if self.dialog.exec() == int(QDialog.DialogCode.Rejected):
-            return False
-
-        self.get_fields()
-
-        return True
+        return self.dialog.exec() == int(QDialog.DialogCode.Accepted)
 
     def set_fields(self):
         """ Normally reimplemented by a sub-class to set the dialog's fields
-        from the API item.
+        from the model.
         """
 
         # This default implementation does nothing.
         pass
 
     def get_fields(self):
-        """ Reimplemented by a sub-class to update the API item from the
-        dialog's fields.
+        """ Reimplemented by a sub-class to update the model from the
+        dialog's fields.  Returns True if the update was valid.
         """
 
         # This default implementation does nothing.
-        pass
+        return True
+
+    def _handle_accept(self):
+        """ Handle the Ok button. """
+
+        # Only accept the dialog if the fields are valid. """
+        if self.get_fields():
+            self.dialog.accept()
+

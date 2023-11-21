@@ -13,7 +13,8 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGridLayout,
         QGroupBox, QHBoxLayout, QLabel, QLineEdit)
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
+
 from .helpers import Encoding, split_annos
 
 
@@ -139,12 +140,12 @@ class ArgumentPropertiesDialog(AbstractDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
-        self._name.setText(self.api_item.name)
-        self._unnamed.setChecked(self.api_item.unnamed)
-        self._py_type.setText(self.api_item.pytype)
-        self._py_default.setText(self.api_item.pydefault)
+        self._name.setText(self.model.name)
+        self._unnamed.setChecked(self.model.unnamed)
+        self._py_type.setText(self.model.pytype)
+        self._py_default.setText(self.model.pydefault)
 
-        for name, value in split_annos(self.api_item.annos):
+        for name, value in split_annos(self.model.annos):
             if name == 'AllowNone':
                 self._allow_none.setChecked(True)
             elif name == 'Array':
@@ -200,10 +201,10 @@ class ArgumentPropertiesDialog(AbstractDialog):
     def get_fields(self):
         """ Update the API item from the dialog's field. """
 
-        self.api_item.name = self._name.text().strip()
-        self.api_item.unnamed = self._unnamed.isChecked()
-        self.api_item.pytype = self._py_type.text().strip()
-        self.api_item.pydefault = self._py_default.text().strip()
+        self.model.name = self._name.text().strip()
+        self.model.unnamed = self._unnamed.isChecked()
+        self.model.pytype = self._py_type.text().strip()
+        self.model.pydefault = self._py_default.text().strip()
 
         annos_list = []
 
@@ -285,7 +286,9 @@ class ArgumentPropertiesDialog(AbstractDialog):
         if type_hint_out:
             annos_list.append(f'TypeHintOut="{type_hint_out}"')
 
-        self.api_item.annos = ','.join(annos_list)
+        self.model.annos = ','.join(annos_list)
+
+        return True
 
     def _update_reference(self, state=None):
         """ Enable the reference field if the keep reference field is checked.

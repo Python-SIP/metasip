@@ -13,7 +13,8 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGroupBox,
         QLineEdit, QVBoxLayout)
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
+
 from .helpers import BaseType, split_annos
 
 
@@ -47,7 +48,7 @@ class EnumPropertiesDialog(AbstractDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
-        for name, value in split_annos(self.api_item.annos):
+        for name, value in split_annos(self.model.annos):
             if name == 'PyName':
                 self._py_name.setText(value)
             elif name == 'BaseType':
@@ -74,4 +75,6 @@ class EnumPropertiesDialog(AbstractDialog):
         if self._no_type_hint.isChecked():
             annos_list.append('NoTypeHint')
 
-        self.api_item.annos = ','.join(annos_list)
+        self.model.annos = ','.join(annos_list)
+
+        return True

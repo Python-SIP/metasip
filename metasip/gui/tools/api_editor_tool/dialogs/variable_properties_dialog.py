@@ -13,7 +13,8 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGroupBox,
         QLineEdit, QVBoxLayout)
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
+
 from .helpers import Encoding, split_annos
 
 
@@ -59,7 +60,7 @@ class VariablePropertiesDialog(AbstractDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
-        for name, value in split_annos(self.api_item.annos):
+        for name, value in split_annos(self.model.annos):
             if name == 'DocType':
                 self._doc_type.setText(value)
             elif name == 'Encoding':
@@ -103,4 +104,6 @@ class VariablePropertiesDialog(AbstractDialog):
         if type_hint:
             annos_list.append(f'TypeHint="{type_hint}"')
 
-        self.api_item.annos = ','.join(annos_list)
+        self.model.annos = ','.join(annos_list)
+
+        return True

@@ -12,7 +12,7 @@
 
 from PyQt6.QtWidgets import QCheckBox, QDialog
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
 
 
 class PlatformsDialog(AbstractDialog):
@@ -33,7 +33,7 @@ class PlatformsDialog(AbstractDialog):
         """ Set the dialog's fields from the API item. """
 
         for check_box, platform in self._platforms:
-            check_box.setChecked(platform in self.api_item.platforms)
+            check_box.setChecked(platform in self.model.platforms)
 
     def get_fields(self):
         """ Update the API item from the dialog's fields. """
@@ -44,4 +44,6 @@ class PlatformsDialog(AbstractDialog):
             if check_box.isChecked():
                 platforms.append(platform)
 
-        self.api_item.platforms = platforms
+        self.model.platforms = platforms
+
+        return True

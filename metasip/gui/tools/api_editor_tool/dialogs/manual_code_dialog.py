@@ -12,7 +12,7 @@
 
 from PyQt6.QtWidgets import QFormLayout, QLineEdit
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
 
 
 class ManualCodeDialog(AbstractDialog):
@@ -30,9 +30,11 @@ class ManualCodeDialog(AbstractDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
-        self._precis.setText(self.api_item.precis)
+        self._precis.setText(self.model.precis)
 
     def get_fields(self):
         """ Update the API item from the dialog's fields. """
 
-        self.api_item.precis = self._precis.text().strip()
+        self.model.precis = self._precis.text().strip()
+
+        return True

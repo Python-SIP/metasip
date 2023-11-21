@@ -12,7 +12,7 @@
 
 from PyQt6.QtWidgets import QComboBox, QGridLayout, QLabel
 
-from .abstract_dialog import AbstractDialog
+from ....helpers import AbstractDialog
 
 
 class FeaturesDialog(AbstractDialog):
@@ -42,7 +42,7 @@ class FeaturesDialog(AbstractDialog):
         """ Set the dialog's fields from the API item. """
 
         for combo_box, feature in self._features:
-            for f in self.api_item.features:
+            for f in self.model.features:
                 if f.startswith('!') and feature == f[1:]:
                     index = 2
                 elif feature == f:
@@ -65,4 +65,6 @@ class FeaturesDialog(AbstractDialog):
             elif index == 1:
                 features.append(feature)
 
-        self.api_item.features = features
+        self.model.features = features
+
+        return True
