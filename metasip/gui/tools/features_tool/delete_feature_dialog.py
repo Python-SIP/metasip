@@ -43,6 +43,7 @@ class DeleteFeatureDialog(AbstractDialog):
         project = self.model
 
         feature = self._feature.currentText()
+        discard = self._discard.isChecked()
 
         # Delete from each API item it appears.
         remove_items = []
@@ -52,6 +53,8 @@ class DeleteFeatureDialog(AbstractDialog):
             # Ignore items that aren't tagged with a feature.
             if len(api_item.features) == 0:
                 continue
+
+            remove_features = []
 
             for f in api_item.features:
                 if f[0] == '!':

@@ -18,15 +18,18 @@ from PyQt6.QtWidgets import QFileDialog
 from ....project import Project
 
 from ...helpers import ProjectUi
+from ...shell import EventType, ToolLocation
 
-from ..base_tool import BaseTool, ToolLocation
-from ..shell import EventType
+from ..base_tool import BaseTool
 
 from .api_editor import ApiEditor
 
 
 class ApiEditorTool(BaseTool):
     """ This class implements the API editor tool. """
+
+    # The base key for any settings.
+    _SETTINGS_KEY = 'metasip.tools.api_editor'
 
     def __init__(self, shell):
         """ Initialise the tool. """
@@ -67,7 +70,7 @@ class ApiEditorTool(BaseTool):
     def restore_state(self, settings):
         """ Restore the tool's state from the settings. """
 
-        state = settings.value(self.name)
+        state = settings.value(self._SETTINGS_KEY)
         if state is not None:
             self._api_editor.widget_state = state
 
@@ -79,7 +82,7 @@ class ApiEditorTool(BaseTool):
     def save_state(self, settings):
         """ Save the tool's state in the settings. """
 
-        settings.setValue(self.name, self._api_editor.widget_state)
+        settings.setValue(self._SETTINGS_KEY, self._api_editor.widget_state)
 
     @property
     def title(self):

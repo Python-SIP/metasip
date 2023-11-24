@@ -15,8 +15,6 @@ from enum import auto, Enum
 from PyQt6.QtCore import QSettings, Qt
 from PyQt6.QtWidgets import QDockWidget, QMainWindow, QMenuBar, QMessageBox
 
-from .tools import ToolLocation
-
 
 class EventType(Enum):
     """ The different project-related event types. """
@@ -26,6 +24,16 @@ class EventType(Enum):
 
     # A new project has been loaded.
     PROJECT_NEW = auto()
+
+
+class ToolLocation(Enum):
+    """ The different possible locations for a tool in the shell. """
+
+    CENTRE = auto()
+    LEFT = auto()
+    RIGHT = auto()
+    TOP = auto()
+    BOTTOM = auto()
 
 
 class Shell:
@@ -120,11 +128,11 @@ class Shell:
         self._shell_widget.setWindowModified(state)
 
     def handle_project_dialog(self, title, dialog_factory, event_type=None):
-        """ Handle a dialog that will update some apsect of a project. """
+        """ Handle a dialog that will update some aspect of a project. """
 
         dialog = dialog_factory(self._project, title, self._shell_widget)
 
-        if dialog.update:
+        if dialog.update():
             self.dirty = True
 
             if event_type is not None:

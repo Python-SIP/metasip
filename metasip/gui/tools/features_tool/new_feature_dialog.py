@@ -24,7 +24,7 @@ class NewFeatureDialog(AbstractDialog):
         """ Populate the dialog's layout. """
 
         form = QFormLayout()
-        layout.addLayout()
+        layout.addLayout(form)
 
         self._feature = QLineEdit()
         form.addRow("Feature name", self._feature)
@@ -38,7 +38,7 @@ class NewFeatureDialog(AbstractDialog):
         project = self.model
 
         feature = self._feature.text().strip()
-        if not validate_feature_name(feature, project, self)
+        if not validate_feature_name(feature, project, self):
             return False
 
         if self._external.isChecked():

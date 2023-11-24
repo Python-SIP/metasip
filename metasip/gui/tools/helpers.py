@@ -12,7 +12,7 @@
 
 import re
 
-from ....interfaces.project import ICodeContainer, IEnum
+from ...interfaces.project import ICodeContainer, IEnum
 
 from ..helpers import warning
 
@@ -37,7 +37,7 @@ def validate_identifier(identifier, identifier_type):
 def validation_error(message, dialog):
     """ Display a validation error message from a dialog. """
 
-    warning(dialog.windowTitle(), message, parent=dialog)
+    warning(dialog.dialog.windowTitle(), message, parent=dialog.dialog)
 
 
 def tagged_items(project):

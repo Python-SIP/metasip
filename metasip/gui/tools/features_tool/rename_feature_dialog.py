@@ -29,7 +29,7 @@ class RenameFeatureDialog(AbstractDialog):
         layout.addWidget(self._feature)
 
         form = QFormLayout()
-        layout.addLayout()
+        layout.addLayout(form)
 
         self._new_name = QLineEdit()
         form.addRow("New name", self._new_name)
@@ -47,7 +47,7 @@ class RenameFeatureDialog(AbstractDialog):
         old_name = self._feature.currentText()
 
         new_name = self._new_name.text().strip()
-        if not validate_feature_name(new_name, project, self)
+        if not validate_feature_name(new_name, project, self):
             return False
 
         # Rename in each API item it appears.
