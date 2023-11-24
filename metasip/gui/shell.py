@@ -10,10 +10,22 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from enum import auto, Enum
+
 from PyQt6.QtCore import QSettings, Qt
 from PyQt6.QtWidgets import QDockWidget, QMainWindow, QMenuBar, QMessageBox
 
 from .tools import ToolLocation
+
+
+class EventType(Enum):
+    """ The different project-related event types. """
+
+    # A feature has been added or deleted.
+    FEATURE_ADD_DELETE = auto()
+
+    # A new project has been loaded.
+    PROJECT_NEW = auto()
 
 
 class Shell:
@@ -45,7 +57,7 @@ class Shell:
 
             if tool.location is ToolLocation.CENTRE:
                 self._shell_widget.setCentralWidget(tool.widget)
-            else:
+            elif tool.location is not None:
                 self._shell_widget.addDockWidget(
                         self._LOCATION_MAP[tool.location],
                         QDockWidget(tool.title, tool.widget,
@@ -107,6 +119,17 @@ class Shell:
         self._project.dirty = state
         self._shell_widget.setWindowModified(state)
 
+    def handle_project_dialog(self, title, dialog_factory, event_type=None):
+        """ Handle a dialog that will update some apsect of a project. """
+
+        dialog = dialog_factory(self._project, title, self._shell_widget)
+
+        if dialog.update:
+            self.dirty = True
+
+            if event_type is not None:
+                self._notify_tools(event_type)
+
     @property
     def project(self):
         """ Get the current project. """
@@ -118,10 +141,7 @@ class Shell:
         """ Set the current project. """
 
         self._project = project
-
-        for tool in self._tools:
-            tool.project = project
-
+        self._notify_tools(EventType.PROJECT_NEW)
         self.dirty = False
 
     def save_project(self):
@@ -172,6 +192,12 @@ class Shell:
             return True
 
         return False
+
+    def _notify_tools(self, event_type):
+        """ Notify all tools about a project-specific event. """
+
+        for tool in self._tools:
+            tool.event(event_type)
 
 
 class _ShellWidget(QMainWindow):

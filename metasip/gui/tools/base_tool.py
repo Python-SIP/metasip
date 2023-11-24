@@ -10,7 +10,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from abc import ABC, abstractmethod
 from enum import auto, Enum
 
 
@@ -24,14 +23,13 @@ class ToolLocation(Enum):
     BOTTOM = auto()
 
 
-class AbstractTool(ABC):
-    """ An abstract base class for tools that handles common functionality. """
+class BaseTool:
+    """ A base class for tools that handles common functionality. """
 
     def __init__(self, shell):
         """ Initialise the tool. """
 
         self.shell = shell
-        self._project = None
 
     @property
     def actions(self):
@@ -42,31 +40,26 @@ class AbstractTool(ABC):
         # This default implementation does nothing.
         return None, ()
 
+    def event(self, event_type):
+        """ This is called whenever a project-specific event takes place. """
+
+        # This default implementation does nothing.
+        pass
+
     @property
-    @abstractmethod
     def location(self):
         """ Get the location of the tool in the shell. """
 
-        ...
+        # This default implementation assumes that the tool doesn't have a GUI.
+        return None
 
     @property
-    @abstractmethod
     def name(self):
-        """ Get the internal unique name of the tool. """
+        """ Get the internal unique name of the tool.  This must be specified
+        if the location is not None or CENTRE.
+        """
 
-        ...
-
-    @property
-    def project(self, project):
-        """ Get the current project. """
-
-        return self._project
-
-    @project.setter
-    def project(self, project):
-        """ Set the current project. """
-
-        self._project = project
+        return None
 
     def restore_state(self, settings):
         """ Restore the tool's state from the settings. """
@@ -87,15 +80,15 @@ class AbstractTool(ABC):
         pass
 
     @property
-    @abstractmethod
     def title(self):
         """ Get the tool's title. """
 
-        ...
+        # This default implementation assumes that the tool doesn't have a GUI.
+        return None
 
     @property
-    @abstractmethod
     def widget(self):
         """ Get the tool's widget. """
 
-        ...
+        # This default implementation assumes that the tool doesn't have a GUI.
+        return None

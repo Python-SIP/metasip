@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -8,3 +8,6 @@
 #
 # This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+
+from .features_tool import FeaturesTool

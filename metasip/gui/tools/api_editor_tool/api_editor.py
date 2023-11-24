@@ -17,12 +17,13 @@ from PyQt6.QtWidgets import (QApplication, QDialog, QInputDialog, QMenu,
         QTreeWidgetItemIterator, QVBoxLayout)
 
 from ....dip.model import observe
-from ....dip.ui import Application
 
 from ....project import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
         ManualCode, Module, OpaqueClass, OperatorCast, Namespace, VersionRange,
         version_range)
+
+from ...helpers import warning
 
 from .dialogs import (ArgumentPropertiesDialog, CallablePropertiesDialog,
         ClassPropertiesDialog, EnumPropertiesDialog,
@@ -438,13 +439,13 @@ class ProjectItem(EditorItem):
             ns = ns.strip()
 
             if ns == '':
-                Application.warning(title,
+                warning(title,
                         "The name of the ignored namespace must not be blank.",
-                        self.treeWidget())
+                        parent=self.treeWidget())
             elif ns in project.ignorednamespaces:
-                Application.warning(title,
-                        "'{0}' is already used as the name of an ignored namespace.".format(ns),
-                        self.treeWidget())
+                warning(title,
+                        f"'{ns}' is already used as the name of an ignored namespace.",
+                        parent=self.treeWidget())
             else:
                 # Add the ignored namespace to the project.
                 project.ignorednamespaces.append(ns)

@@ -19,12 +19,13 @@ from ....project import Project
 
 from ...helpers import ProjectUi
 
-from ..abstract_tool import AbstractTool, ToolLocation
+from ..base_tool import BaseTool, ToolLocation
+from ..shell import EventType
 
 from .api_editor import ApiEditor
 
 
-class ApiEditorTool(AbstractTool):
+class ApiEditorTool(BaseTool):
     """ This class implements the API editor tool. """
 
     def __init__(self, shell):
@@ -51,31 +52,17 @@ class ApiEditorTool(AbstractTool):
 
         return "File", (new_action, open_action, save_action, save_as_action)
 
+    def event(self, event_type):
+        """ Reimplemented to handle project-specific events. """
+
+        if event_type is EventType.PROJECT_NEW:
+            self._api_editor.set_project(self.shell.project)
+
     @property
     def location(self):
         """ Get the location of the tool in the shell. """
 
         return ToolLocation.CENTRE
-
-    @property
-    def name(self):
-        """ Get the internal unique name of the tool. """
-
-        return 'metasip.tools.api_editor'
-
-    @property
-    def project(self):
-        """ Get the current project. """
-
-        return AbstractTool.project.fget(self)
-
-    @project.setter
-    def project(self, project):
-        """ Set the current project. """
-
-        AbstractTool.project.fset(self, project)
-
-        self._api_editor.set_project(project)
 
     def restore_state(self, settings):
         """ Restore the tool's state from the settings. """
