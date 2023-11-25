@@ -25,11 +25,11 @@ class PlatformsTool(ActionTool):
         tool.
         """
 
-        self._new_action = QAction("New platform...",
+        self._new_action = QAction("New Platform...",
                 triggered=self._handle_new)
-        self._rename_action = QAction("Rename platform...",
+        self._rename_action = QAction("Rename Platform...",
                 triggered=self._handle_rename)
-        self._delete_action = QAction("Delete platform...",
+        self._delete_action = QAction("Delete Platform...",
                 triggered=self._handle_delete)
 
         return ("Edit",
@@ -49,7 +49,7 @@ class PlatformsTool(ActionTool):
 
         from .delete_platform_dialog import DeletePlatformDialog
 
-        self.shell.handle_project_dialog("Delete platform",
+        self.shell.handle_project_dialog("Delete Platform",
                 DeletePlatformDialog, EventType.PLATFORM_ADD_DELETE)
 
     def _handle_new(self):
@@ -57,7 +57,7 @@ class PlatformsTool(ActionTool):
 
         from .new_platform_dialog import NewPlatformDialog
 
-        self.shell.handle_project_dialog("New platform", NewPlatformDialog,
+        self.shell.handle_project_dialog("New Platform", NewPlatformDialog,
                 EventType.PLATFORM_ADD_DELETE)
 
     def _handle_rename(self):
@@ -65,5 +65,5 @@ class PlatformsTool(ActionTool):
 
         from .rename_platform_dialog import RenamePlatformDialog
 
-        self.shell.handle_project_dialog("Rename platform",
+        self.shell.handle_project_dialog("Rename Platform",
                 RenamePlatformDialog)

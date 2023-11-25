@@ -26,13 +26,13 @@ class VersionsTool(ActionTool):
         tool.
         """
 
-        self._new_action = QAction("New version...",
+        self._new_action = QAction("New Version...",
                 triggered=self._handle_new)
-        self._rename_action = QAction("Rename version...",
+        self._rename_action = QAction("Rename Version...",
                 triggered=self._handle_rename)
-        self._delete_action = QAction("Delete version...",
+        self._delete_action = QAction("Delete Version...",
                 triggered=self._handle_delete)
-        self._delete_all_action = QAction("Delete all versions...",
+        self._delete_all_action = QAction("Delete All Versions...",
                 triggered=self._handle_delete_all)
 
         return ("Edit",
@@ -54,7 +54,7 @@ class VersionsTool(ActionTool):
 
         from .delete_version_dialog import DeleteVersionDialog
 
-        self.shell.handle_project_dialog("Delete version",
+        self.shell.handle_project_dialog("Delete Version",
                 DeleteVersionDialog, EventType.VERSION_ADD_DELETE)
 
     def _handle_delete_all(self):
@@ -62,7 +62,7 @@ class VersionsTool(ActionTool):
 
         project = self.shell.project
 
-        confirmed = question("Delete all versions",
+        confirmed = question("Delete All Versions",
                 "All versions will be removed along with any API items that "
                 "are not part of the latest version.\n\nDo you wish to "
                 "continue?",
@@ -79,7 +79,7 @@ class VersionsTool(ActionTool):
 
         from .new_version_dialog import NewVersionDialog
 
-        self.shell.handle_project_dialog("New version", NewVersionDialog,
+        self.shell.handle_project_dialog("New Version", NewVersionDialog,
                 EventType.VERSION_ADD_DELETE)
 
     def _handle_rename(self):
@@ -87,5 +87,4 @@ class VersionsTool(ActionTool):
 
         from .rename_version_dialog import RenameVersionDialog
 
-        self.shell.handle_project_dialog("Rename version",
-                RenameVersionDialog)
+        self.shell.handle_project_dialog("Rename Version", RenameVersionDialog)

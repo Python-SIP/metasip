@@ -25,11 +25,11 @@ class FeaturesTool(ActionTool):
         tool.
         """
 
-        self._new_action = QAction("New feature...",
+        self._new_action = QAction("New Feature...",
                 triggered=self._handle_new)
-        self._rename_action = QAction("Rename feature...",
+        self._rename_action = QAction("Rename Feature...",
                 triggered=self._handle_rename)
-        self._delete_action = QAction("Delete feature...",
+        self._delete_action = QAction("Delete Feature...",
                 triggered=self._handle_delete)
 
         return ("Edit",
@@ -49,7 +49,7 @@ class FeaturesTool(ActionTool):
 
         from .delete_feature_dialog import DeleteFeatureDialog
 
-        self.shell.handle_project_dialog("Delete feature", DeleteFeatureDialog,
+        self.shell.handle_project_dialog("Delete Feature", DeleteFeatureDialog,
                 EventType.FEATURE_ADD_DELETE)
 
     def _handle_new(self):
@@ -57,7 +57,7 @@ class FeaturesTool(ActionTool):
 
         from .new_feature_dialog import NewFeatureDialog
 
-        self.shell.handle_project_dialog("New feature", NewFeatureDialog,
+        self.shell.handle_project_dialog("New Feature", NewFeatureDialog,
                 EventType.FEATURE_ADD_DELETE)
 
     def _handle_rename(self):
@@ -65,4 +65,4 @@ class FeaturesTool(ActionTool):
 
         from .rename_feature_dialog import RenameFeatureDialog
 
-        self.shell.handle_project_dialog("Rename feature", RenameFeatureDialog)
+        self.shell.handle_project_dialog("Rename Feature", RenameFeatureDialog)
