@@ -12,4 +12,5 @@
 
 from .abstract_dialog import AbstractDialog
 from .project_ui import ProjectUi
+from .question import question
 from .warning import warning

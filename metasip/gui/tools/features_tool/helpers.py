@@ -16,9 +16,7 @@ from ..helpers import validate_identifier, validation_error
 def init_feature_selector(selector, project):
     """ Initialise a feature selector. """
 
-    while selector.count() != 0:
-        selector.removeItem(0)
-
+    selector.clear()
     selector.addItems(sorted(project.features + project.externalfeatures))
 
 

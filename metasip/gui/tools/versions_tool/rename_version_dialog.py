@@ -16,17 +16,17 @@ from ...helpers import AbstractDialog
 
 from ..helpers import tagged_items
 
-from .helpers import init_platform_selector, validate_platform_name
+from .helpers import init_version_selector, validate_version_name
 
 
-class RenamePlatformDialog(AbstractDialog):
-    """ This class implements the dialog for renaming a platform. """
+class RenameVersionDialog(AbstractDialog):
+    """ This class implements the dialog for renaming a version. """
 
     def populate(self, layout):
         """ Populate the dialog's layout. """
 
-        self._platform = QComboBox()
-        layout.addWidget(self._platform)
+        self._version = QComboBox()
+        layout.addWidget(self._version)
 
         form = QFormLayout()
         layout.addLayout(form)
@@ -37,30 +37,37 @@ class RenamePlatformDialog(AbstractDialog):
     def set_fields(self):
         """ Set the dialog's fields from the project. """
 
-        init_platform_selector(self._platform, self.model)
+        init_version_selector(self._version, self.model)
 
     def get_fields(self):
         """ Update the project from the dialog's fields. """
 
         project = self.model
 
-        old_name = self._platform.currentText()
+        old_name = self._version.currentText()
 
         new_name = self._new_name.text().strip()
-        if not validate_platform_name(new_name, project, self):
+        if not validate_version_name(new_name, project, self):
             return False
 
         # Rename in each API item it appears.
         for api_item, _ in tagged_items(project):
             # TODO - this should probably generate a lot more events.
-            for i, p in enumerate(api_item.platforms):
-                if p[0] == '!':
-                    if p[1:] == old_name:
-                        api_item.platforms[i] = '!' + new_name
-                elif p == old_name:
-                    api_item.platforms[i] = new_name
+            for v in api_item.versions:
+                if v.startversion == old_name:
+                    v.startversion = new_name
+
+                if v.endversion == old_name:
+                    v.endversion = new_name
+
+        # Rename in the header file versions.
+        for hdir in project.headers:
+            for hfile in hdir.content:
+                for hfile_version in hfile.versions:
+                    if hfile_version.version == old_name:
+                        hfile_version.version = new_name
 
         # Rename in the project's list.
-        project.platforms[project.platforms.index(old_name)] = new_name
+        project.versions[project.versions.index(old_name)] = new_name
 
         return True

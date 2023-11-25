@@ -52,10 +52,6 @@ class RenameFeatureDialog(AbstractDialog):
 
         # Rename in each API item it appears.
         for api_item, _ in tagged_items(project):
-            # Ignore items that aren't tagged with a feature.
-            if len(api_item.features) == 0:
-                continue
-
             # TODO - this should probably generate a lot more events.
             for i, f in enumerate(api_item.features):
                 if f[0] == '!':

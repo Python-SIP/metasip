@@ -10,11 +10,12 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .api_editor_tool import ApiEditorTool
-from .features_tool import FeaturesTool
-#from .import_project_tool import ImportProjectTool
-#from .logger_tool import LoggerTool
-#from .modules_tool import ModulesTool
-from .platforms_tool import PlatformsTool
-#from .scanner_tool import ScannerTool
-from .versions_tool import VersionsTool
+from PyQt6.QtWidgets import QMessageBox
+
+
+def question(title, text, detail=None, parent=None):
+    """ Display a question to the user and return True if the answer was in the
+    affirmative.
+    """
+
+    return QMessageBox.question(parent, title, text) is QMessageBox.StandardButton.Yes
