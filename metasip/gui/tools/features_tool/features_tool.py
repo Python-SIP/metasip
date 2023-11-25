@@ -13,11 +13,10 @@
 from PyQt6.QtGui import QAction
 
 from ...shell import EventType
+from ...shell_tool import ActionTool
 
-from ..base_tool import BaseTool
 
-
-class FeaturesTool(BaseTool):
+class FeaturesTool(ActionTool):
     """ This class implements the features tool. """
 
     @property

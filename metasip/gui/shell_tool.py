@@ -10,10 +10,11 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from abc import ABCMeta, abstractmethod
 from enum import auto, Enum
 
 
-class ToolLocation(Enum):
+class ShellToolLocation(Enum):
     """ The different possible locations for a tool in the shell. """
 
     CENTRE = auto()
@@ -23,8 +24,8 @@ class ToolLocation(Enum):
     BOTTOM = auto()
 
 
-class BaseTool:
-    """ A base class for tools that handles common functionality. """
+class ActionTool:
+    """ A base class for tools that implement optional actions. """
 
     def __init__(self, shell):
         """ Initialise the tool. """
@@ -46,21 +47,6 @@ class BaseTool:
         # This default implementation does nothing.
         pass
 
-    @property
-    def location(self):
-        """ Get the location of the tool in the shell. """
-
-        # This default implementation assumes that the tool doesn't have a GUI.
-        return None
-
-    @property
-    def name(self):
-        """ Get the internal unique name of the tool.  This must be specified
-        if the location is not None or CENTRE.
-        """
-
-        return None
-
     def restore_state(self, settings):
         """ Restore the tool's state from the settings. """
 
@@ -79,16 +65,34 @@ class BaseTool:
         # This default implementation does nothing.
         pass
 
+
+class ShellTool(ActionTool, metaclass=ABCMeta):
+    """ A base class for tools that appear in a shell. """
+
     @property
+    @abstractmethod
+    def location(self):
+        """ Get the location of the tool in the shell. """
+
+        ...
+
+    @property
+    @abstractmethod
+    def name(self):
+        """ Get the internal unique name of the tool. """
+
+        ...
+
+    @property
+    @abstractmethod
     def title(self):
         """ Get the tool's title. """
 
-        # This default implementation assumes that the tool doesn't have a GUI.
-        return None
+        ...
 
     @property
+    @abstractmethod
     def widget(self):
         """ Get the tool's widget. """
 
-        # This default implementation assumes that the tool doesn't have a GUI.
-        return None
+        ...

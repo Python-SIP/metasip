@@ -15,6 +15,8 @@ from enum import auto, Enum
 from PyQt6.QtCore import QSettings, Qt
 from PyQt6.QtWidgets import QDockWidget, QMainWindow, QMenuBar, QMessageBox
 
+from .shell_tool import ShellTool, ShellToolLocation
+
 
 class EventType(Enum):
     """ The different project-related event types. """
@@ -26,25 +28,15 @@ class EventType(Enum):
     PROJECT_NEW = auto()
 
 
-class ToolLocation(Enum):
-    """ The different possible locations for a tool in the shell. """
-
-    CENTRE = auto()
-    LEFT = auto()
-    RIGHT = auto()
-    TOP = auto()
-    BOTTOM = auto()
-
-
 class Shell:
     """ This class encapsulates a collection of tools. """
 
     # Map tool locations to Qt dock areas.
     _LOCATION_MAP = {
-        ToolLocation.LEFT: Qt.DockWidgetArea.LeftDockWidgetArea,
-        ToolLocation.RIGHT: Qt.DockWidgetArea.RightDockWidgetArea,
-        ToolLocation.TOP: Qt.DockWidgetArea.TopDockWidgetArea,
-        ToolLocation.BOTTOM: Qt.DockWidgetArea.BottomDockWidgetArea,
+        ShellToolLocation.LEFT: Qt.DockWidgetArea.LeftDockWidgetArea,
+        ShellToolLocation.RIGHT: Qt.DockWidgetArea.RightDockWidgetArea,
+        ShellToolLocation.TOP: Qt.DockWidgetArea.TopDockWidgetArea,
+        ShellToolLocation.BOTTOM: Qt.DockWidgetArea.BottomDockWidgetArea,
     }
 
     def __init__(self, *tool_factories):
@@ -63,13 +55,14 @@ class Shell:
         for tool_factory in tool_factories:
             tool = tool_factory(self)
 
-            if tool.location is ToolLocation.CENTRE:
-                self._shell_widget.setCentralWidget(tool.widget)
-            elif tool.location is not None:
-                self._shell_widget.addDockWidget(
-                        self._LOCATION_MAP[tool.location],
-                        QDockWidget(tool.title, tool.widget,
-                                objectName=tool.name))
+            if isinstance(tool, ShellTool):
+                if tool.location is ShellToolLocation.CENTRE:
+                    self._shell_widget.setCentralWidget(tool.widget)
+                else:
+                    self._shell_widget.addDockWidget(
+                            self._LOCATION_MAP[tool.location],
+                            QDockWidget(tool.title, tool.widget,
+                                    objectName=tool.name))
 
             # Add any actions to the menus.
             menu_name, actions = tool.actions
