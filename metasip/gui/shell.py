@@ -24,6 +24,9 @@ class EventType(Enum):
     # A feature has been added or deleted.
     FEATURE_ADD_DELETE = auto()
 
+    # A module has been added or deleted.
+    MODULE_ADD_DELETE = auto()
+
     # A platform has been added or deleted.
     PLATFORM_ADD_DELETE = auto()
 
