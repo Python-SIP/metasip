@@ -12,55 +12,58 @@
 
 from PyQt6.QtWidgets import QAbstractSlider, QApplication, QPlainTextEdit
 
-from ...dip.model import unadapted
-from ...dip.shell import SimpleViewTool
-
-from ... import Logger
+from ..shell import EventType
+from ..shell_tool import ShellTool, ShellToolLocation
 
 
-class LoggerTool(SimpleViewTool):
-    """ The LoggerTool implements a tool for displaying the log. """
+class LoggerTool(ShellTool):
+    """ This class implements a tool for displaying the log. """
 
-    # The action's identifier.
-    action_id = 'metasip.actions.log'
+    def __init__(self, shell):
+        """ Initialise the tool. """
 
-    # The default area for the tool's view.
-    area = 'dip.shell.areas.bottom'
+        super().__init__(shell)
 
-    # The tool's identifier.
-    id = 'metasip.tools.logger'
+        self._log_widget = QPlainTextEdit(readOnly=True)
 
-    # The tool's name.
-    name = "Log"
+    def event(self, event_type, event_arg):
+        """ Reimplemented to handle project-specific events. """
 
-    # The collection of actions that the tool's action will be placed in.
-    within = 'dip.ui.collections.view'
+        if event_type is EventType.LOG_MESSAGE:
+            self._log_message(event_arg)
 
-    @SimpleViewTool.view.default
-    def view(self):
-        """ Invoked to create the tool's view. """
+    @property
+    def location(self):
+        """ Get the location of the tool in the shell. """
 
-        # This instance is the logger.
-        Logger().instance = self
+        return ShellToolLocation.BOTTOM
 
-        # Create the view.
-        return QPlainTextEdit(readOnly=True)
+    @property
+    def name(self):
+        """ Get the tool's name. """
 
-    def log(self, message):
-        """ Write a message to the log window.
-    
-        :param message:
-            is the text of the message and should not include explicit
-            newlines.
-        """
+        return 'metasip.tool.logger'
 
-        qview = unadapted(self.view)
+    @property
+    def title(self):
+        """ Get the tool's title. """
+
+        return "Log"
+
+    @property
+    def widget(self):
+        """ Get the tool's widget. """
+
+        return self._log_widget
+
+    def _log_message(self, message):
+        """ Log a message. """
 
         # Add the new message
-        qview.appendPlainText(message)
+        self._log_widget.appendPlainText(message)
 
         # Make sure the new message is visible.
-        qview.verticalScrollBar().triggerAction(
+        self._log_widget.verticalScrollBar().triggerAction(
                 QAbstractSlider.SliderAction.SliderToMaximum)
 
         # Update the screen so that individual messages appear as soon as they

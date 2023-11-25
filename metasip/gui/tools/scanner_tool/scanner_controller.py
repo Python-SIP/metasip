@@ -22,7 +22,6 @@ from ....dip.ui import Application, Controller
 
 from ....interfaces.project import (ICallable, ICodeContainer, IConstructor,
         IEnum, IHeaderDirectory, IHeaderFile, IProject)
-from ....logger import Logger
 from ....Project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
         ManualCode, Project, SipFile, VersionRange)
 
@@ -318,7 +317,7 @@ class ScannerController(Controller):
     def __on_parse_changed(self, change):
         """ Invoked when the Parse button is pressed. """
 
-        from ...CastXML import CastXMLParser
+        from .cast_xml import CastXMLParser
 
         project = self.current_project
         hdir = self.current_header_directory
@@ -540,7 +539,7 @@ class ScannerController(Controller):
         if hdir.inputdirsuffix != '':
             sd = os.path.join(sd, hdir.inputdirsuffix)
 
-        Logger.log("Scanning header directory {0}".format(sd))
+        self.shell.log("Scanning header directory {0}".format(sd))
 
         if hdir.filefilter != '':
             sd = os.path.join(sd, hdir.filefilter)
@@ -564,9 +563,9 @@ class ScannerController(Controller):
                     hdir.content.append(hfile)
                     IDirty(project).dirty = True
 
-                Logger.log("Scanned {0}".format(hpath))
+                self.shell.log("Scanned {0}".format(hpath))
             else:
-                Logger.log("Skipping unreadable header file {0}".format(hpath))
+                self.shell.log("Skipping unreadable header file {0}".format(hpath))
 
         # Anything left in the saved list has gone missing or was already
         # missing.
@@ -586,7 +585,7 @@ class ScannerController(Controller):
                         # set.
                         hfile.versions.remove(hfile_version)
 
-                    Logger.log(
+                    self.shell.log(
                             "{0} is no longer in the header directory".format(
                                     hfile.name))
 

@@ -39,7 +39,7 @@ class VersionsTool(ActionTool):
                 (self._new_action, self._rename_action, self._delete_action,
                         self._delete_all_action))
 
-    def event(self, event_type):
+    def event(self, event_type, event_arg):
         """ Reimplemented to handle project-specific events. """
 
         if event_type in (EventType.PROJECT_NEW, EventType.VERSION_ADD_DELETE):

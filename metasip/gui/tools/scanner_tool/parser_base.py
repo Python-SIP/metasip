@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -12,8 +12,6 @@
 
 from xml.sax import make_parser, SAXParseException
 from xml.sax.handler import ContentHandler, ErrorHandler
-
-from .logger import Logger
 
 
 class ParserBase(ContentHandler):
@@ -128,7 +126,7 @@ class _ParserErrorHandler(ErrorHandler):
 
         xs = str(exception)
 
-        Logger.log(xs)
+        self.shell.log(xs)
 
         if not self.diagnostic:
             self.diagnostic = xs
@@ -140,7 +138,7 @@ class _ParserErrorHandler(ErrorHandler):
 
         xs = str(exception)
 
-        Logger.log(xs)
+        self.shell.log(xs)
 
         if not self.diagnostic:
             self.diagnostic = xs
@@ -150,7 +148,7 @@ class _ParserErrorHandler(ErrorHandler):
     def warning(self, exception):
         """ Handle warnings. """
 
-        Logger.log(str(exception))
+        self.shell.log(str(exception))
 
 
 def optAttribute(attrs, name, default=''):

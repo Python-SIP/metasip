@@ -21,19 +21,22 @@ from .shell_tool import ShellTool, ShellToolLocation
 class EventType(Enum):
     """ The different project-related event types. """
 
-    # A feature has been added or deleted.
+    # A feature has been added or deleted.  There is no event argument.
     FEATURE_ADD_DELETE = auto()
 
-    # A module has been added or deleted.
+    # A message has been logged.  The message is the event argument.
+    LOG_MESSAGE = auto()
+
+    # A module has been added or deleted.  There is no event argument.
     MODULE_ADD_DELETE = auto()
 
-    # A platform has been added or deleted.
+    # A platform has been added or deleted.  There is no event argument.
     PLATFORM_ADD_DELETE = auto()
 
-    # A new project has been loaded.
+    # A new project has been loaded.  There is no event argument.
     PROJECT_NEW = auto()
 
-    # A version has been added or deleted.
+    # A version has been added or deleted.  There is no event argument.
     VERSION_ADD_DELETE = auto()
 
 
@@ -60,6 +63,7 @@ class Shell:
         # Create the tools.
         self._tools = []
         menus = {}
+        view_actions = []
 
         for tool_factory in tool_factories:
             tool = tool_factory(self)
@@ -68,10 +72,11 @@ class Shell:
                 if tool.location is ShellToolLocation.CENTRE:
                     self.shell_widget.setCentralWidget(tool.widget)
                 else:
+                    dock_widget = QDockWidget(tool.title, tool.widget,
+                            objectName=tool.name)
                     self.shell_widget.addDockWidget(
-                            self._LOCATION_MAP[tool.location],
-                            QDockWidget(tool.title, tool.widget,
-                                    objectName=tool.name))
+                            self._LOCATION_MAP[tool.location], dock_widget)
+                    view_actions.append(dock_widget.toggleViewAction())
 
             # Add any actions to the menus.
             menu_name, actions = tool.actions
@@ -85,10 +90,18 @@ class Shell:
 
             self._tools.append(tool)
 
+        # Add any view actions to the View menu.
+        if len(view_actions) != 0:
+            all_view_actions = menus.setdefault("View", [])
+            if len(all_view_actions) != 0:
+                all_view_actions.append(None)
+
+            all_view_actions.extend(view_actions)
+
         # Create the menu bar.
         menu_bar = QMenuBar()
 
-        for menu_name, actions in menus.items():
+        def add_menu(menu_name, actions):
             menu = menu_bar.addMenu(menu_name)
 
             for action in actions:
@@ -96,6 +109,16 @@ class Shell:
                     menu.addSeparator()
                 else:
                     menu.addAction(action)
+
+        # Make sure any well known menus are created in the expected order.
+        for menu_name in ("File", "Edit", "View", "Tools"):
+            actions = menus.pop(menu_name, None)
+            if actions is not None:
+                add_menu(menu_name, actions)
+
+        # Now do any remaining menus.
+        for menu_name, actions in menus.items():
+            add_menu(menu_name, actions)
 
         self.shell_widget.setMenuBar(menu_bar)
 
@@ -138,7 +161,18 @@ class Shell:
             self.dirty = True
 
             if event_type is not None:
-                self._notify_tools(event_type)
+                self.notify(event_type)
+
+    def log(self, message):
+        """ Log a message. """
+
+        self.notify(EventType.LOG_MESSAGE, message)
+
+    def notify(self, event_type, event_arg=None):
+        """ Notify all tools about a project-specific event. """
+
+        for tool in self._tools:
+            tool.event(event_type, event_arg)
 
     @property
     def project(self):
@@ -151,7 +185,7 @@ class Shell:
         """ Set the current project. """
 
         self._project = project
-        self._notify_tools(EventType.PROJECT_NEW)
+        self.notify(EventType.PROJECT_NEW)
         self.dirty = False
 
     def save_project(self):
@@ -202,12 +236,6 @@ class Shell:
             return True
 
         return False
-
-    def _notify_tools(self, event_type):
-        """ Notify all tools about a project-specific event. """
-
-        for tool in self._tools:
-            tool.event(event_type)
 
 
 class _ShellWidget(QMainWindow):

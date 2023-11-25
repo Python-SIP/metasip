@@ -51,7 +51,7 @@ class ApiEditorTool(ShellTool):
 
         return "File", (new_action, open_action, save_action, save_as_action)
 
-    def event(self, event_type):
+    def event(self, event_type, event_arg):
         """ Reimplemented to handle project-specific events. """
 
         if event_type is EventType.PROJECT_NEW:

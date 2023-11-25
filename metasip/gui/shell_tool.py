@@ -41,7 +41,7 @@ class ActionTool:
         # This default implementation does nothing.
         return None, ()
 
-    def event(self, event_type):
+    def event(self, event_type, event_arg):
         """ This is called whenever a project-specific event takes place. """
 
         # This default implementation does nothing.
