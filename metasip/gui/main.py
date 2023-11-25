@@ -25,9 +25,9 @@ from ..project import Project
 
 from .helpers import ProjectUi, warning
 from .shell import Shell
-from .tools import (ApiEditorTool, FeaturesTool, ModulesTool, PlatformsTool,
-        VersionsTool)
-#from .tools import ImportProjectTool, LoggerTool, ScannerTool
+from .tools import (ApiEditorTool, FeaturesTool, ImportProjectTool,
+        ModulesTool, PlatformsTool, VersionsTool)
+#from .tools import LoggerTool, ScannerTool
 
 
 def main():
@@ -63,20 +63,12 @@ def main():
     #UpdateManager.updates.append(ProjectV15Update())
     #UpdateManager.updates.append(ProjectV16Update())
 
-    # Define the shell.
-    #shell_factory = MainWindowShell(main_area_policy='single',
-    #        tool_factories=[LoggerTool,
-    #                ImportProjectTool,
-    #                ScannerTool,
-    #                VersionsTool],
-    #        title_template="[view][*]")
-
     # Load any project.
     project = Project.factory(project_name, ui=ProjectUi())
 
     # Create the shell.
-    shell = Shell(ApiEditorTool, FeaturesTool, ModulesTool, PlatformsTool,
-            VersionsTool)
+    shell = Shell(ApiEditorTool, FeaturesTool, ImportProjectTool, ModulesTool,
+            PlatformsTool, VersionsTool)
 
     # Set the project in the shell.
     shell.project = project

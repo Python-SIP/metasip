@@ -12,72 +12,59 @@
 
 import os
 
-#from ...dip.io import IFilterHints, IoManager
-from ...dip.model import implements, Model
-from ...dip.publish import ISubscriber
-from ...dip.shell import IDirty, ITool
-from ...dip.ui import (Action, Application, Dialog, IDialog)
-        #StorageLocationEditor)
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QFileDialog
 
-from ...interfaces.project import IHeaderDirectory, IModule, IProject
+from ...project import Project
+
+from ..helpers import ProjectUi, warning
+from ..shell_tool import ActionTool
 
 
-@implements(ITool, ISubscriber)
-class ImportProjectTool(Model):
-    """ The ImportProjectTool implements a tool importing another project. """
+class ImportProjectTool(ActionTool):
+    """ This class implements a tool importing another project. """
 
-    # The tool's dialog.
-    #dialog = Dialog(StorageLocationEditor('project_file', required=True),
-    #        title="Import Project")
+    @property
+    def actions(self):
+        """ Get the destination menu and sequence of actions handled by the
+        tool.
+        """
 
-    # The tool's identifier.
-    id = 'metasip.tools.import_project'
+        self._import_action = QAction("Import Project...",
+                triggered=self._handle_import)
 
-    # The action.
-    import_action = Action(text="Import Project...",
-            within='dip.ui.collections.tools')
+        return ("Tools", (self._import_action, ))
 
-    # The type of models we subscribe to.
-    subscription_type = IProject
+    def _handle_import(self):
+        """ Handle the Import action. """
 
-    @import_action.triggered
-    def import_action(self):
-        """ Invoked when the import action is triggered. """
+        dir_name = os.path.dirname(self.shell.project.name)
 
-        model = dict(project_file='')
+        import_name, _ = QFileDialog.getOpenFileName(self.shell.shell_widget,
+                "Import project file", dir_name,
+                "MetaSIP project files (*.msp)")
 
-        view = self.dialog(model)
-        view.project_file.filter = IFilterHints(self.subscription.model).filter
+        if import_name:
+            imported = Project.factory(project_name=import_name,
+                    ui=ProjectUi())
 
-        if IDialog(view).execute():
-            # Create an empty project.
-            project = type(self.subscription.model)()
-
-            # Read the project to import.
-            io_manager = IoManager().instance
-            imported = io_manager.read(project, model['project_file'],
-                    'metasip.formats.project')
-
-            if imported is not None:
-                try:
-                    self._import_project(IProject(imported))
-                except Exception as e:
-                    Application.error("Import Project", str(e))
+            try:
+                self._import_project(imported)
+            except Exception as e:
+                warning(str(e))
 
     def _import_project(self, imported):
         """ Import a project. """
 
-        project = IProject(self.subscription.model)
+        project = self.shell.project
 
-        # Assume something will change.
-        IDirty(project).dirty = True
+        project_name = self._project_name(project)
+        imported_name = self._project_name(imported)
 
         # Check the project being imported doesn't have any versions defined as
         # we don't support multiple timelines.
         if len(imported.versions) != 0:
-            raise Exception(
-                    "'{0}' defines one or more versions".format(
-                            self._project_name(imported)))
+            raise Exception(f"'{imported_name}' defines one or more versions")
 
         # Merge any external features.
         for feature in list(project.externalfeatures):
@@ -96,15 +83,12 @@ class ImportProjectTool(Model):
         # Add any new features and check for conflicts.
         for feature in imported.features:
             if feature in project.features:
-                raise Exception(
-                        "Both '{0}' and '{1}' define a '{2}' feature".format(
-                                self._project_name(project),
-                                self._project_name(imported), features))
+                raise Exception(f"Both '{project_name}' and '{imported_name}' define a '{feature}' feature")
 
         # Merge any externally defined modules.
         for module_name in list(project.externalmodules):
             for module in imported.modules:
-                if IModule(module).name == module_name:
+                if module.name == module_name:
                     break
             else:
                 project.externalmodules.remove(module_name)
@@ -114,7 +98,7 @@ class ImportProjectTool(Model):
                 continue
 
             for module in project.modules:
-                if IModule(module).name == module_name:
+                if module.name == module_name:
                     break
             else:
                 project.externalmodules.append(module_name)
@@ -132,29 +116,23 @@ class ImportProjectTool(Model):
         # Any any new modules and check for conflicts.
         for imported_module in imported.modules:
             for module in project.modules:
-                if IModule(module).name == IModule(imported_module).name:
-                    raise Exception(
-                            "Both '{0}' and '{1}' define a '{2}' module".format(
-                                    self._project_name(project),
-                                    self._project_name(imported), features))
+                if module.name == imported_module.name:
+                    raise Exception(f"Both '{project_name}' and '{imported_name}' define a '{module.name}' module")
 
             project.modules.append(imported_module)
 
         # Any any new header directories and check for conflicts.
-        for imported_headers in imported.headers:
-            for headers in project.headers:
-                if IHeaderDirectory(headers).name == IHeaderDirectory(imported_headers).name:
-                    raise Exception(
-                            "Both '{0}' and '{1}' define a '{2}' header directory".format(
-                                    self._project_name(project),
-                                    self._project_name(imported), features))
+        for imported_header in imported.headers:
+            for header in project.headers:
+                if header.name == imported_header.name:
+                    raise Exception(f"Both '{project_name}' and '{imported_name}' define a '{header.name}' header directory")
 
             project.headers.append(imported_headers)
+
+        self.shell.dirty = True
 
     @staticmethod
     def _project_name(project):
         """ Return a project's name for use in user messages. """
 
-        # TODO: the name should be an attribute of IProject and be implemented
-        # as Project.__str__().
         return os.path.splitext(os.path.basename(project.name))[0]
