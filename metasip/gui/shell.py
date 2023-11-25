@@ -24,6 +24,9 @@ class EventType(Enum):
     # A feature has been added or deleted.
     FEATURE_ADD_DELETE = auto()
 
+    # A platform has been added or deleted.
+    PLATFORM_ADD_DELETE = auto()
+
     # A new project has been loaded.
     PROJECT_NEW = auto()
 
@@ -84,7 +87,7 @@ class Shell:
 
             for action in actions:
                 if action is None:
-                    menu.addSeperator()
+                    menu.addSeparator()
                 else:
                     menu.addAction(action)
 
