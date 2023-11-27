@@ -10,120 +10,62 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from ....dip.model import implements, observe
-from ....dip.publish import ISubscriber
-from ....dip.shell import SimpleViewTool
 
-from ....interfaces.project import IProject
+from ...shell_tool import ShellTool, ShellToolLocation
+
+from .gui import ScannerWidget
 
 
-@implements(ISubscriber)
-class ScannerTool(SimpleViewTool):
-    """ The ScannerTool implements a tool for handling the scanning of a
-    project's header directories.
+class ScannerTool(ShellTool):
+    """ This class implements a tool for handling the scanning of a project's
+    header directories.
     """
 
-    # The action's identifier.
-    action_id = 'metasip.actions.scanner'
+    def __init__(self, shell):
+        """ Initialise the tool. """
 
-    # The default area for the tool's view.
-    area = 'dip.shell.areas.right'
+        super().__init__(shell)
 
-    # The tool's identifier.
-    id = 'metasip.tools.scanner'
+        self._scanner_widget = ScannerWidget(self)
 
-    # The tool's name.
-    name = "Scanner"
+    def event(self, event_type, event_arg):
+        """ Reimplemented to handle project-specific events. """
 
-    # The type of models we subscribe to.
-    subscription_type = IProject
+        #if event_type is EventType.PROJECT_NEW:
+        #    self._api_editor.set_project(self.shell.project)
 
-    # The collection of actions that the tool's action will be placed in.
-    within = 'dip.ui.collections.tools'
+    @property
+    def location(self):
+        """ Get the location of the tool in the shell. """
 
-    @SimpleViewTool.view.default
-    def view(self):
-        """ Invoked to create the tool's view. """
+        return ShellToolLocation.RIGHT
 
-        from ....dip.ui import (ComboBox, FilesystemLocationEditor, Form, Grid,
-                GroupBox, HBox, Label, LineEditor, MessageArea, PushButton,
-                Splitter, Stack, Stretch, VBox)
+    @property
+    def name(self):
+        """ Get the tool's name. """
 
-        from .module_validator import ModuleValidator
-        from .scanner_controller import ScannerController
-        from .scanner_model import ScannerModel
+        return 'metasip.tool.scanner'
 
-        # The view factory.
-        view_factory = Stack(
-                VBox(
-                    Label('no_project_text'),
-                    Stretch(),
-                    id='no_project'),
-                Splitter(
-                    Stack(id='project_views', tab_bar='multiple'),
-                    VBox(
-                        Form(
-                            ComboBox('working_version'),
-                            FilesystemLocationEditor('source_directory',
-                                    id='metasip.scanner.source_directory',
-                                    mode='directory',
-                                    remember=True),
-                            id='scan_form'),
-                        GroupBox(
-                            VBox(
-                                Form(
-                                    Label('header_directory_name',
-                                            title="Name"),
-                                    'suffix',
-                                    'file_filter',
-                                    'parser_arguments'),
-                                Grid(
-                                    PushButton(id='scan'),
-                                    PushButton(id='update_directory',
-                                            title="Update"),
-                                    PushButton(id='hide_ignored'),
-                                    PushButton(id='show_ignored'),
-                                    nr_columns=2)),
-                            title="Header Directory",
-                            id='directory_group'),
-                        GroupBox(
-                            VBox(
-                                Form(
-                                    Label('header_file_name', title="Name"),
-                                    LineEditor('module',
-                                            validator=ModuleValidator()),
-                                    'ignored'),
-                                HBox(
-                                    PushButton(id='parse'),
-                                    PushButton(id='update_file',
-                                            title="Update"))),
-                            title="Header File",
-                            id='file_group'),
-                        HBox(
-                            PushButton(id='new', title="New..."),
-                            PushButton(id='delete', title="Delete...",
-                                    enabled=False),
-                            PushButton(id='reset_workflow', enabled=False)),
-                        Stretch(),
-                        MessageArea()),
-                    id='metasip.scanner.splitter'),
-                tab_bar='hidden',
-                controller_factory=ScannerController)
+    def restore_state(self, settings):
+        """ Restore the tool's state from the settings. """
 
-        # Create the view.
-        return view_factory(ScannerModel(), top_level=False)
+        #state = settings.value(self.name)
+        #if state is not None:
+        #    self._api_editor.widget_state = state
 
-    @observe('subscription')
-    def __subscription_changed(self, change):
-        """ Invoked when the subscription changes. """
+    def save_state(self, settings):
+        """ Save the tool's state in the settings. """
 
-        event = change.new.event
-        project = change.new.model
-        controller = self.view.controller
+        #settings.setValue(self.name, self._api_editor.widget_state)
 
-        if event == 'dip.events.opened':
-            controller.open_project(project)
-        elif event == 'dip.events.closed':
-            controller.close_project(project)
-        elif event == 'dip.events.active':
-            controller.activate_project(project)
+    @property
+    def title(self):
+        """ Get the tool's title. """
+
+        return "Scanner"
+
+    @property
+    def widget(self):
+        """ Get the tool's widget. """
+
+        return self._scanner_widget

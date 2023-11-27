@@ -26,8 +26,7 @@ from ..project import Project
 from .helpers import ProjectUi, warning
 from .shell import Shell
 from .tools import (ApiEditorTool, FeaturesTool, ImportProjectTool, LoggerTool,
-        ModulesTool, PlatformsTool, VersionsTool)
-#from .tools import ScannerTool
+        ModulesTool, PlatformsTool, ScannerTool, VersionsTool)
 
 
 def main():
@@ -68,7 +67,7 @@ def main():
 
     # Create the shell.
     shell = Shell(ApiEditorTool, FeaturesTool, ImportProjectTool, LoggerTool,
-            ModulesTool, PlatformsTool, VersionsTool)
+            ModulesTool, PlatformsTool, ScannerTool, VersionsTool)
 
     # Set the project in the shell.
     shell.project = project

@@ -72,8 +72,8 @@ class Shell:
                 if tool.location is ShellToolLocation.CENTRE:
                     self.shell_widget.setCentralWidget(tool.widget)
                 else:
-                    dock_widget = QDockWidget(tool.title, tool.widget,
-                            objectName=tool.name)
+                    dock_widget = QDockWidget(tool.title, objectName=tool.name)
+                    dock_widget.setWidget(tool.widget)
                     self.shell_widget.addDockWidget(
                             self._LOCATION_MAP[tool.location], dock_widget)
                     view_actions.append(dock_widget.toggleViewAction())
