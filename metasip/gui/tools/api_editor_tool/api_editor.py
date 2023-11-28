@@ -60,6 +60,13 @@ class ApiEditor(QTreeWidget):
 
         self.dragged = None
 
+    def restore_state(self, settings):
+        """ Restore the widget's state. """
+
+        state = settings.value('header')
+        if state is not None:
+            self.header().restoreState(state)
+
     def set_project(self, project):
         """ Set the current project. """
 
@@ -74,17 +81,10 @@ class ApiEditor(QTreeWidget):
 
         self.tool.shell.dirty = True
 
-    @property
-    def widget_state(self):
-        """ Get the widget's state. """
+    def save_state(self, settings):
+        """ Save the widget's state. """
 
-        return self.header().saveState()
-
-    @widget_state.setter
-    def widget_state(self, state):
-        """ Set the widget's state. """
-
-        self.header().restoreState(state)
+        settings.setValue('header', self.header().saveState())
 
     def contextMenuEvent(self, ev):
         """

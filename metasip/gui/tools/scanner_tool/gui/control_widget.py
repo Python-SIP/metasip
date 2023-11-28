@@ -131,6 +131,24 @@ class ControlWidget(QWidget):
 
         layout.addStretch()
 
+    def restore_state(self, settings):
+        """ Restore the widget's state. """
+
+        state = settings.value('source_directory')
+        if state is not None:
+            self._source_directory.setText(state)
+
+        state = settings.value('working_version')
+        if state is not None:
+            self._working_version.setCurrentText(state)
+
+    def save_state(self, settings):
+        """ Save the widget's state. """
+
+        settings.setValue('working_version',
+                self._working_version.currentText())
+        settings.setValue('source_directory', self._source_directory.text())
+
     def _handle_browse_source_directory(self):
         """ Handle the button to browse for a source directory. """
 

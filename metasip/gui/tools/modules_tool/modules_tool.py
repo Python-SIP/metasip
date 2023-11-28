@@ -44,6 +44,12 @@ class ModulesTool(ActionTool):
             self._rename_action.setEnabled(are_modules)
             self._delete_action.setEnabled(are_modules)
 
+    @property
+    def name(self):
+        """ Get the tool's name. """
+
+        return 'metasip.tool.modules'
+
     def _handle_delete(self):
         """ Handle the Delete action. """
 

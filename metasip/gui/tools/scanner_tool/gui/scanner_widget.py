@@ -31,3 +31,31 @@ class ScannerWidget(QSplitter):
 
         self._control = ControlWidget()
         self.addWidget(self._control)
+
+    def restore_state(self, settings):
+        """ Restore the widget's state. """
+
+        settings.beginGroup('control')
+        self._control.restore_state(settings)
+        settings.endGroup()
+
+        settings.beginGroup('sources')
+        self._sources.restore_state(settings)
+        settings.endGroup()
+
+        state = settings.value('splitter')
+        if state is not None:
+            self.restoreState(state)
+
+    def save_state(self, settings):
+        """ Save the widget's state. """
+
+        settings.setValue('splitter', self.saveState())
+
+        settings.beginGroup('sources')
+        self._sources.save_state(settings)
+        settings.endGroup()
+
+        settings.beginGroup('control')
+        self._control.save_state(settings)
+        settings.endGroup()

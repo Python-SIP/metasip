@@ -49,14 +49,12 @@ class ScannerTool(ShellTool):
     def restore_state(self, settings):
         """ Restore the tool's state from the settings. """
 
-        #state = settings.value(self.name)
-        #if state is not None:
-        #    self._api_editor.widget_state = state
+        self._scanner_widget.restore_state(settings)
 
     def save_state(self, settings):
         """ Save the tool's state in the settings. """
 
-        #settings.setValue(self.name, self._api_editor.widget_state)
+        self._scanner_widget.save_state(settings)
 
     @property
     def title(self):

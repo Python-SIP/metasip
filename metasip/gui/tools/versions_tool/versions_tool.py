@@ -49,6 +49,12 @@ class VersionsTool(ActionTool):
             self._delete_action.setEnabled(are_versions)
             self._delete_all_action.setEnabled(are_versions)
 
+    @property
+    def name(self):
+        """ Get the tool's name. """
+
+        return 'metasip.tool.versions'
+
     def _handle_delete(self):
         """ Handle the Delete action. """
 

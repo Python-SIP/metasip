@@ -44,6 +44,12 @@ class PlatformsTool(ActionTool):
             self._rename_action.setEnabled(are_platforms)
             self._delete_action.setEnabled(are_platforms)
 
+    @property
+    def name(self):
+        """ Get the tool's name. """
+
+        return 'metasip.tool.platforms'
+
     def _handle_delete(self):
         """ Handle the Delete action. """
 

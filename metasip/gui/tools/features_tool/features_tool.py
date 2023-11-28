@@ -44,6 +44,12 @@ class FeaturesTool(ActionTool):
             self._rename_action.setEnabled(are_features)
             self._delete_action.setEnabled(are_features)
 
+    @property
+    def name(self):
+        """ Get the tool's name. """
+
+        return 'metasip.tool.features'
+
     def _handle_delete(self):
         """ Handle the Delete action. """
 

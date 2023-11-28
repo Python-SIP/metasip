@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from enum import auto, Enum
 
 
@@ -24,7 +24,7 @@ class ShellToolLocation(Enum):
     BOTTOM = auto()
 
 
-class ActionTool:
+class ActionTool(ABC):
     """ A base class for tools that implement optional actions. """
 
     def __init__(self, shell):
@@ -47,6 +47,13 @@ class ActionTool:
         # This default implementation does nothing.
         pass
 
+    @property
+    @abstractmethod
+    def name(self):
+        """ Get the internal unique name of the tool. """
+
+        ...
+
     def restore_state(self, settings):
         """ Restore the tool's state from the settings. """
 
@@ -66,20 +73,13 @@ class ActionTool:
         pass
 
 
-class ShellTool(ActionTool, metaclass=ABCMeta):
+class ShellTool(ActionTool):
     """ A base class for tools that appear in a shell. """
 
     @property
     @abstractmethod
     def location(self):
         """ Get the location of the tool in the shell. """
-
-        ...
-
-    @property
-    @abstractmethod
-    def name(self):
-        """ Get the internal unique name of the tool. """
 
         ...
 

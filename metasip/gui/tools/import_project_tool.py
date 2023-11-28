@@ -35,6 +35,12 @@ class ImportProjectTool(ActionTool):
 
         return ("Tools", (self._import_action, ))
 
+    @property
+    def name(self):
+        """ Get the tool's name. """
+
+        return 'metasip.tool.import_project'
+
     def _handle_import(self):
         """ Handle the Import action. """
 

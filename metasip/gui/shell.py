@@ -58,7 +58,6 @@ class Shell:
 
         # Create the widget that implements the shell.
         self.shell_widget = _ShellWidget(self._handle_close_event)
-        self.shell_widget.setObjectName('metasip.shell')
 
         # Create the tools.
         self._tools = []
@@ -126,7 +125,11 @@ class Shell:
         settings = QSettings()
 
         for tool in self._tools:
+            settings.beginGroup(tool.name)
             tool.restore_state(settings)
+            settings.endGroup()
+
+        settings.beginGroup('metasip.shell')
 
         setting = settings.value('state')
         if setting is not None:
@@ -135,6 +138,8 @@ class Shell:
         setting = settings.value('geometry')
         if setting is not None:
             self.shell_widget.restoreGeometry(setting)
+
+        settings.endGroup()
 
     @property
     def dirty(self):
@@ -227,11 +232,16 @@ class Shell:
         if self.save_project():
             # Save the settings.
             settings = QSettings()
+
+            settings.beginGroup('metasip.shell')
             settings.setValue('geometry', self.shell_widget.saveGeometry())
             settings.setValue('state', self.shell_widget.saveState())
+            settings.endGroup()
 
             for tool in self._tools:
+                settings.beginGroup(tool.name)
                 tool.save_state(settings)
+                settings.endGroup()
 
             return True
 

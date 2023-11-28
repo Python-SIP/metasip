@@ -55,6 +55,18 @@ class SourcesWidget(QTreeWidget):
 
                 break
 
+    def restore_state(self, settings):
+        """ Restore the widget's state. """
+
+        state = settings.value('header')
+        if state is not None:
+            self.header().restoreState(state)
+
+    def save_state(self, settings):
+        """ Save the widget's state. """
+
+        settings.setValue('header', self.header().saveState())
+
     def set_working_version(self, working_version):
         """ Set the working version. """
 
