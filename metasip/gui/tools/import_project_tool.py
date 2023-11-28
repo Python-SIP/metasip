@@ -46,7 +46,7 @@ class ImportProjectTool(ActionTool):
 
         dir_name = os.path.dirname(self.shell.project.name)
 
-        import_name, _ = QFileDialog.getOpenFileName(self.shell.shell_widget,
+        import_name, _ = QFileDialog.getOpenFileName(self.shell.widget,
                 "Import project file", dir_name,
                 "MetaSIP project files (*.msp)")
 

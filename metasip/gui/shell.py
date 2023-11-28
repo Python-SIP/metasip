@@ -73,7 +73,7 @@ class Shell:
         self._project = None
 
         # Create the widget that implements the shell.
-        self.shell_widget = _ShellWidget(self._handle_close_event)
+        self.widget = _ShellWidget(self._handle_close_event)
 
         # Create the tools.
         self._tools = []
@@ -85,11 +85,11 @@ class Shell:
 
             if isinstance(tool, ShellTool):
                 if tool.location is ShellToolLocation.CENTRE:
-                    self.shell_widget.setCentralWidget(tool.widget)
+                    self.widget.setCentralWidget(tool.widget)
                 else:
                     dock_widget = QDockWidget(tool.title, objectName=tool.name)
                     dock_widget.setWidget(tool.widget)
-                    self.shell_widget.addDockWidget(
+                    self.widget.addDockWidget(
                             self._LOCATION_MAP[tool.location], dock_widget)
                     view_actions.append(dock_widget.toggleViewAction())
 
@@ -135,7 +135,7 @@ class Shell:
         for menu_name, actions in menus.items():
             add_menu(menu_name, actions)
 
-        self.shell_widget.setMenuBar(menu_bar)
+        self.widget.setMenuBar(menu_bar)
 
         # Restore the state now the GUI has been built.
         settings = QSettings()
@@ -149,11 +149,11 @@ class Shell:
 
         setting = settings.value('state')
         if setting is not None:
-            self.shell_widget.restoreState(setting)
+            self.widget.restoreState(setting)
 
         setting = settings.value('geometry')
         if setting is not None:
-            self.shell_widget.restoreGeometry(setting)
+            self.widget.restoreGeometry(setting)
 
         settings.endGroup()
 
@@ -168,10 +168,10 @@ class Shell:
         """ Set the dirty state. """
 
         # We do this here in case the project name has changed.
-        self.shell_widget.setWindowTitle(self._project.name + '[*]')
+        self.widget.setWindowTitle(self._project.name + '[*]')
 
         self._project.dirty = state
-        self.shell_widget.setWindowModified(state)
+        self.widget.setWindowModified(state)
 
     def handle_project_dialog(self, title, dialog_factory):
         """ Handle a dialog that will update some aspect of a project. """
@@ -213,7 +213,7 @@ class Shell:
         if not self._project.dirty:
             return True
 
-        button = QMessageBox.question(self.shell_widget, "Quit",
+        button = QMessageBox.question(self.widget, "Quit",
                 "The project has been modified. Do you want to save or discard the changes?",
                 QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Save)
 
@@ -235,7 +235,7 @@ class Shell:
     def show(self):
         """ Make the shell visible. """
 
-        self.shell_widget.show()
+        self.widget.show()
 
     def _handle_close_event(self):
         """ Handle a close event and return True if the event should be
@@ -247,8 +247,8 @@ class Shell:
             settings = QSettings()
 
             settings.beginGroup('metasip.shell')
-            settings.setValue('geometry', self.shell_widget.saveGeometry())
-            settings.setValue('state', self.shell_widget.saveState())
+            settings.setValue('geometry', self.widget.saveGeometry())
+            settings.setValue('state', self.widget.saveState())
             settings.endGroup()
 
             for tool in self._tools:

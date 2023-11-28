@@ -73,7 +73,7 @@ class VersionsTool(ActionTool):
                 "All versions will be removed along with any API items that "
                 "are not part of the latest version.\n\nDo you wish to "
                 "continue?",
-                parent=self.shell.shell_widget)
+                parent=self.shell.widget)
 
         if confirmed:
             for version in list(project.versions):

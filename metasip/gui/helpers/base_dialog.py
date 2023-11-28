@@ -25,7 +25,7 @@ class BaseDialog(ABC):
         self.model = model
         self.shell = shell
 
-        self.dialog = QDialog(shell.shell_widget)
+        self.dialog = QDialog(shell.widget)
 
         self.dialog.setWindowTitle(title)
 
