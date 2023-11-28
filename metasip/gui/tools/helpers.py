@@ -37,7 +37,7 @@ def validate_identifier(identifier, identifier_type):
 def validation_error(message, dialog):
     """ Display a validation error message from a dialog. """
 
-    warning(dialog.dialog.windowTitle(), message, parent=dialog.dialog)
+    warning(dialog.widget.windowTitle(), message, parent=dialog.widget)
 
 
 def tagged_items(project):

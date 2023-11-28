@@ -39,7 +39,7 @@ class MoveHeaderDialog(BaseDialog):
         """ Return the destination module or None if the dialog was cancelled.
         """
 
-        if self.dialog.exec() == int(QDialog.DialogCode.Rejected):
+        if self.widget.exec() == int(QDialog.DialogCode.Rejected):
             return None
 
         return self._dst_module.currentData()

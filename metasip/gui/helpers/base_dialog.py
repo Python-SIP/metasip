@@ -25,12 +25,12 @@ class BaseDialog(ABC):
         self.model = model
         self.shell = shell
 
-        self.dialog = QDialog(shell.widget)
+        self.widget = QDialog(shell.widget)
 
-        self.dialog.setWindowTitle(title)
+        self.widget.setWindowTitle(title)
 
         layout = QVBoxLayout()
-        self.dialog.setLayout(layout)
+        self.widget.setLayout(layout)
 
         self.populate(layout)
 
@@ -42,7 +42,7 @@ class BaseDialog(ABC):
                 QDialogButtonBox.StandardButton.Cancel |
                 QDialogButtonBox.StandardButton.Ok)
         button_box.accepted.connect(self._handle_accept)
-        button_box.rejected.connect(self.dialog.reject)
+        button_box.rejected.connect(self.widget.reject)
         layout.addWidget(button_box)
 
     @abstractmethod
@@ -58,7 +58,7 @@ class BaseDialog(ABC):
 
         self.set_fields()
 
-        return self.dialog.exec() == int(QDialog.DialogCode.Accepted)
+        return self.widget.exec() == int(QDialog.DialogCode.Accepted)
 
     def set_fields(self):
         """ Normally reimplemented by a sub-class to set the dialog's fields
@@ -81,5 +81,5 @@ class BaseDialog(ABC):
 
         # Only accept the dialog if the fields are valid. """
         if self.get_fields():
-            self.dialog.accept()
+            self.widget.accept()
 
