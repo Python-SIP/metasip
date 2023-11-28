@@ -16,16 +16,16 @@ from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QSizePolicy,
         QSpacerItem, QVBoxLayout)
 
 
-class AbstractDialog(ABC):
-    """ An abstract base class for dialogs that update a model. """
+class BaseDialog(ABC):
+    """ A base class for dialogs that update a model. """
 
-    def __init__(self, model, title, parent, project=None):
+    def __init__(self, model, title, shell):
         """ Initialise the dialog. """
 
         self.model = model
-        self.project = project
+        self.shell = shell
 
-        self.dialog = QDialog(parent)
+        self.dialog = QDialog(shell.shell_widget)
 
         self.dialog.setWindowTitle(title)
 

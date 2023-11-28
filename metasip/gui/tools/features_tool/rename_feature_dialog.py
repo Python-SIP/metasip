@@ -12,14 +12,15 @@
 
 from PyQt6.QtWidgets import QComboBox, QFormLayout, QLineEdit
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from ..helpers import tagged_items
 
 from .helpers import init_feature_selector, validate_feature_name
 
 
-class RenameFeatureDialog(AbstractDialog):
+class RenameFeatureDialog(BaseDialog):
     """ This class implements the dialog for renaming a feature. """
 
     def populate(self, layout):
@@ -51,8 +52,9 @@ class RenameFeatureDialog(AbstractDialog):
             return False
 
         # Rename in each API item it appears.
+        # TODO - this should probably generate a lot more events or maybe the
+        # changes should be done elsewhere?
         for api_item, _ in tagged_items(project):
-            # TODO - this should probably generate a lot more events.
             for i, f in enumerate(api_item.features):
                 if f[0] == '!':
                     if f[1:] == old_name:
@@ -67,5 +69,7 @@ class RenameFeatureDialog(AbstractDialog):
             feature_list = project.features
 
         feature_list[feature_list.index(old_name)] = new_name
+
+        self.shell.notify(EventType.FEATURE_RENAME, (old_name, new_name))
 
         return True

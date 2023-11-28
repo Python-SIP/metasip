@@ -45,7 +45,7 @@ def delete_version(version, project, *, migrate_items):
     # Delete from each API item it appears.
     remove_items = []
 
-    for api_item, container in tagged_items():
+    for api_item, container in tagged_items(project):
         # Ignore items that aren't tagged with a version.
         if len(api_item.versions) == 0:
             continue

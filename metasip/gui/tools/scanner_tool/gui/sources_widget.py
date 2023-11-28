@@ -22,10 +22,12 @@ class SourcesWidget(QTreeWidget):
     # The column numbers.
     (NAME, STATUS) = range(2)
 
-    def __init__(self):
+    def __init__(self, tool):
         """ Initialise the widget. """
 
         super().__init__()
+
+        self._tool = tool
 
         self.setHeaderLabels(("Name", "Status"))
 
@@ -50,7 +52,7 @@ class SourcesWidget(QTreeWidget):
                 for hfile_idx in range(itm.childCount()):
                     hfile_itm = itm.child(hfile_idx)
 
-                    if hfile_itm.get_working_file() is not None and hfile_itm.text(ScannerView.STATUS) == "Ignored":
+                    if hfile_itm.get_working_file() is not None and hfile_itm.text(SourcesWidget.STATUS) == "Ignored":
                         hfile_itm.setHidden(hide)
 
                 break
@@ -66,6 +68,13 @@ class SourcesWidget(QTreeWidget):
         """ Save the widget's state. """
 
         settings.setValue('header', self.header().saveState())
+
+    def set_project(self):
+        """ Set the current project. """
+
+        self.clear()
+
+        #ProjectItem(self._tool.shell.project, self)
 
     def set_working_version(self, working_version):
         """ Set the working version. """
@@ -107,9 +116,10 @@ class ScannerItem(QTreeWidgetItem):
     """
 
     def update_working_version(self):
-        """ Update in the light of the working versions.  This default
-        implementation does nothing.
-        """
+        """ Update in the light of the working versions. """
+
+        # This default implementation does nothing.
+        pass
 
     def get_project_item(self):
         """ Return the item's corresponding project item. """
@@ -119,7 +129,7 @@ class ScannerItem(QTreeWidgetItem):
     def sort(self):
         """ Sort the item's children. """
 
-        self.sortChildren(ScannerView.NAME, Qt.SortOrder.AscendingOrder)
+        self.sortChildren(SourcesWidget.NAME, Qt.SortOrder.AscendingOrder)
 
 
 class ProjectItem(ScannerItem):
@@ -132,17 +142,17 @@ class ProjectItem(ScannerItem):
 
         super().__init__(parent)
 
-        self.setText(ScannerView.NAME, project.descriptive_name())
-        observe('name', project,
-                lambda c: self.setText(ScannerView.NAME,
-                        c.model.descriptive_name()))
+        self.setText(SourcesWidget.NAME, project.descriptive_name())
+        #observe('name', project,
+        #        lambda c: self.setText(SourcesWidget.NAME,
+        #                c.model.descriptive_name()))
 
         self.setExpanded(True)
 
         for hdir in project.headers:
             HeaderDirectoryItem(hdir, self)
 
-        observe('headers', project, self.__on_headers_changed)
+        #observe('headers', project, self.__on_headers_changed)
 
         self.sort()
 
@@ -180,14 +190,14 @@ class HeaderDirectoryItem(ScannerItem):
         self._header_directory = header_directory
 
         self._draw_status()
-        observe('scan', header_directory, lambda c: self._draw_status())
+        #observe('scan', header_directory, lambda c: self._draw_status())
 
-        self.setText(ScannerView.NAME, header_directory.name)
+        self.setText(SourcesWidget.NAME, header_directory.name)
 
         for header_file in header_directory.content:
             HeaderFileItem(header_file, self)
 
-        observe('content', header_directory, self.__on_content_changed)
+        #observe('content', header_directory, self.__on_content_changed)
 
         self.sort()
 
@@ -210,7 +220,7 @@ class HeaderDirectoryItem(ScannerItem):
         else:
             needs_scanning = (working_version in self._header_directory.scan)
 
-        self.setText(ScannerView.STATUS,
+        self.setText(SourcesWidget.STATUS,
                 "Needs scanning" if needs_scanning else "")
 
     def __on_content_changed(self, change):
@@ -245,15 +255,15 @@ class HeaderFileItem(ScannerItem):
 
         # Make the necessary observations so that we can keep the status up to
         # date.
-        observe('ignored', header_file, self.__on_ignored_changed)
-        observe('module', header_file, self.__on_module_changed)
-        observe('versions', header_file, self.__on_versions_changed)
+        #observe('ignored', header_file, self.__on_ignored_changed)
+        #observe('module', header_file, self.__on_module_changed)
+        #observe('versions', header_file, self.__on_versions_changed)
 
-        for hfile_version in header_file.versions:
-            observe('parse', hfile_version, self.__on_parse_changed)
+        #for hfile_version in header_file.versions:
+        #    observe('parse', hfile_version, self.__on_parse_changed)
 
         # Draw the rest of the item.
-        self.setText(ScannerView.NAME, header_file.name)
+        self.setText(SourcesWidget.NAME, header_file.name)
 
     def update_working_version(self):
         """ Update in the light of the working version. """
@@ -313,7 +323,7 @@ class HeaderFileItem(ScannerItem):
         else:
             status = ''
 
-        self.setText(ScannerView.STATUS, status)
+        self.setText(SourcesWidget.STATUS, status)
 
         if expand:
             self.parent().setExpanded(True)
@@ -331,12 +341,12 @@ class HeaderFileItem(ScannerItem):
     def __on_versions_changed(self, change):
         """ Invoked when a header file's list of versions changes. """
 
-        for hfile_version in change.old:
-            observe('parse', hfile_version, self.__on_parse_changed,
-                    remove=True)
+        #for hfile_version in change.old:
+        #    observe('parse', hfile_version, self.__on_parse_changed,
+        #            remove=True)
 
-        for hfile_version in change.new:
-            observe('parse', hfile_version, self.__on_parse_changed)
+        #for hfile_version in change.new:
+        #    observe('parse', hfile_version, self.__on_parse_changed)
 
         self._draw_status()
 

@@ -12,10 +12,10 @@
 
 from PyQt6.QtWidgets import QComboBox, QDialog, QFormLayout
 
-from ....helpers import AbstractDialog
+from ....helpers import BaseDialog
 
 
-class MoveHeaderDialog(AbstractDialog):
+class MoveHeaderDialog(BaseDialog):
     """ This class implements the dialog for moving a header file to another
     module.
     """
@@ -23,13 +23,15 @@ class MoveHeaderDialog(AbstractDialog):
     def populate(self, layout):
         """ Populate the dialog's layout. """
 
+        project = self.shell.project
+
         form = QFormLayout()
         layout.addLayout(form)
 
         self._dst_module = QComboBox()
         form.addRow("Destination module", self._dst_module)
 
-        for module in sorted(self.project.modules, key=lambda m: m.name):
+        for module in sorted(project.modules, key=lambda m: m.name):
             if module is not self.model:
                 self._dst_module.addItem(module.name, module)
 

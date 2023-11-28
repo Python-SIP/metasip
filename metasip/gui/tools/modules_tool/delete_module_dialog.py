@@ -12,12 +12,13 @@
 
 from PyQt6.QtWidgets import QComboBox
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from .helpers import init_module_selector
 
 
-class DeleteModuleDialog(AbstractDialog):
+class DeleteModuleDialog(BaseDialog):
     """ This class implements the dialog for deleting a module. """
 
     def populate(self, layout):
@@ -46,5 +47,7 @@ class DeleteModuleDialog(AbstractDialog):
                 break
         else:
             project.externalmodules.remove(module)
+
+        self.shell.notify(EventType.MODULE_ADD_DELETE)
 
         return True

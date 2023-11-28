@@ -12,12 +12,13 @@
 
 from PyQt6.QtWidgets import QCheckBox, QFormLayout, QLineEdit
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from .helpers import validate_feature_name
 
 
-class NewFeatureDialog(AbstractDialog):
+class NewFeatureDialog(BaseDialog):
     """ This class implements the dialog for creating a new feature. """
 
     def populate(self, layout):
@@ -47,5 +48,7 @@ class NewFeatureDialog(AbstractDialog):
             features_list = project.features
 
         features_list.append(feature)
+
+        self.shell.notify(EventType.FEATURE_ADD_DELETE)
 
         return True

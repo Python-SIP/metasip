@@ -16,12 +16,12 @@ from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGridLayout,
 from .....project import (Constructor, Destructor, Method, OperatorMethod,
         Function, OperatorFunction, ManualCode)
 
-from ....helpers import AbstractDialog
+from ....helpers import BaseDialog
 
 from .helpers import Encoding, split_annos
 
 
-class CallablePropertiesDialog(AbstractDialog):
+class CallablePropertiesDialog(BaseDialog):
     """ This class implements the dialog for callable properties. """
 
     def populate(self, layout):

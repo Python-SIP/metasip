@@ -55,16 +55,14 @@ class FeaturesTool(ActionTool):
 
         from .delete_feature_dialog import DeleteFeatureDialog
 
-        self.shell.handle_project_dialog("Delete Feature", DeleteFeatureDialog,
-                EventType.FEATURE_ADD_DELETE)
+        self.shell.handle_project_dialog("Delete Feature", DeleteFeatureDialog)
 
     def _handle_new(self):
         """ Handle the New action. """
 
         from .new_feature_dialog import NewFeatureDialog
 
-        self.shell.handle_project_dialog("New Feature", NewFeatureDialog,
-                EventType.FEATURE_ADD_DELETE)
+        self.shell.handle_project_dialog("New Feature", NewFeatureDialog)
 
     def _handle_rename(self):
         """ Handle the Rename action. """

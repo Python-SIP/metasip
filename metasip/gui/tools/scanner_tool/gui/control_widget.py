@@ -20,10 +20,12 @@ class ControlWidget(QWidget):
     GUI.
     """
 
-    def __init__(self):
+    def __init__(self, tool):
         """ Initialise the widget. """
 
         super().__init__()
+
+        self._tool = tool
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -131,6 +133,12 @@ class ControlWidget(QWidget):
 
         layout.addStretch()
 
+    def rename_version(self, old_name, new_name):
+        """ Rename a version. """
+
+        index = self._working_version.findText(old_name)
+        self._working_version.setItemText(index, new_name)
+
     def restore_state(self, settings):
         """ Restore the widget's state. """
 
@@ -138,16 +146,40 @@ class ControlWidget(QWidget):
         if state is not None:
             self._source_directory.setText(state)
 
-        state = settings.value('working_version')
-        if state is not None:
-            self._working_version.setCurrentText(state)
-
     def save_state(self, settings):
         """ Save the widget's state. """
 
-        settings.setValue('working_version',
-                self._working_version.currentText())
         settings.setValue('source_directory', self._source_directory.text())
+
+    def set_project(self):
+        """ Set the current project. """
+
+        # TODO
+        self.update_versions()
+
+    def update_versions(self):
+        """ Update the versions. """
+
+        project = self._tool.shell.project
+
+        if len(project.versions) == 0:
+            self._working_version.clear()
+            working_version = ''
+            enabled = False
+        else:
+            # Try and maintain the current working version.
+            working_version = self._working_version.currentText()
+
+            self._working_version.clear()
+            self._working_version.addItems(project.versions)
+
+            if working_version not in project.versions:
+                working_version = project.versions[-1]
+
+            enabled = True
+
+        self._working_version.setCurrentText(working_version)
+        self._working_version.setEnabled(enabled)
 
     def _handle_browse_source_directory(self):
         """ Handle the button to browse for a source directory. """

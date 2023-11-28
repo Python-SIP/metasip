@@ -13,12 +13,12 @@
 from PyQt6.QtWidgets import (QCheckBox, QFormLayout, QGridLayout, QGroupBox,
         QLineEdit)
 
-from ....helpers import AbstractDialog
+from ....helpers import BaseDialog
 
 from .helpers import split_annos
 
 
-class ClassPropertiesDialog(AbstractDialog):
+class ClassPropertiesDialog(BaseDialog):
     """ This class implements the dialog for a class's properties. """
 
     def populate(self, layout):

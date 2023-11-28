@@ -48,7 +48,7 @@ class ApiEditor(QTreeWidget):
 
         super().__init__()
 
-        self.tool = tool
+        self._tool = tool
 
         # Tweak the tree widget.
         self.setHeaderLabels(("Name", "Access", "Status", "Versions"))
@@ -67,19 +67,17 @@ class ApiEditor(QTreeWidget):
         if state is not None:
             self.header().restoreState(state)
 
-    def set_project(self, project):
+    def set_project(self):
         """ Set the current project. """
 
         self.clear()
 
-        self.project = project
-
-        ProjectItem(project, self)
+        ProjectItem(self._tool.shell.project, self)
 
     def set_dirty(self):
         """ Mark the project as having been modified. """
 
-        self.tool.shell.dirty = True
+        self._tool.shell.dirty = True
 
     def save_state(self, settings):
         """ Save the widget's state. """
@@ -252,7 +250,8 @@ class ApiEditor(QTreeWidget):
 
         prj_item is the part of the project.
         """
-        self._updateArgs(self.project.acceptArgumentNames(prj_item))
+        self._updateArgs(
+                self._tool.shell.project.acceptArgumentNames(prj_item))
 
     @staticmethod
     def _updateArgs(updated_args):

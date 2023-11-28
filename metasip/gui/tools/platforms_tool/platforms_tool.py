@@ -56,15 +56,14 @@ class PlatformsTool(ActionTool):
         from .delete_platform_dialog import DeletePlatformDialog
 
         self.shell.handle_project_dialog("Delete Platform",
-                DeletePlatformDialog, EventType.PLATFORM_ADD_DELETE)
+                DeletePlatformDialog)
 
     def _handle_new(self):
         """ Handle the New action. """
 
         from .new_platform_dialog import NewPlatformDialog
 
-        self.shell.handle_project_dialog("New Platform", NewPlatformDialog,
-                EventType.PLATFORM_ADD_DELETE)
+        self.shell.handle_project_dialog("New Platform", NewPlatformDialog)
 
     def _handle_rename(self):
         """ Handle the Rename action. """

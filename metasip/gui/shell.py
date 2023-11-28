@@ -24,20 +24,36 @@ class EventType(Enum):
     # A feature has been added or deleted.  There is no event argument.
     FEATURE_ADD_DELETE = auto()
 
+    # A feature has been renamed.  The event argument is a 2-tuple of the old
+    # and new names.
+    FEATURE_RENAME = auto()
+
     # A message has been logged.  The message is the event argument.
     LOG_MESSAGE = auto()
 
     # A module has been added or deleted.  There is no event argument.
     MODULE_ADD_DELETE = auto()
 
+    # A module has been renamed.  The event argument is a 2-tuple of the old
+    # and new names.
+    MODULE_RENAME = auto()
+
     # A platform has been added or deleted.  There is no event argument.
     PLATFORM_ADD_DELETE = auto()
+
+    # A platform has been renamed.  The event argument is a 2-tuple of the old
+    # and new names.
+    PLATFORM_RENAME = auto()
 
     # A new project has been loaded.  There is no event argument.
     PROJECT_NEW = auto()
 
     # A version has been added or deleted.  There is no event argument.
     VERSION_ADD_DELETE = auto()
+
+    # A version has been renamed.  The event argument is a 2-tuple of the old
+    # and new names.
+    VERSION_RENAME = auto()
 
 
 class Shell:
@@ -157,16 +173,13 @@ class Shell:
         self._project.dirty = state
         self.shell_widget.setWindowModified(state)
 
-    def handle_project_dialog(self, title, dialog_factory, event_type=None):
+    def handle_project_dialog(self, title, dialog_factory):
         """ Handle a dialog that will update some aspect of a project. """
 
-        dialog = dialog_factory(self._project, title, self.shell_widget)
+        dialog = dialog_factory(self._project, title, self)
 
         if dialog.update():
             self.dirty = True
-
-            if event_type is not None:
-                self.notify(event_type)
 
     def log(self, message):
         """ Log a message. """

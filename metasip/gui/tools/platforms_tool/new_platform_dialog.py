@@ -12,12 +12,13 @@
 
 from PyQt6.QtWidgets import QFormLayout, QLineEdit
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from .helpers import validate_platform_name
 
 
-class NewPlatformDialog(AbstractDialog):
+class NewPlatformDialog(BaseDialog):
     """ This class implements the dialog for creating a new platform. """
 
     def populate(self, layout):
@@ -39,5 +40,7 @@ class NewPlatformDialog(AbstractDialog):
             return False
 
         project.platforms.append(platform)
+
+        self.shell.notify(EventType.PLATFORM_ADD_DELETE)
 
         return True

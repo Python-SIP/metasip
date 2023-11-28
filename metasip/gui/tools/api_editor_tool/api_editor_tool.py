@@ -55,7 +55,7 @@ class ApiEditorTool(ShellTool):
         """ Reimplemented to handle project-specific events. """
 
         if event_type is EventType.PROJECT_NEW:
-            self._api_editor.set_project(self.shell.project)
+            self._api_editor.set_project()
 
     @property
     def location(self):

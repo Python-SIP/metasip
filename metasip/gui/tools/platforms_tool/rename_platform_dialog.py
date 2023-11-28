@@ -12,14 +12,15 @@
 
 from PyQt6.QtWidgets import QComboBox, QFormLayout, QLineEdit
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from ..helpers import tagged_items
 
 from .helpers import init_platform_selector, validate_platform_name
 
 
-class RenamePlatformDialog(AbstractDialog):
+class RenamePlatformDialog(BaseDialog):
     """ This class implements the dialog for renaming a platform. """
 
     def populate(self, layout):
@@ -62,5 +63,7 @@ class RenamePlatformDialog(AbstractDialog):
 
         # Rename in the project's list.
         project.platforms[project.platforms.index(old_name)] = new_name
+
+        self.shell.notify(EventType.PLATFORM_RENAME, (old_name, new_name))
 
         return True

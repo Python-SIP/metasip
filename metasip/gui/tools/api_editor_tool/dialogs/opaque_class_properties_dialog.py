@@ -12,12 +12,12 @@
 
 from PyQt6.QtWidgets import QCheckBox, QGroupBox, QVBoxLayout
 
-from ....helpers import AbstractDialog
+from ....helpers import BaseDialog
 
 from .helpers import split_annos
 
 
-class OpaqueClassPropertiesDialog(AbstractDialog):
+class OpaqueClassPropertiesDialog(BaseDialog):
     """ This class implements the dialog for an opaque class's properties. """
 
     def populate(self, layout):

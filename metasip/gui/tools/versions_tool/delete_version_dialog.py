@@ -12,14 +12,15 @@
 
 from PyQt6.QtWidgets import QComboBox
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from ..helpers import tagged_items
 
 from .helpers import delete_version, init_version_selector
 
 
-class DeleteVersionDialog(AbstractDialog):
+class DeleteVersionDialog(BaseDialog):
     """ This class implements the dialog for deleting a version. """
 
     def populate(self, layout):
@@ -42,5 +43,7 @@ class DeleteVersionDialog(AbstractDialog):
 
         # Delete from each API item it appears.
         delete_version(version, project, migrate_items=True)
+
+        self.shell.notify(EventType.VERSION_ADD_DELETE)
 
         return True

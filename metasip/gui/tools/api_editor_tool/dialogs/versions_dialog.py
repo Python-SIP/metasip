@@ -14,15 +14,17 @@ from PyQt6.QtWidgets import QComboBox, QFormLayout
 
 from .....project import VersionRange
 
-from ....helpers import AbstractDialog
+from ....helpers import BaseDialog
 
 
-class VersionsDialog(AbstractDialog):
+class VersionsDialog(BaseDialog):
     """ This class implements the dialog for select the start and end versions.
     """
 
     def populate(self, layout):
         """ Populate the dialog's layout. """
+
+        project = self.shell.project
 
         form = QFormLayout()
         layout.addLayout(form)
@@ -33,7 +35,7 @@ class VersionsDialog(AbstractDialog):
         # The start list will have the list of versions with the first version
         # replaced by "First".  The end list will have the list of versions
         # excluding the first version and with "Latest" appended.
-        for i, version in enumerate(self.project.versions):
+        for i, version in enumerate(project.versions):
             if i == 0:
                 # The first version never actually appears itself.
                 start_combo_box.addItem("First", '')
@@ -65,12 +67,12 @@ class VersionsDialog(AbstractDialog):
         if api_start == '':
             start_index = 0
         else:
-            start_index = self.project.versions.index(api_start)
+            start_index = project.versions.index(api_start)
 
         if api_end == '':
-            end_index = len(self.project.versions) - 1
+            end_index = len(project.versions) - 1
         else:
-            end_index = self.project.versions.index(api_end) - 1
+            end_index = project.versions.index(api_end) - 1
 
         self._start_combo_box.setCurrentIndex(start_index)
         self._end_combo_box.setCurrentIndex(end_index)

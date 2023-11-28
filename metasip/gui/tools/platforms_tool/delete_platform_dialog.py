@@ -12,14 +12,15 @@
 
 from PyQt6.QtWidgets import QCheckBox, QComboBox
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from ..helpers import tagged_items
 
 from .helpers import init_platform_selector
 
 
-class DeletePlatformDialog(AbstractDialog):
+class DeletePlatformDialog(BaseDialog):
     """ This class implements the dialog for deleting a platform. """
 
     def populate(self, layout):
@@ -86,5 +87,7 @@ class DeletePlatformDialog(AbstractDialog):
 
         # Delete from the project's list.
         project.platforms.remove(platform)
+
+        self.shell.notify(EventType.PLATFORM_ADD_DELETE)
 
         return True

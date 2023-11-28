@@ -12,12 +12,13 @@
 
 from PyQt6.QtWidgets import QComboBox, QFormLayout, QLineEdit
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from .helpers import init_version_selector, validate_version_name
 
 
-class NewVersionDialog(AbstractDialog):
+class NewVersionDialog(BaseDialog):
     """ This class implements the dialog for creating a new version. """
 
     def populate(self, layout):
@@ -89,5 +90,7 @@ class NewVersionDialog(AbstractDialog):
                         hfile.versions[0].version = version
 
             project.versions.append(version)
+
+        self.shell.notify(EventType.VERSION_ADD_DELETE)
 
         return True

@@ -12,14 +12,15 @@
 
 from PyQt6.QtWidgets import QComboBox, QFormLayout, QLineEdit
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from ..helpers import tagged_items
 
 from .helpers import init_version_selector, validate_version_name
 
 
-class RenameVersionDialog(AbstractDialog):
+class RenameVersionDialog(BaseDialog):
     """ This class implements the dialog for renaming a version. """
 
     def populate(self, layout):
@@ -69,5 +70,7 @@ class RenameVersionDialog(AbstractDialog):
 
         # Rename in the project's list.
         project.versions[project.versions.index(old_name)] = new_name
+
+        self.shell.notify(EventType.VERSION_RENAME, (old_name, new_name))
 
         return True

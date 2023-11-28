@@ -12,14 +12,15 @@
 
 from PyQt6.QtWidgets import QCheckBox, QComboBox
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from ..helpers import tagged_items
 
 from .helpers import init_feature_selector
 
 
-class DeleteFeatureDialog(AbstractDialog):
+class DeleteFeatureDialog(BaseDialog):
     """ This class implements the dialog for deleting a feature. """
 
     def populate(self, layout):
@@ -48,7 +49,6 @@ class DeleteFeatureDialog(AbstractDialog):
         # Delete from each API item it appears.
         remove_items = []
 
-        # TODO - lots of additional events should be generated below.
         for api_item, container in tagged_items(project):
             # Ignore items that aren't tagged with a feature.
             if len(api_item.features) == 0:
@@ -91,5 +91,8 @@ class DeleteFeatureDialog(AbstractDialog):
             feature_list = project.features
 
         feature_list.remove(feature)
+
+        # TODO - lots of additional events should be generated.
+        self.shell.notify(EventType.FEATURE_ADD_DELETE)
 
         return True

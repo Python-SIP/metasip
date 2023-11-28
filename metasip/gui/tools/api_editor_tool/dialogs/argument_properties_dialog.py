@@ -13,12 +13,12 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGridLayout,
         QGroupBox, QHBoxLayout, QLabel, QLineEdit)
 
-from ....helpers import AbstractDialog
+from ....helpers import BaseDialog
 
 from .helpers import Encoding, split_annos
 
 
-class ArgumentPropertiesDialog(AbstractDialog):
+class ArgumentPropertiesDialog(BaseDialog):
     """ This class implements the dialog for argument properties. """
 
     def populate(self, layout):

@@ -10,7 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .abstract_dialog import AbstractDialog
+from .base_dialog import BaseDialog
 from .project_ui import ProjectUi
 from .question import question
 from .warning import warning

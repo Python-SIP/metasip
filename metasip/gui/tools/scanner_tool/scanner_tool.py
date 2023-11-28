@@ -11,6 +11,7 @@
 
 
 
+from ...shell import EventType
 from ...shell_tool import ShellTool, ShellToolLocation
 
 from .gui import ScannerWidget
@@ -31,8 +32,12 @@ class ScannerTool(ShellTool):
     def event(self, event_type, event_arg):
         """ Reimplemented to handle project-specific events. """
 
-        #if event_type is EventType.PROJECT_NEW:
-        #    self._api_editor.set_project(self.shell.project)
+        if event_type is EventType.PROJECT_NEW:
+            self._scanner_widget.set_project()
+        elif event_type is EventType.VERSION_ADD_DELETE:
+            self._scanner_widget.update_versions()
+        elif event_type is EventType.VERSION_RENAME:
+            self._scanner_widget.rename_version(*event_arg)
 
     @property
     def location(self):

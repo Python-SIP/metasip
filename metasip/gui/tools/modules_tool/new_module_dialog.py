@@ -14,12 +14,13 @@ from PyQt6.QtWidgets import QCheckBox, QFormLayout, QLineEdit
 
 from ....project import Module
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from .helpers import validate_module_name
 
 
-class NewModuleDialog(AbstractDialog):
+class NewModuleDialog(BaseDialog):
     """ This class implements the dialog for creating a new module. """
 
     def populate(self, layout):
@@ -47,5 +48,7 @@ class NewModuleDialog(AbstractDialog):
             project.externalmodules.append(module_name)
         else:
             project.modules.append(Module(name=module_name))
+
+        self.shell.notify(EventType.MODULE_ADD_DELETE)
 
         return True

@@ -16,6 +16,8 @@ from ...helpers import question
 from ...shell import EventType
 from ...shell_tool import ActionTool
 
+from .helpers import delete_version
+
 
 class VersionsTool(ActionTool):
     """ This class implements the versions tool. """
@@ -60,8 +62,7 @@ class VersionsTool(ActionTool):
 
         from .delete_version_dialog import DeleteVersionDialog
 
-        self.shell.handle_project_dialog("Delete Version",
-                DeleteVersionDialog, EventType.VERSION_ADD_DELETE)
+        self.shell.handle_project_dialog("Delete Version", DeleteVersionDialog)
 
     def _handle_delete_all(self):
         """ Handle the Delete All action. """
@@ -78,6 +79,7 @@ class VersionsTool(ActionTool):
             for version in list(project.versions):
                 delete_version(version, project, migrate_items=False)
 
+            self.shell.notify(EventType.VERSION_ADD_DELETE)
             self.shell.dirty = True
 
     def _handle_new(self):
@@ -85,8 +87,7 @@ class VersionsTool(ActionTool):
 
         from .new_version_dialog import NewVersionDialog
 
-        self.shell.handle_project_dialog("New Version", NewVersionDialog,
-                EventType.VERSION_ADD_DELETE)
+        self.shell.handle_project_dialog("New Version", NewVersionDialog)
 
     def _handle_rename(self):
         """ Handle the Rename action. """

@@ -55,16 +55,14 @@ class ModulesTool(ActionTool):
 
         from .delete_module_dialog import DeleteModuleDialog
 
-        self.shell.handle_project_dialog("Delete Module", DeleteModuleDialog,
-                EventType.MODULE_ADD_DELETE)
+        self.shell.handle_project_dialog("Delete Module", DeleteModuleDialog)
 
     def _handle_new(self):
         """ Handle the New action. """
 
         from .new_module_dialog import NewModuleDialog
 
-        self.shell.handle_project_dialog("New Module", NewModuleDialog,
-                EventType.MODULE_ADD_DELETE)
+        self.shell.handle_project_dialog("New Module", NewModuleDialog)
 
     def _handle_rename(self):
         """ Handle the Rename action. """

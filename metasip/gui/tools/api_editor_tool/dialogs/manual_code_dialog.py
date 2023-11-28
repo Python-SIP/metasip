@@ -12,10 +12,10 @@
 
 from PyQt6.QtWidgets import QFormLayout, QLineEdit
 
-from ....helpers import AbstractDialog
+from ....helpers import BaseDialog
 
 
-class ManualCodeDialog(AbstractDialog):
+class ManualCodeDialog(BaseDialog):
     """ This class implements the dialog for manual code. """
 
     def populate(self, layout):

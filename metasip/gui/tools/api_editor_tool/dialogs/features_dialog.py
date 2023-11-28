@@ -12,10 +12,10 @@
 
 from PyQt6.QtWidgets import QComboBox, QGridLayout, QLabel
 
-from ....helpers import AbstractDialog
+from ....helpers import BaseDialog
 
 
-class FeaturesDialog(AbstractDialog):
+class FeaturesDialog(BaseDialog):
     """ This class implements the dialog for selecting a number of features.
     """
 
@@ -24,10 +24,12 @@ class FeaturesDialog(AbstractDialog):
     def populate(self, layout):
         """ Populate the dialog's layout. """
 
+        project = self.shell.project
+
         grid = QGridLayout()
         layout.insertLayout(0, grid)
 
-        all_features = self.project.features + self.project.externalfeatures
+        all_features = project.features + project.externalfeatures
         self._features = []
 
         for row, feature in enumerate(all_features):

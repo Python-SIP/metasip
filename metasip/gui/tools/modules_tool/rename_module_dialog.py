@@ -12,14 +12,15 @@
 
 from PyQt6.QtWidgets import QComboBox, QFormLayout, QLineEdit
 
-from ...helpers import AbstractDialog
+from ...helpers import BaseDialog
+from ...shell import EventType
 
 from ..helpers import tagged_items
 
 from .helpers import init_module_selector, validate_module_name
 
 
-class RenameModuleDialog(AbstractDialog):
+class RenameModuleDialog(BaseDialog):
     """ This class implements the dialog for renaming a module. """
 
     def populate(self, layout):
@@ -58,5 +59,7 @@ class RenameModuleDialog(AbstractDialog):
                 break
         else:
             project.externalmodules[project.externalmodules.index(old_name)] = new_name
+
+        self.shell.notify(EventType.MODULE_RENAME, (old_name, new_name))
 
         return True
