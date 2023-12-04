@@ -19,7 +19,10 @@ from .shell_tool import ShellTool, ShellToolLocation
 
 
 class EventType(Enum):
-    """ The different project-related event types. """
+    """ The different project-related event types.  These are only used to
+    update the different parts of the GUI and so there are many similar changes
+    that don't have an event because there is no consequent impact on the GUI.
+    """
 
     # A feature has been added or deleted.  There is no event argument.
     FEATURE_ADD_DELETE = auto()
@@ -47,6 +50,9 @@ class EventType(Enum):
 
     # A new project has been loaded.  There is no event argument.
     PROJECT_NEW = auto()
+
+    # A project has been renamed.  There is no event argument.
+    PROJECT_RENAME = auto()
 
     # A version has been added or deleted.  There is no event argument.
     VERSION_ADD_DELETE = auto()

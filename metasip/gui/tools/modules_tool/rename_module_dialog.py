@@ -52,7 +52,6 @@ class RenameModuleDialog(BaseDialog):
             return False
 
         # Rename in the project's list.
-        # TODO - this should probably generate a lot more events.
         for module in project.modules:
             if module.name == old_name:
                 module.name = new_name

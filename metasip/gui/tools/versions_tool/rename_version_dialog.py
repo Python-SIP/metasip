@@ -53,7 +53,6 @@ class RenameVersionDialog(BaseDialog):
 
         # Rename in each API item it appears.
         for api_item, _ in tagged_items(project):
-            # TODO - this should probably generate a lot more events.
             for v in api_item.versions:
                 if v.startversion == old_name:
                     v.startversion = new_name

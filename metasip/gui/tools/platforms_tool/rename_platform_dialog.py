@@ -53,7 +53,6 @@ class RenamePlatformDialog(BaseDialog):
 
         # Rename in each API item it appears.
         for api_item, _ in tagged_items(project):
-            # TODO - this should probably generate a lot more events.
             for i, p in enumerate(api_item.platforms):
                 if p[0] == '!':
                     if p[1:] == old_name:

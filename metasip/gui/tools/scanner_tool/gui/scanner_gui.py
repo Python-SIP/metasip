@@ -16,7 +16,7 @@ from .control_widget import ControlWidget
 from .sources_widget import SourcesWidget
 
 
-class ScannerWidget(QSplitter):
+class ScannerGui(QSplitter):
     """ This class is a widget that implements a scanner's GUI. """
 
     def __init__(self, tool):
@@ -24,26 +24,21 @@ class ScannerWidget(QSplitter):
 
         super().__init__()
 
-        self._sources = SourcesWidget(tool)
-        self.addWidget(self._sources)
+        self.sources_widget = SourcesWidget(tool)
+        self.addWidget(self.sources_widget)
 
-        self._control = ControlWidget(tool)
-        self.addWidget(self._control)
-
-    def rename_version(self, old_name, new_name):
-        """ Rename a version. """
-
-        self._control.rename_version(old_name, new_name)
+        self.control_widget = ControlWidget(tool)
+        self.addWidget(self.control_widget)
 
     def restore_state(self, settings):
         """ Restore the widget's state. """
 
         settings.beginGroup('control')
-        self._control.restore_state(settings)
+        self.control_widget.restore_state(settings)
         settings.endGroup()
 
         settings.beginGroup('sources')
-        self._sources.restore_state(settings)
+        self.sources_widget.restore_state(settings)
         settings.endGroup()
 
         state = settings.value('splitter')
@@ -56,20 +51,9 @@ class ScannerWidget(QSplitter):
         settings.setValue('splitter', self.saveState())
 
         settings.beginGroup('sources')
-        self._sources.save_state(settings)
+        self.sources_widget.save_state(settings)
         settings.endGroup()
 
         settings.beginGroup('control')
-        self._control.save_state(settings)
+        self.control_widget.save_state(settings)
         settings.endGroup()
-
-    def set_project(self):
-        """ Set the current project. """
-
-        self._sources.set_project()
-        self._control.set_project()
-
-    def update_versions(self):
-        """ Update the versions. """
-
-        self._control.update_versions()

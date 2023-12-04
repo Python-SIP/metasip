@@ -131,6 +131,6 @@ class ApiEditorTool(ShellTool):
 
         if project_name:
             self.shell.project.project_name = project_name
-            self.shell.project_name = project_name
             self.shell.project.save(project_name)
+            self.shell.notify(EventType.PROJECT_RENAME)
             self.shell.dirty = False

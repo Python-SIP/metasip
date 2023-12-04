@@ -14,7 +14,7 @@
 from ...shell import EventType
 from ...shell_tool import ShellTool, ShellToolLocation
 
-from .gui import ScannerWidget
+from .gui import ScannerGui
 
 
 class ScannerTool(ShellTool):
@@ -27,17 +27,19 @@ class ScannerTool(ShellTool):
 
         super().__init__(shell)
 
-        self._scanner_widget = ScannerWidget(self)
+        self._gui = ScannerGui(self)
 
     def event(self, event_type, event_arg):
         """ Reimplemented to handle project-specific events. """
 
-        if event_type is EventType.PROJECT_NEW:
-            self._scanner_widget.set_project()
+        if event_type is EventType.MODULE_RENAME:
+            self._gui.control_widget.module_rename(*event_arg)
+        elif event_type is EventType.PROJECT_NEW:
+            self._set_project()
         elif event_type is EventType.VERSION_ADD_DELETE:
-            self._scanner_widget.update_versions()
+            self._gui.control_widget.version_add_delete()
         elif event_type is EventType.VERSION_RENAME:
-            self._scanner_widget.rename_version(*event_arg)
+            self._gui.control_widget.version_rename(*event_arg)
 
     @property
     def location(self):
@@ -54,12 +56,23 @@ class ScannerTool(ShellTool):
     def restore_state(self, settings):
         """ Restore the tool's state from the settings. """
 
-        self._scanner_widget.restore_state(settings)
+        self._gui.restore_state(settings)
 
     def save_state(self, settings):
         """ Save the tool's state in the settings. """
 
-        self._scanner_widget.save_state(settings)
+        self._gui.save_state(settings)
+
+    def set_header_file(self, header_file, header_directory):
+        """ Set the current header file. """
+
+        self._gui.control_widget.set_header_file(header_file, header_directory)
+
+    def set_working_version(self, working_version):
+        """ Set the current working version. """
+
+        self._gui.sources_widget.set_working_version(working_version)
+        self._gui.control_widget.set_working_version(working_version)
 
     @property
     def title(self):
@@ -71,4 +84,16 @@ class ScannerTool(ShellTool):
     def widget(self):
         """ Get the tool's widget. """
 
-        return self._scanner_widget
+        return self._gui
+
+    def _set_project(self):
+        """ Set the current project. """
+
+        self._gui.sources_widget.set_project()
+        self._gui.control_widget.set_project()
+
+        project = self.shell.project
+
+        # Default to the latest version if any.
+        working_version = project.versions[-1] if len(project.versions) != 0 else None
+        self.set_working_version(working_version)

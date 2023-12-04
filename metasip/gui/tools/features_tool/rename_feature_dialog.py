@@ -52,8 +52,6 @@ class RenameFeatureDialog(BaseDialog):
             return False
 
         # Rename in each API item it appears.
-        # TODO - this should probably generate a lot more events or maybe the
-        # changes should be done elsewhere?
         for api_item, _ in tagged_items(project):
             for i, f in enumerate(api_item.features):
                 if f[0] == '!':

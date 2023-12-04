@@ -13,6 +13,8 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QAbstractItemView, QTreeWidget, QTreeWidgetItem
 
+from .....project import HeaderDirectory, HeaderFile
+
 
 class SourcesWidget(QTreeWidget):
     """ This class is a widget that implements a browser of the header files of
@@ -29,26 +31,20 @@ class SourcesWidget(QTreeWidget):
 
         self._tool = tool
 
+        self._root_item = None
+        self.working_version = None
+
         self.setHeaderLabels(("Name", "Status"))
 
-        self.setSelectionMode(
-                QAbstractItemView.SelectionMode.ExtendedSelection)
-        self.itemSelectionChanged.connect(self.refresh_selection)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.currentItemChanged.connect(self._handle_selection_change)
 
-        #try:
-        #    self.working_version = project.versions[-1]
-        #except IndexError:
-        #    self.working_version = None
-
-        #ProjectItem(project, self)
-
-        #self._update_working_version()
-
+    # TODO
     def hide_ignored(self, header_directory, hide):
         """ Show or hide all the ignored files in a header directory. """
 
         for itm in self._items():
-            if itm.get_project_item() is header_directory:
+            if itm.project_item is header_directory:
                 for hfile_idx in range(itm.childCount()):
                     hfile_itm = itm.child(hfile_idx)
 
@@ -74,29 +70,37 @@ class SourcesWidget(QTreeWidget):
 
         self.clear()
 
-        #ProjectItem(self._tool.shell.project, self)
+        for hdir in self._tool.shell.project.headers:
+            _HeaderDirectoryItem(hdir, self)
+
+        self.sortItems(SourcesWidget.NAME, Qt.SortOrder.AscendingOrder)
 
     def set_working_version(self, working_version):
-        """ Set the working version. """
+        """ Set the current working version. """
 
-        if self.working_version != working_version:
-            self.working_version = working_version
-            self._update_working_version()
-
-    def refresh_selection(self):
-        """ Invoked when the item selection changes. """
-
-        self._controller.selection(
-                [itm.get_project_item() for itm in self.selectedItems()])
-
-    def _update_working_version(self):
-        """ Update the working version for all items. """
+        self.working_version = working_version
 
         for itm in self._items():
-            itm.update_working_version()
+            itm.set_working_version(working_version)
+
+    def _handle_selection_change(self, current, previous):
+        """ Invoked when the item selection changes. """
+
+        project_item = current.project_item
+
+        header_directory = None
+        header_file = None
+
+        if isinstance(project_item, HeaderDirectory):
+            header_directory = project_item
+        elif isinstance(project_item, HeaderFile):
+            header_directory = current.parent().project_item
+            header_file = project_item
+
+        self._tool.set_header_file(header_file, header_directory)
 
     def _items(self, root=None):
-        """ A generator for all the items in the tree depth first. """
+        """ A generator for all the header items depth first. """
 
         if root is None:
             root = self.invisibleRootItem()
@@ -110,170 +114,60 @@ class SourcesWidget(QTreeWidget):
             yield child
 
 
-class ScannerItem(QTreeWidgetItem):
-    """ ScannerItem is an internal base class for all items in the scanner tool
-    tree.
-    """
+class _SourcesItem(QTreeWidgetItem):
+    """ This is a base class for all items in the sources tree. """
 
-    def update_working_version(self):
-        """ Update in the light of the working versions. """
+    def __init__(self, project_item, parent):
+        """ Initialise the item. """
+
+        super().__init__(parent)
+
+        self.project_item = project_item
+
+    def set_working_version(self, working_version):
+        """ Set the current working versions. """
 
         # This default implementation does nothing.
         pass
 
-    def get_project_item(self):
-        """ Return the item's corresponding project item. """
 
-        raise NotImplementedError
-
-    def sort(self):
-        """ Sort the item's children. """
-
-        self.sortChildren(SourcesWidget.NAME, Qt.SortOrder.AscendingOrder)
-
-
-class ProjectItem(ScannerItem):
-    """ ProjectItem is an internal class that represents a project in the
-    scanner tool GUI.
-    """
-
-    def __init__(self, project, parent):
-        """ Initialise the item. """
-
-        super().__init__(parent)
-
-        self.setText(SourcesWidget.NAME, project.descriptive_name())
-        #observe('name', project,
-        #        lambda c: self.setText(SourcesWidget.NAME,
-        #                c.model.descriptive_name()))
-
-        self.setExpanded(True)
-
-        for hdir in project.headers:
-            HeaderDirectoryItem(hdir, self)
-
-        #observe('headers', project, self.__on_headers_changed)
-
-        self.sort()
-
-    def get_project_item(self):
-        """ Return the item's corresponding project item. """
-
-        return self.treeWidget().project
-
-    def __on_headers_changed(self, change):
-        """ Invoked when the list of header directories changes. """
-
-        for hdir in change.old:
-            for idx in range(self.childCount()):
-                itm = self.child(idx)
-                if itm.get_project_item() is hdir:
-                    self.removeChild(itm)
-                    break
-
-        for hdir in change.new:
-            HeaderDirectoryItem(hdir, self)
-
-        self.sort()
-
-
-class HeaderDirectoryItem(ScannerItem):
-    """ HeaderDirectoryItem is an internal class that represents a header
-    directory in the scanner tool GUI.
-    """
+class _HeaderDirectoryItem(_SourcesItem):
+    """ This class represents a header directory in the sources tree. """
 
     def __init__(self, header_directory, parent):
         """ Initialise the item. """
 
-        super().__init__(parent)
-
-        self._header_directory = header_directory
-
-        self._draw_status()
-        #observe('scan', header_directory, lambda c: self._draw_status())
+        super().__init__(header_directory, parent)
 
         self.setText(SourcesWidget.NAME, header_directory.name)
 
         for header_file in header_directory.content:
-            HeaderFileItem(header_file, self)
+            _HeaderFileItem(header_file, self)
 
-        #observe('content', header_directory, self.__on_content_changed)
+        self.sortChildren(SourcesWidget.NAME, Qt.SortOrder.AscendingOrder)
 
-        self.sort()
+    def set_working_version(self, working_version):
+        """ Set the current working version. """
 
-    def update_working_version(self):
-        """ Update in the light of the working version. """
-
-        self._draw_status()
-
-    def get_project_item(self):
-        """ Return the item's corresponding project item. """
-
-        return self._header_directory
-
-    def _draw_status(self):
-        """ Draw the status column. """
-
-        working_version = self.treeWidget().working_version
+        # Draw the status column.
         if working_version is None:
-            needs_scanning = (len(self._header_directory.scan) != 0)
+            needs_scanning = (len(self.project_item.scan) != 0)
         else:
-            needs_scanning = (working_version in self._header_directory.scan)
+            needs_scanning = (working_version in self.project_item.scan)
 
         self.setText(SourcesWidget.STATUS,
-                "Needs scanning" if needs_scanning else "")
-
-    def __on_content_changed(self, change):
-        """ Invoked when the list of header files changes. """
-
-        for hfile in change.old:
-            for idx in range(self.childCount()):
-                itm = self.child(idx)
-                if itm.get_project_item() is hfile:
-                    self.removeChild(itm)
-                    break
-
-        for hfile in change.new:
-            HeaderFileItem(hfile, self)
-
-        self.sort()
+                "Needs scanning" if needs_scanning else '')
 
 
-class HeaderFileItem(ScannerItem):
-    """ HeaderFileItem is an internal class that represents a header file in
-    the scanner tool GUI.
-    """
+class _HeaderFileItem(_SourcesItem):
+    """ This class represents a header file in the sources tree. """
 
     def __init__(self, header_file, parent):
         """ Initialise the item. """
 
-        super().__init__(parent)
+        super().__init__(header_file, parent)
 
-        self._header_file = header_file
-
-        self._draw_status()
-
-        # Make the necessary observations so that we can keep the status up to
-        # date.
-        #observe('ignored', header_file, self.__on_ignored_changed)
-        #observe('module', header_file, self.__on_module_changed)
-        #observe('versions', header_file, self.__on_versions_changed)
-
-        #for hfile_version in header_file.versions:
-        #    observe('parse', hfile_version, self.__on_parse_changed)
-
-        # Draw the rest of the item.
         self.setText(SourcesWidget.NAME, header_file.name)
-
-    def update_working_version(self):
-        """ Update in the light of the working version. """
-
-        self._draw_status()
-
-    def get_project_item(self):
-        """ Return the item's corresponding project item. """
-
-        return self._header_file
 
     def get_working_file(self):
         """ Get the version of the header file corresponding to the working
@@ -281,7 +175,7 @@ class HeaderFileItem(ScannerItem):
         """
 
         working_version = self.treeWidget().working_version
-        hfile_versions = self._header_file.versions
+        hfile_versions = self.project_item.versions
 
         if working_version is None:
             working_file = None if len(hfile_versions) == 0 else hfile_versions[0]
@@ -294,6 +188,11 @@ class HeaderFileItem(ScannerItem):
 
         return working_file
 
+    def set_working_version(self, working_version):
+        """ Set the current working version. """
+
+        self._draw_status()
+
     def _draw_status(self):
         """ Draw the status column. """
 
@@ -305,16 +204,16 @@ class HeaderFileItem(ScannerItem):
         # Determine the status.
         expand = False
 
-        if self._header_file.ignored:
+        if self.project_item.ignored:
             status = "Ignored"
             self.setHidden(True)
-        elif len(self._header_file.versions) == 0:
+        elif len(self.project_item.versions) == 0:
             # This happens when all the versions containing this header file
             # have been deleted.
             status = "Unused"
             expand = True
             self.setHidden(False)
-        elif self._header_file.module == '':
+        elif self.project_item.module == '':
             status = "Needs assigning"
             expand = True
         elif working_file is not None and working_file.parse:
@@ -328,16 +227,19 @@ class HeaderFileItem(ScannerItem):
         if expand:
             self.parent().setExpanded(True)
 
+    # TODO
     def __on_ignored_changed(self, change):
         """ Invoked when a header file's ignored state changes. """
 
         self._draw_status()
 
+    # TODO
     def __on_module_changed(self, change):
         """ Invoked when a header file's assigned module changes. """
 
         self._draw_status()
 
+    # TODO
     def __on_versions_changed(self, change):
         """ Invoked when a header file's list of versions changes. """
 
@@ -350,6 +252,7 @@ class HeaderFileItem(ScannerItem):
 
         self._draw_status()
 
+    # TODO
     def __on_parse_changed(self, change):
         """ Invoked when a header file version's parse state changes. """
 
