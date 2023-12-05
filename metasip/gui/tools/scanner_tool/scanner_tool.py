@@ -63,6 +63,11 @@ class ScannerTool(ShellTool):
 
         self._gui.save_state(settings)
 
+    def set_header_directories_state(self):
+        """ Set the state of all header directories. """
+
+        self._gui.sources_widget.set_header_directories_state()
+
     def set_header_file(self, header_file, header_directory, showing_ignored):
         """ Set the current header file. """
 

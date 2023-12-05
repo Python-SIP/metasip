@@ -46,16 +46,17 @@ class SourcesWidget(QTreeWidget):
 
         settings.setValue('header', self.header().saveState())
 
+    def set_header_directories_state(self):
+        """ Set the state of all header directories. """
+
+        for header_directory_item in self._header_directory_items():
+            header_directory_item.set_status()
+
     def set_header_file_state(self, header_file):
         """ Set the state of a header file. """
 
-        # Find the corresponding item.
-        for header_directory_idx in range(self.topLevelItemCount()):
-            header_directory_item = self.topLevelItem(header_directory_idx)
-
-            for header_file_idx in range(header_directory_item.childCount()):
-                header_file_item = header_directory_item.child(header_file_idx)
-
+        for header_directory_item in self._header_file_directories():
+            for header_file_item in self._header_file_items(header_directory_item):
                 if header_file_item.project_item is header_file:
                     header_file_item.set_status()
                     return
@@ -63,17 +64,13 @@ class SourcesWidget(QTreeWidget):
     def set_header_files_visibility(self, header_directory, showing_ignored):
         """ Show or hide all the ignored files in a header directory. """
 
-        for header_directory_idx in range(self.topLevelItemCount()):
-            header_directory_item = self.topLevelItem(header_directory_idx)
-
+        for header_directory_item in self._header_directory_items():
             if header_directory_item.project_item is header_directory:
                 header_directory_item.showing_ignored = showing_ignored
 
-                for hfile_idx in range(header_directory_item.childCount()):
-                    hfile_itm = header_directory_item.child(hfile_idx)
-
-                    if hfile_itm.project_item.ignored:
-                        hfile_itm.setHidden(not showing_ignored)
+                for header_file_item in self._header_file_items(header_directory_item):
+                    if header_file_item.project_item.ignored:
+                        header_file_item.setHidden(not showing_ignored)
 
                 break
 
@@ -90,12 +87,10 @@ class SourcesWidget(QTreeWidget):
     def set_working_version(self, working_version):
         """ Set the current working version. """
 
-        for header_directory_idx in range(self.topLevelItemCount()):
-            header_directory_item = self.topLevelItem(header_directory_idx)
+        for header_directory_item in self._header_directory_items():
             header_directory_item.set_working_version(working_version)
 
-            for header_file_idx in range(header_directory_item.childCount()):
-                header_file_item = header_directory_item.child(header_file_idx)
+            for header_file_item in self._header_file_items(header_directory_item):
                 header_file_item.set_working_version(working_version)
 
     def _handle_selection_change(self, current, previous):
@@ -114,6 +109,18 @@ class SourcesWidget(QTreeWidget):
                 header_directory_item.project_item,
                 header_directory_item.showing_ignored)
 
+    def _header_directory_items(self):
+        """ A generator for the header directory items. """
+
+        for idx in range(self.topLevelItemCount()):
+            yield self.topLevelItem(idx)
+
+    def _header_file_items(self, header_directory_item):
+        """ A generator for the header file items of a header directory. """
+
+        for idx in range(header_directory_item.childCount()):
+            yield header_directory_item.child(idx)
+
 
 class _SourcesItem(QTreeWidgetItem):
     """ This is a base class for all items in the sources tree. """
@@ -124,12 +131,18 @@ class _SourcesItem(QTreeWidgetItem):
         super().__init__(parent)
 
         self.project_item = project_item
+        self.working_version = None
+
+    def set_status(self):
+        """ Set the status of the item. """
+
+        raise NotImplementedError
 
     def set_working_version(self, working_version):
         """ Set the current working versions. """
 
-        # This default implementation does nothing.
-        pass
+        self.working_version = working_version
+        self.set_status()
 
 
 class _HeaderDirectoryItem(_SourcesItem):
@@ -149,16 +162,16 @@ class _HeaderDirectoryItem(_SourcesItem):
 
         self.sortChildren(SourcesWidget.NAME, Qt.SortOrder.AscendingOrder)
 
-    def set_working_version(self, working_version):
-        """ Set the current working version. """
+    def set_status(self):
+        """ Set the status of the item. """
 
         self.setExpanded(False)
 
         # Draw the status column.
-        if working_version is None:
+        if self.working_version is None:
             needs_scanning = (len(self.project_item.scan) != 0)
         else:
-            needs_scanning = (working_version in self.project_item.scan)
+            needs_scanning = (self.working_version in self.project_item.scan)
 
         self.setText(SourcesWidget.STATUS,
                 "Needs scanning" if needs_scanning else '')
@@ -172,21 +185,14 @@ class _HeaderFileItem(_SourcesItem):
 
         super().__init__(header_file, parent)
 
-        self._working_version = None
-
         self.setText(SourcesWidget.NAME, header_file.name)
-
-    def set_working_version(self, working_version):
-        """ Set the current working version. """
-
-        self._working_version = working_version
-        self.set_status()
 
     def set_status(self):
         """ Set the status of the item. """
 
         hidden = False
         expand_parent = False
+        status = ''
 
         if self.project_item.ignored:
             status = "Ignored"
@@ -197,11 +203,11 @@ class _HeaderFileItem(_SourcesItem):
         else:
             working_header_file = self._get_working_header_file()
 
-            if working_header_file is not None and working_header_file.parse:
+            if working_header_file is None:
+                hidden = True
+            elif working_header_file.parse:
                 status = "Needs parsing"
                 expand_parent = True
-            else:
-                status = ''
 
         self.setText(SourcesWidget.STATUS, status)
         self.setHidden(hidden)
@@ -216,11 +222,11 @@ class _HeaderFileItem(_SourcesItem):
 
         header_file_versions = self.project_item.versions
 
-        if self._working_version is None:
+        if self.working_version is None:
             working_file = None if self.project_item.ignored else header_file_versions[0]
         else:
             for working_file in header_file_versions:
-                if working_file.version == self._working_version:
+                if working_file.version == self.working_version:
                     break
             else:
                 working_file = None

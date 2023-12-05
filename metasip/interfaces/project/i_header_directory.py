@@ -26,8 +26,10 @@ class IHeaderDirectory(Interface):
     # The optional glob-like filter to apply to file names.
     filefilter = Str()
 
-    # The suffix added to the input dirextory to create the full name of the
+    # The suffix added to the input directory to create the full name of the
     # directory.
+    # TODO: the way this is currently used it is platform-specific and needs to
+    # be platform neutral.
     inputdirsuffix = Str()
 
     # The name of the header directory.  This is used for display purposes.

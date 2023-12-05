@@ -281,7 +281,17 @@ class ControlWidget(QWidget):
     def _handle_reset_workflow(self):
         """ Handle the button to reset the workflow. """
 
-        # TODO
+        working_version = self._working_version.currentText()
+
+        for header_directory in self._tool.shell.project.headers:
+            if working_version == '':
+                header_directory.scan = ['']
+            elif working_version not in header_directory.scan:
+                header_directory.scan.append(working_version)
+
+        self._tool.set_header_directories_state()
+
+        self._tool.shell.dirty = True
 
     def _handle_scan_header_directory(self):
         """ Handle the button to scan a header directory. """
