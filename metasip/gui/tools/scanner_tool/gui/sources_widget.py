@@ -13,8 +13,6 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QAbstractItemView, QTreeWidget, QTreeWidgetItem
 
-from .....project import HeaderDirectory, HeaderFile
-
 
 class SourcesWidget(QTreeWidget):
     """ This class is a widget that implements a browser of the header files of
@@ -31,27 +29,10 @@ class SourcesWidget(QTreeWidget):
 
         self._tool = tool
 
-        self._root_item = None
-        self.working_version = None
-
         self.setHeaderLabels(("Name", "Status"))
 
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.currentItemChanged.connect(self._handle_selection_change)
-
-    # TODO
-    def hide_ignored(self, header_directory, hide):
-        """ Show or hide all the ignored files in a header directory. """
-
-        for itm in self._items():
-            if itm.project_item is header_directory:
-                for hfile_idx in range(itm.childCount()):
-                    hfile_itm = itm.child(hfile_idx)
-
-                    if hfile_itm.get_working_file() is not None and hfile_itm.text(SourcesWidget.STATUS) == "Ignored":
-                        hfile_itm.setHidden(hide)
-
-                break
 
     def restore_state(self, settings):
         """ Restore the widget's state. """
@@ -64,6 +45,37 @@ class SourcesWidget(QTreeWidget):
         """ Save the widget's state. """
 
         settings.setValue('header', self.header().saveState())
+
+    def set_header_file_state(self, header_file):
+        """ Set the state of a header file. """
+
+        # Find the corresponding item.
+        for header_directory_idx in range(self.topLevelItemCount()):
+            header_directory_item = self.topLevelItem(header_directory_idx)
+
+            for header_file_idx in range(header_directory_item.childCount()):
+                header_file_item = header_directory_item.child(header_file_idx)
+
+                if header_file_item.project_item is header_file:
+                    header_file_item.set_status()
+                    return
+
+    def set_header_files_visibility(self, header_directory, showing_ignored):
+        """ Show or hide all the ignored files in a header directory. """
+
+        for header_directory_idx in range(self.topLevelItemCount()):
+            header_directory_item = self.topLevelItem(header_directory_idx)
+
+            if header_directory_item.project_item is header_directory:
+                header_directory_item.showing_ignored = showing_ignored
+
+                for hfile_idx in range(header_directory_item.childCount()):
+                    hfile_itm = header_directory_item.child(hfile_idx)
+
+                    if hfile_itm.project_item.ignored:
+                        hfile_itm.setHidden(not showing_ignored)
+
+                break
 
     def set_project(self):
         """ Set the current project. """
@@ -78,40 +90,29 @@ class SourcesWidget(QTreeWidget):
     def set_working_version(self, working_version):
         """ Set the current working version. """
 
-        self.working_version = working_version
+        for header_directory_idx in range(self.topLevelItemCount()):
+            header_directory_item = self.topLevelItem(header_directory_idx)
+            header_directory_item.set_working_version(working_version)
 
-        for itm in self._items():
-            itm.set_working_version(working_version)
+            for header_file_idx in range(header_directory_item.childCount()):
+                header_file_item = header_directory_item.child(header_file_idx)
+                header_file_item.set_working_version(working_version)
 
     def _handle_selection_change(self, current, previous):
         """ Invoked when the item selection changes. """
 
         project_item = current.project_item
 
-        header_directory = None
-        header_file = None
-
-        if isinstance(project_item, HeaderDirectory):
-            header_directory = project_item
-        elif isinstance(project_item, HeaderFile):
-            header_directory = current.parent().project_item
+        if self.indexOfTopLevelItem(current) >= 0:
+            header_directory_item = current
+            header_file = None
+        else:
+            header_directory_item = current.parent()
             header_file = project_item
 
-        self._tool.set_header_file(header_file, header_directory)
-
-    def _items(self, root=None):
-        """ A generator for all the header items depth first. """
-
-        if root is None:
-            root = self.invisibleRootItem()
-
-        for i in range(root.childCount()):
-            child = root.child(i)
-
-            for itm in self._items(child):
-                yield itm
-
-            yield child
+        self._tool.set_header_file(header_file,
+                header_directory_item.project_item,
+                header_directory_item.showing_ignored)
 
 
 class _SourcesItem(QTreeWidgetItem):
@@ -139,6 +140,8 @@ class _HeaderDirectoryItem(_SourcesItem):
 
         super().__init__(header_directory, parent)
 
+        self.showing_ignored = False
+
         self.setText(SourcesWidget.NAME, header_directory.name)
 
         for header_file in header_directory.content:
@@ -148,6 +151,8 @@ class _HeaderDirectoryItem(_SourcesItem):
 
     def set_working_version(self, working_version):
         """ Set the current working version. """
+
+        self.setExpanded(False)
 
         # Draw the status column.
         if working_version is None:
@@ -167,93 +172,57 @@ class _HeaderFileItem(_SourcesItem):
 
         super().__init__(header_file, parent)
 
+        self._working_version = None
+
         self.setText(SourcesWidget.NAME, header_file.name)
 
-    def get_working_file(self):
-        """ Get the version of the header file corresponding to the working
-        version, if there is one.
+    def set_working_version(self, working_version):
+        """ Set the current working version. """
+
+        self._working_version = working_version
+        self.set_status()
+
+    def set_status(self):
+        """ Set the status of the item. """
+
+        hidden = False
+        expand_parent = False
+
+        if self.project_item.ignored:
+            status = "Ignored"
+            hidden = not self.parent().showing_ignored
+        elif self.project_item.module == '':
+            status = "Needs assigning"
+            expand_parent = True
+        else:
+            working_header_file = self._get_working_header_file()
+
+            if working_header_file is not None and working_header_file.parse:
+                status = "Needs parsing"
+                expand_parent = True
+            else:
+                status = ''
+
+        self.setText(SourcesWidget.STATUS, status)
+        self.setHidden(hidden)
+
+        if expand_parent:
+            self.parent().setExpanded(True)
+
+    def _get_working_header_file(self):
+        """ Return the version header file for the current working version if
+        any.
         """
 
-        working_version = self.treeWidget().working_version
-        hfile_versions = self.project_item.versions
+        header_file_versions = self.project_item.versions
 
-        if working_version is None:
-            working_file = None if len(hfile_versions) == 0 else hfile_versions[0]
+        if self._working_version is None:
+            working_file = None if self.project_item.ignored else header_file_versions[0]
         else:
-            for working_file in hfile_versions:
-                if working_file.version == working_version:
+            for working_file in header_file_versions:
+                if working_file.version == self._working_version:
                     break
             else:
                 working_file = None
 
         return working_file
-
-    def set_working_version(self, working_version):
-        """ Set the current working version. """
-
-        self._draw_status()
-
-    def _draw_status(self):
-        """ Draw the status column. """
-
-        # Get the working version of the file, if any.
-        working_file = self.get_working_file()
-
-        self.setHidden(working_file is None)
-
-        # Determine the status.
-        expand = False
-
-        if self.project_item.ignored:
-            status = "Ignored"
-            self.setHidden(True)
-        elif len(self.project_item.versions) == 0:
-            # This happens when all the versions containing this header file
-            # have been deleted.
-            status = "Unused"
-            expand = True
-            self.setHidden(False)
-        elif self.project_item.module == '':
-            status = "Needs assigning"
-            expand = True
-        elif working_file is not None and working_file.parse:
-            status = "Needs parsing"
-            expand = True
-        else:
-            status = ''
-
-        self.setText(SourcesWidget.STATUS, status)
-
-        if expand:
-            self.parent().setExpanded(True)
-
-    # TODO
-    def __on_ignored_changed(self, change):
-        """ Invoked when a header file's ignored state changes. """
-
-        self._draw_status()
-
-    # TODO
-    def __on_module_changed(self, change):
-        """ Invoked when a header file's assigned module changes. """
-
-        self._draw_status()
-
-    # TODO
-    def __on_versions_changed(self, change):
-        """ Invoked when a header file's list of versions changes. """
-
-        #for hfile_version in change.old:
-        #    observe('parse', hfile_version, self.__on_parse_changed,
-        #            remove=True)
-
-        #for hfile_version in change.new:
-        #    observe('parse', hfile_version, self.__on_parse_changed)
-
-        self._draw_status()
-
-    # TODO
-    def __on_parse_changed(self, change):
-        """ Invoked when a header file version's parse state changes. """
-
-        self._draw_status()

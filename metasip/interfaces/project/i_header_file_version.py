@@ -24,5 +24,6 @@ class IHeaderFileVersion(Interface):
     # This specifies if the header file needs parsing.
     parse = Bool(True)
 
-    # The version of the header file.
+    # The version of the header file.  This will be empty if the project does
+    # not have any versions defined.
     version = Str()

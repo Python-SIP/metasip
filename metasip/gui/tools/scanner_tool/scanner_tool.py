@@ -63,10 +63,22 @@ class ScannerTool(ShellTool):
 
         self._gui.save_state(settings)
 
-    def set_header_file(self, header_file, header_directory):
+    def set_header_file(self, header_file, header_directory, showing_ignored):
         """ Set the current header file. """
 
-        self._gui.control_widget.set_header_file(header_file, header_directory)
+        self._gui.control_widget.set_header_file(header_file, header_directory,
+                showing_ignored)
+
+    def set_header_file_state(self, header_file):
+        """ Set the state of a header file. """
+
+        self._gui.sources_widget.set_header_file_state(header_file)
+
+    def set_header_files_visibility(self, header_directory, showing_ignored):
+        """ Show or hide all the ignored files in a header directory. """
+
+        self._gui.sources_widget.set_header_files_visibility(header_directory,
+                showing_ignored)
 
     def set_working_version(self, working_version):
         """ Set the current working version. """

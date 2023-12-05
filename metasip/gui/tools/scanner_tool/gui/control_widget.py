@@ -10,9 +10,11 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout,
-        QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton,
-        QStyle, QToolButton, QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
+        QFormLayout, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
+        QPushButton, QStyle, QToolButton, QVBoxLayout, QWidget)
+
+from .....project import HeaderFileVersion
 
 
 class ControlWidget(QWidget):
@@ -73,6 +75,10 @@ class ControlWidget(QWidget):
         self._header_directory_form.addRow("Parser arguments",
                 self._header_parser_args)
 
+        self._showing_ignored = QCheckBox("Show ignored header files?",
+                stateChanged=self._handle_showing_ignored)
+        v_box.addWidget(self._showing_ignored)
+
         grid = QGridLayout()
         v_box.addLayout(grid)
 
@@ -84,21 +90,13 @@ class ControlWidget(QWidget):
                 clicked=self._handle_update_header_directory_properties)
         grid.addWidget(self._update_directory_button, 0, 1)
 
-        self._hide_button = QPushButton("Hide ignored",
-                clicked=self._handle_hide_ignored_header_files)
-        grid.addWidget(self._hide_button, 1, 0)
-
-        self._show_button = QPushButton("Show ignored",
-                clicked=self._handle_show_ignored_header_files)
-        grid.addWidget(self._show_button, 1, 1)
-
         self._new_button = QPushButton("New...",
                 clicked=self._handle_new_header_directory)
-        grid.addWidget(self._new_button, 2, 0)
+        grid.addWidget(self._new_button, 1, 0)
 
         self._delete_button = QPushButton("Delete...",
                 clicked=self._handle_delete_header_directory)
-        grid.addWidget(self._delete_button, 2, 1)
+        grid.addWidget(self._delete_button, 1, 1)
 
         group_box = QGroupBox("Header File")
         layout.addWidget(group_box)
@@ -112,11 +110,12 @@ class ControlWidget(QWidget):
         self._header_file_name = QLabel()
         self._header_file_form.addRow("Name", self._header_file_name)
 
+        self._ignored = QCheckBox(
+                stateChanged=self._handle_header_file_ignored)
+        self._header_file_form.addRow("Ignored?", self._ignored)
+
         self._module = QComboBox()
         self._header_file_form.addRow("Module", self._module)
-
-        self._ignored = QCheckBox()
-        self._header_file_form.addRow("Ignored?", self._ignored)
 
         grid = QGridLayout()
         v_box.addLayout(grid)
@@ -153,7 +152,7 @@ class ControlWidget(QWidget):
 
         settings.setValue('source_directory', self._source_directory.text())
 
-    def set_header_file(self, header_file, header_directory):
+    def set_header_file(self, header_file, header_directory, showing_ignored):
         """ Set the current header file. """
 
         self._header_file = header_file
@@ -164,6 +163,7 @@ class ControlWidget(QWidget):
             self._header_suffix.clear()
             self._header_filter.clear()
             self._header_parser_args.clear()
+            self._showing_ignored.setChecked(False)
 
             enabled = False
         else:
@@ -171,14 +171,14 @@ class ControlWidget(QWidget):
             self._header_suffix.setText(header_directory.inputdirsuffix)
             self._header_filter.setText(header_directory.filefilter)
             self._header_parser_args.setText(header_directory.parserargs)
+            self._showing_ignored.setChecked(showing_ignored)
 
             enabled = True
 
         self._enable_layout(self._header_directory_form, enabled)
+        self._showing_ignored.setEnabled(enabled)
         self._scan_button.setEnabled(enabled)
         self._update_directory_button.setEnabled(enabled)
-        self._hide_button.setEnabled(enabled)
-        self._show_button.setEnabled(enabled)
         self._delete_button.setEnabled(enabled)
 
         if header_file is None:
@@ -189,10 +189,8 @@ class ControlWidget(QWidget):
             enabled = False
         else:
             self._header_file_name.setText(header_file.name)
-            self._module.addItems(
-                    sorted([m.name for m in self._tool.shell.project.modules]))
-            self._module.setCurrentText(header_file.module)
             self._ignored.setChecked(header_file.ignored)
+            self._set_module_selector(header_file.ignored)
 
             enabled = True
 
@@ -203,7 +201,7 @@ class ControlWidget(QWidget):
     def set_project(self):
         """ Set the current project. """
 
-        self.set_header_file(None, None)
+        self.set_header_file(None, None, False)
         self._init_version_selector()
 
     def set_working_version(self, working_version):
@@ -254,17 +252,21 @@ class ControlWidget(QWidget):
     def _handle_browse_source_directory(self):
         """ Handle the button to browse for a source directory. """
 
-        # TODO
+        source_directory = QFileDialog.getExistingDirectory(self,
+                "Source directory", self._source_directory.text())
+
+        if source_directory:
+            self._source_directory.setText(source_directory)
 
     def _handle_delete_header_directory(self):
         """ Handle the button to delete a header directory. """
 
         # TODO
 
-    def _handle_hide_ignored_header_files(self):
-        """ Handle the button to hide ignored header files. """
+    def _handle_header_file_ignored(self, state):
+        """ Handle the checkbox to toggle an ignored header file. """
 
-        # TODO
+        self._set_module_selector(bool(state))
 
     def _handle_new_header_directory(self):
         """ Handle the button to add a header directory. """
@@ -286,10 +288,11 @@ class ControlWidget(QWidget):
 
         # TODO
 
-    def _handle_show_ignored_header_files(self):
-        """ Handle the button to show ignored header files. """
+    def _handle_showing_ignored(self, state):
+        """ Handle the checkbox to toggle ignored header files. """
 
-        # TODO
+        self._tool.set_header_files_visibility(self._header_directory,
+                bool(state))
 
     def _handle_working_version(self, new_working_version):
         """ Handle the user changing the working version. """
@@ -299,15 +302,62 @@ class ControlWidget(QWidget):
     def _handle_update_header_directory_properties(self):
         """ Handle the button to update a header directory's properties. """
 
-        # TODO
+        self._header_directory.filefilter = self._header_filter.text()
+        self._header_directory.inputdirsuffix = self._header_suffix.text()
+        self._header_directory.parserargs = self._header_parser_args.text()
+
+        self._tool.shell.dirty = True
 
     def _handle_update_header_file_properties(self):
         """ Handle the button to update a header file's properties. """
 
-        # TODO
+        header_file = self._header_file
+
+        header_file.ignored = self._ignored.isChecked()
+
+        # Make sure the rest is consistent.
+        if header_file.ignored:
+            header_file.module = ''
+            header_file.versions = []
+        else:
+            header_file.module = self._module.currentText()
+
+            # We may just have un-ignored the header file.
+            if len(header_file.versions) == 0:
+                header_file.versions.append(
+                        HeaderFileVersion(parse=True,
+                                version=self._working_version.currentText()))
+
+        self._tool.set_header_file_state(header_file)
+
+        self._tool.shell.dirty = True
 
     def _init_version_selector(self):
         """ Initialise the version selector. """
 
+        blocked = self._working_version.blockSignals(True)
         self._working_version.clear()
         self._working_version.addItems(self._tool.shell.project.versions)
+        self._working_version.blockSignals(blocked)
+
+    def _set_module_selector(self, ignored):
+        """ Set the module selector for a header file. """
+
+        self._module.clear()
+
+        if not ignored:
+            self._module.addItems(
+                    sorted([m.name for m in self._tool.shell.project.modules]))
+
+            # See if we have just un-ignored the file.
+            module_name = self._header_file.module
+
+            if len(self._header_file.versions) == 0:
+                # If there is a module with the same name of the header
+                # directory then assume that's where the file is going.
+                for module in self._tool.shell.project.modules:
+                    if module.name == self._header_directory.name:
+                        module_name = module.name
+                        break
+
+            self._module.setCurrentText(module_name)

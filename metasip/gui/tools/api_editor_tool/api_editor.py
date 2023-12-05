@@ -383,6 +383,8 @@ class ProjectItem(EditorItem):
 
         self._project = project
 
+        # TODO - use the name of the root module instead. If there is none then
+        # omit this root item.  Get rid of descriptive_name() etc.
         self.setText(ApiEditor.NAME, project.descriptive_name())
         observe('name', project,
                 lambda c: self.setText(ApiEditor.NAME,
