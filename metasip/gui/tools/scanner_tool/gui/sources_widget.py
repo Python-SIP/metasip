@@ -34,12 +34,19 @@ class SourcesWidget(QTreeWidget):
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.currentItemChanged.connect(self._handle_selection_change)
 
-    def new_header_directory(self, header_directory, working_version):
-        """ A new header directory has been added. """
+    def header_directory_added(self, header_directory, working_version):
+        """ A header directory has been added. """
 
         header_directory_item = _HeaderDirectoryItem(header_directory, self)
         header_directory_item.set_working_version(working_version)
         self._sort_header_directories()
+
+    def header_directory_removed(self, header_directory):
+        """ A header directory has been removed. """
+
+        header_directory_item = self._find_header_directory_item(
+                header_directory)
+        self.takeTopLevelItem(self.indexOfTopLevelItem(header_directory_item))
 
     def restore_state(self, settings):
         """ Restore the widget's state. """
@@ -71,15 +78,14 @@ class SourcesWidget(QTreeWidget):
     def set_header_files_visibility(self, header_directory, showing_ignored):
         """ Show or hide all the ignored files in a header directory. """
 
-        for header_directory_item in self._header_directory_items():
-            if header_directory_item.project_item is header_directory:
-                header_directory_item.showing_ignored = showing_ignored
+        header_directory_item = self._find_header_directory_item(
+                header_directory)
 
-                for header_file_item in self._header_file_items(header_directory_item):
-                    if header_file_item.project_item.ignored:
-                        header_file_item.setHidden(not showing_ignored)
+        header_directory_item.showing_ignored = showing_ignored
 
-                break
+        for header_file_item in self._header_file_items(header_directory_item):
+            if header_file_item.project_item.ignored:
+                header_file_item.setHidden(not showing_ignored)
 
     def set_project(self):
         """ Set the current project. """
@@ -99,6 +105,16 @@ class SourcesWidget(QTreeWidget):
 
             for header_file_item in self._header_file_items(header_directory_item):
                 header_file_item.set_working_version(working_version)
+
+    def _find_header_directory_item(self, header_directory):
+        """ Return the header directory item for a header directory. """
+
+        for header_directory_item in self._header_directory_items():
+            if header_directory_item.project_item is header_directory:
+                return header_directory_item
+
+        # This should never happen.
+        return None
 
     def _handle_selection_change(self, current, previous):
         """ Invoked when the item selection changes. """

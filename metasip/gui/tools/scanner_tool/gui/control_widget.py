@@ -12,7 +12,8 @@
 
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
         QFormLayout, QGridLayout, QGroupBox, QHBoxLayout, QInputDialog, QLabel,
-        QLineEdit, QPushButton, QStyle, QToolButton, QVBoxLayout, QWidget)
+        QLineEdit, QMessageBox, QPushButton, QStyle, QToolButton, QVBoxLayout,
+        QWidget)
 
 from .....project import HeaderDirectory, HeaderFileVersion
 
@@ -253,7 +254,7 @@ class ControlWidget(QWidget):
         """ Handle the button to browse for a source directory. """
 
         source_directory = QFileDialog.getExistingDirectory(self,
-                "Source directory", self._source_directory.text())
+                "Source Directory", self._source_directory.text())
 
         if source_directory:
             self._source_directory.setText(source_directory)
@@ -261,7 +262,13 @@ class ControlWidget(QWidget):
     def _handle_delete_header_directory(self):
         """ Handle the button to delete a header directory. """
 
-        # TODO
+        button = QMessageBox.question(self, "Delete Header Directory",
+                "Are you sure you want to delete this header directory?")
+
+        if button is QMessageBox.StandardButton.Yes:
+            self._tool.shell.project.headers.remove(self._header_directory)
+            self._tool.header_directory_removed(self._header_directory)
+            self._tool.shell.dirty = True
 
     def _handle_header_file_ignored(self, state):
         """ Handle the checkbox to toggle an ignored header file. """
@@ -271,7 +278,7 @@ class ControlWidget(QWidget):
     def _handle_new_header_directory(self):
         """ Handle the button to add a header directory. """
 
-        name, ok = QInputDialog.getText(self, "New header directory",
+        name, ok = QInputDialog.getText(self, "New Header Directory",
                 "Descriptive name")
 
         if ok:
@@ -279,7 +286,8 @@ class ControlWidget(QWidget):
             header_directory = HeaderDirectory(name=name,
                     scan=[working_version])
             self._tool.shell.project.headers.append(header_directory)
-            self._tool.new_header_directory(header_directory, working_version)
+            self._tool.header_directory_added(header_directory,
+                    working_version)
             self._tool.shell.dirty = True
 
     def _handle_parse_header_file(self):

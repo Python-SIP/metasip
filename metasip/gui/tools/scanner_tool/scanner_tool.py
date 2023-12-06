@@ -41,6 +41,17 @@ class ScannerTool(ShellTool):
         elif event_type is EventType.VERSION_RENAME:
             self._gui.control_widget.version_rename(*event_arg)
 
+    def header_directory_added(self, header_directory, working_version):
+        """ A header directory has been added. """
+
+        self._gui.sources_widget.header_directory_added(header_directory,
+                working_version)
+
+    def header_directory_removed(self, header_directory):
+        """ A header directory has been removed. """
+
+        self._gui.sources_widget.header_directory_removed(header_directory)
+
     @property
     def location(self):
         """ Get the location of the tool in the shell. """
@@ -52,12 +63,6 @@ class ScannerTool(ShellTool):
         """ Get the tool's name. """
 
         return 'metasip.tool.scanner'
-
-    def new_header_directory(self, header_directory, working_version):
-        """ A new header directory has been added. """
-
-        self._gui.sources_widget.new_header_directory(header_directory,
-                working_version)
 
     def restore_state(self, settings):
         """ Restore the tool's state from the settings. """
