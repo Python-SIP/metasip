@@ -11,10 +11,10 @@
 
 
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
-        QFormLayout, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-        QPushButton, QStyle, QToolButton, QVBoxLayout, QWidget)
+        QFormLayout, QGridLayout, QGroupBox, QHBoxLayout, QInputDialog, QLabel,
+        QLineEdit, QPushButton, QStyle, QToolButton, QVBoxLayout, QWidget)
 
-from .....project import HeaderFileVersion
+from .....project import HeaderDirectory, HeaderFileVersion
 
 
 class ControlWidget(QWidget):
@@ -271,7 +271,16 @@ class ControlWidget(QWidget):
     def _handle_new_header_directory(self):
         """ Handle the button to add a header directory. """
 
-        # TODO
+        name, ok = QInputDialog.getText(self, "New header directory",
+                "Descriptive name")
+
+        if ok:
+            working_version = self._working_version.currentText()
+            header_directory = HeaderDirectory(name=name,
+                    scan=[working_version])
+            self._tool.shell.project.headers.append(header_directory)
+            self._tool.new_header_directory(header_directory, working_version)
+            self._tool.shell.dirty = True
 
     def _handle_parse_header_file(self):
         """ Handle the button to parse a header file. """

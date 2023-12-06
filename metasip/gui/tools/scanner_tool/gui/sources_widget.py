@@ -34,6 +34,13 @@ class SourcesWidget(QTreeWidget):
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.currentItemChanged.connect(self._handle_selection_change)
 
+    def new_header_directory(self, header_directory, working_version):
+        """ A new header directory has been added. """
+
+        header_directory_item = _HeaderDirectoryItem(header_directory, self)
+        header_directory_item.set_working_version(working_version)
+        self._sort_header_directories()
+
     def restore_state(self, settings):
         """ Restore the widget's state. """
 
@@ -79,10 +86,10 @@ class SourcesWidget(QTreeWidget):
 
         self.clear()
 
-        for hdir in self._tool.shell.project.headers:
-            _HeaderDirectoryItem(hdir, self)
+        for header_directory in self._tool.shell.project.headers:
+            _HeaderDirectoryItem(header_directory, self)
 
-        self.sortItems(SourcesWidget.NAME, Qt.SortOrder.AscendingOrder)
+        self._sort_header_directories()
 
     def set_working_version(self, working_version):
         """ Set the current working version. """
@@ -120,6 +127,11 @@ class SourcesWidget(QTreeWidget):
 
         for idx in range(header_directory_item.childCount()):
             yield header_directory_item.child(idx)
+
+    def _sort_header_directories(self):
+        """ Sort the header directoroes in order. """
+
+        self.sortItems(SourcesWidget.NAME, Qt.SortOrder.AscendingOrder)
 
 
 class _SourcesItem(QTreeWidgetItem):

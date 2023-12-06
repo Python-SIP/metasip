@@ -53,6 +53,12 @@ class ScannerTool(ShellTool):
 
         return 'metasip.tool.scanner'
 
+    def new_header_directory(self, header_directory, working_version):
+        """ A new header directory has been added. """
+
+        self._gui.sources_widget.new_header_directory(header_directory,
+                working_version)
+
     def restore_state(self, settings):
         """ Restore the tool's state from the settings. """
 
