@@ -41,12 +41,51 @@ class SourcesWidget(QTreeWidget):
         header_directory_item.set_working_version(working_version)
         self._sort_header_directories()
 
+    def header_directories_status(self, header_directory):
+        """ The status of a header directory has changed. """
+
+        header_directory_item = self._find_header_directory_item(
+                header_directory)
+        header_directory_item.set_status()
+
     def header_directory_removed(self, header_directory):
         """ A header directory has been removed. """
 
         header_directory_item = self._find_header_directory_item(
                 header_directory)
-        self.takeTopLevelItem(self.indexOfTopLevelItem(header_directory_item))
+        header_directory_index = self.indexOfTopLevelItem(
+                header_directory_item)
+        self.takeTopLevelItem(header_directory_index)
+
+    def header_file_added(self, header_file, header_directory, working_version):
+        """ A header file has been added. """
+
+        header_directory_item = self._find_header_directory_item(
+                header_directory)
+        header_file_item = _HeaderFileItem(header_file, header_directory_item)
+        header_file_item.set_working_version(working_version)
+        header_directory_item.sort_header_files()
+
+    def header_file_status(self, header_file):
+        """ The status of a header file has changed. """
+
+        header_file_item = self._find_header_file_item(header_file)
+        header_file_item.set_status()
+
+    def header_file_removed(self, header_file):
+        """ A header file has been removed. """
+
+        header_file_item = self._find_header_file_item(header_file)
+
+        if len(header_file.versions) == 0:
+            # The header files doesn't exist in any version.
+            header_directory_item = header_file_item.parent()
+            header_file_index = header_directory_item.indexOfChild(
+                    header_file_item)
+            header_directory_item.takeChild(header_item_index)
+        else:
+            # The header file still exists in other versions.
+            header_file_item.setHidden(True)
 
     def restore_state(self, settings):
         """ Restore the widget's state. """
@@ -59,21 +98,6 @@ class SourcesWidget(QTreeWidget):
         """ Save the widget's state. """
 
         settings.setValue('header', self.header().saveState())
-
-    def set_header_directories_state(self):
-        """ Set the state of all header directories. """
-
-        for header_directory_item in self._header_directory_items():
-            header_directory_item.set_status()
-
-    def set_header_file_state(self, header_file):
-        """ Set the state of a header file. """
-
-        for header_directory_item in self._header_file_directories():
-            for header_file_item in self._header_file_items(header_directory_item):
-                if header_file_item.project_item is header_file:
-                    header_file_item.set_status()
-                    return
 
     def set_header_files_visibility(self, header_directory, showing_ignored):
         """ Show or hide all the ignored files in a header directory. """
@@ -112,6 +136,17 @@ class SourcesWidget(QTreeWidget):
         for header_directory_item in self._header_directory_items():
             if header_directory_item.project_item is header_directory:
                 return header_directory_item
+
+        # This should never happen.
+        return None
+
+    def _find_header_file_item(self, header_file):
+        """ Return the header file item for a header file. """
+
+        for header_directory_item in self._header_directory_items():
+            for header_file_item in self._header_file_items(header_directory_item):
+                if header_file_item.project_item is header_file:
+                    return header_file_item
 
         # This should never happen.
         return None
@@ -188,7 +223,7 @@ class _HeaderDirectoryItem(_SourcesItem):
         for header_file in header_directory.content:
             _HeaderFileItem(header_file, self)
 
-        self.sortChildren(SourcesWidget.NAME, Qt.SortOrder.AscendingOrder)
+        self.sort_header_files()
 
     def set_status(self):
         """ Set the status of the item. """
@@ -203,6 +238,11 @@ class _HeaderDirectoryItem(_SourcesItem):
 
         self.setText(SourcesWidget.STATUS,
                 "Needs scanning" if needs_scanning else '')
+
+    def sort_header_files(self):
+        """ Sort the header files in the directory. """
+
+        self.sortChildren(SourcesWidget.NAME, Qt.SortOrder.AscendingOrder)
 
 
 class _HeaderFileItem(_SourcesItem):

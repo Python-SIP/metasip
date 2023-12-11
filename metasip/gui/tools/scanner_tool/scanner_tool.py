@@ -47,10 +47,31 @@ class ScannerTool(ShellTool):
         self._gui.sources_widget.header_directory_added(header_directory,
                 working_version)
 
+    def header_directories_status(self, header_file):
+        """ The status of a header directory has changed. """
+
+        self._gui.sources_widget.header_directory_status()
+
     def header_directory_removed(self, header_directory):
         """ A header directory has been removed. """
 
         self._gui.sources_widget.header_directory_removed(header_directory)
+
+    def header_file_added(self, header_file, header_directory, working_version):
+        """ A header file has been added. """
+
+        self._gui.sources_widget.header_file_added(header_file,
+                header_directory, working_version)
+
+    def header_file_status(self, header_file):
+        """ The status of a header file has changed. """
+
+        self._gui.sources_widget.header_file_status(header_file)
+
+    def header_file_removed(self, header_file):
+        """ A header file has been removed. """
+
+        self._gui.sources_widget.header_directory_removed(header_file)
 
     @property
     def location(self):
@@ -74,21 +95,11 @@ class ScannerTool(ShellTool):
 
         self._gui.save_state(settings)
 
-    def set_header_directories_state(self):
-        """ Set the state of all header directories. """
-
-        self._gui.sources_widget.set_header_directories_state()
-
     def set_header_file(self, header_file, header_directory, showing_ignored):
         """ Set the current header file. """
 
         self._gui.control_widget.set_header_file(header_file, header_directory,
                 showing_ignored)
-
-    def set_header_file_state(self, header_file):
-        """ Set the state of a header file. """
-
-        self._gui.sources_widget.set_header_file_state(header_file)
 
     def set_header_files_visibility(self, header_directory, showing_ignored):
         """ Show or hide all the ignored files in a header directory. """

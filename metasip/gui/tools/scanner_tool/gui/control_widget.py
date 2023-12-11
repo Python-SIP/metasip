@@ -10,12 +10,16 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+import glob
+import hashlib
+import os
+
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
         QFormLayout, QGridLayout, QGroupBox, QHBoxLayout, QInputDialog, QLabel,
         QLineEdit, QMessageBox, QPushButton, QStyle, QToolButton, QVBoxLayout,
         QWidget)
 
-from .....project import HeaderDirectory, HeaderFileVersion
+from .....project import HeaderDirectory, HeaderFile, HeaderFileVersion
 
 
 class ControlWidget(QWidget):
@@ -306,14 +310,83 @@ class ControlWidget(QWidget):
             elif working_version not in header_directory.scan:
                 header_directory.scan.append(working_version)
 
-        self._tool.set_header_directories_state()
+            self._tool.header_directory_status(header_directory)
 
         self._tool.shell.dirty = True
 
     def _handle_scan_header_directory(self):
         """ Handle the button to scan a header directory. """
 
-        # TODO
+        shell = self._tool.shell
+        project = shell.project
+        header_directory = self._header_directory
+
+        source_directory = os.path.abspath(self._source_directory.text())
+
+        if header_directory.inputdirsuffix != '':
+            source_directory = os.path.join(source_directory,
+                    header_directory.inputdirsuffix)
+
+        shell.log(f"Scanning header directory '{source_directory}'")
+
+        if header_directory.filefilter != '':
+            source_directory = os.path.join(source_directory,
+                    header_directory.filefilter)
+
+        # Save the files that were in the directory.
+        saved = list(header_directory.content)
+
+        for header_path in glob.iglob(source_directory):
+            if not os.path.isfile(header_path):
+                continue
+
+            if os.access(header_path, os.R_OK):
+                header_file = self._scan_header_file(header_path)
+
+                for saved_header_file in saved:
+                    if saved_header_file is header_file:
+                        saved.remove(saved_header_file)
+                        break
+                else:
+                    # It's a new header file.
+                    header_directory.content.append(header_file)
+                    shell.dirty = True
+
+                shell.log(f"Scanned '{header_path}'")
+            else:
+                shell.log(f"Skipping unreadable header file '{header_path}'")
+
+        # Anything left in the saved list has gone missing or was already
+        # missing.
+        working_version = self._working_version.currentText()
+
+        for header_file in saved:
+            for header_file_version in header_file.versions:
+                if header_file_version.version == working_version:
+                    header_file.versions.remove(header_file_version)
+
+                    # If there is only one version left then remove the file
+                    # itself.
+                    if len(header_file.versions) == 0:
+                        header_directory.content.remove(header_file)
+                        self._remove_from_module(header_file)
+                    else:
+                        # FIXME: Go through the corresponding SipFile and make
+                        # sure that all top-level items have an upper version
+                        # set.
+                        pass
+
+                    shell.log(f"'{header_file.name}' is no longer in the header directory")
+
+                    self._tool.header_file_removed(header_file)
+                    shell.dirty = True
+                    break
+
+        # This version no longer needs scanning.
+        if working_version in header_directory.scan:
+            header_directory.scan.remove(working_version)
+            self._tool.header_directory_status(header_directory)
+            shell.dirty = True
 
     def _handle_showing_ignored(self, state):
         """ Handle the checkbox to toggle ignored header files. """
@@ -355,8 +428,7 @@ class ControlWidget(QWidget):
                         HeaderFileVersion(parse=True,
                                 version=self._working_version.currentText()))
 
-        self._tool.set_header_file_state(header_file)
-
+        self._tool.header_file_status(header_file)
         self._tool.shell.dirty = True
 
     def _init_version_selector(self):
@@ -366,6 +438,181 @@ class ControlWidget(QWidget):
         self._working_version.clear()
         self._working_version.addItems(self._tool.shell.project.versions)
         self._working_version.blockSignals(blocked)
+
+    @classmethod
+    def _read_header(cls, name):
+        """ Read the contents of a header file.  Handle the special case of the
+        file just being a #include redirect to another header file.
+        """
+
+        contents, actual_name, encoding = cls._read_single_header(name)
+        while actual_name != name:
+            name = actual_name
+            contents, actual_name, encoding = cls._read_single_header(name)
+
+        return contents, actual_name, encoding
+
+    @staticmethod
+    def _read_single_header(name):
+        """ Read the contents of a single header file. """
+
+        with open(name, 'r') as f:
+            contents = f.read()
+            encoding = f.encoding
+
+        lines = contents.strip().split('\n')
+        if len(lines) == 1:
+            words = lines[0].split()
+            if len(words) == 2 and words[0] == '#include':
+                include_name = words[1]
+                if include_name.startswith('".') and include_name.endswith('"'):
+                    name = os.path.dirname(name) + '/' + include_name[1:-1]
+
+        return contents, name, encoding
+
+    def _remove_from_module(self, header_file):
+        """ Handle the removal of a header file from the project. """
+
+        # Find the corresponding .sip file.
+        for mod in self.current_project.modules:
+            if mod.name == header_file.module:
+                for sip_file in mod.content:
+                    if sip_file.name == header_file.name:
+                        for code in list(sip_file.content):
+                            if code.status == 'ignored':
+                                # Remove any ignored API elements.
+                                sip_file.content.remove(code)
+                            else:
+                                # Mark any non-ignored API elements so that the
+                                # user can decide what to do.
+                                code.status = 'removed'
+
+    def _scan_header_file(self, header_path):
+        """ Scan a header file and return the header file instance. """
+
+        shell = self._tool.shell
+
+        # Calculate the MD5 signature ignoring any comments.  Note that nested
+        # C style comments aren't handled very well.
+        m = hashlib.md5()
+
+        src, _, encoding = self._read_header(header_path)
+
+        lnr = 1
+        state = 'copy'
+        copy = ''
+        idx = 0
+
+        for ch in src:
+            # Get the previous character.
+            if idx > 0:
+                prev = src[idx - 1]
+            else:
+                prev = ''
+
+            idx += 1
+
+            # Line numbers must be accurate.
+            if ch == '\n':
+                lnr += 1
+
+            # Handle the end of a C style comment.
+            if state == 'ccmnt':
+                if ch == '/' and prev == '*':
+                    state = 'copy'
+
+                continue
+
+            # Handle the end of a C++ style comment.
+            if state == 'cppcmnt':
+                if ch == '\n':
+                    state = 'copy'
+
+                continue
+
+            # We must be in the copy state.
+
+            if ch == '*' and prev == '/':
+                # The start of a C style comment.
+                state = 'ccmnt'
+                continue
+
+            if ch == '/' and prev == '/':
+                # The start of a C++ style comment.
+                state = 'cppcmnt'
+                continue
+
+            # At this point we know the previous character wasn't part of a
+            # comment.
+            if prev:
+                m.update(prev.encode(encoding))
+
+        # Note that we didn't add the last character, but it would normally be
+        # a newline.
+        md5 = m.hexdigest()
+
+        # See if we already know about the file.
+        header_directory = self._header_directory
+        header_file_name = os.path.basename(header_path)
+
+        for header_file in header_directory.content:
+            if header_file.name == header_file_name:
+                new_header_file = False
+                break
+        else:
+            # It's a new file.
+            header_file = HeaderFile(name=header_file_name)
+            new_header_file = True
+
+        # See if we already know about this version.
+        working_version = self._working_version.currentText()
+
+        for header_file_version in header_file.versions:
+            if header_file_version.version == working_version:
+                # See if the version's contents have changed.
+                if header_file_version.md5 != md5:
+                    header_file_version.md5 = md5
+                    header_file_version.parse = True
+                    self._tool.header_file_status(header_file)
+                    shell.dirty = True
+
+                break
+        else:
+            # It's a new version.
+            header_file_version = HeaderFileVersion(version=working_version,
+                    md5=md5)
+            header_file.versions.append(header_file_version)
+
+            # Check that the project has versions.
+            if len(shell.project.versions) != 0:
+                # Find the immediately preceding version if there is one.
+                versions_sorted = sorted(header_file.versions,
+                        key=lambda v: shell.project.versions.index(v.version))
+
+                prev_md5 = ''
+                prev_parse = True
+                for hfv in versions_sorted:
+                    if hfv.version == working_version:
+                        break
+
+                    prev_md5 = hfv.md5
+                    prev_parse = hfv.parse
+
+                if prev_md5 == md5:
+                    header_file_version.parse = prev_parse
+            else:
+                # It must be a new file of an unversioned project.
+                header_file_version.parse = True
+
+            if new_header_file:
+                self._tool.header_file_added(header_file, header_directory,
+                        working_version)
+            else:
+                self._tool.header_file_status(header_file)
+
+            shell.dirty = True
+
+        return header_file
 
     def _set_module_selector(self, ignored):
         """ Set the module selector for a header file. """
@@ -379,7 +626,7 @@ class ControlWidget(QWidget):
             # See if we have just un-ignored the file.
             module_name = self._header_file.module
 
-            if len(self._header_file.versions) == 0:
+            if module_name == '':
                 # If there is a module with the same name of the header
                 # directory then assume that's where the file is going.
                 for module in self._tool.shell.project.modules:
