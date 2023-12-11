@@ -49,7 +49,8 @@ class ControlWidget(QWidget):
         h_box = QHBoxLayout()
         form.addRow("Source directory", h_box)
 
-        self._source_directory = QLineEdit()
+        self._source_directory = QLineEdit(
+                textChanged=self._configure_parse_button)
         h_box.addWidget(self._source_directory)
 
         button = QToolButton(
@@ -200,7 +201,7 @@ class ControlWidget(QWidget):
             enabled = True
 
         self._enable_layout(self._header_file_form, enabled)
-        self._parse_button.setEnabled(enabled)
+        self._configure_parse_button()
         self._update_file_button.setEnabled(enabled)
 
     def set_project(self):
@@ -244,6 +245,15 @@ class ControlWidget(QWidget):
 
         index = self._working_version.findText(old_name)
         self._working_version.setItemText(index, new_name)
+
+    def _configure_parse_button(self):
+        """ Configure the 'Parse' button. """
+
+        # The button is enabled if there is a source directory and the selected
+        # header file is assigned to a module.
+        enabled = (self._source_directory.text() != '' and self._header_file is not None and self._header_file.module != '')
+
+        self._parse_button.setEnabled(enabled)
 
     @staticmethod
     def _enable_layout(layout, enabled):
@@ -428,6 +438,7 @@ class ControlWidget(QWidget):
                         HeaderFileVersion(parse=True,
                                 version=self._working_version.currentText()))
 
+        self._configure_parse_button()
         self._tool.header_file_status(header_file)
         self._tool.shell.dirty = True
 
