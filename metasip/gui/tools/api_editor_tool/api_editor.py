@@ -61,6 +61,16 @@ class ApiEditor(QTreeWidget):
 
         self.dragged = None
 
+    def module_add_delete(self):
+        """ Handle a change in the list of modules. """
+
+        self._project_item.module_add_delete()
+
+    def module_rename(self, old_name, new_name):
+        """ A module has been renamed. """
+
+        self._project_item.module_rename(old_name, new_name)
+
     def restore_state(self, settings):
         """ Restore the widget's state. """
 
@@ -390,8 +400,6 @@ class ProjectItem(EditorItem):
             ModuleItem(mod, self.shell, self, progress, so_far)
             so_far += len(mod.content)
 
-        observe('modules', project, self.__on_modules_changed)
-
         self._sort()
 
     def get_menu(self, siblings):
@@ -408,6 +416,40 @@ class ProjectItem(EditorItem):
 
         return [("Add Ignored Namespace...", self._ignorednamespaceSlot),
                 ("Properties...", self._handle_project_properties)]
+
+    def module_add_delete(self):
+        """ Handle a change in the list of modules. """
+
+        modules = list(self.shell.project.modules)
+        removed_module_items = []
+
+        for module_item_index in range(self.childCount()):
+            module_item = self.child(module_item_index)
+            if module_item.module in modules:
+                # The module is still present.
+                modules.remove(module_item.module)
+            else:
+                # The module has gone.
+                removed_module_items.append(module_item)
+
+        # It is now safe to actually remove the items.
+        for module_item in removed_module_items:
+            self.removeChild(module_item)
+
+        # Anything left is new.
+        for module in modules:
+            ModuleItem(module, self.shell, self)
+
+        self._sort()
+
+    def module_rename(self, old_name, new_name):
+        """ A module has been renamed. """
+
+        for module_item_index in range(self.childCount()):
+            module_item = self.child(module_item_index)
+            if module_item.text(ApiEditor.NAME) == old_name:
+                module_item.setText(ApiEditor.NAME, new_name)
+                break
 
     def root_module_updated(self):
         """ The name of the root module has been updated. """
@@ -452,21 +494,6 @@ class ProjectItem(EditorItem):
 
         if dialog.update():
             self.shell.dirty = True
-
-    def __on_modules_changed(self, change):
-        """ Invoked when the list of modules changes. """
-
-        for mod in change.old:
-            for idx in range(self.childCount()):
-                itm = self.child(idx)
-                if itm.module is mod:
-                    self.removeChild(itm)
-                    break
-
-        for mod in change.new:
-            ModuleItem(mod, self)
-
-        self._sort()
 
     def _sort(self):
         """ Sort the modules. """

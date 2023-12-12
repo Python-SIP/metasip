@@ -32,7 +32,9 @@ class ScannerTool(ShellTool):
     def event(self, event_type, event_arg):
         """ Reimplemented to handle project-specific events. """
 
-        if event_type is EventType.MODULE_RENAME:
+        if event_type is EventType.MODULE_ADD_DELETE:
+            self._gui.control_widget.module_add_delete()
+        elif event_type is EventType.MODULE_RENAME:
             self._gui.control_widget.module_rename(*event_arg)
         elif event_type is EventType.PROJECT_NEW:
             self._set_project()

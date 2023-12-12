@@ -145,6 +145,12 @@ class ControlWidget(QWidget):
 
         layout.addStretch()
 
+    def module_add_delete(self):
+        """ Handle a change in the list of modules. """
+
+        if self._header_file is not None:
+            self._set_module_selector(self._header_file.ignored)
+
     def module_rename(self, old_name, new_name):
         """ A module has been renamed. """
 

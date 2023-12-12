@@ -26,7 +26,7 @@ def init_module_selector(selector, project):
 def validate_module_name(module_name, project, dialog):
     """ Validate a module name and return True if it is valid. """
 
-    message = validate_identifier(module, "module")
+    message = validate_identifier(module_name, "module")
     if message is None:
         for module in project.modules:
             if module.name == module_name:
