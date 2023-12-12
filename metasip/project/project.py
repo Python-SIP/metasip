@@ -446,21 +446,6 @@ class Project(Model):
 
         return True
 
-    def descriptive_name(self):
-        """ Return the descriptive name of the project. """
-
-        if self.name == '':
-            return "Unnamed"
-
-        # Remove the standard extension, but leave any non-standard one in
-        # place.
-        (root, ext) = os.path.splitext(self.name)
-
-        if ext != ".msp":
-            root = self.name
-
-        return os.path.basename(root)
-
     def generate_module(self, module, output_dir, latest_sip=True):
         """ Generate the output for a module. """
 

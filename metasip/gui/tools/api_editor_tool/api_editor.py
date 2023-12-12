@@ -43,12 +43,13 @@ class ApiEditor(QTreeWidget):
     # The column numbers.
     (NAME, ACCESS, STATUS, VERSIONS) = range(4)
 
-    def __init__(self, tool):
+    def __init__(self, shell):
         """ Initialise the editor. """
 
         super().__init__()
 
-        self._tool = tool
+        self._shell = shell
+        self._project_item = None
 
         # Tweak the tree widget.
         self.setHeaderLabels(("Name", "Access", "Status", "Versions"))
@@ -72,12 +73,12 @@ class ApiEditor(QTreeWidget):
 
         self.clear()
 
-        ProjectItem(self._tool.shell.project, self)
+        self._project_item = ProjectItem(self._shell, self)
 
-    def set_dirty(self):
-        """ Mark the project as having been modified. """
+    def root_module_updated(self):
+        """ The name of the root module has been updated. """
 
-        self._tool.shell.dirty = True
+        self._project_item.root_module_updated()
 
     def save_state(self, settings):
         """ Save the widget's state. """
@@ -250,8 +251,7 @@ class ApiEditor(QTreeWidget):
 
         prj_item is the part of the project.
         """
-        self._updateArgs(
-                self._tool.shell.project.acceptArgumentNames(prj_item))
+        self._updateArgs(self._shell.project.acceptArgumentNames(prj_item))
 
     @staticmethod
     def _updateArgs(updated_args):
@@ -331,16 +331,8 @@ _item_id = QTreeWidgetItem.ItemType.UserType
 class EditorItem(QTreeWidgetItem):
     """ This class represents an item in the API editor. """
 
-    def __init__(self, parent, after=None):
-        """ Initialise the item instance.
-
-        :param parent:
-            is the parent.
-        :param after:
-            is the sibling after which this should be placed.  If it is
-            ``None`` then it should be placed at the end.  If it is the parent
-            then it should be placed at the start.
-        """
+    def __init__(self, shell, parent, after=None):
+        """ Initialise the item instance. """
 
         global _item_id
         item_id = _item_id
@@ -352,6 +344,8 @@ class EditorItem(QTreeWidgetItem):
             super().__init__(parent, item_id)
         else:
             super().__init__(parent, after, item_id)
+
+        self.shell = shell
 
     def get_menu(self, siblings):
         """ Return the list of context menu options or None if the item doesn't
@@ -367,30 +361,19 @@ class EditorItem(QTreeWidgetItem):
 
         return None
 
-    def set_dirty(self):
-        """ Mark the project as having been modified. """
-
-        self.treeWidget().set_dirty()
-
 
 class ProjectItem(EditorItem):
     """ This class implements a navigation item that represents a project. """
 
-    def __init__(self, project, parent):
-        """ Initialise the item. """
+    def __init__(self, shell, parent):
+        """ Initialise the project item. """
 
-        super().__init__(parent)
+        super().__init__(shell, parent)
 
-        self._project = project
-
-        # TODO - use the name of the root module instead. If there is none then
-        # omit this root item.  Get rid of descriptive_name() etc.
-        self.setText(ApiEditor.NAME, project.descriptive_name())
-        observe('name', project,
-                lambda c: self.setText(ApiEditor.NAME,
-                        c.model.descriptive_name()))
-
+        self.root_module_updated()
         self.setExpanded(True)
+
+        project = self.shell.project
 
         # Progress will be reported against .sip files so count them all.
         nr_steps = 0
@@ -404,7 +387,7 @@ class ProjectItem(EditorItem):
 
         so_far = 0
         for mod in project.modules:
-            ModuleItem(mod, self, progress, so_far)
+            ModuleItem(mod, self.shell, self, progress, so_far)
             so_far += len(mod.content)
 
         observe('modules', project, self.__on_modules_changed)
@@ -426,10 +409,19 @@ class ProjectItem(EditorItem):
         return [("Add Ignored Namespace...", self._ignorednamespaceSlot),
                 ("Properties...", self._handle_project_properties)]
 
+    def root_module_updated(self):
+        """ The name of the root module has been updated. """
+
+        name = self.shell.project.rootmodule
+        if name == '':
+            name = "Modules"
+
+        self.setText(ApiEditor.NAME, name)
+
     def _ignorednamespaceSlot(self):
         """ Handle adding a new ignored namespace. """
 
-        project = self._project
+        project = self.shell.project
         title = "Add Ignored Namespace"
 
         # Get the name of the new ignored namespace.
@@ -450,16 +442,16 @@ class ProjectItem(EditorItem):
             else:
                 # Add the ignored namespace to the project.
                 project.ignorednamespaces.append(ns)
-                self.set_dirty()
+                self.shell.dirty = True
 
     def _handle_project_properties(self):
         """ Handle the project's properties. """
 
-        dialog = ProjectPropertiesDialog(self._project, "Project Properties",
-                self.treeWidget())
+        dialog = ProjectPropertiesDialog(self.shell.project,
+                "Project Properties", self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
 
     def __on_modules_changed(self, change):
         """ Invoked when the list of modules changes. """
@@ -485,20 +477,10 @@ class ProjectItem(EditorItem):
 class ModuleItem(EditorItem, DropSite):
     """ This class implements an editor item that represents a module. """
 
-    def __init__(self, module, parent, progress=None, so_far=0):
-        """ Initialise the item instance.
+    def __init__(self, module, shell, parent, progress=None, so_far=0):
+        """ Initialise the module item. """
 
-        :param module:
-            is the module instance.
-        :param parent:
-            is the parent.
-        :param progress:
-            is the optional progress dialog to update.
-        :param so_far:
-            is the optional count of items processed so far.
-        """
-
-        EditorItem.__init__(self, parent)
+        EditorItem.__init__(self, shell, parent)
         DropSite.__init__(self)
 
         self.module = module
@@ -506,7 +488,7 @@ class ModuleItem(EditorItem, DropSite):
         self.setText(ApiEditor.NAME, module.name)
 
         for sf in module.content:
-            SipFileItem(sf, self)
+            SipFileItem(sf, self.shell, self)
 
             if progress is not None:
                 so_far += 1
@@ -543,7 +525,7 @@ class ModuleItem(EditorItem, DropSite):
         src_sipfiles.remove(sf)
         dst_sipfiles.insert(0, sf)
 
-        self.set_dirty()
+        self.shell.dirty = True
 
     def get_menu(self, siblings):
         """ Return the list of context menu options.
@@ -563,10 +545,10 @@ class ModuleItem(EditorItem, DropSite):
         """ Handle the module's properties. """
 
         dialog = ModulePropertiesDialog(self.module, "Module Properties",
-                self.treeWidget(), project=self.treeWidget().project)
+                self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
 
     def __on_name_changed(self, change):
         """ Invoked when the name changes. """
@@ -592,7 +574,7 @@ class ModuleItem(EditorItem, DropSite):
         for idx in idx_list:
             after = self if idx == 0 else self.child(idx - 1)
 
-            SipFileItem(module_content[idx], self, after)
+            SipFileItem(module_content[idx], self.shell, self, after)
 
 
 class ContainerItem(EditorItem, DropSite):
@@ -600,25 +582,15 @@ class ContainerItem(EditorItem, DropSite):
     container for code items.
     """
 
-    def __init__(self, container, parent, after):
-        """ Initialise the item instance.
+    def __init__(self, container, shell, parent, after):
+        """ Initialise the container item. """
 
-        :param container:
-            is the potential container instance.
-        :param parent:
-            is the parent.
-        :param after:
-            is the sibling after which this should be placed.  If it is
-            ``None`` then it should be placed at the end.  If it is the parent
-            then it should be placed at the start.
-        """
-
-        EditorItem.__init__(self, parent, after)
+        EditorItem.__init__(self, shell, parent, after)
         DropSite.__init__(self)
 
         if hasattr(container, 'content'):
             for code in container.content:
-                CodeItem(code, self)
+                CodeItem(code, self.shell, self)
 
             observe('content', container, self.__on_content_changed)
 
@@ -661,7 +633,7 @@ class ContainerItem(EditorItem, DropSite):
             else:
                 parent_content.append(project_item)
 
-            self.set_dirty()
+            self.shell.dirty = True
 
             return
 
@@ -673,7 +645,7 @@ class ContainerItem(EditorItem, DropSite):
             my_content.remove(project_item)
             my_content.insert(0, project_item)
 
-            self.set_dirty()
+            self.shell.dirty = True
 
             return
 
@@ -711,20 +683,10 @@ class ContainerItem(EditorItem, DropSite):
 class SipFileItem(ContainerItem):
     """ This class implements an editor item that represents a .sip file. """
 
-    def __init__(self, sipfile, parent, after=None):
-        """ Initialise the item instance.
+    def __init__(self, sipfile, shell, parent, after=None):
+        """ Initialise the .sip file item. """
 
-        :param sipfile:
-            is the .sip file instance.
-        :param parent:
-            is the parent.
-        :param after:
-            is the sibling after which this should be placed.  If it is
-            ``None`` then it should be placed at the end.  If it is the parent
-            then it should be placed at the start.
-        """
-
-        super().__init__(sipfile, parent, after)
+        super().__init__(sipfile, shell, parent, after)
 
         self.sipfile = sipfile
 
@@ -772,7 +734,7 @@ class SipFileItem(ContainerItem):
             else:
                 content.append(source.sipfile)
 
-            self.set_dirty()
+            self.shell.dirty = True
 
             return
 
@@ -784,7 +746,7 @@ class SipFileItem(ContainerItem):
             content.remove(code)
             content.insert(0, code)
 
-            self.set_dirty()
+            self.shell.dirty = True
 
             return
 
@@ -843,13 +805,12 @@ class SipFileItem(ContainerItem):
 
         src_module = self.parent_project_item()
 
-        dialog = MoveHeaderDialog(src_module, "Move Header File",
-                self.treeWidget(), project=self.treeWidget().project)
+        dialog = MoveHeaderDialog(src_module, "Move Header File", self.shell)
 
         dst_module = dialog.get_destination_module()
         if dst_module is not None:
             # Mark as dirty before moving it.
-            self.set_dirty()
+            self.shell.dirty = True
 
             src_module.content.remove(self.sipfile)
             dst_module.content.append(self.sipfile)
@@ -864,7 +825,7 @@ class SipFileItem(ContainerItem):
 
         if ans is QMessageBox.StandardButton.Yes:
             # Mark as dirty before removing it.
-            self.set_dirty()
+            self.shell.dirty = True
 
             self.parent_project_item().content.remove(self.sipfile)
 
@@ -878,12 +839,11 @@ class SipFileItem(ContainerItem):
 
         manual_code = ManualCode()
 
-        dialog = ManualCodeDialog(manual_code, "Add Manual Code",
-                self.treeWidget())
+        dialog = ManualCodeDialog(manual_code, "Add Manual Code", self.shell)
 
         if dialog.update():
             self.sipfile.content.insert(0, manual_code)
-            self.set_dirty()
+            self.shell.dirty = True
 
     def _exportedHeaderCodeSlot(self):
         """
@@ -903,7 +863,7 @@ class SipFileItem(ContainerItem):
         """
         if text_changed:
             self.sipfile.exportedheadercode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["ehc"]
 
@@ -925,7 +885,7 @@ class SipFileItem(ContainerItem):
         """
         if text_changed:
             self.sipfile.moduleheadercode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["mhc"]
 
@@ -947,7 +907,7 @@ class SipFileItem(ContainerItem):
         """
         if text_changed:
             self.sipfile.modulecode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["moc"]
 
@@ -969,7 +929,7 @@ class SipFileItem(ContainerItem):
         """
         if text_changed:
             self.sipfile.preinitcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["pric"]
 
@@ -991,7 +951,7 @@ class SipFileItem(ContainerItem):
         """
         if text_changed:
             self.sipfile.initcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["ic"]
 
@@ -1013,7 +973,7 @@ class SipFileItem(ContainerItem):
         """
         if text_changed:
             self.sipfile.postinitcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["poic"]
 
@@ -1035,7 +995,7 @@ class SipFileItem(ContainerItem):
         """
         if text_changed:
             self.sipfile.exportedtypehintcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["ethc"]
 
@@ -1057,7 +1017,7 @@ class SipFileItem(ContainerItem):
         """
         if text_changed:
             self.sipfile.typehintcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["thc"]
 
@@ -1093,16 +1053,12 @@ class SipFileItem(ContainerItem):
 class Argument(EditorItem):
     """ This class implements a function argument. """
 
-    def __init__(self, parent, arg):
-        """
-        Initialise the item instance.
+    def __init__(self, shell, parent, arg):
+        """ Initialise the argument item. """
 
-        parent is the parent.
-        arg is the argument instance.
-        """
         self.arg = arg
 
-        super().__init__(parent)
+        super().__init__(shell, parent)
 
         self.setFlags(Qt.ItemFlag.ItemIsEnabled)
 
@@ -1134,10 +1090,10 @@ class Argument(EditorItem):
         """ Slot to handle the argument's properties. """
 
         dialog = ArgumentPropertiesDialog(self.arg, "Argument Properties",
-                self.treeWidget())
+                self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
 
             self.draw_name()
             self.parent().draw_name()
@@ -1149,22 +1105,12 @@ class CodeItem(ContainerItem):
     file.
     """
 
-    def __init__(self, code, parent, after=None):
-        """ Initialise the item instance.
-
-        :param code:
-            is the code instance.
-        :param parent:
-            is the parent.
-        :param after:
-            is the sibling after which this should be placed.  If it is
-            ``None`` then it should be placed at the end.  If it is the parent
-            then it should be placed at the start.
-        """
+    def __init__(self, code, shell, parent, after=None):
+        """ Initialise the code item. """
 
         self.code = code
 
-        super().__init__(code, parent, after)
+        super().__init__(code, shell, parent, after)
 
         self._targets = []
         self._editors = {}
@@ -1180,7 +1126,7 @@ class CodeItem(ContainerItem):
         # Create any children.
         if hasattr(code, 'args'):
             for a in code.args:
-                Argument(self, a)
+                Argument(self.shell, self, a)
 
         observe('status', code, self.__on_status_changed)
         observe('versions', code, self.__on_versions_changed)
@@ -1299,7 +1245,7 @@ class CodeItem(ContainerItem):
             the menu options.
         """
 
-        project = self.treeWidget().project
+        project = self.shell.project
 
         # Save the list of targets for the menu action, including this one.
         self._targets = siblings[:]
@@ -1589,23 +1535,21 @@ class CodeItem(ContainerItem):
 
         manual_code = ManualCode()
 
-        dialog = ManualCodeDialog(manual_code, "Add Manual Code",
-                self.treeWidget())
+        dialog = ManualCodeDialog(manual_code, "Add Manual Code", self.shell)
 
         if dialog.update():
             parent_content = self.parent_project_item().content
             parent_content.insert(parent_content.index(self.code) + 1,
                     manual_code)
-            self.set_dirty()
+            self.shell.dirty = True
 
     def _handle_modify_manual_code(self):
         """ Slot to handle the update of the manual code. """
 
-        dialog = ManualCodeDialog(self.code, "Modify Manual Code",
-                self.treeWidget())
+        dialog = ManualCodeDialog(self.code, "Modify Manual Code", self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
 
             self.draw_name()
 
@@ -1627,7 +1571,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.body = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["mcb"]
 
@@ -1643,7 +1587,7 @@ class CodeItem(ContainerItem):
 
         if ans is QMessageBox.StandardButton.Yes:
             # Mark as dirty before removing them.
-            self.set_dirty()
+            self.shell.dirty = True
 
             for target in self._targets:
                 self.parent_project_item().content.remove(target.code)
@@ -1666,7 +1610,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.accesscode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["ac"]
 
@@ -1688,7 +1632,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.getcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["gc"]
 
@@ -1710,7 +1654,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.setcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["sc"]
 
@@ -1732,7 +1676,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.typehintcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["thic"]
 
@@ -1754,7 +1698,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.typeheadercode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["thc"]
 
@@ -1776,7 +1720,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.typecode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["tc"]
 
@@ -1798,7 +1742,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.convtotypecode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["cttc"]
 
@@ -1820,7 +1764,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.convfromtypecode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["cftc"]
 
@@ -1842,7 +1786,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.gctraversecode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["gctc"]
 
@@ -1864,7 +1808,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.gcclearcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["gccc"]
 
@@ -1886,7 +1830,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.bigetbufcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["bigetb"]
 
@@ -1908,7 +1852,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.birelbufcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["birelb"]
 
@@ -1930,7 +1874,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.bireadbufcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["birb"]
 
@@ -1952,7 +1896,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.biwritebufcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["biwb"]
 
@@ -1974,7 +1918,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.bisegcountcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["bisc"]
 
@@ -1996,7 +1940,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.bicharbufcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["bicb"]
 
@@ -2018,7 +1962,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.picklecode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["pick"]
 
@@ -2040,7 +1984,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.finalisationcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["fc"]
 
@@ -2062,7 +2006,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.subclasscode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["scc"]
 
@@ -2084,7 +2028,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.docstring = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["ds"]
 
@@ -2106,7 +2050,7 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.methcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["mc"]
 
@@ -2128,15 +2072,14 @@ class CodeItem(ContainerItem):
         """
         if text_changed:
             self.code.virtcode = text
-            self.set_dirty()
+            self.shell.dirty = True
 
         del self._editors["vcc"]
 
     def _handle_versions(self):
         """ Slot to handle the versions. """
 
-        dialog = VersionsDialog(self.code, "Versions", self.treeWidget(),
-                project=self.treeWidget().project)
+        dialog = VersionsDialog(self.code, "Versions", self.shell)
 
         if dialog.update():
             # Apply the version range to all targets.
@@ -2144,94 +2087,90 @@ class CodeItem(ContainerItem):
                 if itm.code is not self.code:
                     itm.code.versions = list(self.code.versions)
 
-            self.set_dirty()
+            self.shell.dirty = True
 
     def _handle_platforms(self):
         """ Slot to handle the platforms. """
 
-        dialog = PlatformsDialog(self.code, "Platform Tags", self.treeWidget(),
-                project=self.treeWidget().project)
+        dialog = PlatformsDialog(self.code, "Platform Tags", self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
 
     def _handle_features(self):
         """ Slot to handle the features. """
 
-        dialog = FeaturesDialog(self.code, "Feature Tags", self.treeWidget(),
-                project=self.treeWidget().project)
+        dialog = FeaturesDialog(self.code, "Feature Tags", self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
 
     def _handle_namespace_properties(self):
         """ Slot to handle the properties for namespaces. """
 
         dialog = NamespacePropertiesDialog(self.code, "Namespace Properties",
-                self.treeWidget())
+                self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _handle_opaque_class_properties(self):
         """ Slot to handle the properties for opaque classes. """
 
         dialog = OpaqueClassPropertiesDialog(self.code,
-                "Opaque Class Properties", self.treeWidget())
+                "Opaque Class Properties", self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _handle_class_properties(self):
         """ Slot to handle the properties for classes. """
 
         dialog = ClassPropertiesDialog(self.code, "Class Properties",
-                self.treeWidget())
+                self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _handle_callable_properties(self):
         """ Slot to handle the properties for callables. """
 
-        dialog = CallablePropertiesDialog(self.code, 'Placeholder',
-                self.treeWidget())
+        dialog = CallablePropertiesDialog(self.code, 'Placeholder', self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _handle_variable_properties(self):
         """ Slot to handle the properties for variables. """
 
         dialog = VariablePropertiesDialog(self.code, "Variable Properties",
-                self.treeWidget())
+                self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _handle_enum_properties(self):
         """ Slot to handle the properties for enums. """
 
-        dialog = EnumPropertiesDialog(self.code, "Enum Properties",
-                self.treeWidget())
+        dialog = EnumPropertiesDialog(self.code, "Enum Properties", self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _handle_enum_member_properties(self):
         """ Slot to handle the properties for enum members. """
 
         dialog = EnumMemberPropertiesDialog(self.code,
-                "Enum Member Properties", self.treeWidget())
+                "Enum Member Properties", self.shell)
 
         if dialog.update():
-            self.set_dirty()
+            self.shell.dirty = True
             self.setText(ApiEditor.NAME, self.code.user())
 
     def _setStatusChecked(self):
@@ -2267,7 +2206,7 @@ class CodeItem(ContainerItem):
         for itm in self._targets:
             if itm.code.status != new:
                 itm.code.status = new
-                self.set_dirty()
+                self.shell.dirty = True
 
                 # FIXME: Observe the status attribute.
                 itm.draw_status()
@@ -2323,7 +2262,7 @@ class CodeItem(ContainerItem):
         for itm in self._targets:
             if itm.code.access != new:
                 itm.code.access = new
-                self.set_dirty()
+                self.shell.dirty = True
 
                 # FIXME: Observe the access attribute.
                 itm._draw_access()

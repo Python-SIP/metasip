@@ -32,7 +32,7 @@ class ApiEditorTool(ShellTool):
 
         super().__init__(shell)
 
-        self._api_editor = ApiEditor(self)
+        self._api_editor = ApiEditor(shell)
 
     @property
     def actions(self):
@@ -56,6 +56,8 @@ class ApiEditorTool(ShellTool):
 
         if event_type is EventType.PROJECT_NEW:
             self._api_editor.set_project()
+        elif event_type is EventType.PROJECT_ROOT_MODULE_RENAME:
+            self._api_editor.root_module_updated()
 
     @property
     def location(self):

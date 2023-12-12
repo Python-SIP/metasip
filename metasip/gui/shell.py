@@ -54,6 +54,9 @@ class EventType(Enum):
     # A project has been renamed.  There is no event argument.
     PROJECT_RENAME = auto()
 
+    # The project's root module has been renamed.  There is no event argument.
+    PROJECT_ROOT_MODULE_RENAME = auto()
+
     # A version has been added or deleted.  There is no event argument.
     VERSION_ADD_DELETE = auto()
 

@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import (QComboBox, QGridLayout, QLabel, QLineEdit,
         QPlainTextEdit, QPushButton)
 
 from ....helpers import BaseDialog
+from ....shell import EventType
 
 
 class ProjectPropertiesDialog(BaseDialog):
@@ -62,6 +63,8 @@ class ProjectPropertiesDialog(BaseDialog):
         self.model.ignorednamespaces = [self._ignored_namespaces.itemText(i)
                 for i in range(self._ignored_namespaces.count())]
         self.model.sipcomments = self._sip_comments.toPlainText().strip()
+
+        self.shell.notify(EventType.PROJECT_ROOT_MODULE_RENAME)
 
         return True
 
