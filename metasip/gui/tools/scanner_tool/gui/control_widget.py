@@ -19,7 +19,12 @@ from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
         QLineEdit, QMessageBox, QPushButton, QStyle, QToolButton, QVBoxLayout,
         QWidget)
 
-from .....project import HeaderDirectory, HeaderFile, HeaderFileVersion
+from .....interfaces.project import (ICallable, ICodeContainer, IConstructor,
+        IEnum)
+from .....project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
+        ManualCode, SipFile, VersionRange)
+
+from ....helpers import warning
 
 
 class ControlWidget(QWidget):
@@ -307,7 +312,58 @@ class ControlWidget(QWidget):
     def _handle_parse_header_file(self):
         """ Handle the button to parse a header file. """
 
-        # TODO
+        from ..cast_xml import CastXMLParser
+
+        project = self._tool.shell.project
+        header_directory = self._header_directory
+        header_file = self._header_file
+        source_directory = self._source_directory.text()
+
+        parser = CastXMLParser()
+
+        name = os.path.join(source_directory, header_directory.inputdirsuffix,
+                header_file.name)
+
+        if not os.access(name, os.R_OK):
+            warning("Parse", f"Unable to read '{name}'.", parent=self)
+            return
+
+        _, name, _ = self._read_header(name)
+
+        parsed_header_file = parser.parse(project, source_directory,
+                header_directory, header_file, name, self._tool.shell.log)
+
+        if parsed_header_file is None:
+            warning("Parse", parser.diagnostic, parent=self)
+            return
+
+        # Find the corresponding .sip file creating it if is a new header file.
+        # FIXME: Assuming we ultimately want to be able to create a complete
+        #        project without parsing .h files then we will need the ability
+        #        (in the main editor) to manually create a SipFile instance.
+        for module in project.modules:
+            if module.name == header_file.module:
+                for sip_file in module.content:
+                    if sip_file.name == header_file.name:
+                        break
+                else:
+                    sip_file = SipFile(name=header_file.name)
+                    # ZZZ - event?
+                    module.content.append(sip_file)
+
+                self._merge_code(sip_file, parsed_header_file)
+                break
+
+        # The file version no longer needs parsing.
+        working_version = self._working_version.currentText()
+
+        for header_file_version in header_file.versions:
+            if header_file_version.version == working_version:
+                header_file_version.parse = False
+                self._tool.header_file_status(header_file)
+                break
+
+        self._tool.shell.dirty = True
 
     def _handle_reset_workflow(self):
         """ Handle the button to reset the workflow. """
@@ -449,6 +505,156 @@ class ControlWidget(QWidget):
         self._working_version.clear()
         self._working_version.addItems(self._tool.shell.project.versions)
         self._working_version.blockSignals(blocked)
+
+    def _merge_code(self, dst_code, src_code):
+        """ Merge source code into destination code. """
+
+        working_version = self._working_version.currentText()
+
+        # ZZZ - go through all for events
+        # Go though each existing code item.
+        for dst_item in list(dst_code.content):
+            # Manual code is always retained.
+            if isinstance(dst_item, ManualCode):
+                continue
+
+            # Go through each potentially new code item.
+            for src_item in list(src_code):
+                if type(dst_item) is type(src_item) and dst_item.signature(working_version) == src_item.signature(working_version):
+                    # Make sure the versions include the working version.
+                    if working_version != '':
+                        self._add_working_version(dst_item)
+
+                    # Discard the new code item.
+                    src_code.remove(src_item)
+
+                    # Merge any child code.
+                    if isinstance(dst_item, (ICodeContainer, IEnum)):
+                        self._merge_code(dst_item, src_item.content)
+
+                    break
+            else:
+                # The existing one doesn't exist in the working version.
+                if working_version == '':
+                    # If it is ignored then forget about it because there are
+                    # no other versions that might refer to it.
+                    if dst_item.status == 'ignored':
+                        dst_code.content.remove(dst_item)
+                    else:
+                        dst_item.status = 'removed'
+                else:
+                    version_status = self._remove_working_version(dst_item)
+                    if version_status == 'no_longer_working':
+                        # It's removal needs checking.
+                        if dst_item.status == '':
+                            dst_item.status = 'unknown'
+                    elif version_status == 'no_longer_any':
+                        # Forget about it because there are no other versions
+                        # that refer to it.
+                        dst_code.content.remove(dst_item)
+
+        # Anything left in the source code is new.
+
+        if working_version == '':
+            startversion = endversion = ''
+        else:
+            versions = self._tool.shell.project.versions
+            working_idx = versions.index(working_version)
+
+            # If the working version is the first then assume that the new item
+            # will appear in earlier versions, otherwise it is restricted to
+            # this version.
+            startversion = '' if working_idx == 0 else working_version
+
+            # If the working version is the latest then assume that the new
+            # item will appear in later versions, otherwise it is restricted to
+            # this version.
+            try:
+                endversion = versions[working_idx + 1]
+            except IndexError:
+                endversion = ''
+
+        for src_item in src_code:
+            if startversion != '' or endversion != '':
+                src_item.versions.append(
+                        VersionRange(startversion=startversion,
+                                endversion=endversion))
+
+            # Try and place the new item with any similar one.
+            pos = -1
+            for idx, code in enumerate(dst_code.content):
+                if type(code) is not type(src_item):
+                    continue
+
+                if isinstance(src_item, IConstructor):
+                    pos = idx
+                    break
+
+                if isinstance(src_item, ICallable) and code.name == src_item.name:
+                    pos = idx
+                    break
+
+            if pos >= 0:
+                dst_code.content.insert(pos, src_item)
+            else:
+                dst_code.content.append(src_item)
+
+    def _add_working_version(self, api_item):
+        """ Add the working version to an item's version ranges. """
+
+        # ZZZ - go through all for events
+        # There is only something to do if the item is currently versioned.
+        if len(api_item.versions) != 0:
+            project = self._tool.shell.project
+
+            # Construct the existing list of version ranges to a version map.
+            vmap = project.vmap_create(False)
+            project.vmap_or_version_ranges(vmap, api_item.versions)
+
+            # Add the working version.
+            working_idx = project.versions.index(
+                    self._working_version.currentText())
+            vmap[working_idx] = True
+
+            # Convert the version map back to a list of version ranges.
+            api_item.versions = project.vmap_to_version_ranges(vmap)
+
+    def _remove_working_version(self, api_item):
+        """ Remove the working version from an item's version ranges.  Returns
+        'wasnt_working' if the item wasn't in the working version,
+        'no_longer_working' if the item is no longer in the working version and
+        'no_longer_any' if the item is no longer in any version.
+        """
+
+        # ZZZ - go through all for events
+        project = self._tool.shell.project
+
+        # Construct the existing list of version ranges to a version map.
+        if len(api_item.versions) == 0:
+            vmap = project.vmap_create(True)
+        else:
+            vmap = project.vmap_create(False)
+            project.vmap_or_version_ranges(vmap, api_item.versions)
+
+        # Update the version map appropriately using the working version.
+        # First take a shortcut to see if anything has changed.
+        working_idx = project.versions.index(
+                self._working_version.currentText())
+
+        if not vmap[working_idx]:
+            return 'wasnt_working'
+
+        vmap[working_idx] = False
+
+        # Convert the version map back to a list of version ranges.
+        versions = project.vmap_to_version_ranges(vmap)
+
+        if versions is None:
+            return 'no_longer_any'
+
+        api_item.versions = versions
+
+        return 'no_longer_working'
 
     @classmethod
     def _read_header(cls, name):

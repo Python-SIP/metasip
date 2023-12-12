@@ -978,7 +978,7 @@ class CastXMLParser(ParserBase):
                 "arraytype":        _PointerType,
                 "cvqualifiedtype":  _CvQualifiedType}
 
-    def parse(self, project, input_dir, hdir, hf, pathname):
+    def parse(self, project, input_dir, hdir, hf, pathname, log):
         """
         Parse a file and return the parsed file instance or None if there was
         an error.
@@ -1013,7 +1013,7 @@ class CastXMLParser(ParserBase):
         # understand why it's needed.
         args = ' '.join(argv)
 
-        self.shell.log(args)
+        log(args)
 
         cwd = os.getcwd()
         os.chdir(input_dir)
@@ -1030,7 +1030,7 @@ class CastXMLParser(ParserBase):
 
         # Log any output.
         for line in output.decode().rstrip().split('\n'):
-            self.shell.log(line.rstrip())
+            log(line.rstrip())
 
         if rc != 0:
             try:
@@ -1048,11 +1048,11 @@ class CastXMLParser(ParserBase):
                 self.diagnostic = "{0} failed with exit code {1}".format(
                         argv[0], rc)
 
-            self.shell.log(self.diagnostic)
+            log(self.diagnostic)
 
             return None
 
-        self.shell.log("Parsing XML for {0}".format(self._pathname))
+        log("Parsing XML for {0}".format(self._pathname))
 
         # Initialise the parser state.  The first pass is to read in the
         # Cast-XML output filtering out stuff we definately don't need.  The

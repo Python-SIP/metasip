@@ -72,7 +72,7 @@ def _generate(project_name, modules, output_dir, latest_sip):
 
     # Generate each module.
     for module in gen_modules:
-        project.generate_module(module, output_dir, latest_sip=latest_sip):
+        project.generate_module(module, output_dir, latest_sip=latest_sip)
 
 
 def _handle_exception(e):

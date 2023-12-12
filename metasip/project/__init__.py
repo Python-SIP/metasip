@@ -11,7 +11,8 @@
 
 
 from .abstract_project_ui import AbstractProjectUi
-from .project import (Access, Class, Constructor, Destructor, Enum, EnumValue,
-        Function, HeaderDirectory, HeaderFile, HeaderFileVersion, ManualCode,
-        Method, Module, Namespace, OperatorCast, OpaqueClass, OperatorFunction,
-        OperatorMethod, Project, Variable, version_range, VersionRange)
+from .project import (Access, Argument, Class, Constructor, Destructor, Enum,
+        EnumValue, Function, HeaderDirectory, HeaderFile, HeaderFileVersion,
+        ManualCode, Method, Module, Namespace, OperatorCast, OpaqueClass,
+        OperatorFunction, OperatorMethod, Project, SipFile, Typedef, Variable,
+        version_range, VersionRange)
