@@ -24,6 +24,14 @@ class EventType(Enum):
     that don't have an event because there is no consequent impact on the GUI.
     """
 
+    # The status of an API item has changed.  The event argument is the API
+    # item.
+    API_ITEM_STATUS = auto()
+
+    # The versions of an API item has changed.  The event argument is the API
+    # item.
+    API_ITEM_VERSIONS = auto()
+
     # An API item has been added to a container.  The event argument is a
     # 2-tuple of the container and API item.
     CONTAINER_API_ITEM_ADD = auto()

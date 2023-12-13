@@ -12,11 +12,8 @@
 
 from PyQt6.QtCore import QByteArray, QMimeData, Qt
 from PyQt6.QtGui import QDrag
-from PyQt6.QtWidgets import (QApplication, QDialog, QInputDialog, QMenu,
-        QMessageBox, QProgressDialog, QTreeWidget, QTreeWidgetItem,
-        QTreeWidgetItemIterator, QVBoxLayout)
-
-from ....dip.model import observe
+from PyQt6.QtWidgets import (QApplication, QInputDialog, QMenu, QMessageBox,
+        QProgressDialog, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator)
 
 from ....project import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
@@ -61,6 +58,38 @@ class ApiEditor(QTreeWidget):
 
         self.dragged = None
 
+    def api_item_status(self, api_item):
+        """ Handle the change of status of an API item. """
+
+        for item in self._all_items():
+            if item.api_item is api_item:
+                item.draw_status()
+                break
+
+    def api_item_versions(self, api_item):
+        """ Handle the change of versions of an API item. """
+
+        for item in self._all_items():
+            if item.api_item is api_item:
+                item.draw_versions()
+                break
+
+    def container_api_item_add(self, container, api_item):
+        """ Handle the addition of an API item to a container. """
+
+        for item in self._all_items():
+            if item.api_item is container:
+                item.api_item_add(api_item)
+                break
+
+    def container_api_item_delete(self, container, api_item):
+        """ Handle the deletion of an API item from a container. """
+
+        for item in self._all_items():
+            if item.api_item is container:
+                item.api_item_delete(api_item)
+                break
+
     def module_add(self, module):
         """ Handle the addition of a module. """
 
@@ -101,11 +130,8 @@ class ApiEditor(QTreeWidget):
         settings.setValue('header', self.header().saveState())
 
     def contextMenuEvent(self, ev):
-        """
-        Reimplemented to handle a context menu event.
+        """ Reimplemented to handle a context menu event. """
 
-        ev is the event.
-        """
         # Find the item.
         itm = self.itemAt(ev.pos())
 
@@ -159,9 +185,8 @@ class ApiEditor(QTreeWidget):
         super().contextMenuEvent(ev)
 
     def startDrag(self, actions):
-        """
-        Reimplemented to start the drag of an item.
-        """
+        """ Reimplemented to start the drag of an item. """
+
         # Find the selected item.
         dragging = None
 
@@ -192,27 +217,24 @@ class ApiEditor(QTreeWidget):
         drag.exec()
 
     def dragEnterEvent(self, ev):
-        """
-        Reimplemented to validate a drag enter.
-        """
+        """ Reimplemented to validate a drag enter. """
+
         if ev.source() is self:
             ev.accept()
         else:
             ev.ignore()
 
     def dragMoveEvent(self, ev):
-        """
-        Reimplemented to validate a drag move.
-        """
+        """ Reimplemented to validate a drag move. """
+
         if ev.source() is self:
             ev.accept()
         else:
             ev.ignore()
 
     def dropEvent(self, ev):
-        """
-        Reimplemented to handle a drop.
-        """
+        """ Reimplemented to handle a drop. """
+
         source_target = self._source_target(ev)
 
         if source_target is None:
@@ -223,10 +245,10 @@ class ApiEditor(QTreeWidget):
             ev.accept()
 
     def _source_target(self, ev):
+        """ Return a 2-tuple of source and target items or None if the drop
+        wasn't appropriate.
         """
-        Return a tuple of source and target items or None if the drop wasn't
-        appropriate.
-        """
+
         # Get the target.
         target = self.itemAt(ev.pos())
 
@@ -259,22 +281,13 @@ class ApiEditor(QTreeWidget):
 
         return source, target
 
-    def acceptArgumentNames(self, prj_item):
+    def acceptArgumentNames(self, api_item):
+        """ Mark the arguments of all callables contained in a part of a
+        project as being named.
         """
-        Mark the arguments of all callables contained in a part of a project
-        as being named.
 
-        prj_item is the part of the project.
-        """
-        self._updateArgs(self._shell.project.acceptArgumentNames(prj_item))
+        updated_args = self._shell.project.acceptArgumentNames(api_item)
 
-    @staticmethod
-    def _updateArgs(updated_args):
-        """
-        Update the GUI for those arguments that have been updated.
-
-        updated_args is the list of updated Argument instances.
-        """
         callables = []
         for arg in updated_args:
             arg._gui.draw_name()
@@ -287,25 +300,17 @@ class ApiEditor(QTreeWidget):
             callable.draw_name()
             callable.draw_status()
 
-    def _stringDialog(self, caption, strings):
-        """
-        Show a dialog containing a list of strings.
+    def _all_items(self, container=None):
+        """ A generator for all API items. """
 
-        caption is the dialog's caption.
-        strings is the list of strings.
-        """
-        dlg = QDialog(self)
-        dlg.setWindowTitle(caption)
+        if container is None:
+            container = self._project_item
 
-        box = QListBox(dlg)
+        for api_item in container.all_children():
+            yield api_item
 
-        for itm in strings:
-            box.insertItem(itm)
-
-        layout = QVBoxLayout(dlg)
-        layout.addWidget(box)
-
-        dlg.show()
+            for sub_api_item in self._all_items(api_item):
+                yield sub_api_item
 
 
 class DropSite():
@@ -318,23 +323,13 @@ class DropSite():
 
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsDropEnabled)
 
-    def droppable(self, source):
-        """ Determine if an item can be dropped.
-
-        :param source:
-            is the QTreeWidgetItem sub-class instance being dropped.
-        :return:
-            ``True`` if the source can be dropped.
-        """
+    def droppable(self, item):
+        """ Return True if an item can be dropped. """
 
         raise NotImplementedError
 
-    def drop(self, source):
-        """ Handle the drop of an item.
-
-        :param source:
-            is the QTreeWidgetItem sub-class instance being dropped.
-        """
+    def drop(self, item):
+        """ Handle the drop of an item. """
 
         raise NotImplementedError
 
@@ -346,7 +341,7 @@ _item_id = QTreeWidgetItem.ItemType.UserType
 class EditorItem(QTreeWidgetItem):
     """ This class represents an item in the API editor. """
 
-    def __init__(self, shell, parent, after=None):
+    def __init__(self, api_item, shell, parent, after=None):
         """ Initialise the item instance. """
 
         global _item_id
@@ -360,11 +355,39 @@ class EditorItem(QTreeWidgetItem):
         else:
             super().__init__(parent, after, item_id)
 
+        self.api_item = api_item
         self.shell = shell
+
+    def all_children(self):
+        """ A generator for all the item's children. """
+
+        for index in range(self.count()):
+            yield self.child(index)
+
+    def api_item_add(self, api_item):
+        """ An API item has been added. """
+
+        # The order of view items must match the order of API items.
+        index = self.api_item.content.find(api_item)
+        after = self if index == 0 else self.child(index - 1)
+        self.get_child_factory()(api_item, self.shell, self, after)
+
+    def api_item_delete(self, api_item):
+        """ An API item has been deleted. """
+
+        for sip_file_item in self.all_children:
+            if sip_file_item.api_item is api_item:
+                self.removeChild(sip_file_item)
+                break
+
+    def get_child_factory(self):
+        """ Return the callable that will return a child instance. """
+
+        raise NotImplementedError
 
     def get_menu(self, siblings):
         """ Return the list of context menu options or None if the item doesn't
-        have a context menu.  Each element is a tuple of the text of the
+        have a context menu.  Each element is a 3-tuple of the text of the
         option, the bound method that handles the option, and a flag that is
         True if the option should be enabled.
 
@@ -383,12 +406,12 @@ class ProjectItem(EditorItem):
     def __init__(self, shell, parent):
         """ Initialise the project item. """
 
-        super().__init__(shell, parent)
+        super().__init__(shell.project, shell, parent)
 
         self.root_module_updated()
         self.setExpanded(True)
 
-        project = self.shell.project
+        project = self.api_item
 
         # Progress will be reported against .sip files so count them all.
         nr_steps = 0
@@ -396,14 +419,17 @@ class ProjectItem(EditorItem):
             nr_steps += len(module.content)
 
         # Display the progress dialog.
-        progress = QProgressDialog( "Building the GUI...", None, 0, nr_steps)
+        progress = QProgressDialog("Building the GUI...", None, 0, nr_steps)
         progress.setWindowTitle(project.name)
         progress.setValue(0)
 
         so_far = 0
-        for mod in project.modules:
-            ModuleItem(mod, self.shell, self, progress, so_far)
-            so_far += len(mod.content)
+        for module in project.modules:
+            ModuleItem(module, self.shell, self)
+
+            so_far += len(module.content)
+            progress.setValue(so_far)
+            QApplication.processEvents()
 
         self._sort()
 
@@ -501,54 +527,39 @@ class ProjectItem(EditorItem):
 class ModuleItem(EditorItem, DropSite):
     """ This class implements an editor item that represents a module. """
 
-    def __init__(self, module, shell, parent, progress=None, so_far=0):
+    def __init__(self, module, shell, parent):
         """ Initialise the module item. """
 
-        EditorItem.__init__(self, shell, parent)
-        DropSite.__init__(self)
-
-        self.module = module
+        super().__init__(module, shell, parent)
 
         self.setText(ApiEditor.NAME, module.name)
 
-        for sf in module.content:
-            SipFileItem(sf, self.shell, self)
+        for sip_file in module.content:
+            SipFileItem(sip_file, self.shell, self)
 
-            if progress is not None:
-                so_far += 1
-                progress.setValue(so_far)
-                QApplication.processEvents()
-
-        observe('content', module, self.__on_content_changed)
-
-    def droppable(self, source):
-        """ Determine if an item can be dropped.
-
-        :param source:
-            is the QTreeWidgetItem sub-class instance being dropped.
-        :return:
-            ``True`` if the source can be dropped.
-        """
+    def droppable(self, item):
+        """ Return True if an item can be dropped. """
 
         # We allow .sip files to be moved around anywhere.
-        return isinstance(source, SipFileItem)
+        return isinstance(item, SipFileItem)
 
-    def drop(self, source):
-        """ Handle the drop of an item.
-
-        :param source:
-            is the QTreeWidgetItem sub-class instance being dropped.
-        """
+    def drop(self, item):
+        """ Handle the drop of an item. """
 
         # The .sip file is always placed at the top.
-        sf = source.sipfile
-        dst_sipfiles = self.module.content
-        src_sipfiles = source.parent().module.content
+        sf = item.api_item
+        dst_api_item = self.api_item.content
+        src_api_item = item.parent().api_item.content
 
-        src_sipfiles.remove(sf)
-        dst_sipfiles.insert(0, sf)
+        src_api_item.remove(sf)
+        dst_api_item.insert(0, sf)
 
         self.shell.dirty = True
+
+    def get_child_factory(self):
+        """ Return the callable that will return a child instance. """
+
+        return SipFileItem
 
     def get_menu(self, siblings):
         """ Return the list of context menu options.
@@ -567,31 +578,11 @@ class ModuleItem(EditorItem, DropSite):
     def _handle_module_properties(self):
         """ Handle the module's properties. """
 
-        dialog = ModulePropertiesDialog(self.module, "Module Properties",
+        dialog = ModulePropertiesDialog(self.api_item, "Module Properties",
                 self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-
-    def __on_content_changed(self, change):
-        """ Invoked when the content changes. """
-
-        for sf in change.old:
-            for idx in range(self.childCount()):
-                itm = self.child(idx)
-                if itm.sipfile is sf:
-                    self.removeChild(itm)
-                    break
-
-        # The order of view items must match the order of model items.
-        module_content = change.model.content
-        idx_list = [module_content.index(sf) for sf in change.new]
-        idx_list.sort()
-
-        for idx in idx_list:
-            after = self if idx == 0 else self.child(idx - 1)
-
-            SipFileItem(module_content[idx], self.shell, self, after)
 
 
 class ContainerItem(EditorItem, DropSite):
@@ -602,180 +593,119 @@ class ContainerItem(EditorItem, DropSite):
     def __init__(self, container, shell, parent, after):
         """ Initialise the container item. """
 
-        EditorItem.__init__(self, shell, parent, after)
-        DropSite.__init__(self)
+        super().__init__(container, shell, parent, after)
 
         if hasattr(container, 'content'):
             for code in container.content:
                 CodeItem(code, self.shell, self)
 
-            observe('content', container, self.__on_content_changed)
-
-    def droppable(self, source):
-        """ Determine if an item can be dropped.
-
-        :param source:
-            is the QTreeWidgetItem sub-class instance being dropped.
-        :return:
-            ``True`` if the source can be dropped.
-        """
+    def droppable(self, item):
+        """ Return True if an item can be dropped. """
 
         # See if we are moving a sibling.
-        if source.parent() is self.parent():
+        if item.parent() is self.parent():
             return True
 
         # See if we are moving a child to the top.
-        if source.parent() is self:
+        if item.parent() is self:
             return True
 
         return False
 
-    def drop(self, source):
-        """ Handle the drop of an item.
+    def drop(self, item):
+        """ Handle the drop of an item. """
 
-        :param source:
-            is the QTreeWidgetItem sub-class instance being dropped.
-        """
-
-        if source.parent() is self.parent():
+        if item.parent() is self.parent():
             # We are moving a sibling after us.
-            parent_content = self.parent_project_item().content
-            project_item = source.project_item()
+            parent_content = self.parent().api_item.content
+            api_item = item.api_item()
 
-            parent_content.remove(project_item)
+            parent_content.remove(api_item)
 
-            new_idx = parent_content.index(self.project_item()) + 1
+            new_idx = parent_content.index(self.api_item) + 1
             if new_idx < len(parent_content):
-                parent_content.insert(new_idx, project_item)
+                parent_content.insert(new_idx, api_item)
             else:
-                parent_content.append(project_item)
+                parent_content.append(api_item)
 
             self.shell.dirty = True
 
             return
 
-        if source.parent() is self:
+        if item.parent() is self:
             # Dropping a child is interpreted as moving it to the top.
-            my_content = self.project_item().content
-            project_item = source.project_item()
+            my_content = self.api_item.content
+            api_item = item.api_item
 
-            my_content.remove(project_item)
-            my_content.insert(0, project_item)
+            my_content.remove(api_item)
+            my_content.insert(0, api_item)
 
             self.shell.dirty = True
 
             return
 
-    def parent_project_item(self):
-        """ Return the parent project item that contains our project item. """
+    def get_child_factory(self):
+        """ Return the callable that will return a child instance. """
 
-        raise NotImplementedError
-
-    def project_item(self):
-        """ Return our project item. """
-
-        raise NotImplementedError
-
-    def __on_content_changed(self, change):
-        """ Invoked when the content changes. """
-
-        for code in change.old:
-            for idx in range(self.childCount()):
-                itm = self.child(idx)
-                if itm.code is code:
-                    self.removeChild(itm)
-                    break
-
-        # The order of editor items must match the order of model items.
-        container_content = change.model.content
-        idx_list = [container_content.index(code) for code in change.new]
-        idx_list.sort()
-
-        for idx in idx_list:
-            after = self if idx == 0 else self.child(idx - 1)
-
-            CodeItem(container_content[idx], self, after)
+        return CodeItem
 
 
 class SipFileItem(ContainerItem):
     """ This class implements an editor item that represents a .sip file. """
 
-    def __init__(self, sipfile, shell, parent, after=None):
+    def __init__(self, sip_file, shell, parent, after=None):
         """ Initialise the .sip file item. """
 
-        super().__init__(sipfile, shell, parent, after)
-
-        self.sipfile = sipfile
+        super().__init__(sip_file, shell, parent, after)
 
         self._targets = []
         self._editors = {}
 
-        self.setText(ApiEditor.NAME, sipfile.name)
+        self.setText(ApiEditor.NAME, sip_file.name)
 
-    def droppable(self, source):
-        """ Determine if an item can be dropped.
-
-        :param source:
-            is the QTreeWidgetItem sub-class instance being dropped.
-        :return:
-            ``True`` if the source can be dropped.
-        """
+    def droppable(self, item):
+        """ Return True if an item can be dropped. """
 
         # See if we are moving another .sip file.
-        if isinstance(source, SipFileItem):
+        if isinstance(item, SipFileItem):
             return True
 
         # See if we are moving a child to the top.
-        if source.parent() is self:
+        if item.parent() is self:
             return True
 
         return False
 
-    def drop(self, source):
-        """ Handle the drop of an item.
+    def drop(self, item):
+        """ Handle the drop of an item. """
 
-        :param source:
-            is the QTreeWidgetItem sub-class instance being dropped.
-        """
-
-        if isinstance(source, SipFileItem):
+        if isinstance(item, SipFileItem):
             # We are moving another .sip file after us.  First remove the item
             # from its container.
-            source.parent().module.content.remove(source.sipfile)
+            item.parent().module.content.remove(item.api_item)
 
             # Now add it to our container.
-            content = self.parent().module.content
-            idx = content.index(self.sipfile) + 1
+            content = self.parent().api_item.content
+            idx = content.index(self.api_item) + 1
             if idx < len(content):
-                content.insert(idx, source.sipfile)
+                content.insert(idx, item.api_item)
             else:
-                content.append(source.sipfile)
+                content.append(item.api_item)
 
             self.shell.dirty = True
 
             return
 
-        if source.parent() is self:
+        if item.parent() is self:
             # Dropping a child is interpreted as moving it to the top.
-            content = self.sipfile.content
-            code = source.code
+            content = self.api_item.content
 
-            content.remove(code)
-            content.insert(0, code)
+            content.remove(item.api_item)
+            content.insert(0, item.api_item)
 
             self.shell.dirty = True
 
             return
-
-    def parent_project_item(self):
-        """ Return the parent project item that contains our project item. """
-
-        return self.parent().module
-
-    def project_item(self):
-        """ Return our project item. """
-
-        return self.sipfile
 
     def get_menu(self, siblings):
         """ Return the list of context menu options.
@@ -792,7 +722,7 @@ class SipFileItem(ContainerItem):
         multiple_modules = (len(self.treeWidget().project.modules) > 0)
 
         empty_sipfile = True
-        for code in self.sipfile.content:
+        for code in self.api_item.content:
             if code.status != 'ignored':
                 empty_sipfile = False
                 break
@@ -820,7 +750,7 @@ class SipFileItem(ContainerItem):
     def _handle_move(self):
         """ Move a .sip file to a different module. """
 
-        src_module = self.parent_project_item()
+        src_module = self.parent().api_item
 
         dialog = MoveHeaderDialog(src_module, "Move Header File", self.shell)
 
@@ -829,8 +759,8 @@ class SipFileItem(ContainerItem):
             # Mark as dirty before moving it.
             self.shell.dirty = True
 
-            src_module.content.remove(self.sipfile)
-            dst_module.content.append(self.sipfile)
+            src_module.content.remove(self.api_item)
+            dst_module.content.append(self.api_item)
 
     def _deleteFile(self):
         """ Delete an empty .sip file. """
@@ -844,12 +774,12 @@ class SipFileItem(ContainerItem):
             # Mark as dirty before removing it.
             self.shell.dirty = True
 
-            self.parent_project_item().content.remove(self.sipfile)
+            self.parent().api_item.content.remove(self.api_item)
 
     def _acceptNames(self):
         """ Accept all argument names. """
 
-        self.treeWidget().acceptArgumentNames(self.sipfile)
+        self.treeWidget().acceptArgumentNames(self.api_item)
 
     def _handle_add_manual_code(self):
         """ Slot to handle the creation of manual code. """
@@ -859,7 +789,7 @@ class SipFileItem(ContainerItem):
         dialog = ManualCodeDialog(manual_code, "Add Manual Code", self.shell)
 
         if dialog.update():
-            self.sipfile.content.insert(0, manual_code)
+            self.api_item.content.insert(0, manual_code)
             self.shell.dirty = True
 
     def _exportedHeaderCodeSlot(self):
@@ -868,7 +798,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._exportedHeaderCodeDone)
-        ed.edit(self.sipfile.exportedheadercode, "%ExportedHeaderCode: " + self.sipfile.name)
+        ed.edit(self.api_item.exportedheadercode, "%ExportedHeaderCode: " + self.api_item.name)
         self._editors["ehc"] = ed
 
     def _exportedHeaderCodeDone(self, text_changed, text):
@@ -879,7 +809,7 @@ class SipFileItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.sipfile.exportedheadercode = text
+            self.api_item.exportedheadercode = text
             self.shell.dirty = True
 
         del self._editors["ehc"]
@@ -890,7 +820,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._moduleHeaderCodeDone)
-        ed.edit(self.sipfile.moduleheadercode, "%ModuleHeaderCode: " + self.sipfile.name)
+        ed.edit(self.api_item.moduleheadercode, "%ModuleHeaderCode: " + self.api_item.name)
         self._editors["mhc"] = ed
 
     def _moduleHeaderCodeDone(self, text_changed, text):
@@ -901,7 +831,7 @@ class SipFileItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.sipfile.moduleheadercode = text
+            self.api_item.moduleheadercode = text
             self.shell.dirty = True
 
         del self._editors["mhc"]
@@ -912,7 +842,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._moduleCodeDone)
-        ed.edit(self.sipfile.modulecode, "%ModuleCode: " + self.sipfile.name)
+        ed.edit(self.api_item.modulecode, "%ModuleCode: " + self.api_item.name)
         self._editors["moc"] = ed
 
     def _moduleCodeDone(self, text_changed, text):
@@ -923,7 +853,7 @@ class SipFileItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.sipfile.modulecode = text
+            self.api_item.modulecode = text
             self.shell.dirty = True
 
         del self._editors["moc"]
@@ -934,7 +864,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._preInitCodeDone)
-        ed.edit(self.sipfile.preinitcode, "%PreInitialisationCode: " + self.sipfile.name)
+        ed.edit(self.api_item.preinitcode, "%PreInitialisationCode: " + self.api_item.name)
         self._editors["pric"] = ed
 
     def _preInitCodeDone(self, text_changed, text):
@@ -945,7 +875,7 @@ class SipFileItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.sipfile.preinitcode = text
+            self.api_item.preinitcode = text
             self.shell.dirty = True
 
         del self._editors["pric"]
@@ -956,7 +886,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._initCodeDone)
-        ed.edit(self.sipfile.initcode, "%InitialisationCode: " + self.sipfile.name)
+        ed.edit(self.api_item.initcode, "%InitialisationCode: " + self.api_item.name)
         self._editors["ic"] = ed
 
     def _initCodeDone(self, text_changed, text):
@@ -967,7 +897,7 @@ class SipFileItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.sipfile.initcode = text
+            self.api_item.initcode = text
             self.shell.dirty = True
 
         del self._editors["ic"]
@@ -978,7 +908,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._postInitCodeDone)
-        ed.edit(self.sipfile.postinitcode, "%PostInitialisationCode: " + self.sipfile.name)
+        ed.edit(self.api_item.postinitcode, "%PostInitialisationCode: " + self.api_item.name)
         self._editors["poic"] = ed
 
     def _postInitCodeDone(self, text_changed, text):
@@ -989,7 +919,7 @@ class SipFileItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.sipfile.postinitcode = text
+            self.api_item.postinitcode = text
             self.shell.dirty = True
 
         del self._editors["poic"]
@@ -1000,7 +930,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._exportedTypeHintCodeDone)
-        ed.edit(self.sipfile.exportedtypehintcode, "%ExportedTypeHintCode: " + self.sipfile.name)
+        ed.edit(self.api_item.exportedtypehintcode, "%ExportedTypeHintCode: " + self.api_item.name)
         self._editors["ethc"] = ed
 
     def _exportedTypeHintCodeDone(self, text_changed, text):
@@ -1011,7 +941,7 @@ class SipFileItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.sipfile.exportedtypehintcode = text
+            self.api_item.exportedtypehintcode = text
             self.shell.dirty = True
 
         del self._editors["ethc"]
@@ -1022,7 +952,7 @@ class SipFileItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._typeHintCodeDone)
-        ed.edit(self.sipfile.typehintcode, "%TypeHintCode: " + self.sipfile.name)
+        ed.edit(self.api_item.typehintcode, "%TypeHintCode: " + self.api_item.name)
         self._editors["thc"] = ed
 
     def _typeHintCodeDone(self, text_changed, text):
@@ -1033,7 +963,7 @@ class SipFileItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.sipfile.typehintcode = text
+            self.api_item.typehintcode = text
             self.shell.dirty = True
 
         del self._editors["thc"]
@@ -1073,9 +1003,7 @@ class Argument(EditorItem):
     def __init__(self, shell, parent, arg):
         """ Initialise the argument item. """
 
-        self.arg = arg
-
-        super().__init__(shell, parent)
+        super().__init__(arg, shell, parent)
 
         self.setFlags(Qt.ItemFlag.ItemIsEnabled)
 
@@ -1087,7 +1015,8 @@ class Argument(EditorItem):
     def draw_name(self):
         """ Draw the name column. """
 
-        self.setText(ApiEditor.NAME, self.arg.user(self.parent().code))
+        self.setText(ApiEditor.NAME,
+                self.api_item.user(self.parent().api_item))
 
     def get_menu(self, siblings):
         """ Return the list of context menu options.
@@ -1106,7 +1035,7 @@ class Argument(EditorItem):
     def _handle_argument_properties(self):
         """ Slot to handle the argument's properties. """
 
-        dialog = ArgumentPropertiesDialog(self.arg, "Argument Properties",
+        dialog = ArgumentPropertiesDialog(self.api_item, "Argument Properties",
                 self.shell)
 
         if dialog.update():
@@ -1125,8 +1054,6 @@ class CodeItem(ContainerItem):
     def __init__(self, code, shell, parent, after=None):
         """ Initialise the code item. """
 
-        self.code = code
-
         super().__init__(code, shell, parent, after)
 
         self._targets = []
@@ -1135,7 +1062,7 @@ class CodeItem(ContainerItem):
         self.draw_name()
         self._draw_access()
         self.draw_status()
-        self._draw_versions()
+        self.draw_versions()
 
         if code.status == 'ignored':
             self.setHidden(True)
@@ -1145,30 +1072,17 @@ class CodeItem(ContainerItem):
             for a in code.args:
                 Argument(self.shell, self, a)
 
-        observe('status', code, self.__on_status_changed)
-        observe('versions', code, self.__on_versions_changed)
-
-    def parent_project_item(self):
-        """ Return the parent project item that contains our project item. """
-
-        return self.parent().project_item()
-
-    def project_item(self):
-        """ Return our project item. """
-
-        return self.code
-
     def draw_name(self):
         """ Update the item's name. """
 
-        self.setText(ApiEditor.NAME, self.code.user())
+        self.setText(ApiEditor.NAME, self.api_item.user())
 
     def _draw_access(self):
         """ Update the item's access. """
 
         # Not everything has an access specifier.
         try:
-            access = self.code.access
+            access = self.api_item.access
         except AttributeError:
             access = ''
 
@@ -1178,19 +1092,19 @@ class CodeItem(ContainerItem):
         """ Returns ``True`` if the code has unnamed arguments. """
 
         # These types don't use named arguments.
-        if isinstance(self.code, (OperatorMethod, OperatorCast, OperatorFunction)):
+        if isinstance(self.api_item, (OperatorMethod, OperatorCast, OperatorFunction)):
             return False
 
         # Ignore private items.
         try:
-            private = (self.code.access == 'private')
+            private = (self.api_item.access == 'private')
         except AttributeError:
             private = False
 
         if private:
             return False
 
-        for arg in self.code.args:
+        for arg in self.api_item.args:
             if arg.unnamed and arg.default != '':
                 return True
 
@@ -1202,7 +1116,7 @@ class CodeItem(ContainerItem):
         status = []
 
         expand = False
-        s = self.code.status
+        s = self.api_item.status
 
         if s == 'removed':
             text = "Removed"
@@ -1221,7 +1135,7 @@ class CodeItem(ContainerItem):
         if text:
             status.append(text)
 
-        if s != 'ignored' and hasattr(self.code, 'args') and self._has_unnamed_args():
+        if s != 'ignored' and hasattr(self.api_item, 'args') and self._has_unnamed_args():
             status.append("Unnamed arguments")
             expand = True
 
@@ -1231,27 +1145,17 @@ class CodeItem(ContainerItem):
             parent = self.parent()
             while parent is not None:
                 if isinstance(parent, CodeItem):
-                    if parent.code.status == 'ignored':
+                    if parent.api_item.status == 'ignored':
                         break
 
                 parent.setExpanded(True)
                 parent = parent.parent()
 
-    def __on_status_changed(self, change):
-        """ Invoked when the code's status changes. """
-
-        self.draw_status()
-
-    def _draw_versions(self):
+    def draw_versions(self):
         """ Update the item's versions. """
 
-        ranges = [version_range(r) for r in self.code.versions]
+        ranges = [version_range(r) for r in self.api_item.versions]
         self.setText(ApiEditor.VERSIONS, ", ".join(ranges))
-
-    def __on_versions_changed(self, change):
-        """ Invoked when the code's versions changes. """
-
-        self._draw_versions()
 
     def get_menu(self, siblings):
         """ Return the list of context menu options.
@@ -1268,21 +1172,21 @@ class CodeItem(ContainerItem):
         self._targets = siblings[:]
         self._targets.append(self)
 
-        menu = [("Checked", self._setStatusChecked, True, (self.code.status == "")),
-                ("Todo", self._setStatusTodo, True, (self.code.status == "todo")),
-                ("Unchecked", self._setStatusUnchecked, True, (self.code.status == "unknown")),
-                ("Ignored", self._setStatusIgnored, True, (self.code.status == "ignored"))]
+        menu = [("Checked", self._setStatusChecked, True, (self.api_item.status == "")),
+                ("Todo", self._setStatusTodo, True, (self.api_item.status == "todo")),
+                ("Unchecked", self._setStatusUnchecked, True, (self.api_item.status == "unknown")),
+                ("Ignored", self._setStatusIgnored, True, (self.api_item.status == "ignored"))]
 
         # Handle the access specifiers.
-        if isinstance(self.code, Access):
+        if isinstance(self.api_item, Access):
                 menu.append(None)
-                menu.append(("public", self._setAccessPublic, True, (self.code.access == "")))
-                menu.append(("public slots", self._setAccessPublicSlots, True, (self.code.access == "public slots")))
-                menu.append(("protected", self._setAccessProtected, True, (self.code.access == "protected")))
-                menu.append(("protected slots", self._setAccessProtectedSlots, True, (self.code.access == "protected slots")))
-                menu.append(("private", self._setAccessPrivate, True, (self.code.access == "private")))
-                menu.append(("private slots", self._setAccessPrivateSlots, True, (self.code.access == "private slots")))
-                menu.append(("signals", self._setAccessSignals, True, (self.code.access == "signals")))
+                menu.append(("public", self._setAccessPublic, True, (self.api_item.access == "")))
+                menu.append(("public slots", self._setAccessPublicSlots, True, (self.api_item.access == "public slots")))
+                menu.append(("protected", self._setAccessProtected, True, (self.api_item.access == "protected")))
+                menu.append(("protected slots", self._setAccessProtectedSlots, True, (self.api_item.access == "protected slots")))
+                menu.append(("private", self._setAccessPrivate, True, (self.api_item.access == "private")))
+                menu.append(("private slots", self._setAccessPrivateSlots, True, (self.api_item.access == "private slots")))
+                menu.append(("signals", self._setAccessSignals, True, (self.api_item.access == "signals")))
 
         if len(siblings) != 0:
             menu.append(None)
@@ -1324,20 +1228,20 @@ class CodeItem(ContainerItem):
         pslot = None
         dsslot = None
 
-        if isinstance(self.code, ManualCode):
+        if isinstance(self.api_item, ManualCode):
             menu.append(("Modify manual code...", self._handle_modify_manual_code))
             menu.append(("Modify manual code body...", self._bodyManualCode, ("mcb" not in self._editors)))
 
             mcslot = True
             pslot = self._handle_callable_properties
             dsslot = True
-        elif isinstance(self.code, Namespace):
+        elif isinstance(self.api_item, Namespace):
             pslot = self._handle_namespace_properties
-        elif isinstance(self.code, OpaqueClass):
+        elif isinstance(self.api_item, OpaqueClass):
             pslot = self._handle_opaque_class_properties
-        elif isinstance(self.code, Namespace):
+        elif isinstance(self.api_item, Namespace):
             thcslot = True
-        elif isinstance(self.code, Class):
+        elif isinstance(self.api_item, Class):
             thcslot = True
             thicslot = True
             tcslot = True
@@ -1357,47 +1261,47 @@ class CodeItem(ContainerItem):
             xaslot = True
             pslot = self._handle_class_properties
             dsslot = True
-        elif isinstance(self.code, Constructor):
+        elif isinstance(self.api_item, Constructor):
             mcslot = True
             pslot = self._handle_callable_properties
             dsslot = True
-        elif isinstance(self.code, Destructor):
+        elif isinstance(self.api_item, Destructor):
             mcslot = True
             vccslot = True
             pslot = self._handle_callable_properties
-        elif isinstance(self.code, OperatorCast):
+        elif isinstance(self.api_item, OperatorCast):
             mcslot = True
             pslot = self._handle_callable_properties
-        elif isinstance(self.code, Method):
+        elif isinstance(self.api_item, Method):
             mcslot = True
 
-            if self.code.virtual:
+            if self.api_item.virtual:
                 vccslot = True
 
             pslot = self._handle_callable_properties
             dsslot = True
-        elif isinstance(self.code, OperatorMethod):
+        elif isinstance(self.api_item, OperatorMethod):
             mcslot = True
 
-            if self.code.virtual:
+            if self.api_item.virtual:
                 vccslot = True
 
             pslot = self._handle_callable_properties
-        elif isinstance(self.code, Function):
+        elif isinstance(self.api_item, Function):
             mcslot = True
             pslot = self._handle_callable_properties
             dsslot = True
-        elif isinstance(self.code, OperatorFunction):
+        elif isinstance(self.api_item, OperatorFunction):
             mcslot = True
             pslot = self._handle_callable_properties
-        elif isinstance(self.code, Variable):
+        elif isinstance(self.api_item, Variable):
             acslot = True
             gcslot = True
             scslot = True
             pslot = self._handle_variable_properties
-        elif isinstance(self.code, Enum):
+        elif isinstance(self.api_item, Enum):
             pslot = self._handle_enum_properties
-        elif isinstance(self.code, EnumValue):
+        elif isinstance(self.api_item, EnumValue):
             pslot = self._handle_enum_member_properties
 
         if thcslot or thicslot or tcslot or cttcslot or cftcslot or fcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
@@ -1405,104 +1309,104 @@ class CodeItem(ContainerItem):
 
             if thcslot:
                 self._add_directive(menu, '%TypeHeaderCode',
-                        self.code.typeheadercode, self._typeheaderCodeSlot,
+                        self.api_item.typeheadercode, self._typeheaderCodeSlot,
                         'thc')
 
             if tcslot:
-                self._add_directive(menu, '%TypeCode', self.code.typecode,
+                self._add_directive(menu, '%TypeCode', self.api_item.typecode,
                         self._typeCodeSlot, 'tc')
 
             if thicslot:
                 self._add_directive(menu, '%TypeHintCode',
-                        self.code.typehintcode, self._typehintCodeSlot, 'thic')
+                        self.api_item.typehintcode, self._typehintCodeSlot, 'thic')
 
             if fcslot:
                 self._add_directive(menu, '%FinalisationCode',
-                        self.code.finalisationcode, self._finalCodeSlot, 'fc')
+                        self.api_item.finalisationcode, self._finalCodeSlot, 'fc')
 
             if sccslot:
                 self._add_directive(menu, '%ConvertToSubClassCode',
-                        self.code.subclasscode, self._subclassCodeSlot, 'scc')
+                        self.api_item.subclasscode, self._subclassCodeSlot, 'scc')
 
             if cttcslot:
                 self._add_directive(menu, '%ConvertToTypeCode',
-                        self.code.convtotypecode, self._convToTypeCodeSlot,
+                        self.api_item.convtotypecode, self._convToTypeCodeSlot,
                         'cttc')
 
             if cftcslot:
                 self._add_directive(menu, '%ConvertFromTypeCode',
-                        self.code.convfromtypecode, self._convFromTypeCodeSlot,
+                        self.api_item.convfromtypecode, self._convFromTypeCodeSlot,
                         'cftc')
 
             if mcslot:
-                self._add_directive(menu, '%MethodCode', self.code.methcode,
+                self._add_directive(menu, '%MethodCode', self.api_item.methcode,
                         self._methodCodeSlot, 'mc')
 
             if vccslot:
                 self._add_directive(menu, '%VirtualCatcherCode',
-                        self.code.virtcode, self._virtualCatcherCodeSlot,
+                        self.api_item.virtcode, self._virtualCatcherCodeSlot,
                         'vcc')
 
             if acslot:
-                self._add_directive(menu, '%AccessCode', self.code.accesscode,
+                self._add_directive(menu, '%AccessCode', self.api_item.accesscode,
                         self._accessCodeSlot, 'ac')
 
             if gcslot:
-                self._add_directive(menu, '%GetCode', self.code.getcode,
+                self._add_directive(menu, '%GetCode', self.api_item.getcode,
                         self._getCodeSlot, 'gc')
 
             if scslot:
-                self._add_directive(menu, '%SetCode', self.code.setcode,
+                self._add_directive(menu, '%SetCode', self.api_item.setcode,
                         self._setCodeSlot, 'sc')
 
             if gctcslot:
                 self._add_directive(menu, '%GCTraverseCode',
-                        self.code.gctraversecode, self._gcTraverseCodeSlot,
+                        self.api_item.gctraversecode, self._gcTraverseCodeSlot,
                         'gctc')
 
             if gcccslot:
                 self._add_directive(menu, '%GCClearCode',
-                        self.code.gcclearcode, self._gcClearCodeSlot, 'gccc')
+                        self.api_item.gcclearcode, self._gcClearCodeSlot, 'gccc')
 
             if bigetbslot:
                 self._add_directive(menu, '%BIGetBufferCode',
-                        self.code.bigetbufcode, self._biGetBufCodeSlot,
+                        self.api_item.bigetbufcode, self._biGetBufCodeSlot,
                         'bigetb')
 
             if birelbslot:
                 self._add_directive(menu, '%BIReleaseBufferCode',
-                        self.code.birelbufcode, self._biRelBufCodeSlot,
+                        self.api_item.birelbufcode, self._biRelBufCodeSlot,
                         'birelb')
 
             if birbslot:
                 self._add_directive(menu, '%BIGetReadBufferCode',
-                        self.code.bireadbufcode, self._biReadBufCodeSlot,
+                        self.api_item.bireadbufcode, self._biReadBufCodeSlot,
                         'birb')
 
             if biwbslot:
                 self._add_directive(menu, '%BIGetWriteBufferCode',
-                        self.code.biwritebufcode, self._biWriteBufCodeSlot,
+                        self.api_item.biwritebufcode, self._biWriteBufCodeSlot,
                         'biwb')
 
             if biscslot:
                 self._add_directive(menu, '%BIGetSegCountCode',
-                        self.code.bisegcountcode, self._biSegCountCodeSlot,
+                        self.api_item.bisegcountcode, self._biSegCountCodeSlot,
                         'bisc')
 
             if bicbslot:
                 self._add_directive(menu, '%BIGetCharBufferCode',
-                        self.code.bicharbufcode, self._biCharBufCodeSlot,
+                        self.api_item.bicharbufcode, self._biCharBufCodeSlot,
                         'bicb')
 
             if pickslot:
-                self._add_directive(menu, '%PickleCode', self.code.picklecode,
+                self._add_directive(menu, '%PickleCode', self.api_item.picklecode,
                         self._pickleCodeSlot, 'pick')
 
             if dsslot:
-                self._add_directive(menu, '%Docstring', self.code.docstring,
+                self._add_directive(menu, '%Docstring', self.api_item.docstring,
                         self._docstringSlot, 'ds')
 
-        if isinstance(self.code, (Class, Constructor, Function, Method)):
+        if isinstance(self.api_item, (Class, Constructor, Function, Method)):
             menu.append(None)
             menu.append(("Accept all argument names", self._acceptNames))
 
@@ -1511,10 +1415,10 @@ class CodeItem(ContainerItem):
         menu.append(("Versions...", self._handle_versions,
                 len(project.versions) != 0))
         menu.append(
-                (self._flagged_text("Platform Tags...", self.code.platforms),
+                (self._flagged_text("Platform Tags...", self.api_item.platforms),
                         self._handle_platforms, len(project.platforms) != 0))
         menu.append(
-                (self._flagged_text("Feature Tags...", self.code.features),
+                (self._flagged_text("Feature Tags...", self.api_item.features),
                         self._handle_features,
                         (len(project.features) != 0 or len(project.externalfeatures) != 0)))
 
@@ -1545,7 +1449,7 @@ class CodeItem(ContainerItem):
     def _acceptNames(self):
         """ Accept all argument names. """
 
-        self.treeWidget().acceptArgumentNames(self.code)
+        self.treeWidget().acceptArgumentNames(self.api_item)
 
     def _handle_add_manual_code(self):
         """ Slot to handle the addition of manual code. """
@@ -1555,15 +1459,15 @@ class CodeItem(ContainerItem):
         dialog = ManualCodeDialog(manual_code, "Add Manual Code", self.shell)
 
         if dialog.update():
-            parent_content = self.parent_project_item().content
-            parent_content.insert(parent_content.index(self.code) + 1,
+            parent_content = self.parent().api_item.content
+            parent_content.insert(parent_content.index(self.api_item) + 1,
                     manual_code)
             self.shell.dirty = True
 
     def _handle_modify_manual_code(self):
         """ Slot to handle the update of the manual code. """
 
-        dialog = ManualCodeDialog(self.code, "Modify Manual Code", self.shell)
+        dialog = ManualCodeDialog(self.api_item, "Modify Manual Code", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
@@ -1576,7 +1480,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._mcBodyDone)
-        ed.edit(self.code.body, "Manual Code: " + self.code.precis)
+        ed.edit(self.api_item.body, "Manual Code: " + self.api_item.precis)
         self._editors["mcb"] = ed
 
     def _mcBodyDone(self, text_changed, text):
@@ -1587,7 +1491,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.body = text
+            self.api_item.body = text
             self.shell.dirty = True
 
         del self._editors["mcb"]
@@ -1607,7 +1511,7 @@ class CodeItem(ContainerItem):
             self.shell.dirty = True
 
             for target in self._targets:
-                self.parent_project_item().content.remove(target.code)
+                self.parent().api_item.content.remove(target.api_item)
 
     def _accessCodeSlot(self):
         """
@@ -1615,7 +1519,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._accessCodeDone)
-        ed.edit(self.code.accesscode, "%AccessCode: " + self.code.user())
+        ed.edit(self.api_item.accesscode, "%AccessCode: " + self.api_item.user())
         self._editors["ac"] = ed
 
     def _accessCodeDone(self, text_changed, text):
@@ -1626,7 +1530,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.accesscode = text
+            self.api_item.accesscode = text
             self.shell.dirty = True
 
         del self._editors["ac"]
@@ -1637,7 +1541,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._getCodeDone)
-        ed.edit(self.code.getcode, "%GetCode: " + self.code.user())
+        ed.edit(self.api_item.getcode, "%GetCode: " + self.api_item.user())
         self._editors["gc"] = ed
 
     def _getCodeDone(self, text_changed, text):
@@ -1648,7 +1552,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.getcode = text
+            self.api_item.getcode = text
             self.shell.dirty = True
 
         del self._editors["gc"]
@@ -1659,7 +1563,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._setCodeDone)
-        ed.edit(self.code.setcode, "%SetCode: " + self.code.user())
+        ed.edit(self.api_item.setcode, "%SetCode: " + self.api_item.user())
         self._editors["sc"] = ed
 
     def _setCodeDone(self, text_changed, text):
@@ -1670,7 +1574,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.setcode = text
+            self.api_item.setcode = text
             self.shell.dirty = True
 
         del self._editors["sc"]
@@ -1681,7 +1585,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._typehintCodeDone)
-        ed.edit(self.code.typeheadercode, "%TypeHintCode: " + self.code.user())
+        ed.edit(self.api_item.typeheadercode, "%TypeHintCode: " + self.api_item.user())
         self._editors["thic"] = ed
 
     def _typehintCodeDone(self, text_changed, text):
@@ -1692,7 +1596,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.typehintcode = text
+            self.api_item.typehintcode = text
             self.shell.dirty = True
 
         del self._editors["thic"]
@@ -1703,7 +1607,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._typeheaderCodeDone)
-        ed.edit(self.code.typeheadercode, "%TypeHeaderCode: " + self.code.user())
+        ed.edit(self.api_item.typeheadercode, "%TypeHeaderCode: " + self.api_item.user())
         self._editors["thc"] = ed
 
     def _typeheaderCodeDone(self, text_changed, text):
@@ -1714,7 +1618,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.typeheadercode = text
+            self.api_item.typeheadercode = text
             self.shell.dirty = True
 
         del self._editors["thc"]
@@ -1725,7 +1629,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._typeCodeDone)
-        ed.edit(self.code.typecode, "%TypeCode: " + self.code.user())
+        ed.edit(self.api_item.typecode, "%TypeCode: " + self.api_item.user())
         self._editors["tc"] = ed
 
     def _typeCodeDone(self, text_changed, text):
@@ -1736,7 +1640,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.typecode = text
+            self.api_item.typecode = text
             self.shell.dirty = True
 
         del self._editors["tc"]
@@ -1747,7 +1651,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._convToTypeCodeDone)
-        ed.edit(self.code.convtotypecode, "%ConvertToTypeCode: " + self.code.user())
+        ed.edit(self.api_item.convtotypecode, "%ConvertToTypeCode: " + self.api_item.user())
         self._editors["cttc"] = ed
 
     def _convToTypeCodeDone(self, text_changed, text):
@@ -1758,7 +1662,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.convtotypecode = text
+            self.api_item.convtotypecode = text
             self.shell.dirty = True
 
         del self._editors["cttc"]
@@ -1769,7 +1673,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._convFromTypeCodeDone)
-        ed.edit(self.code.convfromtypecode, "%ConvertFromTypeCode: " + self.code.user())
+        ed.edit(self.api_item.convfromtypecode, "%ConvertFromTypeCode: " + self.api_item.user())
         self._editors["cftc"] = ed
 
     def _convFromTypeCodeDone(self, text_changed, text):
@@ -1780,7 +1684,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.convfromtypecode = text
+            self.api_item.convfromtypecode = text
             self.shell.dirty = True
 
         del self._editors["cftc"]
@@ -1791,7 +1695,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._gcTraverseCodeDone)
-        ed.edit(self.code.gctraversecode, "%GCTraverseCode: " + self.code.user())
+        ed.edit(self.api_item.gctraversecode, "%GCTraverseCode: " + self.api_item.user())
         self._editors["gctc"] = ed
 
     def _gcTraverseCodeDone(self, text_changed, text):
@@ -1802,7 +1706,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.gctraversecode = text
+            self.api_item.gctraversecode = text
             self.shell.dirty = True
 
         del self._editors["gctc"]
@@ -1813,7 +1717,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._gcClearCodeDone)
-        ed.edit(self.code.gcclearcode, "%GCClearCode: " + self.code.user())
+        ed.edit(self.api_item.gcclearcode, "%GCClearCode: " + self.api_item.user())
         self._editors["gccc"] = ed
 
     def _gcClearCodeDone(self, text_changed, text):
@@ -1824,7 +1728,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.gcclearcode = text
+            self.api_item.gcclearcode = text
             self.shell.dirty = True
 
         del self._editors["gccc"]
@@ -1835,7 +1739,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._biGetBufCodeDone)
-        ed.edit(self.code.bigetbufcode, "%BIGetBufferCode: " + self.code.user())
+        ed.edit(self.api_item.bigetbufcode, "%BIGetBufferCode: " + self.api_item.user())
         self._editors["bigetb"] = ed
 
     def _biGetBufCodeDone(self, text_changed, text):
@@ -1846,7 +1750,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.bigetbufcode = text
+            self.api_item.bigetbufcode = text
             self.shell.dirty = True
 
         del self._editors["bigetb"]
@@ -1857,7 +1761,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._biRelBufCodeDone)
-        ed.edit(self.code.birelbufcode, "%BIReleaseBufferCode: " + self.code.user())
+        ed.edit(self.api_item.birelbufcode, "%BIReleaseBufferCode: " + self.api_item.user())
         self._editors["birelb"] = ed
 
     def _biRelBufCodeDone(self, text_changed, text):
@@ -1868,7 +1772,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.birelbufcode = text
+            self.api_item.birelbufcode = text
             self.shell.dirty = True
 
         del self._editors["birelb"]
@@ -1879,7 +1783,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._biReadBufCodeDone)
-        ed.edit(self.code.bireadbufcode, "%BIGetReadBufferCode: " + self.code.user())
+        ed.edit(self.api_item.bireadbufcode, "%BIGetReadBufferCode: " + self.api_item.user())
         self._editors["birb"] = ed
 
     def _biReadBufCodeDone(self, text_changed, text):
@@ -1890,7 +1794,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.bireadbufcode = text
+            self.api_item.bireadbufcode = text
             self.shell.dirty = True
 
         del self._editors["birb"]
@@ -1901,7 +1805,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._biWriteBufCodeDone)
-        ed.edit(self.code.biwritebufcode, "%BIGetWriteBufferCode: " + self.code.user())
+        ed.edit(self.api_item.biwritebufcode, "%BIGetWriteBufferCode: " + self.api_item.user())
         self._editors["biwb"] = ed
 
     def _biWriteBufCodeDone(self, text_changed, text):
@@ -1912,7 +1816,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.biwritebufcode = text
+            self.api_item.biwritebufcode = text
             self.shell.dirty = True
 
         del self._editors["biwb"]
@@ -1923,7 +1827,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._biSegCountCodeDone)
-        ed.edit(self.code.bisegcountcode, "%BIGetSegCountCode: " + self.code.user())
+        ed.edit(self.api_item.bisegcountcode, "%BIGetSegCountCode: " + self.api_item.user())
         self._editors["bisc"] = ed
 
     def _biSegCountCodeDone(self, text_changed, text):
@@ -1934,7 +1838,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.bisegcountcode = text
+            self.api_item.bisegcountcode = text
             self.shell.dirty = True
 
         del self._editors["bisc"]
@@ -1945,7 +1849,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._biCharBufCodeDone)
-        ed.edit(self.code.bicharbufcode, "%BIGetCharBufferCode: " + self.code.user())
+        ed.edit(self.api_item.bicharbufcode, "%BIGetCharBufferCode: " + self.api_item.user())
         self._editors["bicb"] = ed
 
     def _biCharBufCodeDone(self, text_changed, text):
@@ -1956,7 +1860,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.bicharbufcode = text
+            self.api_item.bicharbufcode = text
             self.shell.dirty = True
 
         del self._editors["bicb"]
@@ -1967,7 +1871,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._pickleCodeDone)
-        ed.edit(self.code.picklecode, "%PickleCode: " + self.code.user())
+        ed.edit(self.api_item.picklecode, "%PickleCode: " + self.api_item.user())
         self._editors["pick"] = ed
 
     def _pickleCodeDone(self, text_changed, text):
@@ -1978,7 +1882,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.picklecode = text
+            self.api_item.picklecode = text
             self.shell.dirty = True
 
         del self._editors["pick"]
@@ -1989,7 +1893,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._finalCodeDone)
-        ed.edit(self.code.finalisationcode, "%FinalisationCode: " + self.code.user())
+        ed.edit(self.api_item.finalisationcode, "%FinalisationCode: " + self.api_item.user())
         self._editors["fc"] = ed
 
     def _finalCodeDone(self, text_changed, text):
@@ -2000,7 +1904,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.finalisationcode = text
+            self.api_item.finalisationcode = text
             self.shell.dirty = True
 
         del self._editors["fc"]
@@ -2011,7 +1915,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._subclassCodeDone)
-        ed.edit(self.code.subclasscode, "%ConvertToSubClassCode: " + self.code.user())
+        ed.edit(self.api_item.subclasscode, "%ConvertToSubClassCode: " + self.api_item.user())
         self._editors["scc"] = ed
 
     def _subclassCodeDone(self, text_changed, text):
@@ -2022,7 +1926,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.subclasscode = text
+            self.api_item.subclasscode = text
             self.shell.dirty = True
 
         del self._editors["scc"]
@@ -2033,7 +1937,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._docstringDone)
-        ed.edit(self.code.docstring, "%Docstring: " + self.code.user())
+        ed.edit(self.api_item.docstring, "%Docstring: " + self.api_item.user())
         self._editors["ds"] = ed
 
     def _docstringDone(self, text_changed, text):
@@ -2044,7 +1948,7 @@ class CodeItem(ContainerItem):
         text is the changed docstring.
         """
         if text_changed:
-            self.code.docstring = text
+            self.api_item.docstring = text
             self.shell.dirty = True
 
         del self._editors["ds"]
@@ -2055,7 +1959,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._methodCodeDone)
-        ed.edit(self.code.methcode, "%MethodCode: " + self.code.user())
+        ed.edit(self.api_item.methcode, "%MethodCode: " + self.api_item.user())
         self._editors["mc"] = ed
 
     def _methodCodeDone(self, text_changed, text):
@@ -2066,7 +1970,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.methcode = text
+            self.api_item.methcode = text
             self.shell.dirty = True
 
         del self._editors["mc"]
@@ -2077,7 +1981,7 @@ class CodeItem(ContainerItem):
         """
         ed = ExternalEditor()
         ed.editDone.connect(self._virtualCatcherCodeDone)
-        ed.edit(self.code.virtcode, "%VirtualCatcherCode: " + self.code.user())
+        ed.edit(self.api_item.virtcode, "%VirtualCatcherCode: " + self.api_item.user())
         self._editors["vcc"] = ed
 
     def _virtualCatcherCodeDone(self, text_changed, text):
@@ -2088,7 +1992,7 @@ class CodeItem(ContainerItem):
         text is the code.
         """
         if text_changed:
-            self.code.virtcode = text
+            self.api_item.virtcode = text
             self.shell.dirty = True
 
         del self._editors["vcc"]
@@ -2096,20 +2000,20 @@ class CodeItem(ContainerItem):
     def _handle_versions(self):
         """ Slot to handle the versions. """
 
-        dialog = VersionsDialog(self.code, "Versions", self.shell)
+        dialog = VersionsDialog(self.api_item, "Versions", self.shell)
 
         if dialog.update():
             # Apply the version range to all targets.
             for itm in self._targets:
-                if itm.code is not self.code:
-                    itm.code.versions = list(self.code.versions)
+                if itm.api_item is not self.api_item:
+                    itm.api_item.versions = list(self.api_item.versions)
 
             self.shell.dirty = True
 
     def _handle_platforms(self):
         """ Slot to handle the platforms. """
 
-        dialog = PlatformsDialog(self.code, "Platform Tags", self.shell)
+        dialog = PlatformsDialog(self.api_item, "Platform Tags", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
@@ -2117,7 +2021,7 @@ class CodeItem(ContainerItem):
     def _handle_features(self):
         """ Slot to handle the features. """
 
-        dialog = FeaturesDialog(self.code, "Feature Tags", self.shell)
+        dialog = FeaturesDialog(self.api_item, "Feature Tags", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
@@ -2125,70 +2029,70 @@ class CodeItem(ContainerItem):
     def _handle_namespace_properties(self):
         """ Slot to handle the properties for namespaces. """
 
-        dialog = NamespacePropertiesDialog(self.code, "Namespace Properties",
+        dialog = NamespacePropertiesDialog(self.api_item, "Namespace Properties",
                 self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.code.user())
+            self.setText(ApiEditor.NAME, self.api_item.user())
 
     def _handle_opaque_class_properties(self):
         """ Slot to handle the properties for opaque classes. """
 
-        dialog = OpaqueClassPropertiesDialog(self.code,
+        dialog = OpaqueClassPropertiesDialog(self.api_item,
                 "Opaque Class Properties", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.code.user())
+            self.setText(ApiEditor.NAME, self.api_item.user())
 
     def _handle_class_properties(self):
         """ Slot to handle the properties for classes. """
 
-        dialog = ClassPropertiesDialog(self.code, "Class Properties",
+        dialog = ClassPropertiesDialog(self.api_item, "Class Properties",
                 self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.code.user())
+            self.setText(ApiEditor.NAME, self.api_item.user())
 
     def _handle_callable_properties(self):
         """ Slot to handle the properties for callables. """
 
-        dialog = CallablePropertiesDialog(self.code, 'Placeholder', self.shell)
+        dialog = CallablePropertiesDialog(self.api_item, 'Placeholder', self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.code.user())
+            self.setText(ApiEditor.NAME, self.api_item.user())
 
     def _handle_variable_properties(self):
         """ Slot to handle the properties for variables. """
 
-        dialog = VariablePropertiesDialog(self.code, "Variable Properties",
+        dialog = VariablePropertiesDialog(self.api_item, "Variable Properties",
                 self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.code.user())
+            self.setText(ApiEditor.NAME, self.api_item.user())
 
     def _handle_enum_properties(self):
         """ Slot to handle the properties for enums. """
 
-        dialog = EnumPropertiesDialog(self.code, "Enum Properties", self.shell)
+        dialog = EnumPropertiesDialog(self.api_item, "Enum Properties", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.code.user())
+            self.setText(ApiEditor.NAME, self.api_item.user())
 
     def _handle_enum_member_properties(self):
         """ Slot to handle the properties for enum members. """
 
-        dialog = EnumMemberPropertiesDialog(self.code,
+        dialog = EnumMemberPropertiesDialog(self.api_item,
                 "Enum Member Properties", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.code.user())
+            self.setText(ApiEditor.NAME, self.api_item.user())
 
     def _setStatusChecked(self):
         """
@@ -2221,8 +2125,8 @@ class CodeItem(ContainerItem):
         new is the new status.
         """
         for itm in self._targets:
-            if itm.code.status != new:
-                itm.code.status = new
+            if itm.api_item.status != new:
+                itm.api_item.status = new
                 self.shell.dirty = True
 
                 # FIXME: Observe the status attribute.
@@ -2277,8 +2181,8 @@ class CodeItem(ContainerItem):
         new is the new access.
         """
         for itm in self._targets:
-            if itm.code.access != new:
-                itm.code.access = new
+            if itm.api_item.access != new:
+                itm.api_item.access = new
                 self.shell.dirty = True
 
                 # FIXME: Observe the access attribute.
