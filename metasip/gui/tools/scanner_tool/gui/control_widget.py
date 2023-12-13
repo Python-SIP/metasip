@@ -25,6 +25,7 @@ from .....project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
         ManualCode, SipFile, VersionRange)
 
 from ....helpers import warning
+from ....shell import EventType
 
 
 class ControlWidget(QWidget):
@@ -151,11 +152,12 @@ class ControlWidget(QWidget):
         if self._header_file is not None:
             self._set_module_selector(self._header_file.ignored)
 
-    def module_rename(self, old_name, new_name):
+    def module_rename(self, module):
         """ A module has been renamed. """
 
-        index = self._module.findText(old_name)
-        self._module.setItemText(index, new_name)
+        for index in range(self._module.count()):
+            if self._module.itemData(index) is module:
+                self._module.setItemText(index, module.name)
 
     def restore_state(self, settings):
         """ Restore the widget's state. """
@@ -354,8 +356,9 @@ class ControlWidget(QWidget):
                         break
                 else:
                     sip_file = SipFile(name=header_file.name)
-                    # ZZZ - event?
                     module.content.append(sip_file)
+                    self._tool.shell.notify(EventType.CONTAINER_API_ITEM_ADD,
+                            sip_file)
 
                 self._merge_code(sip_file, parsed_header_file)
                 break
@@ -843,8 +846,10 @@ class ControlWidget(QWidget):
         self._module.clear()
 
         if not ignored:
-            self._module.addItems(
-                    sorted([m.name for m in self._tool.shell.project.modules]))
+            for module in self._tool.shell.project.modules:
+                self._module.addItem(module.name, module)
+
+            self._module.model().sort(0)
 
             # See if we have just un-ignored the file.
             module_name = self._header_file.module

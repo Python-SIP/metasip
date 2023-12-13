@@ -38,7 +38,7 @@ class PlatformsTool(ActionTool):
     def event(self, event_type, event_arg):
         """ Reimplemented to handle project-specific events. """
 
-        if event_type in (EventType.PROJECT_NEW, EventType.PLATFORM_ADD_DELETE):
+        if event_type in (EventType.PROJECT_NEW, EventType.PLATFORM_ADD, EventType.PLATFORM_DELETE):
             # Configure the actions.
             are_platforms = (len(self.shell.project.platforms) != 0)
             self._rename_action.setEnabled(are_platforms)

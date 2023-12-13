@@ -38,7 +38,7 @@ class FeaturesTool(ActionTool):
     def event(self, event_type, event_arg):
         """ Reimplemented to handle project-specific events. """
 
-        if event_type in (EventType.PROJECT_NEW, EventType.FEATURE_ADD_DELETE):
+        if event_type in (EventType.PROJECT_NEW, EventType.FEATURE_ADD, EventType.FEATURE_DELETE):
             # Configure the actions.
             are_features = (len(self.shell.project.externalfeatures) + len(self.shell.project.features) != 0)
             self._rename_action.setEnabled(are_features)

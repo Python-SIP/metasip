@@ -61,15 +61,20 @@ class ApiEditor(QTreeWidget):
 
         self.dragged = None
 
-    def module_add_delete(self):
-        """ Handle a change in the list of modules. """
+    def module_add(self, module):
+        """ Handle the addition of a module. """
 
-        self._project_item.module_add_delete()
+        self._project_item.module_add(module)
 
-    def module_rename(self, old_name, new_name):
+    def module_delete(self, module):
+        """ Handle the deletion of a module. """
+
+        self._project_item.module_delete(module)
+
+    def module_rename(self, module):
         """ A module has been renamed. """
 
-        self._project_item.module_rename(old_name, new_name)
+        self._project_item.module_rename(module)
 
     def restore_state(self, settings):
         """ Restore the widget's state. """
@@ -417,39 +422,31 @@ class ProjectItem(EditorItem):
         return [("Add Ignored Namespace...", self._ignorednamespaceSlot),
                 ("Properties...", self._handle_project_properties)]
 
-    def module_add_delete(self):
-        """ Handle a change in the list of modules. """
+    def module_add(self, module):
+        """ Handle the addition of a module. """
 
-        modules = list(self.shell.project.modules)
-        removed_module_items = []
+        ModuleItem(module, self.shell, self)
+        self._sort()
+
+    def module_delete(self, module):
+        """ Handle the deletion of a module. """
 
         for module_item_index in range(self.childCount()):
             module_item = self.child(module_item_index)
-            if module_item.module in modules:
-                # The module is still present.
-                modules.remove(module_item.module)
-            else:
-                # The module has gone.
-                removed_module_items.append(module_item)
+            if module_item.module is module:
+                self.removeChild(module_item)
+                break
 
-        # It is now safe to actually remove the items.
-        for module_item in removed_module_items:
-            self.removeChild(module_item)
-
-        # Anything left is new.
-        for module in modules:
-            ModuleItem(module, self.shell, self)
-
-        self._sort()
-
-    def module_rename(self, old_name, new_name):
+    def module_rename(self, module):
         """ A module has been renamed. """
 
         for module_item_index in range(self.childCount()):
             module_item = self.child(module_item_index)
-            if module_item.text(ApiEditor.NAME) == old_name:
-                module_item.setText(ApiEditor.NAME, new_name)
+            if module_item.module is module:
+                module_item.setText(ApiEditor.NAME, module.name)
                 break
+
+        self._sort()
 
     def root_module_updated(self):
         """ The name of the root module has been updated. """
@@ -522,7 +519,6 @@ class ModuleItem(EditorItem, DropSite):
                 progress.setValue(so_far)
                 QApplication.processEvents()
 
-        observe('name', module, self.__on_name_changed)
         observe('content', module, self.__on_content_changed)
 
     def droppable(self, source):
@@ -576,12 +572,6 @@ class ModuleItem(EditorItem, DropSite):
 
         if dialog.update():
             self.shell.dirty = True
-
-    def __on_name_changed(self, change):
-        """ Invoked when the name changes. """
-
-        self.setText(ApiEditor.NAME, change.new)
-        self.parent().sortChildren(ApiEditor.NAME, Qt.SortOrder.AscendingOrder)
 
     def __on_content_changed(self, change):
         """ Invoked when the content changes. """

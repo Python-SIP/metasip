@@ -38,7 +38,7 @@ class ModulesTool(ActionTool):
     def event(self, event_type, event_arg):
         """ Reimplemented to handle project-specific events. """
 
-        if event_type in (EventType.PROJECT_NEW, EventType.MODULE_ADD_DELETE):
+        if event_type in (EventType.PROJECT_NEW, EventType.MODULE_ADD, EventType.MODULE_DELETE):
             # Configure the actions.
             are_modules = (len(self.shell.project.modules) != 0)
             self._rename_action.setEnabled(are_modules)

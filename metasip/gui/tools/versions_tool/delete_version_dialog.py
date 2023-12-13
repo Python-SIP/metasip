@@ -13,7 +13,6 @@
 from PyQt6.QtWidgets import QComboBox
 
 from ...helpers import BaseDialog
-from ...shell import EventType
 
 from ..helpers import tagged_items
 
@@ -37,13 +36,7 @@ class DeleteVersionDialog(BaseDialog):
     def get_fields(self):
         """ Update the project from the dialog's fields. """
 
-        project = self.model
-
-        version = self._version.currentText()
-
-        # Delete from each API item it appears.
-        delete_version(version, project, migrate_items=True)
-
-        self.shell.notify(EventType.VERSION_ADD_DELETE)
+        delete_version(self._version.currentText(), self.shell,
+                migrate_items=True)
 
         return True

@@ -47,8 +47,8 @@ class NewModuleDialog(BaseDialog):
         if self._external.isChecked():
             project.externalmodules.append(module_name)
         else:
-            project.modules.append(Module(name=module_name))
-
-        self.shell.notify(EventType.MODULE_ADD_DELETE)
+            module = Module(name=module_name)
+            project.modules.append(module)
+            self.shell.notify(EventType.MODULE_ADD, module)
 
         return True

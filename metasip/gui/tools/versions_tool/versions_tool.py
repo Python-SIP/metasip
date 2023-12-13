@@ -44,7 +44,7 @@ class VersionsTool(ActionTool):
     def event(self, event_type, event_arg):
         """ Reimplemented to handle project-specific events. """
 
-        if event_type in (EventType.PROJECT_NEW, EventType.VERSION_ADD_DELETE):
+        if event_type in (EventType.PROJECT_NEW, EventType.VERSION_ADD, EventType.VERSION_DELETE):
             # Configure the actions.
             are_versions = (len(self.shell.project.versions) != 0)
             self._rename_action.setEnabled(are_versions)
@@ -67,8 +67,6 @@ class VersionsTool(ActionTool):
     def _handle_delete_all(self):
         """ Handle the Delete All action. """
 
-        project = self.shell.project
-
         confirmed = question("Delete All Versions",
                 "All versions will be removed along with any API items that "
                 "are not part of the latest version.\n\nDo you wish to "
@@ -76,10 +74,9 @@ class VersionsTool(ActionTool):
                 parent=self.shell.widget)
 
         if confirmed:
-            for version in list(project.versions):
-                delete_version(version, project, migrate_items=False)
+            for version in list(self.shell.project.versions):
+                delete_version(version, self.shell, migrate_items=False)
 
-            self.shell.notify(EventType.VERSION_ADD_DELETE)
             self.shell.dirty = True
 
     def _handle_new(self):

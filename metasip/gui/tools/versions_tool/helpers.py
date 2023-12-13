@@ -10,6 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from ...shell import EventType
+
 from ..helpers import tagged_items, validate_identifier, validation_error
 
 
@@ -35,9 +37,10 @@ def validate_version_name(version, project, dialog):
     return True
 
 
-def delete_version(version, project, *, migrate_items):
+def delete_version(version, shell, *, migrate_items):
     """ Delete a version and all API items defined by it. """
 
+    project = shell.project
     versions = project.versions
 
     removing_first_version = (version == versions[0])
@@ -89,6 +92,8 @@ def delete_version(version, project, *, migrate_items):
 
     for api_item, container in remove_items:
         container.content.remove(api_item)
+        shell.notify(EventType.CONTAINER_API_ITEM_DELETE,
+                (container, api_item))
 
     # Delete from the header file versions.
     remove_hfile_versions = []
@@ -119,3 +124,4 @@ def delete_version(version, project, *, migrate_items):
 
     # Delete from the project's list.
     versions.remove(version)
+    shell.notify(EventType.VERSION_DELETE, version)

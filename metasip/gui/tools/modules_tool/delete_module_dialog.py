@@ -40,7 +40,6 @@ class DeleteModuleDialog(BaseDialog):
         module_name = self._module.currentText()
 
         # Delete from the project's list.
-        # TODO - lots of additional events should be generated below.
         for module in project.modules:
             if module.name == module_name:
                 project.modules.remove(module)
@@ -48,6 +47,6 @@ class DeleteModuleDialog(BaseDialog):
         else:
             project.externalmodules.remove(module)
 
-        self.shell.notify(EventType.MODULE_ADD_DELETE)
+        self.shell.notify(EventType.MODULE_DELETE, module)
 
         return True

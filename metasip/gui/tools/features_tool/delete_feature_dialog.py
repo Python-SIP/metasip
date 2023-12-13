@@ -83,6 +83,8 @@ class DeleteFeatureDialog(BaseDialog):
 
         for api_item, container in remove_items:
             container.content.remove(api_item)
+            self.shell.notify(EventType.CONTAINER_API_ITEM_DELETE,
+                    (container, api_item))
 
         # Delete from the project's list.
         if feature in project.externalfeatures:
@@ -92,7 +94,6 @@ class DeleteFeatureDialog(BaseDialog):
 
         feature_list.remove(feature)
 
-        # TODO - lots of additional events should be generated.
-        self.shell.notify(EventType.FEATURE_ADD_DELETE)
+        self.shell.notify(EventType.FEATURE_DELETE, feature)
 
         return True

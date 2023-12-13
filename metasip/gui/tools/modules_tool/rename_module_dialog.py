@@ -55,10 +55,9 @@ class RenameModuleDialog(BaseDialog):
         for module in project.modules:
             if module.name == old_name:
                 module.name = new_name
+                self.shell.notify(EventType.MODULE_RENAME, module)
                 break
         else:
             project.externalmodules[project.externalmodules.index(old_name)] = new_name
-
-        self.shell.notify(EventType.MODULE_RENAME, (old_name, new_name))
 
         return True

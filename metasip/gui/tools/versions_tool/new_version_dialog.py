@@ -56,7 +56,6 @@ class NewVersionDialog(BaseDialog):
             return False
 
         # Add to the header file versions.
-        # TODO - this probably needs to generate events.
         if self._after.isEnabled():
             after = self._after.currentText()
 
@@ -91,6 +90,6 @@ class NewVersionDialog(BaseDialog):
 
             project.versions.append(version)
 
-        self.shell.notify(EventType.VERSION_ADD_DELETE)
+        self.shell.notify(EventType.VERSION_ADD, version)
 
         return True

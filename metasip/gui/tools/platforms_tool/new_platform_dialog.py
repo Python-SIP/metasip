@@ -41,6 +41,6 @@ class NewPlatformDialog(BaseDialog):
 
         project.platforms.append(platform)
 
-        self.shell.notify(EventType.PLATFORM_ADD_DELETE)
+        self.shell.notify(EventType.PLATFORM_ADD, platform)
 
         return True

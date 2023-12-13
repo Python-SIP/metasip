@@ -49,7 +49,6 @@ class DeletePlatformDialog(BaseDialog):
         # Delete from each API item it appears.
         remove_items = []
 
-        # TODO - lots of additional events should be generated below.
         for api_item, container in tagged_items(project):
             # Ignore items that aren't tagged with a platform.
             if len(api_item.platforms) == 0:
@@ -84,10 +83,12 @@ class DeletePlatformDialog(BaseDialog):
 
         for api_item, container in remove_items:
             container.content.remove(api_item)
+            self.shell.notify(EventType.CONTAINER_API_ITEM_DELETE,
+                    (container, api_item))
 
         # Delete from the project's list.
         project.platforms.remove(platform)
 
-        self.shell.notify(EventType.PLATFORM_ADD_DELETE)
+        self.shell.notify(EventType.PLATFORM_DELETE, platform)
 
         return True

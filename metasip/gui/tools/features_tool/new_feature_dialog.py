@@ -49,6 +49,6 @@ class NewFeatureDialog(BaseDialog):
 
         features_list.append(feature)
 
-        self.shell.notify(EventType.FEATURE_ADD_DELETE)
+        self.shell.notify(EventType.FEATURE_ADD, feature)
 
         return True

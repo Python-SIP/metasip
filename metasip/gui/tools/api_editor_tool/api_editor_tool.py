@@ -54,10 +54,12 @@ class ApiEditorTool(ShellTool):
     def event(self, event_type, event_arg):
         """ Reimplemented to handle project-specific events. """
 
-        if event_type is EventType.MODULE_ADD_DELETE:
-            self._api_editor.module_add_delete()
+        if event_type is EventType.MODULE_ADD:
+            self._api_editor.module_add(event_arg)
+        elif event_type is EventType.MODULE_DELETE:
+            self._api_editor.module_delete(event_arg)
         elif event_type is EventType.MODULE_RENAME:
-            self._api_editor.module_rename(*event_arg)
+            self._api_editor.module_rename(event_arg)
         elif event_type is EventType.PROJECT_NEW:
             self._api_editor.set_project()
         elif event_type is EventType.PROJECT_ROOT_MODULE_RENAME:

@@ -24,8 +24,20 @@ class EventType(Enum):
     that don't have an event because there is no consequent impact on the GUI.
     """
 
-    # A feature has been added or deleted.  There is no event argument.
-    FEATURE_ADD_DELETE = auto()
+    # An API item has been added to a container.  The event argument is a
+    # 2-tuple of the container and API item.
+    CONTAINER_API_ITEM_ADD = auto()
+
+    # An API item has been deleted from a container.  The event argument is a
+    # 2-tuple of the container and API item.
+    CONTAINER_API_ITEM_DELETE = auto()
+
+    # A feature has been added.  The event argument is the name of the feature.
+    FEATURE_ADD = auto()
+
+    # A feature has been deleted.  The event argument is the name of the
+    # feature.
+    FEATURE_DELETE = auto()
 
     # A feature has been renamed.  The event argument is a 2-tuple of the old
     # and new names.
@@ -34,15 +46,22 @@ class EventType(Enum):
     # A message has been logged.  The message is the event argument.
     LOG_MESSAGE = auto()
 
-    # A module has been added or deleted.  There is no event argument.
-    MODULE_ADD_DELETE = auto()
+    # A module has been added.  The event argument is the module object.
+    MODULE_ADD = auto()
 
-    # A module has been renamed.  The event argument is a 2-tuple of the old
-    # and new names.
+    # A module has been deleted.  The event argument is the module object.
+    MODULE_DELETE = auto()
+
+    # A module has been renamed.  The event argument is the module object.
     MODULE_RENAME = auto()
 
-    # A platform has been added or deleted.  There is no event argument.
-    PLATFORM_ADD_DELETE = auto()
+    # A platform has been added.  The event argument is the name of the
+    # platform.
+    PLATFORM_ADD = auto()
+
+    # A platform has been deleted.  The event argument is the name of the
+    # platform.
+    PLATFORM_DELETE = auto()
 
     # A platform has been renamed.  The event argument is a 2-tuple of the old
     # and new names.
@@ -57,8 +76,12 @@ class EventType(Enum):
     # The project's root module has been renamed.  There is no event argument.
     PROJECT_ROOT_MODULE_RENAME = auto()
 
-    # A version has been added or deleted.  There is no event argument.
-    VERSION_ADD_DELETE = auto()
+    # A version has been added.  The event argument is the name of the version.
+    VERSION_ADD = auto()
+
+    # A version has been deleted.  The event argument is the name of the
+    # version.
+    VERSION_DELETE = auto()
 
     # A version has been renamed.  The event argument is a 2-tuple of the old
     # and new names.
