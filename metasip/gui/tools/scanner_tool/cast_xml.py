@@ -15,8 +15,6 @@ import subprocess
 import sys
 import tempfile
 
-from ....dip.model import implements, Instance, Model
-
 from ....interfaces.project import ICodeContainer, IProject
 from ....project import (Function, Argument, Variable, Typedef, OpaqueClass,
         Class, Constructor, Destructor, Method, Enum, EnumValue,
@@ -951,13 +949,15 @@ def _transformArgs(parser, gargs, pargs):
         pargs.append(pa)
 
 
-@implements(ICodeContainer)
-class _CodeContainer(Model):
+class _CodeContainer:
     """ An internal class that implements the root of the transformed items.
     """
 
-    # The project.
-    project = Instance(IProject)
+    def __init__(self, project):
+        """ Initialise the object. """
+
+        self.project = project
+        self.content = []
 
 
 class CastXMLParser(ParserBase):
@@ -1074,7 +1074,7 @@ class CastXMLParser(ParserBase):
             return None
 
         # Now convert it to the internal format.
-        phf = _CodeContainer(project=project)
+        phf = _CodeContainer(project)
 
         self.transformScope(phf, self._rootns)
 
