@@ -2388,7 +2388,7 @@ class _IndentFile:
         fname is the name of the file.
         indent is the default indentation step.
         """
-        self._f = open(fname, "w")
+        self._f = open(fname, 'w', encoding='UTF-8')
         self._indent = indent
         self._nrindents = 0
         self._indentnext = True
