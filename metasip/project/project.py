@@ -17,7 +17,6 @@ from xml.sax import saxutils
 
 from ..dip.model import Bool, implements, Instance, Model, Str
 
-from ..logger import Logger
 from ..interfaces.project import (IArgument, IClass, IConstructor, IDestructor,
         IEnum, IEnumValue, IFunction, IHeaderDirectory, IHeaderFile,
         IHeaderFileVersion, IManualCode, IMethod, IModule, INamespace,
@@ -288,7 +287,9 @@ class Project(Model):
 
     @classmethod
     def factory(cls, project_name=None, ui=None):
-        """ Return a project from an optional project file. """
+        """ Return a project from an optional project file.  This can be None
+        if a UI was supplied and the user cancelled at some point.
+        """
 
         project = cls()
 
@@ -299,7 +300,9 @@ class Project(Model):
             from .project_parser import ProjectParser
 
             project.name = os.path.abspath(project_name)
-            ProjectParser(ui).parse(project)
+
+            if not ProjectParser(ui).parse(project):
+                return None
 
         return project
 
@@ -320,6 +323,13 @@ class Project(Model):
 
         if f is None:
             return False
+
+        # Handle the project format version.
+        major_version, minor_version = self.version
+        if major_version == 0:
+            format_version = f'version="{minor_version}"'
+        else:
+            format_version = f'majorversion="{major_version}" minorversion="{minor_version}"'
 
         # Handle the versions.
         if len(self.versions) != 0:
@@ -362,7 +372,7 @@ class Project(Model):
 
         # Write the project.
         f.write('<?xml version="1.0"?>\n')
-        f.write('<Project version="%u" rootmodule="%s"%s%s%s%s%s%s>\n' % (self.version, self.rootmodule, vers, plat, feat, xmod, xf, ins))
+        f.write('<Project %s rootmodule="%s"%s%s%s%s%s%s>\n' % (format_version, self.rootmodule, vers, plat, feat, xmod, xf, ins))
 
         f += 1
 
@@ -446,7 +456,8 @@ class Project(Model):
 
         return True
 
-    def generate_module(self, module, output_dir, latest_sip=True):
+    def generate_module(self, module, output_dir, latest_sip=True,
+            verbose=False):
         """ Generate the output for a module. """
 
         # Remember the root directory used.
@@ -460,7 +471,9 @@ class Project(Model):
             if f is None:
                 raise UserException(self.diagnostic)
 
-            Logger.log("Generating %s" % f.name)
+            if verbose:
+                print("Generating %s" % f.name)
+
             sf.sip(f, latest_sip)
             sfnames.append(os.path.basename(f.name))
 
@@ -471,7 +484,8 @@ class Project(Model):
         if f is None:
             raise UserException(self.diagnostic)
 
-        Logger.log("Generating %s" % f.name)
+        if verbose:
+            print("Generating %s" % f.name)
 
         rname = self.rootmodule
 

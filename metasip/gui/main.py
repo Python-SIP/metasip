@@ -15,13 +15,8 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-#from .. import UpdateManager
 from ..exceptions import UserException
 from ..project import Project
-#from ..updates import (ProjectV2Update, ProjectV3Update, ProjectV4Update,
-#        ProjectV5Update, ProjectV6Update, ProjectV7Update, ProjectV8Update,
-#        ProjectV9Update, ProjectV10Update, ProjectV11Update, ProjectV12Update,
-#        ProjectV13Update, ProjectV14Update, ProjectV15Update, ProjectV16Update)
 
 from .helpers import ProjectUi, warning
 from .shell import Shell
@@ -45,25 +40,10 @@ def main():
 
     sys.excepthook = _exception_hook
 
-    # Add the project updates.
-    #UpdateManager.updates.append(ProjectV2Update())
-    #UpdateManager.updates.append(ProjectV3Update())
-    #UpdateManager.updates.append(ProjectV4Update())
-    #UpdateManager.updates.append(ProjectV5Update())
-    #UpdateManager.updates.append(ProjectV6Update())
-    #UpdateManager.updates.append(ProjectV7Update())
-    #UpdateManager.updates.append(ProjectV8Update())
-    #UpdateManager.updates.append(ProjectV9Update())
-    #UpdateManager.updates.append(ProjectV10Update())
-    #UpdateManager.updates.append(ProjectV11Update())
-    #UpdateManager.updates.append(ProjectV12Update())
-    #UpdateManager.updates.append(ProjectV13Update())
-    #UpdateManager.updates.append(ProjectV14Update())
-    #UpdateManager.updates.append(ProjectV15Update())
-    #UpdateManager.updates.append(ProjectV16Update())
-
     # Load any project.
     project = Project.factory(project_name, ui=ProjectUi())
+    if project is None:
+        return 0
 
     # Create the shell.
     shell = Shell(ApiEditorTool, FeaturesTool, ImportProjectTool, LoggerTool,

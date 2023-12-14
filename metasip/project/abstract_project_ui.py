@@ -19,6 +19,15 @@ class AbstractProjectUi(ABC):
     """
 
     @abstractmethod
+    def confirm_minor_version_update(self, from_version, to_version):
+        """ Called to confirm with the user that the project can be updated
+        from it's current minor version.  Return True if the user didn't
+        cancel.
+        """
+
+        ...
+
+    @abstractmethod
     def load_starting(self, project, nr_steps):
         """ Called to initialise the UI prior to loading the project that will
         take a specific number of steps.
@@ -30,6 +39,14 @@ class AbstractProjectUi(ABC):
     def load_step(self):
         """ Called to update the UI once the next step of loading the project
         has been completed.
+        """
+
+        ...
+
+    @abstractmethod
+    def update_project_format(self, root_element, from_version, to_version):
+        """ Called to update the project from it's current major version before
+        it is parsed.  Return True if the user didn't cancel.
         """
 
         ...

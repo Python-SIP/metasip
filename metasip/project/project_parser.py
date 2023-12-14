@@ -13,14 +13,13 @@
 from xml.etree import ElementTree
 
 from ..exceptions import UserException
-from ..interfaces.project import ProjectVersion
-from ..update_manager import UpdateManager
 
 from .project import (Argument, Class, Constructor, Destructor, Enum,
         EnumValue, Function, HeaderDirectory, HeaderFile, HeaderFileVersion,
         ManualCode, Method, Module, Namespace, OpaqueClass, OperatorCast,
         OperatorFunction, OperatorMethod, Project, SipFile, Typedef, Variable,
         VersionRange)
+from .project_version import MinimumProjectVersion, ProjectVersion
 
 
 class ProjectParser:
@@ -32,7 +31,9 @@ class ProjectParser:
         self._ui = ui
 
     def parse(self, project):
-        """ Populate a project from its project file. """
+        """ Populate a project from its project file.  Return True if the user
+        didn't cancel.
+        """
 
         # Load the file.
         tree = ElementTree.parse(project.name)
@@ -40,34 +41,55 @@ class ProjectParser:
         # Do some basic sanity checks.
         root = tree.getroot()
 
-        version = root.get('version')
+        major_version = root.get('majorversion')
+        minor_version = root.get('minorversion')
 
-        if root.tag != 'Project' or version is None:
+        if major_version is None and minor_version is None:
+            major_version = 0
+            minor_version = self._as_int(root.get('version'))
+        else:
+            major_version = self._as_int(major_version)
+            minor_version = self._as_int(minor_version)
+
+        if root.tag != 'Project' or major_version < 0 or minor_version < 0:
             raise UserException(
                     f"{project.name} doesn't appear to be a valid metasip project")
 
-        # Check the version.
-        version = int(version)
+        # Check we handle the version.
+        version = (major_version, minor_version)
+
+        if version < MinimumProjectVersion:
+            raise UserException(
+                    f"{project.name} was created with an unsupported version of metasip")
 
         if version > ProjectVersion:
             raise UserException(
                     f"{project.name} was created with a later version of metasip")
 
-        if version < ProjectVersion and UpdateManager.update_is_required(root):
+        # See if user input is required.
+        if version[0] != ProjectVersion[0]:
             if self._ui is None:
                 raise UserException(
-                        f"{project.name} was created with an earlier version of metasip and must be updated")
+                        f"{project.name} was created with an earlier version of metasip and must be updated using the GUI")
 
-            UpdateManager.update(root, ProjectVersion)
+            if not self._ui.update_project_format(root, version, ProjectVersion):
+                return False
+
             project.dirty = True
 
-        # Initialise any UI.
+        elif version[1] != ProjectVersion[1] and self._ui is not None:
+            if not self._ui.confirm_minor_version_update(version, ProjectVersion):
+                return False
+
+            project.dirty = True
+
+        # Initialise any UI for the load.
         if self._ui is not None:
-            # Each .sup file is a step of the load.
+            # Each .sip file is a step of the load.
             self._ui.load_starting(project, len(root.findall('.//SipFile')))
 
         # Load the project.
-        project.version = version
+        project.version = ProjectVersion
         project.rootmodule = root.get('rootmodule', '')
         project.versions = root.get('versions', '').split()
         project.platforms = root.get('platforms', '').split()
@@ -83,6 +105,8 @@ class ProjectParser:
                 self._add_header_directory(project, child)
             elif child.tag == 'Module':
                 self._add_module(project, child)
+
+        return True
 
     def _add_argument(self, callable, elem):
         """ Add an element defining an argument to a callable. """
@@ -486,6 +510,15 @@ class ProjectParser:
                 self._add_literal(var, child)
 
         scope.content.append(var)
+
+    @staticmethod
+    def _as_int(s):
+        """ Return the integer value of a string or -1 if it is invalid. """
+
+        try:
+            return int(s)
+        except ValueError:
+            return -1
 
     @classmethod
     def get_versions(cls, project, elem):

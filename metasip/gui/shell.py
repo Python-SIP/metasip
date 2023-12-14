@@ -244,7 +244,7 @@ class Shell:
 
         self._project = project
         self.notify(EventType.PROJECT_NEW)
-        self.dirty = False
+        self.dirty = project.dirty
 
     def save_project(self):
         """ Return True if any current project was saved. """

@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Riverbank Computing Limited.
+# Copyright (c) 2023 Riverbank Computing Limited.
 #
 # This file is part of metasip.
 #
@@ -43,5 +43,3 @@ from .i_typedef import ITypedef
 from .i_variable import IVariable
 from .i_version_range import IVersionRange
 from .i_workflow import IWorkflow
-
-from .project_version import ProjectVersion

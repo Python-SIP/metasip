@@ -10,11 +10,10 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from ...dip.model import Instance, Int, Interface, List, Str
+from ...dip.model import Instance, Int, Interface, List, Str, Tuple
 
 from .i_header_directory import IHeaderDirectory
 from .i_module import IModule
-from .project_version import ProjectVersion
 
 
 class IProject(Interface):
@@ -49,7 +48,7 @@ class IProject(Interface):
     sipcomments = Str()
 
     # The version number of the project format.
-    version = Int(ProjectVersion)
+    version = Tuple(Int())
 
     # The ordered list of versions.
     versions = List(Str())
