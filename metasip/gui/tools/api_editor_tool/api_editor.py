@@ -58,52 +58,52 @@ class ApiEditor(QTreeWidget):
 
         self.dragged = None
 
-    def api_status(self, api_item):
-        """ Handle the change of status of an API item. """
+    def api_status(self, api):
+        """ Handle the change of status of an API. """
 
         for view in self._all_views():
-            if view.api_item is api_item:
+            if view.api is api:
                 view.draw_status()
                 break
 
-    def api_versions(self, api_item):
-        """ Handle the change of versions of an API item. """
+    def api_versions(self, api):
+        """ Handle the change of versions of an API. """
 
         for view in self._all_views():
-            if view.api_item is api_item:
+            if view.api is api:
                 view.draw_versions()
                 break
 
-    def container_api_add(self, container_item, api_item):
-        """ Handle the addition of an API item to a container. """
+    def container_api_add(self, container, api):
+        """ Handle the addition of an API to a container. """
 
         for view in self._all_views():
-            if view.api_item is container_item:
-                view.api_add(api_item)
+            if view.api is container:
+                view.api_add(api)
                 break
 
-    def container_api_delete(self, container_item, api_item):
-        """ Handle the deletion of an API item from a container. """
+    def container_api_delete(self, container, api):
+        """ Handle the deletion of an API from a container. """
 
         for view in self._all_views():
-            if view.api_item is container_item:
-                view.api_delete(api_item)
+            if view.api is container:
+                view.api_delete(api)
                 break
 
-    def module_add(self, module_item):
+    def module_add(self, module):
         """ Handle the addition of a module. """
 
-        self._project_view.module_add(module_item)
+        self._project_view.module_add(module)
 
-    def module_delete(self, module_item):
+    def module_delete(self, module):
         """ Handle the deletion of a module. """
 
-        self._project_view.module_delete(module_item)
+        self._project_view.module_delete(module)
 
-    def module_rename(self, module_item):
+    def module_rename(self, module):
         """ A module has been renamed. """
 
-        self._project_view.module_rename(module_item)
+        self._project_view.module_rename(module)
 
     def restore_state(self, settings):
         """ Restore the widget's state. """
@@ -182,16 +182,16 @@ class ApiEditor(QTreeWidget):
         super().contextMenuEvent(ev)
 
     def startDrag(self, actions):
-        """ Reimplemented to start the drag of an item. """
+        """ Reimplemented to start the drag of a view. """
 
-        # Find the selected item.
+        # Find the selected view.
         dragging = None
 
         it = QTreeWidgetItemIterator(self, QTreeWidgetItemIterator.Selected)
         itm = it.value()
 
         while itm is not None:
-            # We can only drag one item.
+            # We can only drag one view.
             if dragging is not None:
                 return
 
@@ -204,7 +204,7 @@ class ApiEditor(QTreeWidget):
         if dragging is None:
             return
 
-        # Serialize the id() of the item being dragged.
+        # Serialize the id() of the view being dragged.
         data = QByteArray.number(dragging.type())
         mime = QMimeData()
         mime.setData(self.MIME_FORMAT, data)
@@ -249,12 +249,12 @@ class ApiEditor(QTreeWidget):
         # Get the target.
         target = self.itemAt(ev.pos())
 
-        # Check that the payload is an item.
+        # Check that the payload is a view.
         mime = ev.mimeData()
         if not mime.hasFormat(self.MIME_FORMAT):
             return None
 
-        # Get the item from the payload.
+        # Get the view from the payload.
         source_id = int(mime.data(self.MIME_FORMAT))
         source = None
 
@@ -278,12 +278,12 @@ class ApiEditor(QTreeWidget):
 
         return source, target
 
-    def acceptArgumentNames(self, api_item):
+    def acceptArgumentNames(self, api):
         """ Mark the arguments of all callables contained in a part of a
         project as being named.
         """
 
-        updated_args = self._shell.project.acceptArgumentNames(api_item)
+        updated_args = self._shell.project.acceptArgumentNames(api)
 
         callable_views = []
         for arg in updated_args:
@@ -298,7 +298,7 @@ class ApiEditor(QTreeWidget):
             callable_view.draw_status()
 
     def _all_views(self, container_view=None):
-        """ A generator for all API item views. """
+        """ A generator for all API views. """
 
         if container_view is None:
             container_view = self._project_view
@@ -336,10 +336,10 @@ _view_id = QTreeWidgetItem.ItemType.UserType
 
 
 class APIItemView(QTreeWidgetItem):
-    """ This class represents the view of an API item in the editor. """
+    """ This class represents the view of an API in the editor. """
 
-    def __init__(self, api_item, shell, parent, after=None):
-        """ Initialise the item instance. """
+    def __init__(self, api, shell, parent, after=None):
+        """ Initialise the view. """
 
         global _view_id
         view_id = _view_id
@@ -352,29 +352,29 @@ class APIItemView(QTreeWidgetItem):
         else:
             super().__init__(parent, after, view_id)
 
-        self.api_item = api_item
+        self.api = api
         self.shell = shell
 
     def all_child_views(self):
-        """ A generator for all the item's children. """
+        """ A generator for all the views's children. """
 
         for index in range(self.count()):
             yield self.child(index)
 
-    def api_add(self, api_item):
-        """ An API item has been added. """
+    def api_add(self, api):
+        """ An API has been added. """
 
-        # The order of view items must match the order of API items.
-        index = self.api_item.content.find(api_item)
+        # The order of views must match the order of APIs.
+        index = self.api.content.find(api)
         after = self if index == 0 else self.child(index - 1)
-        self.get_child_factory()(api_item, self.shell, self, after)
+        self.get_child_factory()(api, self.shell, self, after)
 
-    def api_delete(self, api_item):
-        """ An API item has been deleted. """
+    def api_delete(self, api):
+        """ An API has been deleted. """
 
-        for sip_file_view in self.all_child_views():
-            if sip_file_view.api_item is api_item:
-                self.removeChild(sip_file_view)
+        for view in self.all_child_views():
+            if view.api is api:
+                self.removeChild(view)
                 break
 
     def get_child_factory(self):
@@ -383,7 +383,7 @@ class APIItemView(QTreeWidgetItem):
         raise NotImplementedError
 
     def get_menu(self, siblings):
-        """ Return the list of context menu options or None if the item doesn't
+        """ Return the list of context menu options or None if the view doesn't
         have a context menu.  Each element is a 3-tuple of the text of the
         option, the bound method that handles the option, and a flag that is
         True if the option should be enabled.
@@ -394,17 +394,17 @@ class APIItemView(QTreeWidgetItem):
 
 
 class ProjectView(APIItemView):
-    """ This class implements a view of a project item. """
+    """ This class implements a view of a project. """
 
     def __init__(self, shell, parent):
-        """ Initialise the project item. """
+        """ Initialise the project view. """
 
         super().__init__(shell.project, shell, parent)
 
         self.root_module_updated()
         self.setExpanded(True)
 
-        project = self.api_item
+        project = self.api
 
         # Progress will be reported against .sip files so count them all.
         nr_steps = 0
@@ -435,26 +435,26 @@ class ProjectView(APIItemView):
         return [("Add Ignored Namespace...", self._ignorednamespaceSlot),
                 ("Properties...", self._handle_project_properties)]
 
-    def module_add(self, module_item):
+    def module_add(self, module):
         """ Handle the addition of a module. """
 
-        ModuleView(module_item, self.shell, self)
+        ModuleView(module, self.shell, self)
         self._sort()
 
-    def module_delete(self, module_item):
+    def module_delete(self, module):
         """ Handle the deletion of a module. """
 
         for view in self.all_child_views():
-            if view.api_item is module_item:
+            if view.api is module:
                 self.removeChild(view)
                 break
 
-    def module_rename(self, module_item):
+    def module_rename(self, module):
         """ A module has been renamed. """
 
         for view in self.all_child_views():
-            if view.api_item is module_item:
-                view.setText(ApiEditor.NAME, module_item.name)
+            if view.api is module:
+                view.setText(ApiEditor.NAME, module.name)
                 break
 
         self._sort()
@@ -510,16 +510,16 @@ class ProjectView(APIItemView):
 
 
 class ModuleView(APIItemView, DropSite):
-    """ This class implements a view of a module item. """
+    """ This class implements a view of a module. """
 
-    def __init__(self, module_item, shell, parent):
+    def __init__(self, module, shell, parent):
         """ Initialise the module view. """
 
-        super().__init__(module_item, shell, parent)
+        super().__init__(module, shell, parent)
 
-        self.setText(ApiEditor.NAME, module_item.name)
+        self.setText(ApiEditor.NAME, module.name)
 
-        for sip_file in module_item.content:
+        for sip_file in module.content:
             SipFileView(sip_file, self.shell, self)
 
     def droppable(self, view):
@@ -532,12 +532,12 @@ class ModuleView(APIItemView, DropSite):
         """ Handle the drop of a view. """
 
         # The .sip file is always placed at the top.
-        sip_file_item = view.api_item
-        dst_api_item = self.api_item.content
-        src_api_item = item.parent().api_item.content
+        sip_file = view.api
+        dst_api = self.api.content
+        src_api = view.parent().api.content
 
-        src_api_item.remove(sip_file_item)
-        dst_api_item.insert(0, sip_file_item)
+        src_api.remove(sip_file)
+        dst_api.insert(0, sip_file)
 
         self.shell.dirty = True
 
@@ -557,7 +557,7 @@ class ModuleView(APIItemView, DropSite):
     def _handle_module_properties(self):
         """ Handle the module's properties. """
 
-        dialog = ModulePropertiesDialog(self.api_item, "Module Properties",
+        dialog = ModulePropertiesDialog(self.api, "Module Properties",
                 self.shell)
 
         if dialog.update():
@@ -565,16 +565,15 @@ class ModuleView(APIItemView, DropSite):
 
 
 class ContainerView(APIItemView, DropSite):
-    """ This class implements a view of a potential container for code items.
-    """
+    """ This class implements a view of a potential container for code. """
 
-    def __init__(self, container_item, shell, parent, after):
+    def __init__(self, container, shell, parent, after):
         """ Initialise the container view. """
 
-        super().__init__(container_item, shell, parent, after)
+        super().__init__(container, shell, parent, after)
 
-        if hasattr(container_item, 'content'):
-            for code in container_item.content:
+        if hasattr(container, 'content'):
+            for code in container.content:
                 CodeView(code, self.shell, self)
 
     def droppable(self, view):
@@ -595,16 +594,16 @@ class ContainerView(APIItemView, DropSite):
 
         if view.parent() is self.parent():
             # We are moving a sibling after us.
-            parent_content = self.parent().api_item.content
-            api_item = view.api_item()
+            parent_content = self.parent().api.content
+            api = view.api
 
-            parent_content.remove(api_item)
+            parent_content.remove(api)
 
-            new_idx = parent_content.index(self.api_item) + 1
+            new_idx = parent_content.index(self.api) + 1
             if new_idx < len(parent_content):
-                parent_content.insert(new_idx, api_item)
+                parent_content.insert(new_idx, api)
             else:
-                parent_content.append(api_item)
+                parent_content.append(api)
 
             self.shell.dirty = True
 
@@ -612,11 +611,11 @@ class ContainerView(APIItemView, DropSite):
 
         if view.parent() is self:
             # Dropping a child is interpreted as moving it to the top.
-            my_content = self.api_item.content
-            api_item = view.api_item
+            my_content = self.api.content
+            api = view.api
 
-            my_content.remove(api_item)
-            my_content.insert(0, api_item)
+            my_content.remove(api)
+            my_content.insert(0, api)
 
             self.shell.dirty = True
 
@@ -631,15 +630,15 @@ class ContainerView(APIItemView, DropSite):
 class SipFileView(ContainerView):
     """ This class implements a view of a .sip file. """
 
-    def __init__(self, sip_file_item, shell, parent, after=None):
+    def __init__(self, sip_file, shell, parent, after=None):
         """ Initialise the .sip file view. """
 
-        super().__init__(sip_file_item, shell, parent, after)
+        super().__init__(sip_file, shell, parent, after)
 
         self._targets = []
         self._editors = {}
 
-        self.setText(ApiEditor.NAME, sip_file_item.name)
+        self.setText(ApiEditor.NAME, sip_file.name)
 
     def droppable(self, view):
         """ Return True if a view can be dropped. """
@@ -658,17 +657,17 @@ class SipFileView(ContainerView):
         """ Handle the drop of a view. """
 
         if isinstance(view, SipFileView):
-            # We are moving another .sip file after us.  First remove the item
-            # from its container.
-            view.parent().module.content.remove(view.api_item)
+            # We are moving another .sip file after us.  First remove it from
+            # its container.
+            view.parent().api.content.remove(view.api)
 
             # Now add it to our container.
-            content = self.parent().api_item.content
-            idx = content.index(self.api_item) + 1
+            content = self.parent().api.content
+            idx = content.index(self.api) + 1
             if idx < len(content):
-                content.insert(idx, view.api_item)
+                content.insert(idx, view.api)
             else:
-                content.append(view.api_item)
+                content.append(view.api)
 
             self.shell.dirty = True
 
@@ -676,10 +675,10 @@ class SipFileView(ContainerView):
 
         if view.parent() is self:
             # Dropping a child is interpreted as moving it to the top.
-            content = self.api_item.content
+            content = self.api.content
 
-            content.remove(view.api_item)
-            content.insert(0, view.api_item)
+            content.remove(view.api)
+            content.insert(0, view.api)
 
             self.shell.dirty = True
 
@@ -694,7 +693,7 @@ class SipFileView(ContainerView):
         multiple_modules = (len(self.treeWidget().project.modules) > 0)
 
         empty_sipfile = True
-        for code in self.api_item.content:
+        for code in self.api.content:
             if code.status != 'ignored':
                 empty_sipfile = False
                 break
@@ -722,7 +721,7 @@ class SipFileView(ContainerView):
     def _handle_move(self):
         """ Move a .sip file to a different module. """
 
-        src_module = self.parent().api_item
+        src_module = self.parent().api
 
         dialog = MoveHeaderDialog(src_module, "Move Header File", self.shell)
 
@@ -731,8 +730,8 @@ class SipFileView(ContainerView):
             # Mark as dirty before moving it.
             self.shell.dirty = True
 
-            src_module.content.remove(self.api_item)
-            dst_module.content.append(self.api_item)
+            src_module.content.remove(self.api)
+            dst_module.content.append(self.api)
 
     def _deleteFile(self):
         """ Delete an empty .sip file. """
@@ -746,12 +745,12 @@ class SipFileView(ContainerView):
             # Mark as dirty before removing it.
             self.shell.dirty = True
 
-            self.parent().api_item.content.remove(self.api_item)
+            self.parent().api.content.remove(self.api)
 
     def _acceptNames(self):
         """ Accept all argument names. """
 
-        self.treeWidget().acceptArgumentNames(self.api_item)
+        self.treeWidget().acceptArgumentNames(self.api)
 
     def _handle_add_manual_code(self):
         """ Slot to handle the creation of manual code. """
@@ -761,7 +760,7 @@ class SipFileView(ContainerView):
         dialog = ManualCodeDialog(manual_code, "Add Manual Code", self.shell)
 
         if dialog.update():
-            self.api_item.content.insert(0, manual_code)
+            self.api.content.insert(0, manual_code)
             self.shell.dirty = True
 
     def _exportedHeaderCodeSlot(self):
@@ -769,14 +768,14 @@ class SipFileView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._exportedHeaderCodeDone)
-        ed.edit(self.api_item.exportedheadercode, "%ExportedHeaderCode: " + self.api_item.name)
+        ed.edit(self.api.exportedheadercode, "%ExportedHeaderCode: " + self.api.name)
         self._editors["ehc"] = ed
 
     def _exportedHeaderCodeDone(self, text_changed, text):
         """ Slot to handle changed %ExportedHeaderCode. """
 
         if text_changed:
-            self.api_item.exportedheadercode = text
+            self.api.exportedheadercode = text
             self.shell.dirty = True
 
         del self._editors["ehc"]
@@ -786,14 +785,14 @@ class SipFileView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._moduleHeaderCodeDone)
-        ed.edit(self.api_item.moduleheadercode, "%ModuleHeaderCode: " + self.api_item.name)
+        ed.edit(self.api.moduleheadercode, "%ModuleHeaderCode: " + self.api.name)
         self._editors["mhc"] = ed
 
     def _moduleHeaderCodeDone(self, text_changed, text):
         """ Slot to handle changed %ModuleHeaderCode. """
 
         if text_changed:
-            self.api_item.moduleheadercode = text
+            self.api.moduleheadercode = text
             self.shell.dirty = True
 
         del self._editors["mhc"]
@@ -803,14 +802,14 @@ class SipFileView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._moduleCodeDone)
-        ed.edit(self.api_item.modulecode, "%ModuleCode: " + self.api_item.name)
+        ed.edit(self.api.modulecode, "%ModuleCode: " + self.api.name)
         self._editors["moc"] = ed
 
     def _moduleCodeDone(self, text_changed, text):
         """ Slot to handle changed %ModuleCode. """
 
         if text_changed:
-            self.api_item.modulecode = text
+            self.api.modulecode = text
             self.shell.dirty = True
 
         del self._editors["moc"]
@@ -820,14 +819,14 @@ class SipFileView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._preInitCodeDone)
-        ed.edit(self.api_item.preinitcode, "%PreInitialisationCode: " + self.api_item.name)
+        ed.edit(self.api.preinitcode, "%PreInitialisationCode: " + self.api.name)
         self._editors["pric"] = ed
 
     def _preInitCodeDone(self, text_changed, text):
         """ Slot to handle changed %PreInitialisationCode. """
 
         if text_changed:
-            self.api_item.preinitcode = text
+            self.api.preinitcode = text
             self.shell.dirty = True
 
         del self._editors["pric"]
@@ -837,14 +836,14 @@ class SipFileView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._initCodeDone)
-        ed.edit(self.api_item.initcode, "%InitialisationCode: " + self.api_item.name)
+        ed.edit(self.api.initcode, "%InitialisationCode: " + self.api.name)
         self._editors["ic"] = ed
 
     def _initCodeDone(self, text_changed, text):
         """ Slot to handle changed %InitialisationCode. """
 
         if text_changed:
-            self.api_item.initcode = text
+            self.api.initcode = text
             self.shell.dirty = True
 
         del self._editors["ic"]
@@ -854,14 +853,14 @@ class SipFileView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._postInitCodeDone)
-        ed.edit(self.api_item.postinitcode, "%PostInitialisationCode: " + self.api_item.name)
+        ed.edit(self.api.postinitcode, "%PostInitialisationCode: " + self.api.name)
         self._editors["poic"] = ed
 
     def _postInitCodeDone(self, text_changed, text):
         """ Slot to handle changed %PostInitialisationCode. """
 
         if text_changed:
-            self.api_item.postinitcode = text
+            self.api.postinitcode = text
             self.shell.dirty = True
 
         del self._editors["poic"]
@@ -871,14 +870,14 @@ class SipFileView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._exportedTypeHintCodeDone)
-        ed.edit(self.api_item.exportedtypehintcode, "%ExportedTypeHintCode: " + self.api_item.name)
+        ed.edit(self.api.exportedtypehintcode, "%ExportedTypeHintCode: " + self.api.name)
         self._editors["ethc"] = ed
 
     def _exportedTypeHintCodeDone(self, text_changed, text):
         """ Slot to handle changed %ExportedTypeHintCode. """
 
         if text_changed:
-            self.api_item.exportedtypehintcode = text
+            self.api.exportedtypehintcode = text
             self.shell.dirty = True
 
         del self._editors["ethc"]
@@ -888,14 +887,14 @@ class SipFileView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._typeHintCodeDone)
-        ed.edit(self.api_item.typehintcode, "%TypeHintCode: " + self.api_item.name)
+        ed.edit(self.api.typehintcode, "%TypeHintCode: " + self.api.name)
         self._editors["thc"] = ed
 
     def _typeHintCodeDone(self, text_changed, text):
         """ Slot to handle changed %TypeHintCode. """
 
         if text_changed:
-            self.api_item.typehintcode = text
+            self.api.typehintcode = text
             self.shell.dirty = True
 
         del self._editors["thc"]
@@ -927,23 +926,23 @@ class SipFileView(ContainerView):
 class ArgumentView(APIItemView):
     """ This class implements a view of a function argument. """
 
-    def __init__(self, argument_item, shell, parent):
+    def __init__(self, argument, shell, parent):
         """ Initialise the argument view. """
 
-        super().__init__(argument_item, shell, parent)
+        super().__init__(argument, shell, parent)
 
         self.setFlags(Qt.ItemFlag.ItemIsEnabled)
 
         self.draw_name()
 
         # Stash this so that an argument can re-draw itself.
-        argument_item._view = self
+        argument._view = self
 
     def draw_name(self):
         """ Draw the name column. """
 
         self.setText(ApiEditor.NAME,
-                self.api_item.user(self.parent().api_item))
+                self.api.user(self.parent().api))
 
     def get_menu(self, siblings):
         """ Return the list of context menu options. """
@@ -956,7 +955,7 @@ class ArgumentView(APIItemView):
     def _handle_argument_properties(self):
         """ Slot to handle the argument's properties. """
 
-        dialog = ArgumentPropertiesDialog(self.api_item, "Argument Properties",
+        dialog = ArgumentPropertiesDialog(self.api, "Argument Properties",
                 self.shell)
 
         if dialog.update():
@@ -970,10 +969,10 @@ class ArgumentView(APIItemView):
 class CodeView(ContainerView):
     """ This class implements a view of code in a .sip file. """
 
-    def __init__(self, code_item, shell, parent, after=None):
+    def __init__(self, code, shell, parent, after=None):
         """ Initialise the code view. """
 
-        super().__init__(code_item, shell, parent, after)
+        super().__init__(code, shell, parent, after)
 
         self._targets = []
         self._editors = {}
@@ -983,25 +982,25 @@ class CodeView(ContainerView):
         self.draw_status()
         self.draw_versions()
 
-        if code_item.status == 'ignored':
+        if code.status == 'ignored':
             self.setHidden(True)
 
         # Create any children.
-        if hasattr(code_item, 'args'):
-            for arg in code_item.args:
+        if hasattr(code, 'args'):
+            for arg in code.args:
                 ArgumentView(arg, self.shell, self)
 
     def draw_name(self):
         """ Update the item's name. """
 
-        self.setText(ApiEditor.NAME, self.api_item.user())
+        self.setText(ApiEditor.NAME, self.api.user())
 
     def _draw_access(self):
         """ Update the item's access. """
 
         # Not everything has an access specifier.
         try:
-            access = self.api_item.access
+            access = self.api.access
         except AttributeError:
             access = ''
 
@@ -1011,19 +1010,19 @@ class CodeView(ContainerView):
         """ Returns ``True`` if the code has unnamed arguments. """
 
         # These types don't use named arguments.
-        if isinstance(self.api_item, (OperatorMethod, OperatorCast, OperatorFunction)):
+        if isinstance(self.api, (OperatorMethod, OperatorCast, OperatorFunction)):
             return False
 
         # Ignore private items.
         try:
-            private = (self.api_item.access == 'private')
+            private = (self.api.access == 'private')
         except AttributeError:
             private = False
 
         if private:
             return False
 
-        for arg in self.api_item.args:
+        for arg in self.api.args:
             if arg.unnamed and arg.default != '':
                 return True
 
@@ -1035,7 +1034,7 @@ class CodeView(ContainerView):
         status = []
 
         expand = False
-        s = self.api_item.status
+        s = self.api.status
 
         if s == 'removed':
             text = "Removed"
@@ -1054,7 +1053,7 @@ class CodeView(ContainerView):
         if text:
             status.append(text)
 
-        if s != 'ignored' and hasattr(self.api_item, 'args') and self._has_unnamed_args():
+        if s != 'ignored' and hasattr(self.api, 'args') and self._has_unnamed_args():
             status.append("Unnamed arguments")
             expand = True
 
@@ -1064,7 +1063,7 @@ class CodeView(ContainerView):
             parent = self.parent()
             while parent is not None:
                 if isinstance(parent, CodeView):
-                    if parent.api_item.status == 'ignored':
+                    if parent.api.status == 'ignored':
                         break
 
                 parent.setExpanded(True)
@@ -1073,7 +1072,7 @@ class CodeView(ContainerView):
     def draw_versions(self):
         """ Update the item's versions. """
 
-        ranges = [version_range(r) for r in self.api_item.versions]
+        ranges = [version_range(r) for r in self.api.versions]
         self.setText(ApiEditor.VERSIONS, ", ".join(ranges))
 
     def get_menu(self, siblings):
@@ -1085,21 +1084,21 @@ class CodeView(ContainerView):
         self._targets = siblings[:]
         self._targets.append(self)
 
-        menu = [("Checked", self._setStatusChecked, True, (self.api_item.status == "")),
-                ("Todo", self._setStatusTodo, True, (self.api_item.status == "todo")),
-                ("Unchecked", self._setStatusUnchecked, True, (self.api_item.status == "unknown")),
-                ("Ignored", self._setStatusIgnored, True, (self.api_item.status == "ignored"))]
+        menu = [("Checked", self._setStatusChecked, True, (self.api.status == "")),
+                ("Todo", self._setStatusTodo, True, (self.api.status == "todo")),
+                ("Unchecked", self._setStatusUnchecked, True, (self.api.status == "unknown")),
+                ("Ignored", self._setStatusIgnored, True, (self.api.status == "ignored"))]
 
         # Handle the access specifiers.
-        if isinstance(self.api_item, Access):
+        if isinstance(self.api, Access):
                 menu.append(None)
-                menu.append(("public", self._setAccessPublic, True, (self.api_item.access == "")))
-                menu.append(("public slots", self._setAccessPublicSlots, True, (self.api_item.access == "public slots")))
-                menu.append(("protected", self._setAccessProtected, True, (self.api_item.access == "protected")))
-                menu.append(("protected slots", self._setAccessProtectedSlots, True, (self.api_item.access == "protected slots")))
-                menu.append(("private", self._setAccessPrivate, True, (self.api_item.access == "private")))
-                menu.append(("private slots", self._setAccessPrivateSlots, True, (self.api_item.access == "private slots")))
-                menu.append(("signals", self._setAccessSignals, True, (self.api_item.access == "signals")))
+                menu.append(("public", self._setAccessPublic, True, (self.api.access == "")))
+                menu.append(("public slots", self._setAccessPublicSlots, True, (self.api.access == "public slots")))
+                menu.append(("protected", self._setAccessProtected, True, (self.api.access == "protected")))
+                menu.append(("protected slots", self._setAccessProtectedSlots, True, (self.api.access == "protected slots")))
+                menu.append(("private", self._setAccessPrivate, True, (self.api.access == "private")))
+                menu.append(("private slots", self._setAccessPrivateSlots, True, (self.api.access == "private slots")))
+                menu.append(("signals", self._setAccessSignals, True, (self.api.access == "signals")))
 
         if len(siblings) != 0:
             menu.append(None)
@@ -1141,20 +1140,20 @@ class CodeView(ContainerView):
         pslot = None
         dsslot = None
 
-        if isinstance(self.api_item, ManualCode):
+        if isinstance(self.api, ManualCode):
             menu.append(("Modify manual code...", self._handle_modify_manual_code))
             menu.append(("Modify manual code body...", self._bodyManualCode, ("mcb" not in self._editors)))
 
             mcslot = True
             pslot = self._handle_callable_properties
             dsslot = True
-        elif isinstance(self.api_item, Namespace):
+        elif isinstance(self.api, Namespace):
             pslot = self._handle_namespace_properties
-        elif isinstance(self.api_item, OpaqueClass):
+        elif isinstance(self.api, OpaqueClass):
             pslot = self._handle_opaque_class_properties
-        elif isinstance(self.api_item, Namespace):
+        elif isinstance(self.api, Namespace):
             thcslot = True
-        elif isinstance(self.api_item, Class):
+        elif isinstance(self.api, Class):
             thcslot = True
             thicslot = True
             tcslot = True
@@ -1174,47 +1173,47 @@ class CodeView(ContainerView):
             xaslot = True
             pslot = self._handle_class_properties
             dsslot = True
-        elif isinstance(self.api_item, Constructor):
+        elif isinstance(self.api, Constructor):
             mcslot = True
             pslot = self._handle_callable_properties
             dsslot = True
-        elif isinstance(self.api_item, Destructor):
+        elif isinstance(self.api, Destructor):
             mcslot = True
             vccslot = True
             pslot = self._handle_callable_properties
-        elif isinstance(self.api_item, OperatorCast):
+        elif isinstance(self.api, OperatorCast):
             mcslot = True
             pslot = self._handle_callable_properties
-        elif isinstance(self.api_item, Method):
+        elif isinstance(self.api, Method):
             mcslot = True
 
-            if self.api_item.virtual:
+            if self.api.virtual:
                 vccslot = True
 
             pslot = self._handle_callable_properties
             dsslot = True
-        elif isinstance(self.api_item, OperatorMethod):
+        elif isinstance(self.api, OperatorMethod):
             mcslot = True
 
-            if self.api_item.virtual:
+            if self.api.virtual:
                 vccslot = True
 
             pslot = self._handle_callable_properties
-        elif isinstance(self.api_item, Function):
+        elif isinstance(self.api, Function):
             mcslot = True
             pslot = self._handle_callable_properties
             dsslot = True
-        elif isinstance(self.api_item, OperatorFunction):
+        elif isinstance(self.api, OperatorFunction):
             mcslot = True
             pslot = self._handle_callable_properties
-        elif isinstance(self.api_item, Variable):
+        elif isinstance(self.api, Variable):
             acslot = True
             gcslot = True
             scslot = True
             pslot = self._handle_variable_properties
-        elif isinstance(self.api_item, Enum):
+        elif isinstance(self.api, Enum):
             pslot = self._handle_enum_properties
-        elif isinstance(self.api_item, EnumValue):
+        elif isinstance(self.api, EnumValue):
             pslot = self._handle_enum_member_properties
 
         if thcslot or thicslot or tcslot or cttcslot or cftcslot or fcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
@@ -1222,104 +1221,104 @@ class CodeView(ContainerView):
 
             if thcslot:
                 self._add_directive(menu, '%TypeHeaderCode',
-                        self.api_item.typeheadercode, self._typeheaderCodeSlot,
+                        self.api.typeheadercode, self._typeheaderCodeSlot,
                         'thc')
 
             if tcslot:
-                self._add_directive(menu, '%TypeCode', self.api_item.typecode,
+                self._add_directive(menu, '%TypeCode', self.api.typecode,
                         self._typeCodeSlot, 'tc')
 
             if thicslot:
                 self._add_directive(menu, '%TypeHintCode',
-                        self.api_item.typehintcode, self._typehintCodeSlot, 'thic')
+                        self.api.typehintcode, self._typehintCodeSlot, 'thic')
 
             if fcslot:
                 self._add_directive(menu, '%FinalisationCode',
-                        self.api_item.finalisationcode, self._finalCodeSlot, 'fc')
+                        self.api.finalisationcode, self._finalCodeSlot, 'fc')
 
             if sccslot:
                 self._add_directive(menu, '%ConvertToSubClassCode',
-                        self.api_item.subclasscode, self._subclassCodeSlot, 'scc')
+                        self.api.subclasscode, self._subclassCodeSlot, 'scc')
 
             if cttcslot:
                 self._add_directive(menu, '%ConvertToTypeCode',
-                        self.api_item.convtotypecode, self._convToTypeCodeSlot,
+                        self.api.convtotypecode, self._convToTypeCodeSlot,
                         'cttc')
 
             if cftcslot:
                 self._add_directive(menu, '%ConvertFromTypeCode',
-                        self.api_item.convfromtypecode, self._convFromTypeCodeSlot,
+                        self.api.convfromtypecode, self._convFromTypeCodeSlot,
                         'cftc')
 
             if mcslot:
-                self._add_directive(menu, '%MethodCode', self.api_item.methcode,
+                self._add_directive(menu, '%MethodCode', self.api.methcode,
                         self._methodCodeSlot, 'mc')
 
             if vccslot:
                 self._add_directive(menu, '%VirtualCatcherCode',
-                        self.api_item.virtcode, self._virtualCatcherCodeSlot,
+                        self.api.virtcode, self._virtualCatcherCodeSlot,
                         'vcc')
 
             if acslot:
-                self._add_directive(menu, '%AccessCode', self.api_item.accesscode,
+                self._add_directive(menu, '%AccessCode', self.api.accesscode,
                         self._accessCodeSlot, 'ac')
 
             if gcslot:
-                self._add_directive(menu, '%GetCode', self.api_item.getcode,
+                self._add_directive(menu, '%GetCode', self.api.getcode,
                         self._getCodeSlot, 'gc')
 
             if scslot:
-                self._add_directive(menu, '%SetCode', self.api_item.setcode,
+                self._add_directive(menu, '%SetCode', self.api.setcode,
                         self._setCodeSlot, 'sc')
 
             if gctcslot:
                 self._add_directive(menu, '%GCTraverseCode',
-                        self.api_item.gctraversecode, self._gcTraverseCodeSlot,
+                        self.api.gctraversecode, self._gcTraverseCodeSlot,
                         'gctc')
 
             if gcccslot:
                 self._add_directive(menu, '%GCClearCode',
-                        self.api_item.gcclearcode, self._gcClearCodeSlot, 'gccc')
+                        self.api.gcclearcode, self._gcClearCodeSlot, 'gccc')
 
             if bigetbslot:
                 self._add_directive(menu, '%BIGetBufferCode',
-                        self.api_item.bigetbufcode, self._biGetBufCodeSlot,
+                        self.api.bigetbufcode, self._biGetBufCodeSlot,
                         'bigetb')
 
             if birelbslot:
                 self._add_directive(menu, '%BIReleaseBufferCode',
-                        self.api_item.birelbufcode, self._biRelBufCodeSlot,
+                        self.api.birelbufcode, self._biRelBufCodeSlot,
                         'birelb')
 
             if birbslot:
                 self._add_directive(menu, '%BIGetReadBufferCode',
-                        self.api_item.bireadbufcode, self._biReadBufCodeSlot,
+                        self.api.bireadbufcode, self._biReadBufCodeSlot,
                         'birb')
 
             if biwbslot:
                 self._add_directive(menu, '%BIGetWriteBufferCode',
-                        self.api_item.biwritebufcode, self._biWriteBufCodeSlot,
+                        self.api.biwritebufcode, self._biWriteBufCodeSlot,
                         'biwb')
 
             if biscslot:
                 self._add_directive(menu, '%BIGetSegCountCode',
-                        self.api_item.bisegcountcode, self._biSegCountCodeSlot,
+                        self.api.bisegcountcode, self._biSegCountCodeSlot,
                         'bisc')
 
             if bicbslot:
                 self._add_directive(menu, '%BIGetCharBufferCode',
-                        self.api_item.bicharbufcode, self._biCharBufCodeSlot,
+                        self.api.bicharbufcode, self._biCharBufCodeSlot,
                         'bicb')
 
             if pickslot:
-                self._add_directive(menu, '%PickleCode', self.api_item.picklecode,
+                self._add_directive(menu, '%PickleCode', self.api.picklecode,
                         self._pickleCodeSlot, 'pick')
 
             if dsslot:
-                self._add_directive(menu, '%Docstring', self.api_item.docstring,
+                self._add_directive(menu, '%Docstring', self.api.docstring,
                         self._docstringSlot, 'ds')
 
-        if isinstance(self.api_item, (Class, Constructor, Function, Method)):
+        if isinstance(self.api, (Class, Constructor, Function, Method)):
             menu.append(None)
             menu.append(("Accept all argument names", self._acceptNames))
 
@@ -1328,10 +1327,10 @@ class CodeView(ContainerView):
         menu.append(("Versions...", self._handle_versions,
                 len(project.versions) != 0))
         menu.append(
-                (self._flagged_text("Platform Tags...", self.api_item.platforms),
+                (self._flagged_text("Platform Tags...", self.api.platforms),
                         self._handle_platforms, len(project.platforms) != 0))
         menu.append(
-                (self._flagged_text("Feature Tags...", self.api_item.features),
+                (self._flagged_text("Feature Tags...", self.api.features),
                         self._handle_features,
                         (len(project.features) != 0 or len(project.externalfeatures) != 0)))
 
@@ -1362,7 +1361,7 @@ class CodeView(ContainerView):
     def _acceptNames(self):
         """ Accept all argument names. """
 
-        self.treeWidget().acceptArgumentNames(self.api_item)
+        self.treeWidget().acceptArgumentNames(self.api)
 
     def _handle_add_manual_code(self):
         """ Slot to handle the addition of manual code. """
@@ -1372,15 +1371,15 @@ class CodeView(ContainerView):
         dialog = ManualCodeDialog(manual_code, "Add Manual Code", self.shell)
 
         if dialog.update():
-            parent_content = self.parent().api_item.content
-            parent_content.insert(parent_content.index(self.api_item) + 1,
+            parent_content = self.parent().api.content
+            parent_content.insert(parent_content.index(self.api) + 1,
                     manual_code)
             self.shell.dirty = True
 
     def _handle_modify_manual_code(self):
         """ Slot to handle the update of the manual code. """
 
-        dialog = ManualCodeDialog(self.api_item, "Modify Manual Code", self.shell)
+        dialog = ManualCodeDialog(self.api, "Modify Manual Code", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
@@ -1392,14 +1391,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._mcBodyDone)
-        ed.edit(self.api_item.body, "Manual Code: " + self.api_item.precis)
+        ed.edit(self.api.body, "Manual Code: " + self.api.precis)
         self._editors["mcb"] = ed
 
     def _mcBodyDone(self, text_changed, text):
         """ Slot to handle changed manual code body. """
 
         if text_changed:
-            self.api_item.body = text
+            self.api.body = text
             self.shell.dirty = True
 
         del self._editors["mcb"]
@@ -1418,21 +1417,21 @@ class CodeView(ContainerView):
             self.shell.dirty = True
 
             for target in self._targets:
-                self.parent().api_item.content.remove(target.api_item)
+                self.parent().api.content.remove(target.api)
 
     def _accessCodeSlot(self):
         """ Slot to handle %AccessCode. """
 
         ed = ExternalEditor()
         ed.editDone.connect(self._accessCodeDone)
-        ed.edit(self.api_item.accesscode, "%AccessCode: " + self.api_item.user())
+        ed.edit(self.api.accesscode, "%AccessCode: " + self.api.user())
         self._editors["ac"] = ed
 
     def _accessCodeDone(self, text_changed, text):
         """ Slot to handle changed %AccessCode. """
 
         if text_changed:
-            self.api_item.accesscode = text
+            self.api.accesscode = text
             self.shell.dirty = True
 
         del self._editors["ac"]
@@ -1442,14 +1441,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._getCodeDone)
-        ed.edit(self.api_item.getcode, "%GetCode: " + self.api_item.user())
+        ed.edit(self.api.getcode, "%GetCode: " + self.api.user())
         self._editors["gc"] = ed
 
     def _getCodeDone(self, text_changed, text):
         """ Slot to handle changed %GetCode. """
 
         if text_changed:
-            self.api_item.getcode = text
+            self.api.getcode = text
             self.shell.dirty = True
 
         del self._editors["gc"]
@@ -1459,14 +1458,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._setCodeDone)
-        ed.edit(self.api_item.setcode, "%SetCode: " + self.api_item.user())
+        ed.edit(self.api.setcode, "%SetCode: " + self.api.user())
         self._editors["sc"] = ed
 
     def _setCodeDone(self, text_changed, text):
         """ Slot to handle changed %SetCode. """
 
         if text_changed:
-            self.api_item.setcode = text
+            self.api.setcode = text
             self.shell.dirty = True
 
         del self._editors["sc"]
@@ -1476,14 +1475,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._typehintCodeDone)
-        ed.edit(self.api_item.typeheadercode, "%TypeHintCode: " + self.api_item.user())
+        ed.edit(self.api.typeheadercode, "%TypeHintCode: " + self.api.user())
         self._editors["thic"] = ed
 
     def _typehintCodeDone(self, text_changed, text):
         """ Slot to handle changed %TypeHintCode. """
 
         if text_changed:
-            self.api_item.typehintcode = text
+            self.api.typehintcode = text
             self.shell.dirty = True
 
         del self._editors["thic"]
@@ -1493,14 +1492,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._typeheaderCodeDone)
-        ed.edit(self.api_item.typeheadercode, "%TypeHeaderCode: " + self.api_item.user())
+        ed.edit(self.api.typeheadercode, "%TypeHeaderCode: " + self.api.user())
         self._editors["thc"] = ed
 
     def _typeheaderCodeDone(self, text_changed, text):
         """ Slot to handle changed %TypeHeaderCode. """
 
         if text_changed:
-            self.api_item.typeheadercode = text
+            self.api.typeheadercode = text
             self.shell.dirty = True
 
         del self._editors["thc"]
@@ -1510,14 +1509,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._typeCodeDone)
-        ed.edit(self.api_item.typecode, "%TypeCode: " + self.api_item.user())
+        ed.edit(self.api.typecode, "%TypeCode: " + self.api.user())
         self._editors["tc"] = ed
 
     def _typeCodeDone(self, text_changed, text):
         """ Slot to handle changed %TypeCode. """
 
         if text_changed:
-            self.api_item.typecode = text
+            self.api.typecode = text
             self.shell.dirty = True
 
         del self._editors["tc"]
@@ -1527,14 +1526,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._convToTypeCodeDone)
-        ed.edit(self.api_item.convtotypecode, "%ConvertToTypeCode: " + self.api_item.user())
+        ed.edit(self.api.convtotypecode, "%ConvertToTypeCode: " + self.api.user())
         self._editors["cttc"] = ed
 
     def _convToTypeCodeDone(self, text_changed, text):
         """ Slot to handle changed %ConvertToTypeCode. """
 
         if text_changed:
-            self.api_item.convtotypecode = text
+            self.api.convtotypecode = text
             self.shell.dirty = True
 
         del self._editors["cttc"]
@@ -1544,14 +1543,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._convFromTypeCodeDone)
-        ed.edit(self.api_item.convfromtypecode, "%ConvertFromTypeCode: " + self.api_item.user())
+        ed.edit(self.api.convfromtypecode, "%ConvertFromTypeCode: " + self.api.user())
         self._editors["cftc"] = ed
 
     def _convFromTypeCodeDone(self, text_changed, text):
         """ Slot to handle changed %ConvertFromTypeCode. """
 
         if text_changed:
-            self.api_item.convfromtypecode = text
+            self.api.convfromtypecode = text
             self.shell.dirty = True
 
         del self._editors["cftc"]
@@ -1561,14 +1560,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._gcTraverseCodeDone)
-        ed.edit(self.api_item.gctraversecode, "%GCTraverseCode: " + self.api_item.user())
+        ed.edit(self.api.gctraversecode, "%GCTraverseCode: " + self.api.user())
         self._editors["gctc"] = ed
 
     def _gcTraverseCodeDone(self, text_changed, text):
         """ Slot to handle changed %GCTraverseCode. """
 
         if text_changed:
-            self.api_item.gctraversecode = text
+            self.api.gctraversecode = text
             self.shell.dirty = True
 
         del self._editors["gctc"]
@@ -1578,14 +1577,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._gcClearCodeDone)
-        ed.edit(self.api_item.gcclearcode, "%GCClearCode: " + self.api_item.user())
+        ed.edit(self.api.gcclearcode, "%GCClearCode: " + self.api.user())
         self._editors["gccc"] = ed
 
     def _gcClearCodeDone(self, text_changed, text):
         """ Slot to handle changed %GCClearCode. """
 
         if text_changed:
-            self.api_item.gcclearcode = text
+            self.api.gcclearcode = text
             self.shell.dirty = True
 
         del self._editors["gccc"]
@@ -1595,14 +1594,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biGetBufCodeDone)
-        ed.edit(self.api_item.bigetbufcode, "%BIGetBufferCode: " + self.api_item.user())
+        ed.edit(self.api.bigetbufcode, "%BIGetBufferCode: " + self.api.user())
         self._editors["bigetb"] = ed
 
     def _biGetBufCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIGetBufferCode. """
 
         if text_changed:
-            self.api_item.bigetbufcode = text
+            self.api.bigetbufcode = text
             self.shell.dirty = True
 
         del self._editors["bigetb"]
@@ -1612,14 +1611,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biRelBufCodeDone)
-        ed.edit(self.api_item.birelbufcode, "%BIReleaseBufferCode: " + self.api_item.user())
+        ed.edit(self.api.birelbufcode, "%BIReleaseBufferCode: " + self.api.user())
         self._editors["birelb"] = ed
 
     def _biRelBufCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIReleaseBufferCode. """
 
         if text_changed:
-            self.api_item.birelbufcode = text
+            self.api.birelbufcode = text
             self.shell.dirty = True
 
         del self._editors["birelb"]
@@ -1629,14 +1628,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biReadBufCodeDone)
-        ed.edit(self.api_item.bireadbufcode, "%BIGetReadBufferCode: " + self.api_item.user())
+        ed.edit(self.api.bireadbufcode, "%BIGetReadBufferCode: " + self.api.user())
         self._editors["birb"] = ed
 
     def _biReadBufCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIGetReadBufferCode. """
 
         if text_changed:
-            self.api_item.bireadbufcode = text
+            self.api.bireadbufcode = text
             self.shell.dirty = True
 
         del self._editors["birb"]
@@ -1646,14 +1645,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biWriteBufCodeDone)
-        ed.edit(self.api_item.biwritebufcode, "%BIGetWriteBufferCode: " + self.api_item.user())
+        ed.edit(self.api.biwritebufcode, "%BIGetWriteBufferCode: " + self.api.user())
         self._editors["biwb"] = ed
 
     def _biWriteBufCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIGetWriteBufferCode. """
 
         if text_changed:
-            self.api_item.biwritebufcode = text
+            self.api.biwritebufcode = text
             self.shell.dirty = True
 
         del self._editors["biwb"]
@@ -1663,14 +1662,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biSegCountCodeDone)
-        ed.edit(self.api_item.bisegcountcode, "%BIGetSegCountCode: " + self.api_item.user())
+        ed.edit(self.api.bisegcountcode, "%BIGetSegCountCode: " + self.api.user())
         self._editors["bisc"] = ed
 
     def _biSegCountCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIGetSegCountCode. """
 
         if text_changed:
-            self.api_item.bisegcountcode = text
+            self.api.bisegcountcode = text
             self.shell.dirty = True
 
         del self._editors["bisc"]
@@ -1680,14 +1679,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biCharBufCodeDone)
-        ed.edit(self.api_item.bicharbufcode, "%BIGetCharBufferCode: " + self.api_item.user())
+        ed.edit(self.api.bicharbufcode, "%BIGetCharBufferCode: " + self.api.user())
         self._editors["bicb"] = ed
 
     def _biCharBufCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIGetCharBufferCode. """
 
         if text_changed:
-            self.api_item.bicharbufcode = text
+            self.api.bicharbufcode = text
             self.shell.dirty = True
 
         del self._editors["bicb"]
@@ -1697,14 +1696,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._pickleCodeDone)
-        ed.edit(self.api_item.picklecode, "%PickleCode: " + self.api_item.user())
+        ed.edit(self.api.picklecode, "%PickleCode: " + self.api.user())
         self._editors["pick"] = ed
 
     def _pickleCodeDone(self, text_changed, text):
         """ Slot to handle changed %PickleCode. """
 
         if text_changed:
-            self.api_item.picklecode = text
+            self.api.picklecode = text
             self.shell.dirty = True
 
         del self._editors["pick"]
@@ -1714,14 +1713,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._finalCodeDone)
-        ed.edit(self.api_item.finalisationcode, "%FinalisationCode: " + self.api_item.user())
+        ed.edit(self.api.finalisationcode, "%FinalisationCode: " + self.api.user())
         self._editors["fc"] = ed
 
     def _finalCodeDone(self, text_changed, text):
         """ Slot to handle changed %FinalisationCode. """
 
         if text_changed:
-            self.api_item.finalisationcode = text
+            self.api.finalisationcode = text
             self.shell.dirty = True
 
         del self._editors["fc"]
@@ -1731,14 +1730,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._subclassCodeDone)
-        ed.edit(self.api_item.subclasscode, "%ConvertToSubClassCode: " + self.api_item.user())
+        ed.edit(self.api.subclasscode, "%ConvertToSubClassCode: " + self.api.user())
         self._editors["scc"] = ed
 
     def _subclassCodeDone(self, text_changed, text):
         """ Slot to handle changed %ConvertToSubClassCode. """
 
         if text_changed:
-            self.api_item.subclasscode = text
+            self.api.subclasscode = text
             self.shell.dirty = True
 
         del self._editors["scc"]
@@ -1748,14 +1747,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._docstringDone)
-        ed.edit(self.api_item.docstring, "%Docstring: " + self.api_item.user())
+        ed.edit(self.api.docstring, "%Docstring: " + self.api.user())
         self._editors["ds"] = ed
 
     def _docstringDone(self, text_changed, text):
         """ Slot to handle changed %Docstring. """
 
         if text_changed:
-            self.api_item.docstring = text
+            self.api.docstring = text
             self.shell.dirty = True
 
         del self._editors["ds"]
@@ -1765,14 +1764,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._methodCodeDone)
-        ed.edit(self.api_item.methcode, "%MethodCode: " + self.api_item.user())
+        ed.edit(self.api.methcode, "%MethodCode: " + self.api.user())
         self._editors["mc"] = ed
 
     def _methodCodeDone(self, text_changed, text):
         """ Slot to handle changed %MethodCode. """
 
         if text_changed:
-            self.api_item.methcode = text
+            self.api.methcode = text
             self.shell.dirty = True
 
         del self._editors["mc"]
@@ -1782,14 +1781,14 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._virtualCatcherCodeDone)
-        ed.edit(self.api_item.virtcode, "%VirtualCatcherCode: " + self.api_item.user())
+        ed.edit(self.api.virtcode, "%VirtualCatcherCode: " + self.api.user())
         self._editors["vcc"] = ed
 
     def _virtualCatcherCodeDone(self, text_changed, text):
         """ Slot to handle changed %VirtualCatcherCode. """
 
         if text_changed:
-            self.api_item.virtcode = text
+            self.api.virtcode = text
             self.shell.dirty = True
 
         del self._editors["vcc"]
@@ -1797,20 +1796,20 @@ class CodeView(ContainerView):
     def _handle_versions(self):
         """ Slot to handle the versions. """
 
-        dialog = VersionsDialog(self.api_item, "Versions", self.shell)
+        dialog = VersionsDialog(self.api, "Versions", self.shell)
 
         if dialog.update():
             # Apply the version range to all targets.
-            for itm in self._targets:
-                if itm.api_item is not self.api_item:
-                    itm.api_item.versions = list(self.api_item.versions)
+            for view in self._targets:
+                if view.api is not self.api:
+                    view.api.versions = list(self.api.versions)
 
             self.shell.dirty = True
 
     def _handle_platforms(self):
         """ Slot to handle the platforms. """
 
-        dialog = PlatformsDialog(self.api_item, "Platform Tags", self.shell)
+        dialog = PlatformsDialog(self.api, "Platform Tags", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
@@ -1818,7 +1817,7 @@ class CodeView(ContainerView):
     def _handle_features(self):
         """ Slot to handle the features. """
 
-        dialog = FeaturesDialog(self.api_item, "Feature Tags", self.shell)
+        dialog = FeaturesDialog(self.api, "Feature Tags", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
@@ -1826,70 +1825,70 @@ class CodeView(ContainerView):
     def _handle_namespace_properties(self):
         """ Slot to handle the properties for namespaces. """
 
-        dialog = NamespacePropertiesDialog(self.api_item, "Namespace Properties",
+        dialog = NamespacePropertiesDialog(self.api, "Namespace Properties",
                 self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api_item.user())
+            self.setText(ApiEditor.NAME, self.api.user())
 
     def _handle_opaque_class_properties(self):
         """ Slot to handle the properties for opaque classes. """
 
-        dialog = OpaqueClassPropertiesDialog(self.api_item,
+        dialog = OpaqueClassPropertiesDialog(self.api,
                 "Opaque Class Properties", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api_item.user())
+            self.setText(ApiEditor.NAME, self.api.user())
 
     def _handle_class_properties(self):
         """ Slot to handle the properties for classes. """
 
-        dialog = ClassPropertiesDialog(self.api_item, "Class Properties",
+        dialog = ClassPropertiesDialog(self.api, "Class Properties",
                 self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api_item.user())
+            self.setText(ApiEditor.NAME, self.api.user())
 
     def _handle_callable_properties(self):
         """ Slot to handle the properties for callables. """
 
-        dialog = CallablePropertiesDialog(self.api_item, 'Placeholder', self.shell)
+        dialog = CallablePropertiesDialog(self.api, 'Placeholder', self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api_item.user())
+            self.setText(ApiEditor.NAME, self.api.user())
 
     def _handle_variable_properties(self):
         """ Slot to handle the properties for variables. """
 
-        dialog = VariablePropertiesDialog(self.api_item, "Variable Properties",
+        dialog = VariablePropertiesDialog(self.api, "Variable Properties",
                 self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api_item.user())
+            self.setText(ApiEditor.NAME, self.api.user())
 
     def _handle_enum_properties(self):
         """ Slot to handle the properties for enums. """
 
-        dialog = EnumPropertiesDialog(self.api_item, "Enum Properties", self.shell)
+        dialog = EnumPropertiesDialog(self.api, "Enum Properties", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api_item.user())
+            self.setText(ApiEditor.NAME, self.api.user())
 
     def _handle_enum_member_properties(self):
         """ Slot to handle the properties for enum members. """
 
-        dialog = EnumMemberPropertiesDialog(self.api_item,
+        dialog = EnumMemberPropertiesDialog(self.api,
                 "Enum Member Properties", self.shell)
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api_item.user())
+            self.setText(ApiEditor.NAME, self.api.user())
 
     def _setStatusChecked(self):
         """ Slot to handle the status being set to checked. """
@@ -1915,8 +1914,8 @@ class CodeView(ContainerView):
         """ Set the status column. """
 
         for view in self._targets:
-            if view.api_item.status != new:
-                view.api_item.status = new
+            if view.api.status != new:
+                view.api.status = new
                 self.shell.dirty = True
 
                 # FIXME: Observe the status attribute.
@@ -1961,8 +1960,8 @@ class CodeView(ContainerView):
         """ Set the access column. """
 
         for view in self._targets:
-            if view.api_item.access != new:
-                view.api_item.access = new
+            if view.api.access != new:
+                view.api.access = new
                 self.shell.dirty = True
 
                 # FIXME: Observe the access attribute.

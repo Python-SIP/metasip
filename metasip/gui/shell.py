@@ -24,18 +24,18 @@ class EventType(Enum):
     that don't have an event because there is no consequent impact on the GUI.
     """
 
-    # The status of an API has changed.  The event argument is the API item.
+    # The status of an API model has changed.  The event argument is the API.
     API_STATUS = auto()
 
-    # The versions of an API has changed.  The event argument is the API item.
+    # The versions of an API model has changed.  The event argument is the API.
     API_VERSIONS = auto()
 
-    # An API has been added to a container.  The event argument is a 2-tuple of
-    # the container item and API item.
+    # An API model has been added to a container model.  The event argument is
+    # a 2-tuple of the container and API.
     CONTAINER_API_ADD = auto()
 
-    # An API has been deleted from a container.  The event argument is a
-    # 2-tuple of the container item and API item.
+    # An API model has been deleted from a container model.  The event argument
+    # is a 2-tuple of the container and API.
     CONTAINER_API_DELETE = auto()
 
     # A feature has been added.  The event argument is the name of the feature.
@@ -52,13 +52,13 @@ class EventType(Enum):
     # A message has been logged.  The message is the event argument.
     LOG_MESSAGE = auto()
 
-    # A module has been added.  The event argument is the module object.
+    # A module model has been added.  The event argument is the module.
     MODULE_ADD = auto()
 
-    # A module has been deleted.  The event argument is the module object.
+    # A module model has been deleted.  The event argument is the module.
     MODULE_DELETE = auto()
 
-    # A module has been renamed.  The event argument is the module object.
+    # A module model has been renamed.  The event argument is the module.
     MODULE_RENAME = auto()
 
     # A platform has been added.  The event argument is the name of the
