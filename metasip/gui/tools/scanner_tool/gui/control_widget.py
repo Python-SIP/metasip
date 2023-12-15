@@ -447,7 +447,7 @@ class ControlWidget(QWidget):
                         self._remove_from_module(header_file)
                     else:
                         # FIXME: Go through the corresponding SipFile and make
-                        # sure that all top-level items have an upper version
+                        # sure that all top-level APIs have an upper version
                         # set.
                         pass
 
@@ -520,25 +520,25 @@ class ControlWidget(QWidget):
 
         working_version = self._working_version.currentText()
 
-        # Go though each existing code item.
-        for dst_item in list(dst_code.content):
+        # Go though each existing code API.
+        for dst_api in list(dst_code.content):
             # Manual code is always retained.
-            if isinstance(dst_item, ManualCode):
+            if isinstance(dst_api, ManualCode):
                 continue
 
-            # Go through each potentially new code item.
-            for src_item in list(src_code):
-                if type(dst_item) is type(src_item) and dst_item.signature(working_version) == src_item.signature(working_version):
+            # Go through each potentially new code API.
+            for src_api in list(src_code):
+                if type(dst_api) is type(src_api) and dst_api.signature(working_version) == src_api.signature(working_version):
                     # Make sure the versions include the working version.
                     if working_version != '':
-                        self._add_working_version(dst_item)
+                        self._add_working_version(dst_api)
 
-                    # Discard the new code item.
-                    src_code.remove(src_item)
+                    # Discard the new code API.
+                    src_code.remove(src_api)
 
                     # Merge any child code.
-                    if isinstance(dst_item, (ICodeContainer, IEnum)):
-                        self._merge_code(dst_item, src_item.content)
+                    if isinstance(dst_api, (ICodeContainer, IEnum)):
+                        self._merge_code(dst_api, src_api.content)
 
                     break
             else:
@@ -546,29 +546,29 @@ class ControlWidget(QWidget):
                 if working_version == '':
                     # If it is ignored then forget about it because there are
                     # no other versions that might refer to it.
-                    if dst_item.status == 'ignored':
-                        dst_code.content.remove(dst_item)
+                    if dst_api.status == 'ignored':
+                        dst_code.content.remove(dst_api)
                         self._tool.shell.notify(
                                 EventType.CONTAINER_API_DELETE,
-                                (dst_code, dst_item))
+                                (dst_code, dst_api))
                     else:
-                        dst_item.status = 'removed'
-                        self._tool.shell.notify(EventType.API_STATUS, dst_item)
+                        dst_api.status = 'removed'
+                        self._tool.shell.notify(EventType.API_STATUS, dst_api)
                 else:
-                    version_status = self._remove_working_version(dst_item)
+                    version_status = self._remove_working_version(dst_api)
                     if version_status == 'no_longer_working':
                         # It's removal needs checking.
-                        if dst_item.status == '':
-                            dst_item.status = 'unknown'
+                        if dst_api.status == '':
+                            dst_api.status = 'unknown'
                             self._tool.shell.notify(EventType.API_STATUS,
-                                    dst_item)
+                                    dst_api)
                     elif version_status == 'no_longer_any':
                         # Forget about it because there are no other versions
                         # that refer to it.
-                        dst_code.content.remove(dst_item)
+                        dst_code.content.remove(dst_api)
                         self._tool.shell.notify(
                                 EventType.CONTAINER_API_DELETE,
-                                (dst_code, dst_item))
+                                (dst_code, dst_api))
 
         # Anything left in the source code is new.
 
@@ -578,58 +578,58 @@ class ControlWidget(QWidget):
             versions = self._tool.shell.project.versions
             working_idx = versions.index(working_version)
 
-            # If the working version is the first then assume that the new item
+            # If the working version is the first then assume that the new API
             # will appear in earlier versions, otherwise it is restricted to
             # this version.
             startversion = '' if working_idx == 0 else working_version
 
-            # If the working version is the latest then assume that the new
-            # item will appear in later versions, otherwise it is restricted to
-            # this version.
+            # If the working version is the latest then assume that the new API
+            # will appear in later versions, otherwise it is restricted to this
+            # version.
             try:
                 endversion = versions[working_idx + 1]
             except IndexError:
                 endversion = ''
 
-        for src_item in src_code:
+        for src_api in src_code:
             if startversion != '' or endversion != '':
-                src_item.versions.append(
+                src_api.versions.append(
                         VersionRange(startversion=startversion,
                                 endversion=endversion))
-                self._tool.shell.notify(EventType.API_VERSIONS, src_item)
+                self._tool.shell.notify(EventType.API_VERSIONS, src_api)
 
-            # Try and place the new item with any similar one.
+            # Try and place the new API with any similar one.
             pos = -1
             for idx, code in enumerate(dst_code.content):
-                if type(code) is not type(src_item):
+                if type(code) is not type(src_api):
                     continue
 
-                if isinstance(src_item, IConstructor):
+                if isinstance(src_api, IConstructor):
                     pos = idx
                     break
 
-                if isinstance(src_item, ICallable) and code.name == src_item.name:
+                if isinstance(src_api, ICallable) and code.name == src_api.name:
                     pos = idx
                     break
 
             if pos >= 0:
-                dst_code.content.insert(pos, src_item)
+                dst_code.content.insert(pos, src_api)
             else:
-                dst_code.content.append(src_item)
+                dst_code.content.append(src_api)
 
             self._tool.shell.notify(EventType.CONTAINER_API_ADD,
-                    (dst_code, src_item))
+                    (dst_code, src_api))
 
-    def _add_working_version(self, api_item):
-        """ Add the working version to an item's version ranges. """
+    def _add_working_version(self, api):
+        """ Add the working version to an API's version ranges. """
 
-        # There is only something to do if the item is currently versioned.
-        if len(api_item.versions) != 0:
+        # There is only something to do if the API is currently versioned.
+        if len(api.versions) != 0:
             project = self._tool.shell.project
 
             # Construct the existing list of version ranges to a version map.
             vmap = project.vmap_create(False)
-            project.vmap_or_version_ranges(vmap, api_item.versions)
+            project.vmap_or_version_ranges(vmap, api.versions)
 
             # Add the working version.
             working_idx = project.versions.index(
@@ -637,24 +637,24 @@ class ControlWidget(QWidget):
             vmap[working_idx] = True
 
             # Convert the version map back to a list of version ranges.
-            api_item.versions = project.vmap_to_version_ranges(vmap)
-            self._tool.shell.notify(EventType.API_VERSIONS, api_item)
+            api.versions = project.vmap_to_version_ranges(vmap)
+            self._tool.shell.notify(EventType.API_VERSIONS, api)
 
-    def _remove_working_version(self, api_item):
-        """ Remove the working version from an item's version ranges.  Returns
-        'wasnt_working' if the item wasn't in the working version,
-        'no_longer_working' if the item is no longer in the working version and
-        'no_longer_any' if the item is no longer in any version.
+    def _remove_working_version(self, api):
+        """ Remove the working version from an API's version ranges.  Returns
+        'wasnt_working' if the API wasn't in the working version,
+        'no_longer_working' if the API is no longer in the working version and
+        'no_longer_any' if the API is no longer in any version.
         """
 
         project = self._tool.shell.project
 
         # Construct the existing list of version ranges to a version map.
-        if len(api_item.versions) == 0:
+        if len(api) == 0:
             vmap = project.vmap_create(True)
         else:
             vmap = project.vmap_create(False)
-            project.vmap_or_version_ranges(vmap, api_item.versions)
+            project.vmap_or_version_ranges(vmap, api.versions)
 
         # Update the version map appropriately using the working version.
         # First take a shortcut to see if anything has changed.
@@ -672,8 +672,8 @@ class ControlWidget(QWidget):
         if versions is None:
             return 'no_longer_any'
 
-        api_item.versions = versions
-        self._tool.shell.notify(EventType.API_VERSIONS, api_item)
+        api.versions = versions
+        self._tool.shell.notify(EventType.API_VERSIONS, api)
 
         return 'no_longer_working'
 
