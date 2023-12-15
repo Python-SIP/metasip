@@ -54,14 +54,14 @@ class ApiEditorTool(ShellTool):
     def event(self, event_type, event_arg):
         """ Reimplemented to handle project-specific events. """
 
-        if event_type is EventType.API_ITEM_STATUS:
-            self._api_editor.api_item_status(event_arg)
-        elif event_type is EventType.API_ITEM_VERSIONS:
-            self._api_editor.api_item_versions(event_arg)
-        elif event_type is EventType.CONTAINER_API_ITEM_ADD:
-            self._api_editor.container_api_item_add(*event_arg)
-        elif event_type is EventType.CONTAINER_API_ITEM_DELETE:
-            self._api_editor.container_api_item_delete(*event_arg)
+        if event_type is EventType.API_STATUS:
+            self._api_editor.api_status(event_arg)
+        elif event_type is EventType.API_VERSIONS:
+            self._api_editor.api_versions(event_arg)
+        elif event_type is EventType.CONTAINER_API_ADD:
+            self._api_editor.container_api_add(*event_arg)
+        elif event_type is EventType.CONTAINER_API_DELETE:
+            self._api_editor.container_api_delete(*event_arg)
         elif event_type is EventType.MODULE_ADD:
             self._api_editor.module_add(event_arg)
         elif event_type is EventType.MODULE_DELETE:

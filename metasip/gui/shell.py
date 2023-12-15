@@ -24,21 +24,19 @@ class EventType(Enum):
     that don't have an event because there is no consequent impact on the GUI.
     """
 
-    # The status of an API item has changed.  The event argument is the API
-    # item.
-    API_ITEM_STATUS = auto()
+    # The status of an API has changed.  The event argument is the API item.
+    API_STATUS = auto()
 
-    # The versions of an API item has changed.  The event argument is the API
-    # item.
-    API_ITEM_VERSIONS = auto()
+    # The versions of an API has changed.  The event argument is the API item.
+    API_VERSIONS = auto()
 
-    # An API item has been added to a container.  The event argument is a
-    # 2-tuple of the container and API item.
-    CONTAINER_API_ITEM_ADD = auto()
+    # An API has been added to a container.  The event argument is a 2-tuple of
+    # the container item and API item.
+    CONTAINER_API_ADD = auto()
 
-    # An API item has been deleted from a container.  The event argument is a
-    # 2-tuple of the container and API item.
-    CONTAINER_API_ITEM_DELETE = auto()
+    # An API has been deleted from a container.  The event argument is a
+    # 2-tuple of the container item and API item.
+    CONTAINER_API_DELETE = auto()
 
     # A feature has been added.  The event argument is the name of the feature.
     FEATURE_ADD = auto()

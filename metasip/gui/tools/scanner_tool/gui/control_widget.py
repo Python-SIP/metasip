@@ -357,7 +357,7 @@ class ControlWidget(QWidget):
                 else:
                     sip_file = SipFile(name=header_file.name)
                     module.content.append(sip_file)
-                    self._tool.shell.notify(EventType.CONTAINER_API_ITEM_ADD,
+                    self._tool.shell.notify(EventType.CONTAINER_API_ADD,
                             module, sip_file)
 
                 self._merge_code(sip_file, parsed_header_file)
@@ -549,26 +549,25 @@ class ControlWidget(QWidget):
                     if dst_item.status == 'ignored':
                         dst_code.content.remove(dst_item)
                         self._tool.shell.notify(
-                                EventType.CONTAINER_API_ITEM_DELETE,
+                                EventType.CONTAINER_API_DELETE,
                                 (dst_code, dst_item))
                     else:
                         dst_item.status = 'removed'
-                        self._tool.shell.notify(EventType.API_ITEM_STATUS,
-                                dst_item)
+                        self._tool.shell.notify(EventType.API_STATUS, dst_item)
                 else:
                     version_status = self._remove_working_version(dst_item)
                     if version_status == 'no_longer_working':
                         # It's removal needs checking.
                         if dst_item.status == '':
                             dst_item.status = 'unknown'
-                            self._tool.shell.notify(EventType.API_ITEM_STATUS,
+                            self._tool.shell.notify(EventType.API_STATUS,
                                     dst_item)
                     elif version_status == 'no_longer_any':
                         # Forget about it because there are no other versions
                         # that refer to it.
                         dst_code.content.remove(dst_item)
                         self._tool.shell.notify(
-                                EventType.CONTAINER_API_ITEM_DELETE,
+                                EventType.CONTAINER_API_DELETE,
                                 (dst_code, dst_item))
 
         # Anything left in the source code is new.
@@ -597,7 +596,7 @@ class ControlWidget(QWidget):
                 src_item.versions.append(
                         VersionRange(startversion=startversion,
                                 endversion=endversion))
-                self._tool.shell.notify(EventType.API_ITEM_VERSIONS, src_item)
+                self._tool.shell.notify(EventType.API_VERSIONS, src_item)
 
             # Try and place the new item with any similar one.
             pos = -1
@@ -618,7 +617,7 @@ class ControlWidget(QWidget):
             else:
                 dst_code.content.append(src_item)
 
-            self._tool.shell.notify(EventType.CONTAINER_API_ITEM_ADD,
+            self._tool.shell.notify(EventType.CONTAINER_API_ADD,
                     (dst_code, src_item))
 
     def _add_working_version(self, api_item):
@@ -639,7 +638,7 @@ class ControlWidget(QWidget):
 
             # Convert the version map back to a list of version ranges.
             api_item.versions = project.vmap_to_version_ranges(vmap)
-            self._tool.shell.notify(EventType.API_ITEM_VERSIONS, api_item)
+            self._tool.shell.notify(EventType.API_VERSIONS, api_item)
 
     def _remove_working_version(self, api_item):
         """ Remove the working version from an item's version ranges.  Returns
@@ -674,7 +673,7 @@ class ControlWidget(QWidget):
             return 'no_longer_any'
 
         api_item.versions = versions
-        self._tool.shell.notify(EventType.API_ITEM_VERSIONS, api_item)
+        self._tool.shell.notify(EventType.API_VERSIONS, api_item)
 
         return 'no_longer_working'
 
@@ -722,14 +721,14 @@ class ControlWidget(QWidget):
                                 # Remove any ignored API elements.
                                 sip_file.content.remove(code)
                                 self._tool.shell.notify(
-                                        EventType.CONTAINER_API_ITEM_DELETE,
+                                        EventType.CONTAINER_API_DELETE,
                                         (sip_file, code))
                             else:
                                 # Mark any non-ignored API elements so that the
                                 # user can decide what to do.
                                 code.status = 'removed'
-                                self._tool.shell.notify(
-                                        EventType.API_ITEM_STATUS, code)
+                                self._tool.shell.notify(EventType.API_STATUS,
+                                        code)
 
     def _scan_header_file(self, header_path):
         """ Scan a header file and return the header file instance. """

@@ -81,10 +81,10 @@ class DeletePlatformDialog(BaseDialog):
                 for p in remove_platforms:
                     api_item.platforms.remove(p)
 
-        for api_item, container in remove_items:
-            container.content.remove(api_item)
-            self.shell.notify(EventType.CONTAINER_API_ITEM_DELETE,
-                    (container, api_item))
+        for api_item, container_item in remove_items:
+            container_item.content.remove(api_item)
+            self.shell.notify(EventType.CONTAINER_API_DELETE,
+                    (container_item, api_item))
 
         # Delete from the project's list.
         project.platforms.remove(platform)

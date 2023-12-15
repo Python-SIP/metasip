@@ -90,10 +90,10 @@ def delete_version(version, shell, *, migrate_items):
             for r in remove_ranges:
                 api_item.versions.remove(r)
 
-    for api_item, container in remove_items:
-        container.content.remove(api_item)
-        shell.notify(EventType.CONTAINER_API_ITEM_DELETE,
-                (container, api_item))
+    for api_item, container_item in remove_items:
+        container_item.content.remove(api_item)
+        shell.notify(EventType.CONTAINER_API_DELETE,
+                (container_item, api_item))
 
     # Delete from the header file versions.
     remove_hfile_versions = []
