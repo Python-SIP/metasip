@@ -15,7 +15,6 @@ import subprocess
 import sys
 import tempfile
 
-from ....interfaces.project import ICodeContainer, IProject
 from ....project import (Function, Argument, Variable, Typedef, OpaqueClass,
         Class, Constructor, Destructor, Method, Enum, EnumValue,
         OperatorFunction, OperatorMethod, Namespace, OperatorCast)

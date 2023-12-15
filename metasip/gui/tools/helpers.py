@@ -12,7 +12,7 @@
 
 import re
 
-from ...interfaces.project import ICodeContainer, IEnum
+from ...models import CodeContainerMixin, EnumModel
 
 from ..helpers import warning
 
@@ -57,10 +57,10 @@ def _tagged_from_container(container):
 
     for code in container.content:
         # Depth first.
-        if isinstance(code, IEnum):
+        if isinstance(code, EnumModel):
             for enum_value in code.content:
                 yield (enum_value, code)
-        elif isinstance(code, ICodeContainer):
+        elif isinstance(code, CodeContainerMixin):
             for item in _tagged_from_container(code):
                 yield item
 

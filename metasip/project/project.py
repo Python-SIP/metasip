@@ -17,11 +17,13 @@ from xml.sax import saxutils
 
 from ..dip.model import Bool, implements, Instance, Model, Str
 
-from ..interfaces.project import (IArgument, IClass, IConstructor, IDestructor,
-        IEnum, IEnumValue, IFunction, IHeaderDirectory, IHeaderFile,
-        IHeaderFileVersion, IManualCode, IMethod, IModule, INamespace,
-        IOpaqueClass, IOperatorCast, IOperatorFunction, IOperatorMethod,
-        IProject, ISipFile, ITagged, ITypedef, IVariable, IVersionRange)
+from ..models import (ArgumentModel, ClassModel, ConstructorModel,
+        DestructorModel, EnumModel, EnumValueModel, FunctionModel,
+        HeaderDirectoryModel, HeaderFileModel, HeaderFileVersionModel,
+        ManualCodeModel, MethodModel, ModuleModel, NamespaceModel,
+        OpaqueClassModel, OperatorCastModel, OperatorFunctionModel,
+        OperatorMethodModel, ProjectModel, SipFileModel, TypedefModel,
+        VariableModel, VersionRangeModel)
 
 
 class Annotations(Model):
@@ -48,12 +50,12 @@ class Annotations(Model):
         return xml
 
 
-@implements(IVersionRange)
+@implements(VersionRangeModel)
 class VersionRange(Model):
     """ This class implements a range of versions. """
 
 
-@implements(ITagged)
+#@implements(ITagged)
 class TaggedItem(Model):
     """ This class is a base class for all project elements that is subject to
     workflow or tags.
@@ -155,7 +157,7 @@ class TaggedItem(Model):
         return typ
 
 
-@implements(IProject)
+@implements(ProjectModel)
 class Project(Model):
     """ This class represents a MetaSIP project. """
 
@@ -676,22 +678,22 @@ class Access(Model):
         return xml
 
 
-@implements(IModule)
+@implements(ModuleModel)
 class Module(Model):
     """ This class represents a project module. """
 
 
-@implements(IHeaderDirectory)
+@implements(HeaderDirectoryModel)
 class HeaderDirectory(Model):
     """ This class represents a project header directory. """
 
 
-@implements(ISipFile)
+@implements(SipFileModel)
 class SipFile(Model):
     """ This class represents a .sip file. """
 
     # The project.
-    project = Instance(IProject)
+    project = Instance(ProjectModel)
 
     def sip(self, f, latest_sip):
         """ Write the .sip file. """
@@ -847,7 +849,7 @@ class SipFile(Model):
         return ['name="{0}"'.format(self.name)]
 
 
-@implements(IHeaderFileVersion)
+@implements(HeaderFileVersionModel)
 class HeaderFileVersion(Model):
     """ This class represents a version of a project header file. """
 
@@ -870,12 +872,12 @@ class HeaderFileVersion(Model):
         return xml
 
 
-@implements(IHeaderFile)
+@implements(HeaderFileModel)
 class HeaderFile(Model):
     """ This class represents a project header file. """
 
     # The project.
-    project = Instance(IProject)
+    project = Instance(ProjectModel)
 
     def xml(self, f):
         """ Write the header file to an XML file. """
@@ -905,7 +907,7 @@ class HeaderFile(Model):
         return xml
 
 
-@implements(IArgument)
+@implements(ArgumentModel)
 class Argument(Annotations):
     """ This class represents an argument. """
 
@@ -994,7 +996,7 @@ class Argument(Annotations):
         return xml
 
 
-@implements(IClass)
+@implements(ClassModel)
 class Class(Code, Access):
     """ This class represents a class. """
 
@@ -1367,7 +1369,7 @@ class Callable(Code):
         return False
 
 
-@implements(IEnumValue)
+@implements(EnumValueModel)
 class EnumValue(TaggedItem, Annotations):
     """ This class represents an enum value. """
 
@@ -1406,7 +1408,7 @@ class EnumValue(TaggedItem, Annotations):
         return xml
 
 
-@implements(IEnum)
+@implements(EnumModel)
 class Enum(Code, Access):
     """ This class represents an enum. """
 
@@ -1500,7 +1502,7 @@ class ClassCallable(Callable, Access):
         return Callable.xmlAttributes(self) + Access.xmlAttributes(self)
 
 
-@implements(IConstructor)
+@implements(ConstructorModel)
 class Constructor(ClassCallable):
     """ This class represents a constructor. """
 
@@ -1573,7 +1575,7 @@ class Constructor(ClassCallable):
         return xml
 
 
-@implements(IDestructor)
+@implements(DestructorModel)
 class Destructor(Code, Access):
     """ This class represents a destructor. """
 
@@ -1638,7 +1640,7 @@ class Destructor(Code, Access):
         return xml
 
 
-@implements(IOperatorCast)
+@implements(OperatorCastModel)
 class OperatorCast(ClassCallable):
     """ This class represents an operator cast. """
 
@@ -1708,7 +1710,7 @@ class OperatorCast(ClassCallable):
         return xml
 
 
-@implements(IMethod)
+@implements(MethodModel)
 class Method(ClassCallable):
     """ This class represents a method. """
 
@@ -1862,7 +1864,7 @@ class Method(ClassCallable):
         return xml
 
 
-@implements(IOperatorMethod)
+@implements(OperatorMethodModel)
 class OperatorMethod(ClassCallable):
     """ This class represents a scoped operator. """
 
@@ -1985,7 +1987,7 @@ class OperatorMethod(ClassCallable):
         return xml
 
 
-@implements(IFunction)
+@implements(FunctionModel)
 class Function(Callable):
     """ This class represents a function. """
 
@@ -2019,7 +2021,7 @@ class Function(Callable):
         f.write('</Function>\n')
 
 
-@implements(IOperatorFunction)
+@implements(OperatorFunctionModel)
 class OperatorFunction(Callable):
     """ This class represents a global operator. """
 
@@ -2083,7 +2085,7 @@ class OperatorFunction(Callable):
         f.write('</OperatorFunction>\n')
 
 
-@implements(IVariable)
+@implements(VariableModel)
 class Variable(Code, Access):
     """ This class represents a variable. """
 
@@ -2185,7 +2187,7 @@ class Variable(Code, Access):
         return xml
 
 
-@implements(ITypedef)
+@implements(TypedefModel)
 class Typedef(Code):
     """ This class represents a typedef. """
 
@@ -2224,7 +2226,7 @@ class Typedef(Code):
         return xml
 
 
-@implements(INamespace)
+@implements(NamespaceModel)
 class Namespace(Code):
     """ This class represents a namespace. """
 
@@ -2295,7 +2297,7 @@ class Namespace(Code):
         return xml
 
 
-@implements(IOpaqueClass)
+@implements(OpaqueClassModel)
 class OpaqueClass(Code, Access):
     """ This class represents an opaque class. """
 
@@ -2334,7 +2336,7 @@ class OpaqueClass(Code, Access):
         return xml
 
 
-@implements(IManualCode)
+@implements(ManualCodeModel)
 class ManualCode(Code, Access):
     """ This class represents some manual code. """
 
