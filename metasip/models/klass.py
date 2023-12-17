@@ -1,0 +1,85 @@
+# Copyright (c) 2023 Riverbank Computing Limited.
+#
+# This file is part of metasip.
+#
+# This file may be used under the terms of the GNU General Public License v3
+# as published by the Free Software Foundation which can be found in the file
+# LICENSE-GPL3.txt included in this package.
+#
+# This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+# WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+
+from dataclasses import dataclass
+
+from .access import Access
+from .code import Code
+from .code_container import CodeContainer
+from .docstring import Docstring
+
+
+@dataclass
+class Class(Code, CodeContainer, Docstring, Access):
+    """ This class implements a class. """
+
+    # The C++ base classes.
+    bases: str = ''
+
+    # The optional %BIGetCharBufferCode.
+    bicharbufcode: str = ''
+
+    # The optional %BIGetBufferCode.
+    bigetbufcode: str = ''
+
+    # The optional %BIReadBufferCode.
+    bireadbufcode: str = ''
+
+    # The optional %BIReleaseBufferCode.
+    birelbufcode: str = ''
+
+    # The optional %BIGetSegCountCode.
+    bisegcountcode: str = ''
+
+    # The optional %BIWriteBufferCode.
+    biwritebufcode: str = ''
+
+    # The optional %ConvertFromTypeCode.
+    convfromtypecode: str = ''
+
+    # The optional %ConvertToTypeCode.
+    convtotypecode: str = ''
+
+    # The optional %GCClearCode.
+    gcclearcode: str = ''
+
+    # The optional %GCTraverseCode.
+    gctraversecode: str = ''
+
+    # The name of the class.
+    name: str = ''
+
+    # The optional %PickleCode.
+    picklecode: str = ''
+
+    # The optional Python base classes.  An empty string means that the C++
+    # base classes should be used.  A value of "None" means that there are no
+    # base classes.
+    pybases: str = ''
+
+    # This is set if the class is a struct.
+    struct: bool = False
+
+    # The optional %ConvertToSubClassCode.
+    subclasscode: str = ''
+
+    # The optional %FinalisationCode.
+    finalisationcode: str = ''
+
+    # The optional %TypeCode.
+    typecode: str = ''
+
+    # The optional %TypeHeaderCode.
+    typeheadercode: str = ''
+
+    # The optional %TypeHintCode.
+    typehintcode: str = ''
