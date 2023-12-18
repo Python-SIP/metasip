@@ -15,7 +15,8 @@ import os
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QFileDialog
 
-from ...project import Project
+from ...models import Project
+from ...project_io import load_project
 
 from ..helpers import ProjectUi, warning
 from ..shell_tool import ActionTool
@@ -51,8 +52,9 @@ class ImportProjectTool(ActionTool):
                 "MetaSIP project files (*.msp)")
 
         if import_name:
-            imported = Project.factory(project_name=import_name,
-                    ui=ProjectUi())
+            imported = Project(name=import_name)
+            if not load_project(imported, ui=ProjectUi()):
+                return
 
             try:
                 self._import_project(imported)

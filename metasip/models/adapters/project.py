@@ -31,6 +31,11 @@ class ProjectAdapter(BaseAdapter):
         'versions':             AttributeType.STRING_LIST,
     }
 
+    def as_str(self, project):
+        """ Return the standard string representation. """
+
+        return self.model.rootmodule
+
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
@@ -39,7 +44,7 @@ class ProjectAdapter(BaseAdapter):
         # Initialise any UI for the load.
         if ui is not None:
             # Each .sip file is a step of the load.
-            ui.load_starting(project, len(root.findall('.//SipFile')))
+            ui.load_starting(self.model, len(element.findall('.//SipFile')))
 
         super().load(element, ui)
 

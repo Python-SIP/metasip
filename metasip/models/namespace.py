@@ -17,7 +17,7 @@ from .code_container import CodeContainer
 
 
 @dataclass
-class Namespacel(Code, CodeContainer):
+class Namespace(Code, CodeContainer):
     """ This class implements a namespace. """
 
     # The name of the namespace.

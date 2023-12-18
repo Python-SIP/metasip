@@ -12,7 +12,7 @@
 
 import re
 
-from ...models import CodeContainerMixin, EnumModel
+from ...models import CodeContainer, Enum
 
 from ..helpers import warning
 
@@ -57,10 +57,10 @@ def _tagged_from_container(container):
 
     for code in container.content:
         # Depth first.
-        if isinstance(code, EnumModel):
+        if isinstance(code, Enum):
             for enum_value in code.content:
                 yield (enum_value, code)
-        elif isinstance(code, CodeContainerMixin):
+        elif isinstance(code, CodeContainer):
             for item in _tagged_from_container(code):
                 yield item
 

@@ -42,3 +42,5 @@ from .typedef import Typedef
 from .variable import Variable
 from .version_range import VersionRange
 from .workflow import Workflow
+
+from .project_version import MinimumProjectVersion, ProjectVersion

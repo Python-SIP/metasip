@@ -10,10 +10,14 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .base_adapter import AttributeType, BaseAdapter
+from ..annos import Annos
+
+from .adapt import adapt
+from .base_adapter import AttributeType
+from .sip_file_content_adapter import SipFileContentAdapter
 
 
-class ArgumentAdapter(BaseAdapter):
+class ArgumentAdapter(SipFileContentAdapter):
     """ This is the Argument adapter. """
 
     # The map of attribute names and types.
@@ -25,3 +29,28 @@ class ArgumentAdapter(BaseAdapter):
         'type':         AttributeType.STRING,
         'unnamed':      AttributeType.BOOL_TRUE,
     }
+
+    def as_str(self, project):
+        """ Return the standard string representation. """
+
+        arg = self.model
+
+        s = self.expand_type(arg.type, name=arg.name)
+
+        s += adapt(arg, Annos).as_sip(project)
+
+        if arg.pydefault != '':
+            s += ' = ' + arg.pydefault
+        if arg.default != '':
+            s += ' = ' + self.ignore_namespaces(arg.default)
+
+        return s
+
+    def load(self, element, ui):
+        """ Load the model from the XML element.  An optional user interface
+        may be available to inform the user of progress.
+        """
+
+        super().load(element, ui)
+
+        adapt(self.model, Annos).load(element, ui)

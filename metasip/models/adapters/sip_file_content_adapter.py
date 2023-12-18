@@ -10,68 +10,21 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from abc import ABC, abstractmethod
-from enum import auto, Enum
-
-from .adapt import adapt
+from .base_adapter import BaseAdapter
 
 
-class AttributeType(Enum):
-    """ The different types of element and model attributes. """
+class SipFileContentAdapter(BaseAdapter):
+    """ This is the base class for all adapters for APIs specified in a .sip
+    file.
+    """
 
-    BOOL_FALSE = auto()
-    BOOL_TRUE = auto()
-    STRING = auto()
-    STRING_LIST = auto()
+    def generate_sip(self, output, project):
+        """ Generates the .sip file representation. """
 
-
-class BaseAdapter(ABC):
-    """ This is the base class for all adapters. """
-
-    # The default attribute type map.
-    ATTRIBUTE_TYPE_MAP = {}
-
-    def __init__(self, model):
-        """ Initialise the adapter. """
-
-        self.model = model
-
-    @abstractmethod
-    def as_str(self, project):
-        """ Return the standard string representation. """
-
-        ...
-
-    def load(self, element, ui):
-        """ Load the model from the XML element.  An optional user interface
-        may be available to inform the user of progress.
-        """
-
-        # This default implementation loads attributes define by
-        # ATTRIBUTE_TYPE_MAP.
-        for name, attribute_type in self.ATTRIBUTE_TYPE_MAP.items():
-            if attribute_type is AttributeType.BOOL_FALSE:
-                value = bool(int(element.get(name, '0')))
-            elif attribute_type is AttributeType.BOOL_TRUE:
-                value = bool(int(element.get(name, '1')))
-            elif attribute_type is AttributeType.STRING:
-                value = element.get(name, '')
-            elif attribute_type is AttributeType.STRING_LIST:
-                value = element.get(name, '').split()
-
-            setattr(self.model, name, value)
-
-    def set_all_literals(self, element):
-        """ Set all literal text attributes of the model from an element. """
-
-        for subelement in element:
-            if subelement.tag == 'Literal':
-                self.set_literal(subelement)
-
-    def set_literal(self, element):
-        """ Set a literal text attribute of the model from an element. """
-
-        setattr(self.model, element.get('type'), element.text.strip())
+        # This default implementation just writes the string representation.
+        # TODO: write_line() writes the indent, the line then a '\n'.
+        # TODO: handle any versioning in a reusable way.
+        f.write_line(self.as_str(project))
 
     @classmethod
     def expand_type(cls, type, name=None, project=None):

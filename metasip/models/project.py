@@ -12,10 +12,9 @@
 
 from dataclasses import dataclass, field
 
-from ..project_version import ProjectVersion
-
 from .header_directory import HeaderDirectory
 from .module import Module
+from .project_version import ProjectVersion
 
 
 @dataclass
@@ -24,7 +23,7 @@ class Project:
 
     # The name of the project file.  Note that this isn't part of the project
     # file itself.
-    name: str
+    name: str = ''
 
     # The dirty state of the project.  Note that this isn't part of the project
     # file itself.

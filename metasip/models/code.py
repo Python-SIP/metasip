@@ -25,5 +25,6 @@ class Code(Annos, Tagged, Workflow):
 
     # The containing API item (ie. a .sip file or a C/C++ scope).  Note that
     # this isn't part of the project file itself.
-    # TODO: is it actually used?
+    # TODO: is it actually used anymore?  It used to be used to find the
+    # project - specifically the ignorednamespaces attribute.
     container: '.code_container.CodeContainer' = None

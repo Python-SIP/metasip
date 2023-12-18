@@ -16,7 +16,8 @@ import sys
 from PyQt6.QtWidgets import QApplication
 
 from ..exceptions import UserException
-from ..project import Project
+from ..models import Project
+from ..project_io import load_project
 
 from .helpers import ProjectUi, warning
 from .shell import Shell
@@ -41,8 +42,8 @@ def main():
     sys.excepthook = _exception_hook
 
     # Load any project.
-    project = Project.factory(project_name, ui=ProjectUi())
-    if project is None:
+    project = Project(project_name)
+    if not load_project(project, ui=ProjectUi()):
         return 0
 
     # Create the shell.

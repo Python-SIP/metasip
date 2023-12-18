@@ -15,7 +15,8 @@ import sys
 import os
 
 from .exceptions import UserException
-from .project import Project
+from .models import Project
+from .project_io import load_roject
 
 
 def main():
@@ -34,22 +35,18 @@ def main():
     parser.add_argument('-m',
             help="the module to generated code for",
             dest='modules', metavar='MODULE', action='append')
-    # TODO: remove this and corresponding support.
-    parser.add_argument('-O', help="generate code for an older version of sip",
-            dest='latest_sip', default=True, action='store_false')
     parser.add_argument('--verbose', help="display progress messages",
             dest='verbose', default=False, action='store_true')
 
     args = parser.parse_args()
 
     try:
-        _generate(args.project, args.modules, args.output_dir, args.latest_sip,
-                args.verbose)
+        _generate(args.project, args.modules, args.output_dir, args.verbose)
     except Exception as e:
         _handle_exception(e)
 
 
-def _generate(project_name, modules, output_dir, latest_sip, verbose):
+def _generate(project_name, modules, output_dir, verbose):
     """ Generate the .sip files for a project and return an exit code or 0 if
     there was no error.
     """
@@ -60,7 +57,8 @@ def _generate(project_name, modules, output_dir, latest_sip, verbose):
     if not project_name:
         raise UserException("Specify the name of an existing project file")
 
-    project = Project.factory(project_name)
+    project = Project(project_name)
+    load_project(project)
 
     if modules:
         gen_modules = []
@@ -78,8 +76,7 @@ def _generate(project_name, modules, output_dir, latest_sip, verbose):
 
     # Generate each module.
     for module in gen_modules:
-        project.generate_module(module, output_dir, latest_sip=latest_sip,
-                verbose=verbose)
+        project.generate_module(module, output_dir, verbose=verbose)
 
 
 def _handle_exception(e):

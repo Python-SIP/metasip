@@ -17,8 +17,8 @@ from .adapt import adapt
 from .base_adapter import AttributeType, BaseAdapter
 
 
-class OperatorCastAdapter(BaseAdapter):
-    """ This is the OperatorCast adapter. """
+class OperatorMethodAdapter(BaseAdapter):
+    """ This is the OperatorMethod adapter. """
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {

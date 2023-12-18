@@ -14,10 +14,10 @@ from ..callable import Callable
 from ..docstring import Docstring
 
 from .adapt import adapt
-from .base_adapter import BaseAdapter
+from .sip_file_content_adapter import SipFileContentAdapter
 
 
-class FunctionAdapter(BaseAdapter):
+class FunctionAdapter(SipFileContentAdapter):
     """ This is the Function adapter. """
 
     def load(self, element, ui):

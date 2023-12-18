@@ -11,22 +11,29 @@
 
 
 from ..access import Access
+from ..annos import Annos
+from ..constructor import Constructor
+from ..destructor import Destructor
 from ..docstring import Docstring
 from ..klass import Class
 from ..code import Code
 from ..code_container import CodeContainer
 from ..enum import Enum
 from ..manual_code import ManualCode
+from ..method import Method
 from ..namespace import Namespace
 from ..opaque_class import OpaqueClass
+from ..operator_cast import OperatorCast
+from ..operator_method import OperatorMethod
 from ..typedef import Typedef
 from ..variable import Variable
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType
+from .sip_file_block_content_adapter import SipFileBlockContentAdapter
 
 
-class ClassAdapter(BaseAdapter):
+class ClassAdapter(SipFileBlockContentAdapter):
     """ This is the Class adapter. """
 
     # The map of attribute names and types.
@@ -40,13 +47,35 @@ class ClassAdapter(BaseAdapter):
     # The map of element tags and Code sub-class factories.
     _TAG_CODE_MAP = {
         'Class':            Class,
+        'Constructor':      Constructor,
+        'Destructor':       Destructor,
         'Enum':             Enum,
         'ManualCode':       ManualCode,
+        'Method':           Method,
         'Namespace':        Namespace,
         'OpaqueClass':      OpaqueClass,
+        'OperatorCast':     OperatorCast,
+        'OperatorMethod':   OperatorMethod,
         'Typedef':          Typedef,
         'Variable':         Variable,
     }
+
+    def as_str(self, project):
+        """ Return the standard string representation. """
+
+        klass = self.model
+
+        s = 'struct' if klass.struct else 'class'
+
+        if klass.name != '':
+            s += ' ' + klass.name
+
+        if klass.bases != '':
+            s += ' : ' + klass.bases
+
+        s += adapt(klass, Annos).as_str(project)
+
+        return s
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
@@ -59,5 +88,3 @@ class ClassAdapter(BaseAdapter):
         adapt(self.model, CodeContainer).load(self._TAG_CODE_MAP, element, ui)
         adapt(self.model, Docstring).load(element, ui)
         adapt(self.model, Access).load(element, ui)
-
-        self.set_all_literals(element)

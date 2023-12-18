@@ -18,4 +18,4 @@ class CodeContainer:
     """ This class is a mixin for APIs that can contain other APIs. """
 
     # The list of contained API items.
-    content = list['.code.Code'] = field(default_factory=list)
+    content: list['.code.Code'] = field(default_factory=list)

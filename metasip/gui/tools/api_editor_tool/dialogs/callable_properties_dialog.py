@@ -13,7 +13,7 @@
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGridLayout,
         QGroupBox, QLineEdit)
 
-from .....project import (Constructor, Destructor, Method, OperatorMethod,
+from .....models import (Constructor, Destructor, Method, OperatorMethod,
         Function, OperatorFunction, ManualCode)
 
 from ....helpers import BaseDialog

@@ -15,16 +15,22 @@ from ..docstring import Docstring
 from ..extended_access import ExtendedAccess
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType
+from .sip_file_content_adapter import SipFileContentAdapter
 
 
-class ManualCodeAdapter(BaseAdapter):
+class ManualCodeAdapter(SipFileContentAdapter):
     """ This is the ManualCode adapter. """
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
         'precis':   AttributeType.STRING,
     }
+
+    def as_str(self, project):
+        """ Return the standard string representation. """
+
+        return self.model.precis
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

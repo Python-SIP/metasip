@@ -13,11 +13,11 @@
 from xml.etree import ElementTree
 
 from ..exceptions import UserException
+from ..models import MinimumProjectVersion, ProjectVersion
 from ..models.adapters import adapt
-from ..project_version import MinimumProjectVersion, ProjectVersion
 
 
-def load_project(self, project, ui=None):
+def load_project(project, ui=None):
     """ Populate a project from its project file.  Return True if the user
     didn't cancel.
     """
@@ -33,10 +33,10 @@ def load_project(self, project, ui=None):
 
     if major_version is None and minor_version is None:
         major_version = 0
-        minor_version = self._as_int(root.get('version'))
+        minor_version = _as_int(root.get('version'))
     else:
-        major_version = self._as_int(major_version)
-        minor_version = self._as_int(minor_version)
+        major_version = _as_int(major_version)
+        minor_version = _as_int(minor_version)
 
     if root.tag != 'Project' or major_version < 0 or minor_version < 0:
         raise UserException(
@@ -74,3 +74,12 @@ def load_project(self, project, ui=None):
     adapt(project).load(root, ui)
 
     return True
+
+
+def _as_int(s):
+    """ Return an int from a string or -1 if the string is invalid. """
+
+    try:
+        return int(s)
+    except ValueError:
+        return -1

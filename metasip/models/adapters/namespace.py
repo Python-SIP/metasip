@@ -23,10 +23,11 @@ from ..typedef import Typedef
 from ..variable import Variable
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType
+from .sip_file_block_content_adapter import SipFileBlockContentAdapter
 
 
-class NamespaceAdapter(BaseAdapter):
+class NamespaceAdapter(SipFileBlockContentAdapter):
     """ This is the Namespace adapter. """
 
     # The map of attribute names and types.
@@ -56,5 +57,3 @@ class NamespaceAdapter(BaseAdapter):
 
         adapt(self.model, Code).load(element, ui)
         adapt(self.model, CodeContainer).load(self._TAG_CODE_MAP, element, ui)
-
-        self.set_all_literals(element)

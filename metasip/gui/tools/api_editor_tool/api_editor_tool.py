@@ -15,7 +15,8 @@ import os
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QFileDialog
 
-from ....project import Project
+from ....models import Project
+from ....project_io import load_project
 
 from ...helpers import ProjectUi
 from ...shell import EventType
@@ -116,7 +117,7 @@ class ApiEditorTool(ShellTool):
         """ Handle the New action. """
 
         if self.shell.save_project():
-            self.shell.project = Project.factory()
+            self.shell.project = Project()
 
     def _handle_open(self):
         """ Handle the Open action. """
@@ -129,13 +130,17 @@ class ApiEditorTool(ShellTool):
                     "MetaSIP project files (*.msp)")
 
             if project_name:
-                self.shell.project = Project.factory(project_name=project_name,
-                        ui=ProjectUi())
+                project = Project(name=project_name)
+                if load_project(project, ui=ProjectUi()):
+                    self.shell.project = project
 
     def _handle_save(self):
         """ Handle the Save action. """
 
-        self.save_data()
+        if self.shell.project.name != '':
+            self.save_data()
+        else:
+            self._handle_save_as()
 
     def _handle_save_as(self):
         """ Handle the Save as action. """
@@ -146,7 +151,7 @@ class ApiEditorTool(ShellTool):
                 "Save project file", dir_name, "MetaSIP project files (*.msp)")
 
         if project_name:
-            self.shell.project.project_name = project_name
+            self.shell.project.name = project_name
             self.shell.project.save(project_name)
             self.shell.notify(EventType.PROJECT_RENAME)
             self.shell.dirty = False

@@ -25,12 +25,16 @@ class CodeContainerAdapter(BaseAdapter):
         """
 
         for subelement in element:
-            model = tag_code_map[subelement.tag]()
+            # All sub-classes happen to have literals.
+            if subelement.tag == 'Literal':
+                self.set_literal(subelement)
+            else:
+                model = tag_code_map[subelement.tag]()
 
-            # The new model should be an instance of Code.
-            assert isinstance(model, Code)
+                # The new model should be an instance of Code.
+                assert isinstance(model, Code)
 
-            model.container = self.model
+                model.container = self.model
 
-            adapt(model).load(subelement, ui)
-            self.model.content.append(model)
+                adapt(model).load(subelement, ui)
+                self.model.content.append(model)

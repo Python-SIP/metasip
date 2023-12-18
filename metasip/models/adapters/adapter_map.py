@@ -18,6 +18,7 @@ from ..code import Code
 from ..code_container import CodeContainer
 from ..constructor import Constructor
 from ..destructor import Destructor
+from ..docstring import Docstring
 from ..enum import Enum
 from ..enum_value import EnumValue
 from ..extended_access import ExtendedAccess
@@ -29,6 +30,7 @@ from ..klass import Class
 from ..manual_code import ManualCode
 from ..method import Method
 from ..module import Module
+from ..namespace import Namespace
 from ..opaque_class import OpaqueClass
 from ..operator_cast import OperatorCast
 from ..operator_function import OperatorFunction
@@ -48,6 +50,7 @@ from .code import CodeAdapter
 from .code_container import CodeContainerAdapter
 from .constructor import ConstructorAdapter
 from .destructor import DestructorAdapter
+from .docstring import DocstringAdapter
 from .enum import EnumAdapter
 from .enum_value import EnumValueAdapter
 from .extended_access import ExtendedAccessAdapter
@@ -59,6 +62,7 @@ from .klass import ClassAdapter
 from .manual_code import ManualCodeAdapter
 from .method import MethodAdapter
 from .module import ModuleAdapter
+from .namespace import NamespaceAdapter
 from .opaque_class import OpaqueClassAdapter
 from .operator_cast import OperatorCastAdapter
 from .operator_function import OperatorFunctionAdapter
@@ -82,6 +86,7 @@ ADAPTER_MAP = {
     CodeContainer:      CodeContainerAdapter,
     Constructor:        ConstructorAdapter,
     Destructor:         DestructorAdapter,
+    Docstring:          DocstringAdapter,
     Enum:               EnumAdapter,
     EnumValue:          EnumValueAdapter,
     ExtendedAccess:     ExtendedAccessAdapter,

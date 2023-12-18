@@ -15,10 +15,10 @@ from PyQt6.QtGui import QDrag
 from PyQt6.QtWidgets import (QApplication, QInputDialog, QMenu, QMessageBox,
         QProgressDialog, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator)
 
-from ....project import (Class, Constructor, Destructor, Method, Function,
+from ....models import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
-        ManualCode, Module, OpaqueClass, OperatorCast, Namespace, VersionRange,
-        version_range)
+        ManualCode, Module, OpaqueClass, OperatorCast, Namespace, Tagged)
+from ....models.adapters import adapt
 
 from ...helpers import warning
 
@@ -335,7 +335,7 @@ class DropSite():
 _view_id = QTreeWidgetItem.ItemType.UserType
 
 
-class APIItemView(QTreeWidgetItem):
+class APIView(QTreeWidgetItem):
     """ This class represents the view of an API in the editor. """
 
     def __init__(self, api, shell, parent, after=None):
@@ -377,6 +377,11 @@ class APIItemView(QTreeWidgetItem):
                 self.removeChild(view)
                 break
 
+    def api_as_str(self):
+        """ Returns the API as a string for display purposes. """
+
+        return adapt(self.api).as_str(self.shell.project)
+
     def get_child_factory(self):
         """ Return the callable that will return a child instance. """
 
@@ -393,7 +398,7 @@ class APIItemView(QTreeWidgetItem):
         return None
 
 
-class ProjectView(APIItemView):
+class ProjectView(APIView):
     """ This class implements a view of a project. """
 
     def __init__(self, shell, parent):
@@ -462,7 +467,7 @@ class ProjectView(APIItemView):
     def root_module_updated(self):
         """ The name of the root module has been updated. """
 
-        name = self.shell.project.rootmodule
+        name = adapt(self.shell.project)
         if name == '':
             name = "Modules"
 
@@ -509,7 +514,7 @@ class ProjectView(APIItemView):
         self.sortChildren(ApiEditor.NAME, Qt.SortOrder.AscendingOrder)
 
 
-class ModuleView(APIItemView, DropSite):
+class ModuleView(APIView, DropSite):
     """ This class implements a view of a module. """
 
     def __init__(self, module, shell, parent):
@@ -564,7 +569,7 @@ class ModuleView(APIItemView, DropSite):
             self.shell.dirty = True
 
 
-class ContainerView(APIItemView, DropSite):
+class ContainerView(APIView, DropSite):
     """ This class implements a view of a potential container for code. """
 
     def __init__(self, container, shell, parent, after):
@@ -923,7 +928,7 @@ class SipFileView(ContainerView):
             itm = it.value()
 
 
-class ArgumentView(APIItemView):
+class ArgumentView(APIView):
     """ This class implements a view of a function argument. """
 
     def __init__(self, argument, shell, parent):
@@ -941,8 +946,7 @@ class ArgumentView(APIItemView):
     def draw_name(self):
         """ Draw the name column. """
 
-        self.setText(ApiEditor.NAME,
-                self.api.user(self.parent().api))
+        self.setText(ApiEditor.NAME, self.api_as_str())
 
     def get_menu(self, siblings):
         """ Return the list of context menu options. """
@@ -993,7 +997,7 @@ class CodeView(ContainerView):
     def draw_name(self):
         """ Update the item's name. """
 
-        self.setText(ApiEditor.NAME, self.api.user())
+        self.setText(ApiEditor.NAME, self.api_as_str())
 
     def _draw_access(self):
         """ Update the item's access. """
@@ -1072,8 +1076,8 @@ class CodeView(ContainerView):
     def draw_versions(self):
         """ Update the item's versions. """
 
-        ranges = [version_range(r) for r in self.api.versions]
-        self.setText(ApiEditor.VERSIONS, ", ".join(ranges))
+        self.setText(ApiEditor.VERSIONS,
+                adapt(self.api, Tagged).versions_as_str())
 
     def get_menu(self, siblings):
         """ Return the list of context menu options. """
@@ -1424,7 +1428,7 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._accessCodeDone)
-        ed.edit(self.api.accesscode, "%AccessCode: " + self.api.user())
+        ed.edit(self.api.accesscode, "%AccessCode: " + self.api_as_str())
         self._editors["ac"] = ed
 
     def _accessCodeDone(self, text_changed, text):
@@ -1441,7 +1445,7 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._getCodeDone)
-        ed.edit(self.api.getcode, "%GetCode: " + self.api.user())
+        ed.edit(self.api.getcode, "%GetCode: " + self.api_as_str())
         self._editors["gc"] = ed
 
     def _getCodeDone(self, text_changed, text):
@@ -1458,7 +1462,7 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._setCodeDone)
-        ed.edit(self.api.setcode, "%SetCode: " + self.api.user())
+        ed.edit(self.api.setcode, "%SetCode: " + self.api_as_str())
         self._editors["sc"] = ed
 
     def _setCodeDone(self, text_changed, text):
@@ -1475,7 +1479,7 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._typehintCodeDone)
-        ed.edit(self.api.typeheadercode, "%TypeHintCode: " + self.api.user())
+        ed.edit(self.api.typeheadercode, "%TypeHintCode: " + self.api_as_str())
         self._editors["thic"] = ed
 
     def _typehintCodeDone(self, text_changed, text):
@@ -1492,7 +1496,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._typeheaderCodeDone)
-        ed.edit(self.api.typeheadercode, "%TypeHeaderCode: " + self.api.user())
+        ed.edit(self.api.typeheadercode,
+                "%TypeHeaderCode: " + self.api_as_str())
         self._editors["thc"] = ed
 
     def _typeheaderCodeDone(self, text_changed, text):
@@ -1509,7 +1514,7 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._typeCodeDone)
-        ed.edit(self.api.typecode, "%TypeCode: " + self.api.user())
+        ed.edit(self.api.typecode, "%TypeCode: " + self.api_as_str())
         self._editors["tc"] = ed
 
     def _typeCodeDone(self, text_changed, text):
@@ -1526,7 +1531,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._convToTypeCodeDone)
-        ed.edit(self.api.convtotypecode, "%ConvertToTypeCode: " + self.api.user())
+        ed.edit(self.api.convtotypecode,
+                "%ConvertToTypeCode: " + self.api_as_str())
         self._editors["cttc"] = ed
 
     def _convToTypeCodeDone(self, text_changed, text):
@@ -1543,7 +1549,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._convFromTypeCodeDone)
-        ed.edit(self.api.convfromtypecode, "%ConvertFromTypeCode: " + self.api.user())
+        ed.edit(self.api.convfromtypecode,
+                "%ConvertFromTypeCode: " + self.api_as_str())
         self._editors["cftc"] = ed
 
     def _convFromTypeCodeDone(self, text_changed, text):
@@ -1560,7 +1567,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._gcTraverseCodeDone)
-        ed.edit(self.api.gctraversecode, "%GCTraverseCode: " + self.api.user())
+        ed.edit(self.api.gctraversecode,
+                "%GCTraverseCode: " + self.api_as_str())
         self._editors["gctc"] = ed
 
     def _gcTraverseCodeDone(self, text_changed, text):
@@ -1577,7 +1585,7 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._gcClearCodeDone)
-        ed.edit(self.api.gcclearcode, "%GCClearCode: " + self.api.user())
+        ed.edit(self.api.gcclearcode, "%GCClearCode: " + self.api_as_str())
         self._editors["gccc"] = ed
 
     def _gcClearCodeDone(self, text_changed, text):
@@ -1594,7 +1602,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biGetBufCodeDone)
-        ed.edit(self.api.bigetbufcode, "%BIGetBufferCode: " + self.api.user())
+        ed.edit(self.api.bigetbufcode,
+                "%BIGetBufferCode: " + self.api_as_str())
         self._editors["bigetb"] = ed
 
     def _biGetBufCodeDone(self, text_changed, text):
@@ -1611,7 +1620,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biRelBufCodeDone)
-        ed.edit(self.api.birelbufcode, "%BIReleaseBufferCode: " + self.api.user())
+        ed.edit(self.api.birelbufcode,
+                "%BIReleaseBufferCode: " + self.api_as_str())
         self._editors["birelb"] = ed
 
     def _biRelBufCodeDone(self, text_changed, text):
@@ -1628,7 +1638,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biReadBufCodeDone)
-        ed.edit(self.api.bireadbufcode, "%BIGetReadBufferCode: " + self.api.user())
+        ed.edit(self.api.bireadbufcode,
+                "%BIGetReadBufferCode: " + self.api_as_str())
         self._editors["birb"] = ed
 
     def _biReadBufCodeDone(self, text_changed, text):
@@ -1645,7 +1656,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biWriteBufCodeDone)
-        ed.edit(self.api.biwritebufcode, "%BIGetWriteBufferCode: " + self.api.user())
+        ed.edit(self.api.biwritebufcode,
+                "%BIGetWriteBufferCode: " + self.api_as_str())
         self._editors["biwb"] = ed
 
     def _biWriteBufCodeDone(self, text_changed, text):
@@ -1662,7 +1674,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biSegCountCodeDone)
-        ed.edit(self.api.bisegcountcode, "%BIGetSegCountCode: " + self.api.user())
+        ed.edit(self.api.bisegcountcode,
+                "%BIGetSegCountCode: " + self.api_as_str())
         self._editors["bisc"] = ed
 
     def _biSegCountCodeDone(self, text_changed, text):
@@ -1679,7 +1692,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._biCharBufCodeDone)
-        ed.edit(self.api.bicharbufcode, "%BIGetCharBufferCode: " + self.api.user())
+        ed.edit(self.api.bicharbufcode,
+                "%BIGetCharBufferCode: " + self.api_as_str())
         self._editors["bicb"] = ed
 
     def _biCharBufCodeDone(self, text_changed, text):
@@ -1696,7 +1710,7 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._pickleCodeDone)
-        ed.edit(self.api.picklecode, "%PickleCode: " + self.api.user())
+        ed.edit(self.api.picklecode, "%PickleCode: " + self.api_as_str())
         self._editors["pick"] = ed
 
     def _pickleCodeDone(self, text_changed, text):
@@ -1713,7 +1727,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._finalCodeDone)
-        ed.edit(self.api.finalisationcode, "%FinalisationCode: " + self.api.user())
+        ed.edit(self.api.finalisationcode,
+                "%FinalisationCode: " + self.api_as_str())
         self._editors["fc"] = ed
 
     def _finalCodeDone(self, text_changed, text):
@@ -1730,7 +1745,8 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._subclassCodeDone)
-        ed.edit(self.api.subclasscode, "%ConvertToSubClassCode: " + self.api.user())
+        ed.edit(self.api.subclasscode,
+                "%ConvertToSubClassCode: " + self.api_as_str())
         self._editors["scc"] = ed
 
     def _subclassCodeDone(self, text_changed, text):
@@ -1747,7 +1763,7 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._docstringDone)
-        ed.edit(self.api.docstring, "%Docstring: " + self.api.user())
+        ed.edit(self.api.docstring, "%Docstring: " + self.api_as_str())
         self._editors["ds"] = ed
 
     def _docstringDone(self, text_changed, text):
@@ -1764,7 +1780,7 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._methodCodeDone)
-        ed.edit(self.api.methcode, "%MethodCode: " + self.api.user())
+        ed.edit(self.api.methcode, "%MethodCode: " + self.api_as_str())
         self._editors["mc"] = ed
 
     def _methodCodeDone(self, text_changed, text):
@@ -1781,7 +1797,7 @@ class CodeView(ContainerView):
 
         ed = ExternalEditor()
         ed.editDone.connect(self._virtualCatcherCodeDone)
-        ed.edit(self.api.virtcode, "%VirtualCatcherCode: " + self.api.user())
+        ed.edit(self.api.virtcode, "%VirtualCatcherCode: " + self.api_as_str())
         self._editors["vcc"] = ed
 
     def _virtualCatcherCodeDone(self, text_changed, text):
@@ -1830,7 +1846,7 @@ class CodeView(ContainerView):
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api.user())
+            self.setText(ApiEditor.NAME, self.api_as_str())
 
     def _handle_opaque_class_properties(self):
         """ Slot to handle the properties for opaque classes. """
@@ -1840,7 +1856,7 @@ class CodeView(ContainerView):
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api.user())
+            self.setText(ApiEditor.NAME, self.api_as_str())
 
     def _handle_class_properties(self):
         """ Slot to handle the properties for classes. """
@@ -1850,7 +1866,7 @@ class CodeView(ContainerView):
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api.user())
+            self.setText(ApiEditor.NAME, self.api_as_str())
 
     def _handle_callable_properties(self):
         """ Slot to handle the properties for callables. """
@@ -1859,7 +1875,7 @@ class CodeView(ContainerView):
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api.user())
+            self.setText(ApiEditor.NAME, self.api_as_str())
 
     def _handle_variable_properties(self):
         """ Slot to handle the properties for variables. """
@@ -1869,7 +1885,7 @@ class CodeView(ContainerView):
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api.user())
+            self.setText(ApiEditor.NAME, self.api_as_str())
 
     def _handle_enum_properties(self):
         """ Slot to handle the properties for enums. """
@@ -1878,7 +1894,7 @@ class CodeView(ContainerView):
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api.user())
+            self.setText(ApiEditor.NAME, self.api_as_str())
 
     def _handle_enum_member_properties(self):
         """ Slot to handle the properties for enum members. """
@@ -1888,7 +1904,7 @@ class CodeView(ContainerView):
 
         if dialog.update():
             self.shell.dirty = True
-            self.setText(ApiEditor.NAME, self.api.user())
+            self.setText(ApiEditor.NAME, self.api_as_str())
 
     def _setStatusChecked(self):
         """ Slot to handle the status being set to checked. """

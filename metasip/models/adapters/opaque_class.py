@@ -14,10 +14,11 @@ from ..access import Access
 from ..code import Code
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType
+from .sip_file_content_adapter import SipFileContentAdapter
 
 
-class OpaqueClassAdapter(BaseAdapter):
+class OpaqueClassAdapter(SipFileContentAdapter):
     """ This is the OpaqueClass adapter. """
 
     # The map of attribute names and types.

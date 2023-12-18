@@ -12,7 +12,7 @@
 
 from PyQt6.QtWidgets import QApplication, QProgressDialog
 
-from ...project import AbstractProjectUi
+from ...project_io import AbstractProjectUi
 
 from .question import question
 

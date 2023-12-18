@@ -20,3 +20,10 @@ class AnnosAdapter(BaseAdapter):
     ATTRIBUTE_TYPE_MAP = {
         'annos':    AttributeType.STRING,
     }
+
+    def as_sip(self, project):
+        """ Return the standard .sip file representation. """
+
+        annos = self.model.annos
+
+        return f' /{annos}/' if annos != '' else ''

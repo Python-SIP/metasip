@@ -29,6 +29,11 @@ class ModuleAdapter(BaseAdapter):
         'virtualerrorhandler':  AttributeType.STRING,
     }
 
+    def as_str(self, project):
+        """ Return the standard string representation. """
+
+        return self.model.name
+
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.

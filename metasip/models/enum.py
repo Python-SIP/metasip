@@ -22,7 +22,7 @@ class Enum(Code, Access):
     """ This class implements an enum. """
 
     # The list of enum values.
-    content: list[EnumValueModel] = field(default_factory=list)
+    content: list[EnumValue] = field(default_factory=list)
 
     # Set if the enum is a C++11 enum class.
     enum_class: bool = False

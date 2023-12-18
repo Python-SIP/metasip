@@ -10,9 +10,10 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from ..klass import Class
+from ..code_container import CodeContainer
 from ..enum import Enum
 from ..function import Function
+from ..klass import Class
 from ..manual_code import ManualCode
 from ..namespace import Namespace
 from ..opaque_class import OpaqueClass
@@ -33,7 +34,7 @@ class SipFileAdapter(BaseAdapter):
     }
 
     # The map of element tags and Code sub-class factories.
-    _TAG_MODEL_MAP = {
+    _TAG_CODE_MAP = {
         'Class':            Class,
         'Enum':             Enum,
         'Function':         Function,
@@ -45,6 +46,10 @@ class SipFileAdapter(BaseAdapter):
         'Variable':         Variable,
     }
 
+    def as_str(self, project):
+        """ Return the standard string representation. """
+
+        return self.model.name
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
@@ -54,8 +59,6 @@ class SipFileAdapter(BaseAdapter):
         super().load(element, ui)
 
         adapt(self.model, CodeContainer).load(self._TAG_CODE_MAP, element, ui)
-
-        self.set_all_literals(element)
 
         # Progress any UI for the load.
         if ui is not None:

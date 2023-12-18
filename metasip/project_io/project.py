@@ -458,8 +458,7 @@ class Project(Model):
 
         return True
 
-    def generate_module(self, module, output_dir, latest_sip=True,
-            verbose=False):
+    def generate_module(self, module, output_dir, verbose=False):
         """ Generate the output for a module. """
 
         # Remember the root directory used.
@@ -476,7 +475,7 @@ class Project(Model):
             if verbose:
                 print("Generating %s" % f.name)
 
-            sf.sip(f, latest_sip)
+            sf.sip(f)
             sfnames.append(os.path.basename(f.name))
 
             f.close()
@@ -494,30 +493,27 @@ class Project(Model):
         if rname != '':
             rname += "."
 
-        if latest_sip:
-            if module.callsuperinit != 'undefined':
-                callsuperinit = ", call_super_init=%s" % ('True' if module.callsuperinit == 'yes' else 'False')
-            else:
-                callsuperinit = ""
-
-            if module.virtualerrorhandler != '':
-                virtualerrorhandler = ", default_VirtualErrorHandler=%s" % module.virtualerrorhandler
-            else:
-                virtualerrorhandler = ""
-
-            if module.uselimitedapi:
-                uselimitedapi = ", use_limited_api=True"
-            else:
-                uselimitedapi = ""
-
-            if module.pyssizetclean:
-                pyssizetclean = ", py_ssize_t_clean=True"
-            else:
-                pyssizetclean = ""
-
-            f.write("%%Module(name=%s%s%s%s, keyword_arguments=\"Optional\"%s%s)\n\n" % (rname, module.name, callsuperinit, virtualerrorhandler, uselimitedapi, pyssizetclean))
+        if module.callsuperinit != 'undefined':
+            callsuperinit = ", call_super_init=%s" % ('True' if module.callsuperinit == 'yes' else 'False')
         else:
-            f.write("%%Module %s%s 0\n\n" % (rname, module.name))
+            callsuperinit = ""
+
+        if module.virtualerrorhandler != '':
+            virtualerrorhandler = ", default_VirtualErrorHandler=%s" % module.virtualerrorhandler
+        else:
+            virtualerrorhandler = ""
+
+        if module.uselimitedapi:
+            uselimitedapi = ", use_limited_api=True"
+        else:
+            uselimitedapi = ""
+
+        if module.pyssizetclean:
+            pyssizetclean = ", py_ssize_t_clean=True"
+        else:
+            pyssizetclean = ""
+
+        f.write("%%Module(name=%s%s%s%s, keyword_arguments=\"Optional\"%s%s)\n\n" % (rname, module.name, callsuperinit, virtualerrorhandler, uselimitedapi, pyssizetclean))
 
         top_level_module = True
 
@@ -695,7 +691,7 @@ class SipFile(Model):
     # The project.
     project = Instance(ProjectModel)
 
-    def sip(self, f, latest_sip):
+    def sip(self, f):
         """ Write the .sip file. """
 
         # See if we need a %ModuleCode directive for things which will be
@@ -779,7 +775,7 @@ class SipFile(Model):
 
         for api_item in self.content:
             if api_item.status == '':
-                api_item.sip(f, self, latest_sip)
+                api_item.sip(f, self)
 
         f.blank()
 
@@ -941,7 +937,7 @@ class Argument(Annotations):
 
         return s
 
-    def sip(self, callable, latest_sip, ignore_namespaces=True):
+    def sip(self, callable, ignore_namespaces=True):
         """
         Return the argument suitable for writing to a SIP file.
         """
@@ -1038,7 +1034,7 @@ class Class(Code, Access):
 
         return s
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the class to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
@@ -1159,7 +1155,7 @@ class Class(Code, Access):
                     f.write(astr + ":\n")
                     f += 1
 
-            api_item.sip(f, sf, latest_sip)
+            api_item.sip(f, sf)
 
         f -= 1
         f.write("};\n")
@@ -1277,7 +1273,7 @@ class Callable(Code):
         if self.pyargs != '':
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(self, latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self, ignore_namespaces=False) for a in self.args]) + ")"
 
         s += self.sipAnnos()
 
@@ -1286,7 +1282,7 @@ class Callable(Code):
 
         return s
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the callable to a .sip file. """
 
         # Note that we don't include a separate C++ signature.  This is handled
@@ -1297,7 +1293,7 @@ class Callable(Code):
         if self.pyargs != '':
             f.write(self.pyargs)
         else:
-            f.write("(" + ", ".join([a.sip(self, latest_sip) for a in self.args]) + ")")
+            f.write("(" + ", ".join([a.sip(self) for a in self.args]) + ")")
 
         f.write(self.sipAnnos())
 
@@ -1385,7 +1381,7 @@ class EnumValue(TaggedItem, Annotations):
         """
         return self.name
 
-    def sip(self, f, latest_sip):
+    def sip(self, f):
         """ Write the enum value to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
@@ -1432,7 +1428,7 @@ class Enum(Code, Access):
 
         return s
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the enum to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
@@ -1454,7 +1450,7 @@ class Enum(Code, Access):
             if e.status != '':
                 continue
 
-            e.sip(f, latest_sip)
+            e.sip(f)
 
         f -= 1
         f.write("};\n")
@@ -1528,7 +1524,7 @@ class Constructor(ClassCallable):
 
         return s
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the constructor to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
@@ -1536,7 +1532,7 @@ class Constructor(ClassCallable):
         if self.explicit:
             f.write("explicit ")
 
-        super().sip(f, sf, latest_sip)
+        super().sip(f, sf)
 
         if self.pyargs != '' or self.hasPyArgs():
             f.write(" [(%s)]" % ", ".join([a.user(self) for a in self.args]))
@@ -1601,7 +1597,7 @@ class Destructor(Code, Access):
 
         return s
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the destructor to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
@@ -1666,14 +1662,14 @@ class OperatorCast(ClassCallable):
 
         return s
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the operator cast to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
 
         f.write("operator ")
 
-        super().sip(f, sf, latest_sip)
+        super().sip(f, sf)
 
         if self.const:
             f.write(" const")
@@ -1761,7 +1757,7 @@ class Method(ClassCallable):
         if self.pyargs:
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(self, latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self, ignore_namespaces=False) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -1779,7 +1775,7 @@ class Method(ClassCallable):
 
         return s
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the method to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
@@ -1799,7 +1795,7 @@ class Method(ClassCallable):
         if self.pyargs:
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(self, latest_sip) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -1903,7 +1899,7 @@ class OperatorMethod(ClassCallable):
         if self.pyargs != '':
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(self, latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self, ignore_namespaces=False) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -1918,7 +1914,7 @@ class OperatorMethod(ClassCallable):
 
         return s
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the operator method to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
@@ -1933,7 +1929,7 @@ class OperatorMethod(ClassCallable):
         if self.pyargs != '':
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(self, latest_sip) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -1991,12 +1987,12 @@ class OperatorMethod(ClassCallable):
 class Function(Callable):
     """ This class represents a function. """
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the function to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
 
-        super().sip(f, sf, latest_sip)
+        super().sip(f, sf)
         f.write(";\n")
 
         self.sipDocstring(f)
@@ -2040,7 +2036,7 @@ class OperatorFunction(Callable):
         if self.pyargs != '':
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(self, latest_sip=True, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self, ignore_namespaces=False) for a in self.args]) + ")"
 
         s += self.sipAnnos()
 
@@ -2049,7 +2045,7 @@ class OperatorFunction(Callable):
 
         return s
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the operator function to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
@@ -2059,7 +2055,7 @@ class OperatorFunction(Callable):
         if self.pyargs != '':
             f.write(self.pyargs)
         else:
-            f.write("(" + ", ".join([a.sip(self, latest_sip) for a in self.args]) + ")")
+            f.write("(" + ", ".join([a.sip(self) for a in self.args]) + ")")
 
         f.write(self.sipAnnos())
 
@@ -2106,7 +2102,7 @@ class Variable(Code, Access):
 
         return s
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the variable to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
@@ -2118,11 +2114,7 @@ class Variable(Code, Access):
 
         f.write(s + self.sipAnnos())
 
-        if latest_sip:
-            need_brace = True
-        else:
-            need_brace = False
-            f.write(";\n", indent=False)
+        need_brace = True
 
         if self.accesscode:
             if need_brace:
@@ -2145,11 +2137,10 @@ class Variable(Code, Access):
 
             _writeCodeSIP(f, "%SetCode", self.setcode)
 
-        if latest_sip:
-            if not need_brace:
-                f.write("}")
+        if not need_brace:
+            f.write("}")
 
-            f.write(";\n", indent=False)
+        f.write(";\n", indent=False)
 
         _sip_end_version(f, nr_ends)
 
@@ -2203,7 +2194,7 @@ class Typedef(Code):
         """
         return "typedef " + self.expand_type(self.type, self.name) + self.sipAnnos()
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the typedef to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
@@ -2236,7 +2227,7 @@ class Namespace(Code):
         """
         return "namespace " + self.name + self.sipAnnos()
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the namespace to a .sip file. """
 
         ignore = (self.name in sf.project.ignorednamespaces)
@@ -2263,7 +2254,7 @@ class Namespace(Code):
 
         for api_item in self.content:
             if api_item.status == '':
-                api_item.sip(f, sf, latest_sip);
+                api_item.sip(f, sf);
 
         if not ignore:
             f -= 1
@@ -2313,7 +2304,7 @@ class OpaqueClass(Code, Access):
         """
         return "class " + self.name + self.sipAnnos()
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the opaque class to a .sip file. """
 
         nr_ends = _sip_start_version(f, self);
@@ -2352,7 +2343,7 @@ class ManualCode(Code, Access):
         """
         return self.precis
 
-    def sip(self, f, sf, latest_sip):
+    def sip(self, f, sf):
         """ Write the code to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)

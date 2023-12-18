@@ -32,10 +32,32 @@ class TaggedAdapter(BaseAdapter):
         # Load the simple attributes.
         super().load(element, ui)
 
-        versions = elem.get('versions')
+        versions = element.get('versions')
 
         if versions is not None:
             for version in versions.split():
                 version_range = VersionRange()
                 version_range.startversion, version_range.endversion = version.split('-')
                 self.model.versions.append(version_range)
+
+    def versions_as_str(self):
+        """ Return the standard string representation of the versions. """
+
+        version_ranges = []
+
+        for version_range in self.model.versions:
+            startversion = version_range.startversion
+            endversion = version_range.endversion
+
+            if startversion == '':
+                if endversion == '':
+                    # This should never happen.
+                    continue
+
+                version_ranges.append('- ' + endversion)
+            elif endversion == '':
+                version_ranges.append(startversion + ' -')
+            else:
+                version_ranges.append(startversion + ' - ' + endversion)
+
+        return ', '.join(version_ranges)

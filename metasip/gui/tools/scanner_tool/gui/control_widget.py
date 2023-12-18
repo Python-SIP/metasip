@@ -19,10 +19,9 @@ from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
         QLineEdit, QMessageBox, QPushButton, QStyle, QToolButton, QVBoxLayout,
         QWidget)
 
-from .....models import (CallableModel, CodeContainerMixin, ConstructorModel,
-        EnumModel)
-from .....project import (HeaderDirectory, HeaderFile, HeaderFileVersion,
-        ManualCode, SipFile, VersionRange)
+from .....models import (Callable, CodeContainer, Constructor, Enum,
+        HeaderDirectory, HeaderFile, HeaderFileVersion, ManualCode, SipFile,
+        VersionRange)
 
 from ....helpers import warning
 from ....shell import EventType
@@ -537,7 +536,7 @@ class ControlWidget(QWidget):
                     src_code.remove(src_api)
 
                     # Merge any child code.
-                    if isinstance(dst_api, (CodeContainerMixin, EnumModel)):
+                    if isinstance(dst_api, (CodeContainer, Enum)):
                         self._merge_code(dst_api, src_api.content)
 
                     break
@@ -604,11 +603,11 @@ class ControlWidget(QWidget):
                 if type(code) is not type(src_api):
                     continue
 
-                if isinstance(src_api, ConstructorModel):
+                if isinstance(src_api, Constructor):
                     pos = idx
                     break
 
-                if isinstance(src_api, CallableModel) and code.name == src_api.name:
+                if isinstance(src_api, Callable) and code.name == src_api.name:
                     pos = idx
                     break
 
