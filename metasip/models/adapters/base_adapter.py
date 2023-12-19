@@ -26,7 +26,18 @@ class AttributeType(Enum):
 
 
 class BaseAdapter(ABC):
-    """ This is the base class for all adapters. """
+    """ This is the base class for all adapters and provides the ability to
+    load and save a modle to a project file and to provide a user-friendly, one
+    line string representation.
+    """
+    # TODO: add IOAdapter and move load() to it.
+    # TODO: rename this class as DisplayAdapter as IOAdapter sub-class that
+    # adds as_str() and eventually as_sip() (so better name?)
+    # OR
+    # TODO: move as_str() to DisplayAdapter mixin and also add GeneratorAdapter
+    # mixin containing as_sip()
+    # Strictly speaking have separate adapters (Load, Save, Display, Generate)
+    # as Display and Save only needed by GUI.
 
     # The default attribute type map.
     ATTRIBUTE_TYPE_MAP = {}

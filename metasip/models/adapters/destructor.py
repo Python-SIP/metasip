@@ -14,11 +14,10 @@ from ..access import Access
 from ..code import Code
 
 from .adapt import adapt
-from .base_adapter import AttributeType
-from .sip_file_content_adapter import SipFileContentAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class DestructorAdapter(SipFileContentAdapter):
+class DestructorAdapter(BaseAdapter):
     """ This is the Destructor adapter. """
 
     # The map of attribute names and types.

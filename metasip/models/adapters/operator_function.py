@@ -13,10 +13,10 @@
 from ..callable import Callable
 
 from .adapt import adapt
-from .sip_file_content_adapter import SipFileContentAdapter
+from .base_adapter import BaseAdapter
 
 
-class OperatorFunctionAdapter(SipFileContentAdapter):
+class OperatorFunctionAdapter(BaseAdapter):
     """ This is the OperatorFunction adapter. """
 
     def load(self, element, ui):

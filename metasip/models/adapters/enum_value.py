@@ -15,11 +15,10 @@ from ..tagged import Tagged
 from ..workflow import Workflow
 
 from .adapt import adapt
-from .base_adapter import AttributeType
-from .sip_file_content_adapter import SipFileContentAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class EnumValueAdapter(SipFileContentAdapter):
+class EnumValueAdapter(BaseAdapter):
     """ This is the EnumValue adapter. """
 
     # The map of attribute names and types.

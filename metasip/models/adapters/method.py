@@ -15,11 +15,10 @@ from ..docstring import Docstring
 from ..extended_access import ExtendedAccess
 
 from .adapt import adapt
-from .base_adapter import AttributeType
-from .sip_file_content_adapter import SipFileContentAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class MethodAdapter(SipFileContentAdapter):
+class MethodAdapter(BaseAdapter):
     """ This is the Method adapter. """
 
     ATTRIBUTE_TYPE_MAP = {

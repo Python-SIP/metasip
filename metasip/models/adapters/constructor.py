@@ -15,11 +15,10 @@ from ..callable import Callable
 from ..docstring import Docstring
 
 from .adapt import adapt
-from .base_adapter import AttributeType
-from .sip_file_container_adapter import SipFileContentAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class ConstructorAdapter(SipFileContentAdapter):
+class ConstructorAdapter(BaseAdapter):
     """ This is the Constructor adapter. """
 
     # The map of attribute names and types.

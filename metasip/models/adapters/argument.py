@@ -13,11 +13,10 @@
 from ..annos import Annos
 
 from .adapt import adapt
-from .base_adapter import AttributeType
-from .sip_file_content_adapter import SipFileContentAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class ArgumentAdapter(SipFileContentAdapter):
+class ArgumentAdapter(BaseAdapter):
     """ This is the Argument adapter. """
 
     # The map of attribute names and types.

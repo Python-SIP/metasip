@@ -29,11 +29,10 @@ from ..typedef import Typedef
 from ..variable import Variable
 
 from .adapt import adapt
-from .base_adapter import AttributeType
-from .sip_file_block_content_adapter import SipFileBlockContentAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class ClassAdapter(SipFileBlockContentAdapter):
+class ClassAdapter(BaseAdapter):
     """ This is the Class adapter. """
 
     # The map of attribute names and types.

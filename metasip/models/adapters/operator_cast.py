@@ -14,11 +14,10 @@ from ..access import Access
 from ..callable import Callable
 
 from .adapt import adapt
-from .base_adapter import AttributeType
-from .sip_file_content_adapter import SipFileContentAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class OperatorCastAdapter(SipFileContentAdapter):
+class OperatorCastAdapter(BaseAdapter):
     """ This is the OperatorCast adapter. """
 
     # The map of attribute names and types.

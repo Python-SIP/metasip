@@ -15,11 +15,10 @@ from ..code import Code
 from ..enum_value import EnumValue
 
 from .adapt import adapt
-from .base_adapter import AttributeType
-from .sip_file_block_content_adapter import SipFileBlockContentAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class EnumAdapter(SipFileBlockContentAdapter):
+class EnumAdapter(BaseAdapter):
     """ This is the Enum adapter. """
 
     # The map of attribute names and types.
