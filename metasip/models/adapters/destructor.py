@@ -14,10 +14,10 @@ from ..access import Access
 from ..code import Code
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class DestructorAdapter(BaseAdapter):
+class DestructorAdapter(BaseApiAdapter):
     """ This is the Destructor adapter. """
 
     # The map of attribute names and types.

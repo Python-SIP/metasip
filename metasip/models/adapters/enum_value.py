@@ -15,10 +15,10 @@ from ..tagged import Tagged
 from ..workflow import Workflow
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class EnumValueAdapter(BaseAdapter):
+class EnumValueAdapter(BaseApiAdapter):
     """ This is the EnumValue adapter. """
 
     # The map of attribute names and types.

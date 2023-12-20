@@ -15,10 +15,10 @@ from ..callable import Callable
 from ..docstring import Docstring
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class ConstructorAdapter(BaseAdapter):
+class ConstructorAdapter(BaseApiAdapter):
     """ This is the Constructor adapter. """
 
     # The map of attribute names and types.

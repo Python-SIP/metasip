@@ -14,10 +14,10 @@ from ..access import Access
 from ..code import Code
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class VariableAdapter(BaseAdapter):
+class VariableAdapter(BaseApiAdapter):
     """ This is the Variable adapter. """
 
     # The map of attribute names and types.

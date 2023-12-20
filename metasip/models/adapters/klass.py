@@ -29,10 +29,10 @@ from ..typedef import Typedef
 from ..variable import Variable
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class ClassAdapter(BaseAdapter):
+class ClassAdapter(BaseApiAdapter):
     """ This is the Class adapter. """
 
     # The map of attribute names and types.

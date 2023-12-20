@@ -27,17 +27,9 @@ class AttributeType(Enum):
 
 class BaseAdapter(ABC):
     """ This is the base class for all adapters and provides the ability to
-    load and save a modle to a project file and to provide a user-friendly, one
+    load and save a model to a project file and to provide a user-friendly, one
     line string representation.
     """
-    # TODO: add IOAdapter and move load() to it.
-    # TODO: rename this class as DisplayAdapter as IOAdapter sub-class that
-    # adds as_str() and eventually as_sip() (so better name?)
-    # OR
-    # TODO: move as_str() to DisplayAdapter mixin and also add GeneratorAdapter
-    # mixin containing as_sip()
-    # Strictly speaking have separate adapters (Load, Save, Display, Generate)
-    # as Display and Save only needed by GUI.
 
     # The default attribute type map.
     ATTRIBUTE_TYPE_MAP = {}
@@ -46,12 +38,6 @@ class BaseAdapter(ABC):
         """ Initialise the adapter. """
 
         self.model = model
-
-    @abstractmethod
-    def as_str(self, project):
-        """ Return the standard string representation. """
-
-        ...
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
@@ -84,6 +70,18 @@ class BaseAdapter(ABC):
 
         setattr(self.model, element.get('type'), element.text.strip())
 
+
+class BaseApiAdapter(BaseAdapter):
+    """ This is the base class for all adapters for APIs that can be written to
+    a .sip file and provide a user-friendly, one line string representation.
+    """
+
+    @abstractmethod
+    def as_str(self, project):
+        """ Return the standard string representation. """
+
+        ...
+
     @classmethod
     def expand_type(cls, type, name=None, project=None):
         """ Return the full type with an optional name. """
@@ -115,6 +113,12 @@ class BaseAdapter(ABC):
             s += name
 
         return s
+
+    def generate_sip(self, output, project):
+        """ Generate the .sip file content. """
+
+        # This default implementation writes out the strip representation.
+        output.write_line(self.as_str(project))
 
     @classmethod
     def ignore_namespaces(cls, type, project):

@@ -22,10 +22,10 @@ from ..typedef import Typedef
 from ..variable import Variable
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class SipFileAdapter(BaseAdapter):
+class SipFileAdapter(BaseApiAdapter):
     """ This is the SipFile adapter. """
 
     # The map of attribute names and types.

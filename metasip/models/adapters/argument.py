@@ -13,10 +13,10 @@
 from ..annos import Annos
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class ArgumentAdapter(BaseAdapter):
+class ArgumentAdapter(BaseApiAdapter):
     """ This is the Argument adapter. """
 
     # The map of attribute names and types.

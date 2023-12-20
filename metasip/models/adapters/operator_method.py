@@ -14,10 +14,10 @@ from ..access import Access
 from ..callable import Callable
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class OperatorMethodAdapter(BaseAdapter):
+class OperatorMethodAdapter(BaseApiAdapter):
     """ This is the OperatorMethod adapter. """
 
     # The map of attribute names and types.

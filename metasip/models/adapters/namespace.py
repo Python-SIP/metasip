@@ -23,10 +23,10 @@ from ..typedef import Typedef
 from ..variable import Variable
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class NamespaceAdapter(BaseAdapter):
+class NamespaceAdapter(BaseApiAdapter):
     """ This is the Namespace adapter. """
 
     # The map of attribute names and types.

@@ -15,10 +15,10 @@ from ..docstring import Docstring
 from ..extended_access import ExtendedAccess
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class ManualCodeAdapter(BaseAdapter):
+class ManualCodeAdapter(BaseApiAdapter):
     """ This is the ManualCode adapter. """
 
     # The map of attribute names and types.

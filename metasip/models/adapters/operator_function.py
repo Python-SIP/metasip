@@ -13,10 +13,10 @@
 from ..callable import Callable
 
 from .adapt import adapt
-from .base_adapter import BaseAdapter
+from .base_adapter import BaseApiAdapter
 
 
-class OperatorFunctionAdapter(BaseAdapter):
+class OperatorFunctionAdapter(BaseApiAdapter):
     """ This is the OperatorFunction adapter. """
 
     def load(self, element, ui):

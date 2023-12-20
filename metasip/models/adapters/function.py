@@ -14,10 +14,10 @@ from ..callable import Callable
 from ..docstring import Docstring
 
 from .adapt import adapt
-from .base_adapter import BaseAdapter
+from .base_adapter import BaseApiAdapter
 
 
-class FunctionAdapter(BaseAdapter):
+class FunctionAdapter(BaseApiAdapter):
     """ This is the Function adapter. """
 
     def load(self, element, ui):

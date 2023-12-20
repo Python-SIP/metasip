@@ -14,10 +14,10 @@ from ..header_directory import HeaderDirectory
 from ..module import Module
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class ProjectAdapter(BaseAdapter):
+class ProjectAdapter(BaseApiAdapter):
     """ This is the Project adapter. """
 
     # The map of attribute names and types.

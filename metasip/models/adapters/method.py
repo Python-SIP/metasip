@@ -15,10 +15,10 @@ from ..docstring import Docstring
 from ..extended_access import ExtendedAccess
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class MethodAdapter(BaseAdapter):
+class MethodAdapter(BaseApiAdapter):
     """ This is the Method adapter. """
 
     ATTRIBUTE_TYPE_MAP = {
