@@ -41,9 +41,6 @@ class Project:
     # The list of header directories.
     headers: list[HeaderDirectory] = field(default_factory=list)
 
-    # The list of namespaces to ignore.
-    ignorednamespaces: list[str] = field(default_factory=list)
-
     # The list of Python modules.
     modules: list[Module] = field(default_factory=list)
 

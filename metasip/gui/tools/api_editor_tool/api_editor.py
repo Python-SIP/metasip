@@ -12,8 +12,8 @@
 
 from PyQt6.QtCore import QByteArray, QMimeData, Qt
 from PyQt6.QtGui import QDrag
-from PyQt6.QtWidgets import (QApplication, QInputDialog, QMenu, QMessageBox,
-        QProgressDialog, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator)
+from PyQt6.QtWidgets import (QApplication, QMenu, QMessageBox, QProgressDialog,
+        QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator)
 
 from ....models import (Class, Constructor, Destructor, Method, Function,
         Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
@@ -380,7 +380,7 @@ class APIView(QTreeWidgetItem):
     def api_as_str(self):
         """ Returns the API as a string for display purposes. """
 
-        return adapt(self.api).as_str(self.shell.project)
+        return adapt(self.api).as_str()
 
     def get_child_factory(self):
         """ Return the callable that will return a child instance. """
@@ -437,8 +437,7 @@ class ProjectView(APIView):
         if len(siblings) != 0:
             return None
 
-        return [("Add Ignored Namespace...", self._ignorednamespaceSlot),
-                ("Properties...", self._handle_project_properties)]
+        return [("Properties...", self._handle_project_properties)]
 
     def module_add(self, module):
         """ Handle the addition of a module. """
@@ -472,32 +471,6 @@ class ProjectView(APIView):
             name = "Modules"
 
         self.setText(ApiEditor.NAME, name)
-
-    def _ignorednamespaceSlot(self):
-        """ Handle adding a new ignored namespace. """
-
-        project = self.shell.project
-        title = "Add Ignored Namespace"
-
-        # Get the name of the new ignored namespace.
-        (ns, ok) = QInputDialog.getText(self.treeWidget(), title,
-                "Ignored Namespace")
-
-        if ok:
-            ns = ns.strip()
-
-            if ns == '':
-                warning(title,
-                        "The name of the ignored namespace must not be blank.",
-                        parent=self.treeWidget())
-            elif ns in project.ignorednamespaces:
-                warning(title,
-                        f"'{ns}' is already used as the name of an ignored namespace.",
-                        parent=self.treeWidget())
-            else:
-                # Add the ignored namespace to the project.
-                project.ignorednamespaces.append(ns)
-                self.shell.dirty = True
 
     def _handle_project_properties(self):
         """ Handle the project's properties. """

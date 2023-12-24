@@ -116,11 +116,6 @@ class ImportProjectTool(ActionTool):
             if platform not in project.platforms:
                 project.platforms.append(platform)
 
-        # Merge any ignored namespaces.
-        for namespace in imported.ignorednamespaces:
-            if namespace not in project.ignorednamespaces:
-                project.ignorednamespaces.append(namespace)
-
         # Any any new modules and check for conflicts.
         for imported_module in imported.modules:
             for module in project.modules:

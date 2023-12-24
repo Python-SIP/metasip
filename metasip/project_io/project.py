@@ -90,26 +90,16 @@ class TaggedItem(Model):
 
         return sf.project
 
-    def expand_type(self, typ, name="", ignore_namespaces=False):
+    def expand_type(self, typ, name=""):
         """
         Return the full type for a name.
 
         typ is the type.
         name is the optional name.
-        ignore_namespaces is True if any ignored namespaces should be ignored.
         """
         # Handle the trivial case.
         if not typ:
             return ""
-
-        if ignore_namespaces:
-            const = 'const '
-            if typ.startswith(const):
-                typ = typ[len(const):]
-            else:
-                const = ''
-
-            typ = const + self.ignore_namespaces(typ)
 
         # SIP can't handle every C++ fundamental type.
         typ = typ.replace("long int", "long")
@@ -127,34 +117,6 @@ class TaggedItem(Model):
                 s += name
 
         return s
-
-    def ignore_namespaces(self, typ):
-        """
-        Return the name of a type with any namespaces to be ignored removed.
-
-        typ is the type.
-        """
-        for ins in self.get_project().ignorednamespaces:
-            ns_name = ins + "::"
-
-            if typ.startswith(ns_name):
-                typ = typ[len(ns_name):]
-                break
-
-        # Handle any template arguments.
-        t_start = typ.find('<')
-        t_end = typ.rfind('>')
-
-        if t_start > 0 and t_end > t_start:
-            xt = []
-
-            # Note that this doesn't handle nested template arguments properly.
-            for t_arg in typ[t_start + 1:t_end].split(','):
-                xt.append(self.ignore_namespaces(t_arg.strip()))
-
-            typ = typ[:t_start + 1] + ', '.join(xt) + typ[t_end:]
-
-        return typ
 
 
 @implements(ProjectModel)
@@ -365,16 +327,9 @@ class Project(Model):
         else:
             xf = ''
 
-        # Handle the ignored namespaces.
-        if len(self.ignorednamespaces) != 0:
-            ins = ' ignorednamespaces="{0}"'.format(
-                    ' '.join(self.ignorednamespaces))
-        else:
-            ins = ''
-
         # Write the project.
         f.write('<?xml version="1.0"?>\n')
-        f.write('<Project %s rootmodule="%s"%s%s%s%s%s%s>\n' % (format_version, self.rootmodule, vers, plat, feat, xmod, xf, ins))
+        f.write('<Project %s rootmodule="%s"%s%s%s%s%s>\n' % (format_version, self.rootmodule, vers, plat, feat, xmod, xf))
 
         f += 1
 
@@ -702,16 +657,7 @@ class SipFile(Model):
         features = set()
         need_header = False
 
-        # This is a hack to handle the case of everything being contained in a
-        # single ignored namespace.
-        api_items = self.content
-        if len(api_items) == 1:
-            api_item = api_items[0]
-
-            if isinstance(api_item, Namespace) and api_item.name in self.project.ignorednamespaces:
-                api_items = api_item.content
-
-        for api_item in api_items:
+        for api_item in self.content:
             if api_item.status != '':
                 continue
 
@@ -937,15 +883,14 @@ class Argument(Annotations):
 
         return s
 
-    def sip(self, callable, ignore_namespaces=True):
+    def sip(self, callable):
         """
         Return the argument suitable for writing to a SIP file.
         """
         if self.pytype != '':
             s = self.pytype
         else:
-            s = callable.expand_type(self.type,
-                    ignore_namespaces=ignore_namespaces)
+            s = callable.expand_type(self.type)
 
         if self.name != '':
             if s[-1] not in "&*":
@@ -958,7 +903,7 @@ class Argument(Annotations):
         if self.pydefault != '':
             s += " = " + self.pydefault
         elif self.default != '':
-            s += " = " + callable.ignore_namespaces(self.default)
+            s += " = " + self.default
 
         return s
 
@@ -1057,9 +1002,6 @@ class Class(Code, Access):
 
             for b in self.bases.split(", "):
                 acc, cls = b.split()
-
-                # Handle any ignored namespace.
-                cls = self.ignore_namespaces(cls)
 
                 # Remove public to maintain compatibility with old SIPs.
                 if acc == "public":
@@ -1273,7 +1215,7 @@ class Callable(Code):
         if self.pyargs != '':
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(self, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self) for a in self.args]) + ")"
 
         s += self.sipAnnos()
 
@@ -1288,7 +1230,7 @@ class Callable(Code):
         # Note that we don't include a separate C++ signature.  This is handled
         # where needed by sub-classes.
 
-        f.write(self.returnType(ignore_namespaces=True) + self.name)
+        f.write(self.returnType() + self.name)
 
         if self.pyargs != '':
             f.write(self.pyargs)
@@ -1297,15 +1239,13 @@ class Callable(Code):
 
         f.write(self.sipAnnos())
 
-    def returnType(self, ignore_namespaces=False):
-        """
-        Return the return type as a string.
-        """
+    def returnType(self):
+        """ Return the return type as a string. """
+
         if self.pytype != '':
             s = self.pytype
         elif self.rtype != '':
-            s = self.expand_type(self.rtype,
-                    ignore_namespaces=ignore_namespaces)
+            s = self.expand_type(self.rtype)
         else:
             return ""
 
@@ -1757,7 +1697,7 @@ class Method(ClassCallable):
         if self.pyargs:
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(self, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -1790,7 +1730,7 @@ class Method(ClassCallable):
         if self.static:
             s += "static "
 
-        s += self.returnType(ignore_namespaces=True) + self.name
+        s += self.returnType() + self.name
 
         if self.pyargs:
             s += self.pyargs
@@ -1809,7 +1749,7 @@ class Method(ClassCallable):
         s += self.sipAnnos()
 
         if (self.virtual or self.access.startswith("protected") or not self.methcode) and (self.pytype or self.pyargs or self.hasPyArgs()):
-            s += " [%s (%s)]" % (self.expand_type(self.rtype, ignore_namespaces=True), ", ".join([a.user(self) for a in self.args]))
+            s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         f.write(s + ";\n")
 
@@ -1899,7 +1839,7 @@ class OperatorMethod(ClassCallable):
         if self.pyargs != '':
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(self, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self) for a in self.args]) + ")"
 
         if self.const:
             s += " const"
@@ -1924,7 +1864,7 @@ class OperatorMethod(ClassCallable):
         if self.virtual:
             s += "virtual "
 
-        s += self.returnType(ignore_namespaces=True) + "operator" + self.name
+        s += self.returnType() + "operator" + self.name
 
         if self.pyargs != '':
             s += self.pyargs
@@ -1940,7 +1880,7 @@ class OperatorMethod(ClassCallable):
         s += self.sipAnnos()
 
         if (self.virtual or self.access.startswith("protected") or not self.methcode) and (self.pytype or self.pyargs or self.hasPyArgs()):
-            s += " [%s (%s)]" % (self.expand_type(self.rtype, ignore_namespaces=True), ", ".join([a.user(self) for a in self.args]))
+            s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         f.write(s + ";\n")
 
@@ -2036,7 +1976,7 @@ class OperatorFunction(Callable):
         if self.pyargs != '':
             s += self.pyargs
         else:
-            s += "(" + ", ".join([a.sip(self, ignore_namespaces=False) for a in self.args]) + ")"
+            s += "(" + ", ".join([a.sip(self) for a in self.args]) + ")"
 
         s += self.sipAnnos()
 
@@ -2050,7 +1990,7 @@ class OperatorFunction(Callable):
 
         nr_ends = _sip_start_version(f, self)
 
-        f.write(self.returnType(ignore_namespaces=True) + "operator" + self.name)
+        f.write(self.returnType() + "operator" + self.name)
 
         if self.pyargs != '':
             f.write(self.pyargs)
@@ -2107,7 +2047,7 @@ class Variable(Code, Access):
 
         nr_ends = _sip_start_version(f, self)
 
-        s = self.expand_type(self.type, self.name, ignore_namespaces=True)
+        s = self.expand_type(self.type, self.name)
 
         if self.static:
             s = "static " + s
@@ -2198,7 +2138,7 @@ class Typedef(Code):
         """ Write the typedef to a .sip file. """
 
         nr_ends = _sip_start_version(f, self)
-        f.write("typedef " + self.expand_type(self.type, self.name, ignore_namespaces=True) + self.sipAnnos() + ";\n")
+        f.write("typedef " + self.expand_type(self.type, self.name) + self.sipAnnos() + ";\n")
         _sip_end_version(f, nr_ends)
 
     def xml(self, f):
@@ -2230,38 +2170,34 @@ class Namespace(Code):
     def sip(self, f, sf):
         """ Write the namespace to a .sip file. """
 
-        ignore = (self.name in sf.project.ignorednamespaces)
-
         nr_ends = _sip_start_version(f, self)
 
-        if not ignore:
-            f.blank()
+        f.blank()
 
-            f.write("namespace " + self.name + self.sipAnnos() + "\n{\n")
+        f.write("namespace " + self.name + self.sipAnnos() + "\n{\n")
 
-            f.write("%TypeHeaderCode\n", False)
+        f.write("%TypeHeaderCode\n", False)
 
-            if self.typeheadercode:
-                f.write(self.typeheadercode + "\n", False)
-            else:
-                f.write("#include <%s>\n" % sf.name, False)
+        if self.typeheadercode:
+            f.write(self.typeheadercode + "\n", False)
+        else:
+            f.write("#include <%s>\n" % sf.name, False)
 
-            f.write("%End\n", False)
+        f.write("%End\n", False)
 
-            f.blank()
+        f.blank()
 
-            f += 1
+        f += 1
 
         for api_item in self.content:
             if api_item.status == '':
                 api_item.sip(f, sf);
 
-        if not ignore:
-            f -= 1
+        f -= 1
 
-            f.write("};\n")
+        f.write("};\n")
 
-            f.blank()
+        f.blank()
 
         _sip_end_version(f, nr_ends)
 

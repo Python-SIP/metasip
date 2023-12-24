@@ -25,7 +25,6 @@ class ProjectAdapter(BaseApiAdapter):
         'externalfeatures':     AttributeType.STRING_LIST,
         'externalmodules':      AttributeType.STRING_LIST,
         'features':             AttributeType.STRING_LIST,
-        'ignorednamespaces':    AttributeType.STRING_LIST,
         'platforms':            AttributeType.STRING_LIST,
         'rootmodule':           AttributeType.STRING,
         'versions':             AttributeType.STRING_LIST,

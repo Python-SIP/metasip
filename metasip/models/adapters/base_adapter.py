@@ -77,27 +77,18 @@ class BaseApiAdapter(BaseAdapter):
     """
 
     @abstractmethod
-    def as_str(self, project):
+    def as_str(self):
         """ Return the standard string representation. """
 
         ...
 
     @classmethod
-    def expand_type(cls, type, name=None, project=None):
+    def expand_type(cls, type, name=None):
         """ Return the full type with an optional name. """
 
         # Handle the trivial case.
         if type == '':
             return ''
-
-        if project is not None:
-            const = 'const '
-            if type.startswith(const):
-                type = type[len(const):]
-            else:
-                const = ''
-
-            type = const + cls.ignore_namespaces(type, project)
 
         # SIP can't handle every C++ fundamental type.
         # TODO: add the SIP support.
@@ -119,29 +110,3 @@ class BaseApiAdapter(BaseAdapter):
 
         # This default implementation writes out the strip representation.
         output.write_line(self.as_str(project))
-
-    @classmethod
-    def ignore_namespaces(cls, type, project):
-        """ Return a type with any namespaces to be ignored removed. """
-
-        for ignored_namespace in project.ignorednamespaces:
-            namespace_prefix = ignored_namespace + '::'
-
-            if type.startswith(namespace_prefix):
-                type = type[len(namespace_prefix):]
-                break
-
-        # Handle any template arguments.
-        t_start = type.find('<')
-        t_end = type.rfind('>')
-
-        if t_start > 0 and t_end > t_start:
-            t_args = []
-
-            # Note that this doesn't handle nested template arguments properly.
-            for t_arg in type[t_start + 1:t_end].split(','):
-                t_args.append(cls.ignore_namespaces(t_arg.strip(), project))
-
-            type = type[:t_start + 1] + ', '.join(t_args) + type[t_end:]
-
-        return type
