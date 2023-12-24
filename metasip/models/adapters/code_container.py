@@ -10,8 +10,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from ..code import Code
-
 from .adapt import adapt
 from .base_adapter import BaseAdapter
 
@@ -30,11 +28,5 @@ class CodeContainerAdapter(BaseAdapter):
                 self.set_literal(subelement)
             else:
                 model = tag_code_map[subelement.tag]()
-
-                # The new model should be an instance of Code.
-                assert isinstance(model, Code)
-
-                model.container = self.model
-
                 adapt(model).load(subelement, ui)
                 self.model.content.append(model)

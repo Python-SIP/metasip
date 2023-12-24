@@ -81,15 +81,6 @@ class TaggedItem(Model):
 
         return xml
 
-    def get_project(self):
-        """ Return the project instance. """
-
-        sf = self
-        while not hasattr(sf, 'project'):
-            sf = sf.container
-
-        return sf.project
-
     def expand_type(self, typ, name=""):
         """
         Return the full type for a name.

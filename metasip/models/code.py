@@ -22,8 +22,3 @@ class Code(Annos, Tagged, Workflow):
     """ This class implements APIs that can be annotated, are subject to
     version control and a workflow.
     """
-
-    # The containing API item (ie. a .sip file or a C/C++ scope).  Note that
-    # this isn't part of the project file itself.
-    # TODO: is it actually used anymore?
-    container: '.code_container.CodeContainer' = None
