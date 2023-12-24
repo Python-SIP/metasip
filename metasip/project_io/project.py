@@ -93,19 +93,13 @@ class TaggedItem(Model):
             return ""
 
         # SIP can't handle every C++ fundamental type.
-        typ = typ.replace("long int", "long")
+        s = typ.replace("long int", "long")
 
-        # If there is no embedded %s then just append the name.
-        if "%s" in typ:
-            s = typ % name
-        else:
-            s = typ
+        if name:
+            if s[-1] not in "&*":
+                s += " "
 
-            if name:
-                if typ[-1] not in "&*":
-                    s += " "
-
-                s += name
+            s += name
 
         return s
 

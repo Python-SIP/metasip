@@ -26,10 +26,15 @@ class ManualCodeAdapter(BaseApiAdapter):
         'precis':   AttributeType.STRING,
     }
 
-    def as_str(self, project):
+    def as_str(self):
         """ Return the standard string representation. """
 
         return self.model.precis
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

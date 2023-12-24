@@ -10,10 +10,10 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .base_adapter import AttributeType, BaseAdapter
+from .base_adapter import AttributeType, BaseApiAdapter
 
 
-class AnnosAdapter(BaseAdapter):
+class AnnosAdapter(BaseApiAdapter):
     """ This is the Annos adapter. """
 
     # The map of attribute names and types.
@@ -21,9 +21,14 @@ class AnnosAdapter(BaseAdapter):
         'annos':    AttributeType.STRING,
     }
 
-    def as_sip(self, project):
-        """ Return the standard .sip file representation. """
+    def as_sip(self):
+        """ Return the standard string representation. """
 
         annos = self.model.annos
 
         return f' /{annos}/' if annos != '' else ''
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        output.write(self.as_str())

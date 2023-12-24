@@ -72,7 +72,7 @@ class BaseAdapter(ABC):
 
 
 class BaseApiAdapter(BaseAdapter):
-    """ This is the base class for all adapters for APIs that can be written to
+    """ This is the base class for all adapters for models that are written to
     a .sip file and provide a user-friendly, one line string representation.
     """
 
@@ -82,8 +82,8 @@ class BaseApiAdapter(BaseAdapter):
 
         ...
 
-    @classmethod
-    def expand_type(cls, type, name=None):
+    @staticmethod
+    def expand_type(type, name=None):
         """ Return the full type with an optional name. """
 
         # Handle the trivial case.
@@ -92,21 +92,20 @@ class BaseApiAdapter(BaseAdapter):
 
         # SIP can't handle every C++ fundamental type.
         # TODO: add the SIP support.
-        type = type.replace('long int', 'long')
+        s = type.replace('long int', 'long')
 
         # Append any name.
-        s = type
-
         if name:
-            if type[-1] not in '&*':
+            if s[-1] not in '&*':
                 s += ' '
 
             s += name
 
         return s
 
-    def generate_sip(self, output, project):
+    def generate_sip(self, output):
         """ Generate the .sip file content. """
 
-        # This default implementation writes out the strip representation.
-        output.write_line(self.as_str(project))
+        # This default implementation writes out the strip representation as a
+        # complete line.
+        output.write_line(self.as_str())

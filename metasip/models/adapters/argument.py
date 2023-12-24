@@ -29,21 +29,26 @@ class ArgumentAdapter(BaseApiAdapter):
         'unnamed':      AttributeType.BOOL_TRUE,
     }
 
-    def as_str(self, project):
+    def as_str(self):
         """ Return the standard string representation. """
 
         arg = self.model
 
         s = self.expand_type(arg.type, name=arg.name)
 
-        s += adapt(arg, Annos).as_sip(project)
+        s += adapt(arg, Annos).as_sip()
 
         if arg.pydefault != '':
             s += ' = ' + arg.pydefault
-        if arg.default != '':
-            s += ' = ' + self.ignore_namespaces(arg.default)
+        elif arg.default != '':
+            s += ' = ' + arg.default
 
         return s
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

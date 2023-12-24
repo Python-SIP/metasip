@@ -59,7 +59,7 @@ class ClassAdapter(BaseApiAdapter):
         'Variable':         Variable,
     }
 
-    def as_str(self, project):
+    def as_str(self):
         """ Return the standard string representation. """
 
         klass = self.model
@@ -72,9 +72,14 @@ class ClassAdapter(BaseApiAdapter):
         if klass.bases != '':
             s += ' : ' + klass.bases
 
-        s += adapt(klass, Annos).as_str(project)
+        s += adapt(klass, Annos).as_str()
 
         return s
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
