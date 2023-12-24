@@ -1204,7 +1204,7 @@ class Callable(Code):
 
         s += self.sipAnnos()
 
-        if self.pytype != '' or self.pyargs != '' or self.hasPyArgs():
+        if has_different_signatures():
             s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         return s
@@ -1277,10 +1277,16 @@ class Callable(Code):
 
         _writeMethCodeXML(f, self.methcode)
 
-    def hasPyArgs(self):
+    def has_different_signatures(self):
         """
         Returns true if any of the arguments has a different Python type.
         """
+        if self.pytype != '':
+            return True
+
+        if self.pyargs != '':
+            return True
+
         for a in self.args:
             if a.pytype != '':
                 # We treat SIP_SIGNAL and SIP_SLOT as synonyms for const char *.
@@ -1459,7 +1465,7 @@ class Constructor(ClassCallable):
 
         super().sip(f, sf)
 
-        if self.pyargs != '' or self.hasPyArgs():
+        if self.has_different_signatures():
             f.write(" [(%s)]" % ", ".join([a.user(self) for a in self.args]))
 
         f.write(";\n")
@@ -1695,7 +1701,7 @@ class Method(ClassCallable):
 
         s += self.sipAnnos()
 
-        if self.pytype or self.pyargs or self.hasPyArgs():
+        if has_different_signatures():
             s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         return s
@@ -1733,7 +1739,7 @@ class Method(ClassCallable):
 
         s += self.sipAnnos()
 
-        if (self.virtual or self.access.startswith("protected") or not self.methcode) and (self.pytype or self.pyargs or self.hasPyArgs()):
+        if (self.virtual or self.access.startswith("protected") or not self.methcode) and has_different_signatures():
             s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         f.write(s + ";\n")
@@ -1834,7 +1840,7 @@ class OperatorMethod(ClassCallable):
 
         s += self.sipAnnos()
 
-        if self.pytype != '' or self.pyargs != '' or self.hasPyArgs():
+        if has_different_signatures():
             s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         return s
@@ -1864,7 +1870,7 @@ class OperatorMethod(ClassCallable):
 
         s += self.sipAnnos()
 
-        if (self.virtual or self.access.startswith("protected") or not self.methcode) and (self.pytype or self.pyargs or self.hasPyArgs()):
+        if (self.virtual or self.access.startswith("protected") or not self.methcode) and has_different_signatures():
             s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         f.write(s + ";\n")
@@ -1965,7 +1971,7 @@ class OperatorFunction(Callable):
 
         s += self.sipAnnos()
 
-        if self.pytype != '' or self.pyargs != '' or self.hasPyArgs():
+        if has_different_signatures():
             s += " [%s (%s)]" % (self.expand_type(self.rtype), ", ".join([a.user(self) for a in self.args]))
 
         return s

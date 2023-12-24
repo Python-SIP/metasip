@@ -103,9 +103,8 @@ class BaseApiAdapter(BaseAdapter):
 
         return s
 
+    @abstractmethod
     def generate_sip(self, output):
         """ Generate the .sip file content. """
 
-        # This default implementation writes out the strip representation as a
-        # complete line.
-        output.write_line(self.as_str())
+        ...

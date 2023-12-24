@@ -29,6 +29,23 @@ class ArgumentAdapter(BaseApiAdapter):
         'unnamed':      AttributeType.BOOL_TRUE,
     }
 
+    def as_py_str(self):
+        """ Return the Python representation of the argument. """
+
+        arg = self.model
+
+        s = self.expand_type(arg.pytype if arg.pytype != '' else arg.type,
+                name=arg.name)
+
+        s += adapt(arg, Annos).as_str()
+
+        if arg.pydefault != '':
+            s += ' = ' + arg.pydefault
+        elif arg.default != '':
+            s += ' = ' + arg.default
+
+        return s
+
     def as_str(self):
         """ Return the standard string representation. """
 
@@ -36,11 +53,9 @@ class ArgumentAdapter(BaseApiAdapter):
 
         s = self.expand_type(arg.type, name=arg.name)
 
-        s += adapt(arg, Annos).as_sip()
+        s += adapt(arg, Annos).as_str()
 
-        if arg.pydefault != '':
-            s += ' = ' + arg.pydefault
-        elif arg.default != '':
+        if arg.default != '':
             s += ' = ' + arg.default
 
         return s

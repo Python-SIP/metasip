@@ -26,6 +26,23 @@ class DestructorAdapter(BaseApiAdapter):
         'virtual':  AttributeType.BOOL_FALSE,
     }
 
+    def as_str(self):
+        """ Return the standard string representation. """
+
+        dtor = self.model
+
+        s = '~' + dtor.name + '()'
+
+        if dtor.virtual:
+            s = 'virtual ' + s
+
+        return s
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
+
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.

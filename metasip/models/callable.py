@@ -29,8 +29,6 @@ class Callable(Code):
     methcode: str = ''
 
     # The name of the callable.
-    # FIXME: Don't use for constructors or add a new interface that excludes
-    #        name, pytype and rtype.
     name: str = ''
 
     # The optional Python arguments.

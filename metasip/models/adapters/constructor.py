@@ -26,6 +26,23 @@ class ConstructorAdapter(BaseApiAdapter):
         'explicit': AttributeType.BOOL_FALSE,
     }
 
+    def as_str(self):
+        """ Return the standard string representation. """
+
+        ctor = self.model
+
+        s = adapt(ctor, Callable).as_str()
+
+        if ctor.explicit:
+            s = 'explicit ' + s
+
+        return s
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
+
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.

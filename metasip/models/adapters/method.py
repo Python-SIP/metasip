@@ -10,6 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from ..annos import Annos
 from ..callable import Callable
 from ..docstring import Docstring
 from ..extended_access import ExtendedAccess
@@ -28,6 +29,55 @@ class MethodAdapter(BaseApiAdapter):
         'static':   AttributeType.BOOL_FALSE,
         'virtual':  AttributeType.BOOL_FALSE,
     }
+
+    def as_str(self):
+        """ Return the standard string representation. """
+
+        # We can't use the super class version because we might need to stick
+        # some text in the middle of it.
+
+        method = self.model
+
+        callable_adapter = adapt(method, Callable)
+
+        s = ''
+
+        if method.virtual:
+            s += 'virtual '
+
+        if method.static:
+            s += 'static '
+
+        s += callable_adapter.return_type_as_str(allow_py=True) + method.name
+
+        if method.pyargs != '':
+            s += method.pyargs
+        else:
+            args = ', '.join([adapt(arg).as_py_str() for arg in method.args])
+            s += '(' + args + ')'
+
+        if method.const:
+            s += ' const'
+
+        if method.final:
+            s += ' final'
+
+        if method.abstract:
+            s += ' = 0'
+
+        s += adapt(method, Annos).as_str()
+
+        if callable_adapter.has_different_signature():
+            return_type = callable_adapter.return_type_as_str()
+            args = ', '.join([adapt(arg).as_str() for arg in method.args])
+            s += f' [{return_type} ({args})]'
+
+        return s
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

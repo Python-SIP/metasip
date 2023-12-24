@@ -21,7 +21,7 @@ class AnnosAdapter(BaseApiAdapter):
         'annos':    AttributeType.STRING,
     }
 
-    def as_sip(self):
+    def as_str(self):
         """ Return the standard string representation. """
 
         annos = self.model.annos
