@@ -20,6 +20,16 @@ from .base_adapter import BaseApiAdapter
 class FunctionAdapter(BaseApiAdapter):
     """ This is the Function adapter. """
 
+    def as_str(self):
+        """ Return the standard string representation. """
+
+        return adapt(self.model, Callable).as_str()
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
+
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.

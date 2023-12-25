@@ -10,6 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from ..annos import Annos
 from ..callable import Callable
 
 from .adapt import adapt
@@ -18,6 +19,35 @@ from .base_adapter import BaseApiAdapter
 
 class OperatorFunctionAdapter(BaseApiAdapter):
     """ This is the OperatorFunction adapter. """
+
+    def as_str(self):
+        """ Return the standard string representation. """
+
+        function = self.model
+
+        callable_adapter = adapt(function, Callable)
+
+        s = callable_adapter.return_type_as_str(allow_py=True) + 'operator' + function.name
+
+        if function.pyargs != '':
+            s += function.pyargs
+        else:
+            args = ', '.join([adapt(arg).as_py_str() for arg in function.args])
+            s += '(' + args + ')'
+
+        s += adapt(function, Annos).as_str()
+
+        if callable_adapter.has_different_signatures():
+            return_type = callable_adapter.return_type_as_str()
+            args = ', '.join([adapt(arg).as_str() for arg in function.args])
+            s += f' [{return_type} ({args})]'
+
+        return s
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

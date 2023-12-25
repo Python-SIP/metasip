@@ -67,7 +67,7 @@ class MethodAdapter(BaseApiAdapter):
 
         s += adapt(method, Annos).as_str()
 
-        if callable_adapter.has_different_signature():
+        if callable_adapter.has_different_signatures():
             return_type = callable_adapter.return_type_as_str()
             args = ', '.join([adapt(arg).as_str() for arg in method.args])
             s += f' [{return_type} ({args})]'

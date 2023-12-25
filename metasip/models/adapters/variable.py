@@ -11,6 +11,7 @@
 
 
 from ..access import Access
+from ..annos import Annos
 from ..code import Code
 
 from .adapt import adapt
@@ -26,6 +27,23 @@ class VariableAdapter(BaseApiAdapter):
         'static':   AttributeType.BOOL_FALSE,
         'type':     AttributeType.STRING,
     }
+
+    def as_str(self):
+        """ Return the standard string representation. """
+
+        variable = self.model
+
+        s = self.expand_type(variable.type, variable.name) + adapt(variable, Annos).as_str()
+
+        if variable.static:
+            s = 'static ' + s
+
+        return s
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

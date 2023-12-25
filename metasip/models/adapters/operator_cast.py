@@ -25,6 +25,23 @@ class OperatorCastAdapter(BaseApiAdapter):
         'const':    AttributeType.BOOL_FALSE,
     }
 
+    def as_str(self):
+        """ Return the standard string representation. """
+
+        cast = self.model
+
+        s = adapt(cast, Callable).as_str()
+
+        if cast.const:
+            s += ' const'
+
+        return s
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
+
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.

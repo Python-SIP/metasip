@@ -10,11 +10,12 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from ..klass import Class
+from ..annos import Annos
 from ..code import Code
 from ..code_container import CodeContainer
 from ..enum import Enum
 from ..function import Function
+from ..klass import Class
 from ..manual_code import ManualCode
 from ..namespace import Namespace
 from ..opaque_class import OpaqueClass
@@ -46,6 +47,18 @@ class NamespaceAdapter(BaseApiAdapter):
         'Typedef':          Typedef,
         'Variable':         Variable,
     }
+
+    def as_str(self):
+        """ Return the standard string representation. """
+
+        namespace = self.model
+
+        return 'namespace ' + namespace.name + adapt(namespace, Annos).as_str()
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

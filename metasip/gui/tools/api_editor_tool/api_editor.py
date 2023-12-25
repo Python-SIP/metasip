@@ -466,7 +466,7 @@ class ProjectView(APIView):
     def root_module_updated(self):
         """ The name of the root module has been updated. """
 
-        name = adapt(self.shell.project)
+        name = self.shell.project.rootmodule
         if name == '':
             name = "Modules"
 

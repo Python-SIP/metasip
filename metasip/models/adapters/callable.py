@@ -47,7 +47,7 @@ class CallableAdapter(BaseApiAdapter):
         # We include a separate C++ signature if it is different to the Python
         # signature.  This is so we always hint to the user that something has
         # been manually changed.
-        if self.has_different_signature():
+        if self.has_different_signatures():
             return_type = self.return_type_as_str()
             args = ', '.join([adapt(arg).as_str() for arg in callable.args])
             s += f' [{return_type} ({args})]'

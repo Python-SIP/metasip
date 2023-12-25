@@ -10,6 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from ..annos import Annos
 from ..code import Code
 
 from .adapt import adapt
@@ -24,6 +25,18 @@ class TypedefAdapter(BaseApiAdapter):
         'name': AttributeType.STRING,
         'type': AttributeType.STRING,
     }
+
+    def as_str(self):
+        """ Return the standard string representation. """
+
+        typedef = self.model
+
+        return 'typedef ' + self.expand_type(typedef.type, typedef.name) + adapt(typedef, Annos).as_str()
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
