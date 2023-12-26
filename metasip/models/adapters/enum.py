@@ -23,7 +23,7 @@ class EnumAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
-        'enum_class':   AttributeType.BOOL_FALSE,
+        'enum_class':   AttributeType.BOOL,
         'name':         AttributeType.STRING,
     }
 
@@ -38,7 +38,7 @@ class EnumAdapter(BaseApiAdapter):
             s += ' class'
 
         if enum.name != '':
-            s + ' ' + enum.name
+            s += ' ' + enum.name
 
         return s
 

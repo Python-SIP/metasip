@@ -12,6 +12,7 @@
 
 from ..annos import Annos
 from ..argument import Argument
+from ..code import Code
 
 from .adapt import adapt
 from .base_adapter import AttributeType, BaseApiAdapter
@@ -79,6 +80,8 @@ class CallableAdapter(BaseApiAdapter):
         """
 
         super().load(element, ui)
+
+        adapt(self.model, Code).load(element, ui)
 
         for subelement in element:
             if subelement.tag == 'Literal':

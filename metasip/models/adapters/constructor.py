@@ -23,7 +23,7 @@ class ConstructorAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
-        'explicit': AttributeType.BOOL_FALSE,
+        'explicit': AttributeType.BOOL,
     }
 
     def as_str(self):

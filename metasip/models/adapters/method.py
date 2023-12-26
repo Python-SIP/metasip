@@ -23,11 +23,11 @@ class MethodAdapter(BaseApiAdapter):
     """ This is the Method adapter. """
 
     ATTRIBUTE_TYPE_MAP = {
-        'abstract': AttributeType.BOOL_FALSE,
-        'const':    AttributeType.BOOL_FALSE,
-        'final':    AttributeType.BOOL_FALSE,
-        'static':   AttributeType.BOOL_FALSE,
-        'virtual':  AttributeType.BOOL_FALSE,
+        'abstract': AttributeType.BOOL,
+        'const':    AttributeType.BOOL,
+        'final':    AttributeType.BOOL,
+        'static':   AttributeType.BOOL,
+        'virtual':  AttributeType.BOOL,
     }
 
     def as_str(self):

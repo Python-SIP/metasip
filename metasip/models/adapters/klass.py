@@ -40,7 +40,7 @@ class ClassAdapter(BaseApiAdapter):
         'bases':    AttributeType.STRING,
         'name':     AttributeType.STRING,
         'pybases':  AttributeType.STRING,
-        'struct':   AttributeType.BOOL_FALSE,
+        'struct':   AttributeType.BOOL,
     }
 
     # The map of element tags and Code sub-class factories.

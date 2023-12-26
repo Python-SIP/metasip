@@ -26,7 +26,7 @@ class ArgumentAdapter(BaseApiAdapter):
         'pydefault':    AttributeType.STRING,
         'pytype':       AttributeType.STRING,
         'type':         AttributeType.STRING,
-        'unnamed':      AttributeType.BOOL_TRUE,
+        'unnamed':      AttributeType.BOOL,
     }
 
     def as_py_str(self):

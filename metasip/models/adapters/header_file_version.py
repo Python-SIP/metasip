@@ -19,6 +19,6 @@ class HeaderFileVersionAdapter(BaseAdapter):
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
         'md5':      AttributeType.STRING,
-        'parse':    AttributeType.BOOL_TRUE,
+        'parse':    AttributeType.BOOL,
         'version':  AttributeType.STRING,
     }

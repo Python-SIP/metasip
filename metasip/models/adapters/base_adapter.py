@@ -19,8 +19,7 @@ from .adapt import adapt
 class AttributeType(Enum):
     """ The different types of element and model attributes. """
 
-    BOOL_FALSE = auto()
-    BOOL_TRUE = auto()
+    BOOL = auto()
     STRING = auto()
     STRING_LIST = auto()
 
@@ -47,10 +46,8 @@ class BaseAdapter(ABC):
         # This default implementation loads attributes define by
         # ATTRIBUTE_TYPE_MAP.
         for name, attribute_type in self.ATTRIBUTE_TYPE_MAP.items():
-            if attribute_type is AttributeType.BOOL_FALSE:
+            if attribute_type is AttributeType.BOOL:
                 value = bool(int(element.get(name, '0')))
-            elif attribute_type is AttributeType.BOOL_TRUE:
-                value = bool(int(element.get(name, '1')))
             elif attribute_type is AttributeType.STRING:
                 value = element.get(name, '')
             elif attribute_type is AttributeType.STRING_LIST:

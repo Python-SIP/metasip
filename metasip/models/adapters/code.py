@@ -26,8 +26,6 @@ class CodeAdapter(BaseAdapter):
         may be available to inform the user of progress.
         """
 
-        # Note that the 'container' attribute will be set by the CodeContainer
-        # adapter.
         adapt(self.model, Annos).load(element, ui)
         adapt(self.model, Tagged).load(element, ui)
         adapt(self.model, Workflow).load(element, ui)

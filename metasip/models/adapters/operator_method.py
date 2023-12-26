@@ -23,9 +23,9 @@ class OperatorMethodAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
-        'abstract': AttributeType.BOOL_FALSE,
-        'const':    AttributeType.BOOL_FALSE,
-        'virtual':  AttributeType.BOOL_FALSE,
+        'abstract': AttributeType.BOOL,
+        'const':    AttributeType.BOOL,
+        'virtual':  AttributeType.BOOL,
     }
 
     def as_str(self):

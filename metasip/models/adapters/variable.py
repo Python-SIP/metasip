@@ -24,7 +24,7 @@ class VariableAdapter(BaseApiAdapter):
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
         'name':     AttributeType.STRING,
-        'static':   AttributeType.BOOL_FALSE,
+        'static':   AttributeType.BOOL,
         'type':     AttributeType.STRING,
     }
 

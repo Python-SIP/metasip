@@ -24,8 +24,8 @@ class ModuleAdapter(BaseApiAdapter):
         'imports':              AttributeType.STRING_LIST,
         'name':                 AttributeType.STRING,
         'outputdirsuffix':      AttributeType.STRING,
-        'pyssizetclean':        AttributeType.BOOL_FALSE,
-        'uselimitedapi':        AttributeType.BOOL_FALSE,
+        'pyssizetclean':        AttributeType.BOOL,
+        'uselimitedapi':        AttributeType.BOOL,
         'virtualerrorhandler':  AttributeType.STRING,
     }
 

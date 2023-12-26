@@ -497,6 +497,7 @@ class ControlWidget(QWidget):
             header_file.module = self._module.currentText()
 
             # We may just have un-ignored the header file.
+            # TODO: what about the md5 attribute?
             if len(header_file.versions) == 0:
                 header_file.versions.append(
                         HeaderFileVersion(parse=True,
@@ -821,8 +822,8 @@ class ControlWidget(QWidget):
                 break
         else:
             # It's a new version.
-            header_file_version = HeaderFileVersion(version=working_version,
-                    md5=md5)
+            header_file_version = HeaderFileVersion(md5=md5, parse=True,
+                    version=working_version)
             header_file.versions.append(header_file_version)
 
             # Check that the project has versions.

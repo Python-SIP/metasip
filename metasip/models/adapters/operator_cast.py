@@ -22,7 +22,7 @@ class OperatorCastAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
-        'const':    AttributeType.BOOL_FALSE,
+        'const':    AttributeType.BOOL,
     }
 
     def as_str(self):

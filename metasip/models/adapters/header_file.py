@@ -21,7 +21,7 @@ class HeaderFileAdapter(BaseAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
-        'ignored':  AttributeType.BOOL_FALSE,
+        'ignored':  AttributeType.BOOL,
         'module':   AttributeType.STRING,
         'name':     AttributeType.STRING,
     }
