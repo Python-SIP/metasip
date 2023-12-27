@@ -20,3 +20,8 @@ class WorkflowAdapter(BaseAdapter):
     ATTRIBUTE_TYPE_MAP = {
         'status':   AttributeType.STRING,
     }
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        self.save_str('status', output)

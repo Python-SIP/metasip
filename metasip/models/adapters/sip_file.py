@@ -30,7 +30,15 @@ class SipFileAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
-        'name': AttributeType.STRING,
+        'exportedheadercode':   AttributeType.LITERAL,
+        'exportedtypehintcode': AttributeType.LITERAL,
+        'initcode':             AttributeType.LITERAL,
+        'modulecode':           AttributeType.LITERAL,
+        'moduleheadercode':     AttributeType.LITERAL,
+        'name':                 AttributeType.STRING,
+        'postinitcode':         AttributeType.LITERAL,
+        'preinitcode':          AttributeType.LITERAL,
+        'typehintcode':         AttributeType.LITERAL,
     }
 
     # The map of element tags and Code sub-class factories.
@@ -68,3 +76,26 @@ class SipFileAdapter(BaseApiAdapter):
         # Progress any UI for the load.
         if ui is not None:
             ui.load_step()
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        sip_file = self.model
+
+        output.write(f'<SipFile name="{sip_file.name}">')
+        output += 1
+
+        adapt(sip_file, CodeContainer).save(output)
+
+        output -= 1
+
+        self.save_literal('exportedheadercode', output)
+        self.save_literal('moduleheadercode', output)
+        self.save_literal('modulecode', output)
+        self.save_literal('preinitcode', output)
+        self.save_literal('initcode', output)
+        self.save_literal('postinitcode', output)
+        self.save_literal('exportedtypehintcode', output)
+        self.save_literal('typehintcode', output)
+
+        output.write('</Module>\n')

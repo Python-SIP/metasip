@@ -37,3 +37,18 @@ class FunctionAdapter(BaseApiAdapter):
 
         adapt(self.model, Callable).load(element, ui)
         adapt(self.model, Docstring).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        function = self.model
+
+        output.write('<Function')
+        output.write('>\n')
+        output += 1
+
+        output -= 1
+        adapt(function, Docstring).save(output)
+        ZZZ - need to subclass for attrs and sub-elements
+        self.save_literal(
+        output.write('</Function>\n')

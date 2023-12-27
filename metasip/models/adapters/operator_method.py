@@ -25,6 +25,7 @@ class OperatorMethodAdapter(BaseApiAdapter):
     ATTRIBUTE_TYPE_MAP = {
         'abstract': AttributeType.BOOL,
         'const':    AttributeType.BOOL,
+        'virtcode': AttributeType.LITERAL,
         'virtual':  AttributeType.BOOL,
     }
 
@@ -80,5 +81,3 @@ class OperatorMethodAdapter(BaseApiAdapter):
 
         adapt(self.model, Callable).load(element, ui)
         adapt(self.model, Access).load(element, ui)
-
-        self.set_all_literals(element)

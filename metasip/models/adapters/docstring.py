@@ -18,5 +18,10 @@ class DocstringAdapter(BaseAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
-        'docstring':    AttributeType.STRING,
+        'docstring':    AttributeType.LITERAL,
     }
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        self.save_literal('docstring', output)

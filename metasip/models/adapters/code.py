@@ -29,3 +29,10 @@ class CodeAdapter(BaseAdapter):
         adapt(self.model, Annos).load(element, ui)
         adapt(self.model, Tagged).load(element, ui)
         adapt(self.model, Workflow).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        adapt(self.model, Annos).save(output)
+        adapt(self.model, Workflow).save(output)
+        adapt(self.model, Tagged).save(output)

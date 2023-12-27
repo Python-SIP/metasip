@@ -40,6 +40,16 @@ class TaggedAdapter(BaseAdapter):
                 version_range.startversion, version_range.endversion = version.split('-')
                 self.model.versions.append(version_range)
 
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        versions = self.versions_as_str()
+        if versions != '':
+            self.save_attribute('versions', versions)
+
+        self.save_str_list('platforms', output)
+        self.save_str_list('features', output)
+
     def versions_as_str(self):
         """ Return the standard string representation of the versions. """
 

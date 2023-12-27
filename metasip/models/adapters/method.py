@@ -27,6 +27,7 @@ class MethodAdapter(BaseApiAdapter):
         'const':    AttributeType.BOOL,
         'final':    AttributeType.BOOL,
         'static':   AttributeType.BOOL,
+        'virtcode': AttributeType.LITERAL,
         'virtual':  AttributeType.BOOL,
     }
 
@@ -89,5 +90,3 @@ class MethodAdapter(BaseApiAdapter):
         adapt(self.model, Callable).load(element, ui)
         adapt(self.model, Docstring).load(element, ui)
         adapt(self.model, ExtendedAccess).load(element, ui)
-
-        self.set_all_literals(element)

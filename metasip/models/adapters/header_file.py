@@ -38,3 +38,20 @@ class HeaderFileAdapter(BaseAdapter):
                 header_file_version = HeaderFileVersion()
                 adapt(header_file_version).load(subelement, ui)
                 self.model.versions.append(header_file_version)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        header_file = self.model
+
+        output.write(f'<HeaderFile name="{header_file.name}"')
+        self.save_str('module', output)
+        self.save_bool('ignored', output)
+        output.write('>\n')
+        output += 1
+
+        for header_file_version in header_file.versions:
+            adapt(header_file_version).save(output)
+
+        output -= 1
+        output.write('</HeaderFile>\n')

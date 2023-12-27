@@ -21,6 +21,7 @@ class ModuleAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
+        'directives':           AttributeType.LITERAL,
         'imports':              AttributeType.STRING_LIST,
         'name':                 AttributeType.STRING,
         'outputdirsuffix':      AttributeType.STRING,
@@ -57,9 +58,34 @@ class ModuleAdapter(BaseApiAdapter):
         self.model.callsuperinit = callsuperinit
 
         for subelement in element:
-            if subelement.tag == 'Literal':
-                self.set_literal(subelement)
-            elif subelement.tag == 'SipFile':
+            if subelement.tag == 'SipFile':
                 sip_file = SipFile()
                 adapt(sip_file).load(subelement, ui)
                 self.model.content.append(sip_file)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        module = self.model
+
+        output.write(f'<Module name="{module.name}"')
+        self.save_str('outputdirsuffix', output)
+
+        if module.callsuperinit != 'undefined':
+            self.save_attribute('callsuperinit',
+                    '1' if module.callsuperinit == 'yes' else '0', output)
+
+        self.save_str('virtualerrorhandler', output)
+        self.save_bool('uselimitedapi', output)
+        self.save_bool('pyssizetclean', output)
+        self.save_str_list('imports', output)
+        output.write('>\n')
+        output += 1
+
+        self.save_literal('directives', output)
+
+        for sip_file in module.content:
+            adapt(sip_file).save(output)
+
+        output -= 1
+        output.write('</Module>\n')

@@ -27,6 +27,7 @@ class ProjectAdapter(BaseApiAdapter):
         'features':             AttributeType.STRING_LIST,
         'platforms':            AttributeType.STRING_LIST,
         'rootmodule':           AttributeType.STRING,
+        'sipcomments':          AttributeType.LITERAL,
         'versions':             AttributeType.STRING_LIST,
     }
 
@@ -53,9 +54,7 @@ class ProjectAdapter(BaseApiAdapter):
         super().load(element, ui)
 
         for subelement in element:
-            if subelement.tag == 'Literal':
-                self.set_literal(subelement)
-            elif subelement.tag == 'HeaderDirectory':
+            if subelement.tag == 'HeaderDirectory':
                 header_directory = HeaderDirectory()
                 adapt(header_directory).load(subelement, ui)
                 self.model.headers.append(header_directory)
@@ -63,3 +62,36 @@ class ProjectAdapter(BaseApiAdapter):
                 module = Module()
                 adapt(module).load(subelement, ui)
                 self.model.modules.append(module)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        project = self.model
+
+        major_version, minor_version = project.version
+        if major_version == 0:
+            format_version = f'version="{minor_version}"'
+        else:
+            format_version = f'majorversion="{major_version}" minorversion="{minor_version}"'
+
+        output.write('<?xml version="1.0"?>\n')
+        output.write(
+                f'<Project {format_version} rootmodule="{project.rootmodule}"')
+        self.save_str_list('versions', output)
+        self.save_str_list('platforms', output)
+        self.save_str_list('features', output)
+        self.save_str_list('externalmodules', output)
+        self.save_str_list('externalfeatures', output)
+        output.write('>\n')
+        output += 1
+
+        self.save_literal('sipcomments', output)
+
+        for header_directory in project.headers:
+            adapt(header_directory).save(output)
+
+        for module in project.modules:
+            adapt(module).save(output)
+
+        output -= 1
+        output.write('</Project>\n')

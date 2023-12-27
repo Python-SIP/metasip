@@ -16,7 +16,7 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QFileDialog
 
 from ....models import Project
-from ....project_io import load_project
+from ....project_io import load_project, save_project
 
 from ...helpers import ProjectUi
 from ...shell import EventType
@@ -94,7 +94,11 @@ class ApiEditorTool(ShellTool):
     def save_data(self):
         """ Save the tool's data and return True if there was no error. """
 
-        return self.shell.project.save()
+        saved = save_project(self.shell.project, ui=ProjectUi())
+        if saved:
+            self.shell.dirty = False
+
+        return saved
 
     def save_state(self, settings):
         """ Save the tool's state in the settings. """
@@ -152,6 +156,5 @@ class ApiEditorTool(ShellTool):
 
         if project_name:
             self.shell.project.name = project_name
-            self.shell.project.save(project_name)
             self.shell.notify(EventType.PROJECT_RENAME)
-            self.shell.dirty = False
+            self.save_data()

@@ -23,9 +23,12 @@ class VariableAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
-        'name':     AttributeType.STRING,
-        'static':   AttributeType.BOOL,
-        'type':     AttributeType.STRING,
+        'accesscode':   AttributeType.LITERAL,
+        'getcode':      AttributeType.LITERAL,
+        'name':         AttributeType.STRING,
+        'setcode':      AttributeType.LITERAL,
+        'static':       AttributeType.BOOL,
+        'type':         AttributeType.STRING,
     }
 
     def as_str(self):
@@ -54,5 +57,3 @@ class VariableAdapter(BaseApiAdapter):
 
         adapt(self.model, Code).load(element, ui)
         adapt(self.model, Access).load(element, ui)
-
-        self.set_all_literals(element)

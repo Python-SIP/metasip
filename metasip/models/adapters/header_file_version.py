@@ -22,3 +22,12 @@ class HeaderFileVersionAdapter(BaseAdapter):
         'parse':    AttributeType.BOOL,
         'version':  AttributeType.STRING,
     }
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        header_file_version = self.model
+
+        output.write(f'<HeaderFileVerson md5="{header_file_version.md5}" version="{header_file_version.version}"')
+        self.save_bool('parse', output)
+        output.write('>\n')

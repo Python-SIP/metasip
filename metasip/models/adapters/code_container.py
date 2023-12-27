@@ -23,10 +23,12 @@ class CodeContainerAdapter(BaseAdapter):
         """
 
         for subelement in element:
-            # All sub-classes happen to have literals.
-            if subelement.tag == 'Literal':
-                self.set_literal(subelement)
-            else:
-                model = tag_code_map[subelement.tag]()
-                adapt(model).load(subelement, ui)
-                self.model.content.append(model)
+            model = tag_code_map[subelement.tag]()
+            adapt(model).load(subelement, ui)
+            self.model.content.append(model)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        for code in self.model.content:
+            adapt(code).save(output)

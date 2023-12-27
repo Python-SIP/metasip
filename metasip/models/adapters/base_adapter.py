@@ -12,6 +12,7 @@
 
 from abc import ABC, abstractmethod
 from enum import auto, Enum
+from xml.sax.saxutils import escape
 
 from .adapt import adapt
 
@@ -20,6 +21,7 @@ class AttributeType(Enum):
     """ The different types of element and model attributes. """
 
     BOOL = auto()
+    LITERAL = auto()
     STRING = auto()
     STRING_LIST = auto()
 
@@ -48,6 +50,13 @@ class BaseAdapter(ABC):
         for name, attribute_type in self.ATTRIBUTE_TYPE_MAP.items():
             if attribute_type is AttributeType.BOOL:
                 value = bool(int(element.get(name, '0')))
+            elif attribute_type is AttributeType.LITERAL:
+                for subelement in element:
+                    if subelement.tag == name:
+                        value = subelement.text.strip()
+                        break
+                else:
+                    value = ''
             elif attribute_type is AttributeType.STRING:
                 value = element.get(name, '')
             elif attribute_type is AttributeType.STRING_LIST:
@@ -55,17 +64,59 @@ class BaseAdapter(ABC):
 
             setattr(self.model, name, value)
 
-    def set_all_literals(self, element):
-        """ Set all literal text attributes of the model from an element. """
+    @abstractmethod
+    def save(self, output):
+        """ Save the model to an output file. """
 
-        for subelement in element:
-            if subelement.tag == 'Literal':
-                self.set_literal(subelement)
+        ...
 
-    def set_literal(self, element):
-        """ Set a literal text attribute of the model from an element. """
+    @classmethod
+    def save_attribute(cls, name, value, output):
+        """ Save an attribute. """
 
-        setattr(self.model, element.get('type'), element.text.strip())
+        output.write(f' {name}="{cls._escape(value)}"')
+
+    @classmethod
+    def save_bool(cls, name, output):
+        """ Save a bool. """
+
+        value = getattr(self.model, name)
+
+        if value:
+            cls.save_attribute(name, '1', output)
+
+    @classmethod
+    def save_literal(cls, name, output):
+        """ Save the value of a literal text attribute. """
+
+        value = getattr(self.model, name)
+
+        if value != '':
+            output.write(f'<Literal type="{name}">\n{cls._escape(value)}\n</Literal>\n', indent=False)
+
+    @classmethod
+    def save_str(cls, name, output):
+        """ Save a string. """
+
+        value = getattr(self.model, name)
+
+        if value != '':
+            cls.save_attribute(name, value, output)
+
+    @classmethod
+    def save_str_list(cls, name, output):
+        """ Save a list of strings. """
+
+        value = getattr(self.model, value)
+
+        if len(value) != 0:
+            cls.save_attribute(name, ' '.join(value), output)
+
+    @staticmethod
+    def _escape(s):
+        """ Return an XML escaped string. """
+
+        return escape(s, {'"': '&quot;'})
 
 
 class BaseApiAdapter(BaseAdapter):

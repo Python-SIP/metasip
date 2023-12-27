@@ -268,7 +268,7 @@ class Project(Model):
             fname = saveas
 
         # Open/create the file.
-        f = _createIndentFile(self, fname)
+        f = _createIndentFile(self, fname, indent=2)
 
         if f is None:
             return False
@@ -518,7 +518,7 @@ class Project(Model):
 
         pname = str(os.path.join(od, fname))
 
-        f = _createIndentFile(self, pname, 4)
+        f = _createIndentFile(self, pname)
 
         if f:
             # Add the standard header.
@@ -2403,7 +2403,7 @@ class _IndentFile:
         return self
 
 
-def _createIndentFile(prj, fname, indent=2):
+def _createIndentFile(prj, fname, indent=4):
     """
     Return an indent file or None if there was an error.
 

@@ -28,6 +28,12 @@ class AbstractProjectUi(ABC):
         ...
 
     @abstractmethod
+    def error_creating_file(self, title, text, detail):
+        """ Called when there was an error when creating a file. """
+
+        ...
+
+    @abstractmethod
     def load_starting(self, project, nr_steps):
         """ Called to initialise the UI prior to loading the project that will
         take a specific number of steps.

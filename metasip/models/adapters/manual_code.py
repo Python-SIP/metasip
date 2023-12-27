@@ -23,6 +23,8 @@ class ManualCodeAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
+        'body':     AttributeType.LITERAL,
+        'methcode': AttributeType.LITERAL,
         'precis':   AttributeType.STRING,
     }
 
@@ -47,4 +49,19 @@ class ManualCodeAdapter(BaseApiAdapter):
         adapt(self.model, Docstring).load(element, ui)
         adapt(self.model, ExtendedAccess).load(element, ui)
 
-        self.set_all_literals(element)
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        manual_code = self.model
+
+        output.write('<ManualCode')
+        adapt(manual_code, Code).save(output)
+        adapt(manual_code, ExtendedAccess).save(output)
+        self.save_attribute('precis', manual_code.precis)
+        output.write('>\n')
+
+        self.save_literal('body', output)
+        adapt(manual_code, Docstring).save(output)
+        self.save_literal('methcode', output)
+
+        output.write('</ManualCode>\n')

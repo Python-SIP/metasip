@@ -46,3 +46,14 @@ class TypedefAdapter(BaseApiAdapter):
         super().load(element, ui)
 
         adapt(self.model, Code).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        typedef = self.model
+
+        output.write('<Typedef')
+        adapt(typedef, Code).save(output)
+        self.save_attribute('name', typedef.name, output)
+        self.save_attribute('type', typedef.type, output)
+        output.write('/>\n')

@@ -34,9 +34,6 @@ class SipFile(CodeContainer):
     # The optional %ModuleHeaderCode.
     moduleheadercode: str = ''
 
-    # The optional %TypeHintCode.
-    typehintcode: str = ''
-
     # The basename of the header file.  All header files that contribute to the
     # .sip file will have the same basename.  Note that there may not be any
     # record in the project of those contributing header files (or the
@@ -48,3 +45,6 @@ class SipFile(CodeContainer):
 
     # The optional %PreInitialisationCode.
     preinitcode: str = ''
+
+    # The optional %TypeHintCode.
+    typehintcode: str = ''

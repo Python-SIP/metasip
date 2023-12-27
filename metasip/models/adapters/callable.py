@@ -23,6 +23,7 @@ class CallableAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
+        'methcode': AttributeType.LITERAL,
         'name':     AttributeType.STRING,
         'pyargs':   AttributeType.STRING,
         'pytype':   AttributeType.STRING,
@@ -84,9 +85,7 @@ class CallableAdapter(BaseApiAdapter):
         adapt(self.model, Code).load(element, ui)
 
         for subelement in element:
-            if subelement.tag == 'Literal':
-                self.set_literal(subelement)
-            elif subelement.tag == 'Argument':
+            if subelement.tag == 'Argument':
                 arg = Argument()
                 adapt(arg).load(subelement, ui)
                 self.model.args.append(arg)

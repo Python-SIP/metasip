@@ -32,3 +32,8 @@ class AnnosAdapter(BaseApiAdapter):
         """ Generate the .sip file content. """
 
         output.write(self.as_str())
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        self.save_str('annos', output)

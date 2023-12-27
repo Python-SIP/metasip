@@ -49,3 +49,26 @@ class HeaderDirectoryAdapter(BaseAdapter):
                 header_file = HeaderFile()
                 adapt(header_file).load(subelement, ui)
                 self.model.content.append(header_file)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        header_directory = self.model
+
+        output.write(f'<HeaderDirectory name="{header_directory.name}" parserargs="{header_directory.parserargs}" inputdirsuffix="{header_directory.inputdirsuffix}" filefilter="{header_directory.filefilter}"')
+
+        if len(header_directory.scan) != 0:
+            if header_directory.scan[0] == '':
+                scan = ''
+            else:
+                scan = ' '.join(header_directory.scan)
+
+            self.save_attribute('scan', scan, output)
+
+        output += 1
+
+        for header_file in header_directory.content:
+            adapt(header_file).save(output)
+
+        output -= 1
+        output.write('</HeaderDirectory>\n')

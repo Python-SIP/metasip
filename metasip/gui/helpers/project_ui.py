@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import QApplication, QProgressDialog
 from ...project_io import AbstractProjectUi
 
 from .question import question
+from .warning import warning
 
 
 class ProjectUi(AbstractProjectUi):
@@ -33,6 +34,11 @@ class ProjectUi(AbstractProjectUi):
 
         return question("Update project format",
                 f"The project format is v{from_s}. Do you want to update it to {to_s}?")
+
+    def error_creating_file(self, title, text, detail):
+        """ Called when there was an error when creating a file. """
+
+        warning(title, text, detail=detail)
 
     def load_starting(self, project, nr_steps):
         """ Called to initialise the UI prior to loading the project that will

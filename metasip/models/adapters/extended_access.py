@@ -20,3 +20,8 @@ class ExtendedAccessAdapter(BaseAdapter):
     ATTRIBUTE_TYPE_MAP = {
         'access':   AttributeType.STRING,
     }
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        self.save_str('access', output)
