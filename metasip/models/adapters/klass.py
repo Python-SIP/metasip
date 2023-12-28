@@ -37,10 +37,26 @@ class ClassAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
-        'bases':    AttributeType.STRING,
-        'name':     AttributeType.STRING,
-        'pybases':  AttributeType.STRING,
-        'struct':   AttributeType.BOOL,
+        'bases':            AttributeType.STRING,
+        'bicharbufcode':    AttributeType.LITERAL,
+        'bigetbufcode':     AttributeType.LITERAL,
+        'bireadbufcode':    AttributeType.LITERAL,
+        'birelbufcode':     AttributeType.LITERAL,
+        'bisegcountcode':   AttributeType.LITERAL,
+        'biwritebufcode':   AttributeType.LITERAL,
+        'convfromtypecode': AttributeType.LITERAL,
+        'convtotypecode':   AttributeType.LITERAL,
+        'gcclearcode':      AttributeType.LITERAL,
+        'gctraversecode':   AttributeType.LITERAL,
+        'name':             AttributeType.STRING,
+        'picklecode':       AttributeType.LITERAL,
+        'pybases':          AttributeType.STRING,
+        'struct':           AttributeType.BOOL,
+        'subclasscode':     AttributeType.LITERAL,
+        'finalisationcode': AttributeType.LITERAL,
+        'typecode':         AttributeType.LITERAL,
+        'typeheadercode':   AttributeType.LITERAL,
+        'typehintcode':     AttributeType.LITERAL,
     }
 
     # The map of element tags and Code sub-class factories.

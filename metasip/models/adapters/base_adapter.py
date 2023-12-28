@@ -52,7 +52,7 @@ class BaseAdapter(ABC):
                 value = bool(int(element.get(name, '0')))
             elif attribute_type is AttributeType.LITERAL:
                 for subelement in element:
-                    if subelement.tag == name:
+                    if subelement.tag == 'Literal' and subelement.get('type') == name:
                         value = subelement.text.strip()
                         break
                 else:

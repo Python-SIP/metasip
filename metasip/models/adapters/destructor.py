@@ -22,10 +22,10 @@ class DestructorAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
-        'methodcode':   AttributeType.LITERAL,
-        'name':         AttributeType.STRING,
-        'virtcode':     AttributeType.LITERAL,
-        'virtual':      AttributeType.BOOL,
+        'methcode': AttributeType.LITERAL,
+        'name':     AttributeType.STRING,
+        'virtcode': AttributeType.LITERAL,
+        'virtual':  AttributeType.BOOL,
     }
 
     def as_str(self):

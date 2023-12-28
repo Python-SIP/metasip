@@ -68,6 +68,7 @@ class VariableAdapter(BaseApiAdapter):
         adapt(variable, Access).save_attributes(output)
         self.save_attribute('name', variable.name, output)
         self.save_attribute('type', variable.type, output)
+        self.save_bool('static', output)
 
         # Note that this assumes all model super-classes do not have
         # subelements.

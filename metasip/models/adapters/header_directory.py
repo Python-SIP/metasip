@@ -65,6 +65,8 @@ class HeaderDirectoryAdapter(BaseAdapter):
 
             self.save_attribute('scan', scan, output)
 
+        output.write('>\n')
+
         output += 1
 
         for header_file in header_directory.content:

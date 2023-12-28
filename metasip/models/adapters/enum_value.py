@@ -52,10 +52,10 @@ class EnumValueAdapter(BaseApiAdapter):
 
         enum_value = self.model
 
-        output.write('<Typedef')
+        output.write('<EnumValue')
         adapt(enum_value, Annos).save_attributes(output)
-        adapt(enum_value, Tagged).save_attributes(output)
         adapt(enum_value, Workflow).save_attributes(output)
+        adapt(enum_value, Tagged).save_attributes(output)
         self.save_attribute('name', enum_value.name, output)
 
         # Note that we are assuming model super-classes do not have any

@@ -43,15 +43,24 @@ class TaggedAdapter(BaseAdapter):
     def save_attributes(self, output):
         """ Save the XML attributes. """
 
-        versions = self.versions_as_str()
+        versions = self.versions_as_str(as_xml=True)
         if versions != '':
             self.save_attribute('versions', versions, output)
 
         self.save_str_list('platforms', output)
         self.save_str_list('features', output)
 
-    def versions_as_str(self):
+    def versions_as_str(self, as_xml=False):
         """ Return the standard string representation of the versions. """
+
+        if as_xml:
+            separator = ' '
+            left_dash = middle_dash = right_dash = '-'
+        else:
+            separator = ', '
+            left_dash = '- '
+            middle_dash = ' - '
+            right_dash = ' -'
 
         version_ranges = []
 
@@ -64,10 +73,10 @@ class TaggedAdapter(BaseAdapter):
                     # This should never happen.
                     continue
 
-                version_ranges.append('- ' + endversion)
+                version_ranges.append(left_dash + endversion)
             elif endversion == '':
-                version_ranges.append(startversion + ' -')
+                version_ranges.append(startversion + right_dash)
             else:
-                version_ranges.append(startversion + ' - ' + endversion)
+                version_ranges.append(startversion + middle_dash + endversion)
 
-        return ', '.join(version_ranges)
+        return separator.join(version_ranges)
