@@ -30,9 +30,17 @@ class CodeAdapter(BaseAdapter):
         adapt(self.model, Tagged).load(element, ui)
         adapt(self.model, Workflow).load(element, ui)
 
-    def save(self, output):
-        """ Save the model to an output file. """
+    def save_attributes(self, output):
+        """ Save the XML attributes. """
 
-        adapt(self.model, Annos).save(output)
-        adapt(self.model, Workflow).save(output)
-        adapt(self.model, Tagged).save(output)
+        # The order is to match older versions.
+        adapt(self.model, Annos).save_attributes(output)
+        adapt(self.model, Workflow).save_attributes(output)
+        adapt(self.model, Tagged).save_attributes(output)
+
+    def save_subelements(self, output):
+        """ Save the XML subelements. """
+
+        adapt(self.model, Annos).save_subelements(output)
+        adapt(self.model, Tagged).save_subelements(output)
+        adapt(self.model, Workflow).save_subelements(output)

@@ -40,8 +40,8 @@ class TaggedAdapter(BaseAdapter):
                 version_range.startversion, version_range.endversion = version.split('-')
                 self.model.versions.append(version_range)
 
-    def save(self, output):
-        """ Save the model to an output file. """
+    def save_attributes(self, output):
+        """ Save the XML attributes. """
 
         versions = self.versions_as_str()
         if versions != '':

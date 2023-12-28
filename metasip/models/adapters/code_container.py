@@ -23,12 +23,20 @@ class CodeContainerAdapter(BaseAdapter):
         """
 
         for subelement in element:
-            model = tag_code_map[subelement.tag]()
-            adapt(model).load(subelement, ui)
-            self.model.content.append(model)
+            model_factory = tag_code_map.get(subelement.tag)
+            if model_factory is not None:
+                model = model_factory()
+                adapt(model).load(subelement, ui)
+                self.model.content.append(model)
 
-    def save(self, output):
-        """ Save the model to an output file. """
+    def save_attributes(self, output):
+        """ Save the XML attributes. """
+
+        for code in self.model.content:
+            adapt(code).save_attributes(output)
+
+    def save_subelements(self, output):
+        """ Save the XML subelements. """
 
         for code in self.model.content:
             adapt(code).save(output)

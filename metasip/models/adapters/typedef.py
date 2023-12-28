@@ -53,7 +53,9 @@ class TypedefAdapter(BaseApiAdapter):
         typedef = self.model
 
         output.write('<Typedef')
-        adapt(typedef, Code).save(output)
+        adapt(typedef, Code).save_attributes(output)
         self.save_attribute('name', typedef.name, output)
         self.save_attribute('type', typedef.type, output)
+
+        # Note that we are assuming Code does not have any subelements.
         output.write('/>\n')

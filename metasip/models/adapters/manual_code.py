@@ -55,13 +55,18 @@ class ManualCodeAdapter(BaseApiAdapter):
         manual_code = self.model
 
         output.write('<ManualCode')
-        adapt(manual_code, Code).save(output)
-        adapt(manual_code, ExtendedAccess).save(output)
-        self.save_attribute('precis', manual_code.precis)
+        adapt(manual_code, Code).save_attributes(output)
+        adapt(manual_code, Docstring).save_attributes(output)
+        adapt(manual_code, ExtendedAccess).save_attributes(output)
+        self.save_attribute('precis', manual_code.precis, output)
         output.write('>\n')
 
+        output += 1
         self.save_literal('body', output)
-        adapt(manual_code, Docstring).save(output)
+        adapt(manual_code, Code).save_subelements(output)
+        adapt(manual_code, Docstring).save_subelements(output)
+        adapt(manual_code, ExtendedAccess).save_subelements(output)
         self.save_literal('methcode', output)
+        output -= 1
 
         output.write('</ManualCode>\n')

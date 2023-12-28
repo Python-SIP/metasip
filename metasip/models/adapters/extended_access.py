@@ -21,7 +21,7 @@ class ExtendedAccessAdapter(BaseAdapter):
         'access':   AttributeType.STRING,
     }
 
-    def save(self, output):
-        """ Save the model to an output file. """
+    def save_attributes(self, output):
+        """ Save the XML attributes. """
 
         self.save_str('access', output)

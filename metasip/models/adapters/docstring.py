@@ -21,7 +21,7 @@ class DocstringAdapter(BaseAdapter):
         'docstring':    AttributeType.LITERAL,
     }
 
-    def save(self, output):
-        """ Save the model to an output file. """
+    def save_subelements(self, output):
+        """ Save the XML subelements. """
 
         self.save_literal('docstring', output)

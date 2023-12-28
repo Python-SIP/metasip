@@ -44,11 +44,14 @@ class FunctionAdapter(BaseApiAdapter):
         function = self.model
 
         output.write('<Function')
+        adapt(function, Callable).save_attributes(output)
+        adapt(function, Docstring).save_attributes(output)
         output.write('>\n')
-        output += 1
 
+        output += 1
+        # The order is to match older versions.
+        adapt(function, Docstring).save_subelements(output)
+        adapt(function, Callable).save_subelements(output)
         output -= 1
-        adapt(function, Docstring).save(output)
-        ZZZ - need to subclass for attrs and sub-elements
-        self.save_literal(
+
         output.write('</Function>\n')

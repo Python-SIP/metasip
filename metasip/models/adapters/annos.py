@@ -33,7 +33,7 @@ class AnnosAdapter(BaseApiAdapter):
 
         output.write(self.as_str())
 
-    def save(self, output):
-        """ Save the model to an output file. """
+    def save_attributes(self, output):
+        """ Save the XML attributes. """
 
         self.save_str('annos', output)

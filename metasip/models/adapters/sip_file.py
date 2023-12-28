@@ -82,13 +82,12 @@ class SipFileAdapter(BaseApiAdapter):
 
         sip_file = self.model
 
-        output.write(f'<SipFile name="{sip_file.name}">')
+        output.write(f'<SipFile name="{sip_file.name}"')
+        adapt(sip_file, CodeContainer).save_attributes(output)
+        output.write('>\n')
+
         output += 1
-
-        adapt(sip_file, CodeContainer).save(output)
-
-        output -= 1
-
+        adapt(sip_file, CodeContainer).save_subelements(output)
         self.save_literal('exportedheadercode', output)
         self.save_literal('moduleheadercode', output)
         self.save_literal('modulecode', output)
@@ -97,5 +96,6 @@ class SipFileAdapter(BaseApiAdapter):
         self.save_literal('postinitcode', output)
         self.save_literal('exportedtypehintcode', output)
         self.save_literal('typehintcode', output)
+        output -= 1
 
-        output.write('</Module>\n')
+        output.write('</SipFile>\n')

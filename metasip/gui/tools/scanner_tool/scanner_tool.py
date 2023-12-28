@@ -38,7 +38,7 @@ class ScannerTool(ShellTool):
             self._gui.control_widget.module_rename(event_arg)
         elif event_type is EventType.PROJECT_NEW:
             self._set_project()
-        elif event_type is EventType.VERSION_ADD_DELETE:
+        elif event_type in (EventType.VERSION_ADD, EventType.VERSION_DELETE):
             self._gui.control_widget.version_add_delete()
         elif event_type is EventType.VERSION_RENAME:
             self._gui.control_widget.version_rename(*event_arg)

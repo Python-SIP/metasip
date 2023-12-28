@@ -64,11 +64,13 @@ class BaseAdapter(ABC):
 
             setattr(self.model, name, value)
 
-    @abstractmethod
     def save(self, output):
         """ Save the model to an output file. """
 
-        ...
+        # This method must be reimplemented by those adapters that write its
+        # own XML element.  However we don't want to make it abstract and have
+        # to provide a stub reimplementation in other adapters.
+        raise NotImplementedError
 
     @classmethod
     def save_attribute(cls, name, value, output):
@@ -76,41 +78,53 @@ class BaseAdapter(ABC):
 
         output.write(f' {name}="{cls._escape(value)}"')
 
-    @classmethod
-    def save_bool(cls, name, output):
+    def save_attributes(self, output):
+        """ Save the XML attributes of an adapter that does not write its own
+        XML element.
+        """
+
+        # This default implementation assumes there are no attributes.
+        pass
+
+    def save_bool(self, name, output):
         """ Save a bool. """
 
         value = getattr(self.model, name)
 
         if value:
-            cls.save_attribute(name, '1', output)
+            self.save_attribute(name, '1', output)
 
-    @classmethod
-    def save_literal(cls, name, output):
+    def save_literal(self, name, output):
         """ Save the value of a literal text attribute. """
 
         value = getattr(self.model, name)
 
         if value != '':
-            output.write(f'<Literal type="{name}">\n{cls._escape(value)}\n</Literal>\n', indent=False)
+            output.write(f'<Literal type="{name}">\n{self._escape(value)}\n</Literal>\n', indent=False)
 
-    @classmethod
-    def save_str(cls, name, output):
+    def save_str(self, name, output):
         """ Save a string. """
 
         value = getattr(self.model, name)
 
         if value != '':
-            cls.save_attribute(name, value, output)
+            self.save_attribute(name, value, output)
 
-    @classmethod
-    def save_str_list(cls, name, output):
+    def save_str_list(self, name, output):
         """ Save a list of strings. """
 
-        value = getattr(self.model, value)
+        value = getattr(self.model, name)
 
         if len(value) != 0:
-            cls.save_attribute(name, ' '.join(value), output)
+            self.save_attribute(name, ' '.join(value), output)
+
+    def save_subelements(self, output):
+        """ Save the XML subelements of an adapter that does not write its own
+        XML element.
+        """
+
+        # This default implementation assumes there are no subelements.
+        pass
 
     @staticmethod
     def _escape(s):
