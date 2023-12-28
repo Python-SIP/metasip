@@ -17,17 +17,17 @@ class IndentFile:
     """ This is a thin wrapper around a file object that supports indentation.
     """
 
-    def __init__(self, fname, indent):
+    def __init__(self, file_name, indent):
         """ Create a file for writing. """
 
-        self._f = open(fname, 'w', encoding='UTF-8')
+        self._f = open(file_name, 'w', encoding='UTF-8')
         self._indent = indent
         self._nr_indents = 0
         self._indent_next = True
         self._blank = False
         self._suppress_blank = False
 
-        self.name = fname
+        self.name = file_name
 
     def __iadd__(self, by):
         """ Increase the indentation. """
@@ -58,14 +58,14 @@ class IndentFile:
         self._f.close()
 
     @classmethod
-    def create(cls, fname, indent=4):
+    def create(cls, file_name, indent=4):
         """ Return an indent file or raise an exception if there was an error.
         """
 
         try:
-            return cls(fname, indent)
+            return cls(file_name, indent)
         except IOError as e:
-            raise UserException(f"There was an error creating '{fname}'",
+            raise UserException(f"There was an error creating '{file_name}'",
                     detail=str(e)) from e
 
     def write(self, data, indent=True):

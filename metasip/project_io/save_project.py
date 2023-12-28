@@ -21,7 +21,7 @@ def save_project(project, ui):
     """
 
     try:
-        output = IndentFile(project.name, indent=2)
+        output = IndentFile.create(project.name, indent=2)
     except UserException as e:
         ui.error_creating_file("Save", e.text, e.detail)
         return False

@@ -16,7 +16,7 @@ import os
 
 from .exceptions import UserException
 from .models import Project
-from .project_io import load_roject
+from .project_io import generate_sip_files, load_project
 
 
 def main():
@@ -32,8 +32,9 @@ def main():
     parser.add_argument('-g',
             help="the directory to write the generated code to",
             dest='output_dir', metavar='DIR', required=True)
+    # TODO: change this to a list of modules to ignore - also change rbtools
     parser.add_argument('-m',
-            help="the module to generated code for",
+            help="the module to generate code for",
             dest='modules', metavar='MODULE', action='append')
     parser.add_argument('--verbose', help="display progress messages",
             dest='verbose', default=False, action='store_true')
@@ -51,32 +52,21 @@ def _generate(project_name, modules, output_dir, verbose):
     there was no error.
     """
 
-    if not os.path.isdir(output_dir):
-        raise UserException(f"{output_dir} is not an existing directory")
-
     if not project_name:
         raise UserException("Specify the name of an existing project file")
 
     project = Project(project_name)
     load_project(project)
 
+    # TODO: no need to calculate this when passed on the command line.
+    ignored_modules = []
+
     if modules:
-        gen_modules = []
+        for module in project.modules:
+            if module.name not in modules:
+                ignored_modules.append(module.name)
 
-        for module_name in modules:
-            for module in project.modules:
-                if module.name == module_name:
-                    gen_modules.append(module)
-                    break
-            else:
-                raise UserException(
-                        f"There is no module '{module_name}' in the project")
-    else:
-        gen_modules = project.modules
-
-    # Generate each module.
-    for module in gen_modules:
-        project.generate_module(module, output_dir, verbose=verbose)
+    generate_sip_files(project, output_dir, ignored_modules, verbose)
 
 
 def _handle_exception(e):
@@ -95,9 +85,8 @@ def _handle_exception(e):
         sys.exit(1)
 
     # An internal error.
-    print(
-            "{0}: An internal error occurred...".format(
-                    os.path.basename(sys.argv[0])),
+    print("{0}: An internal error occurred...".format(
+            os.path.basename(sys.argv[0])),
             file=sys.stderr)
 
     raise e

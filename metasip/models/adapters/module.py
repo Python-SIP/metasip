@@ -13,10 +13,10 @@
 from ..sip_file import SipFile
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseApiAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class ModuleAdapter(BaseApiAdapter):
+class ModuleAdapter(BaseAdapter):
     """ This is the Module adapter. """
 
     # The map of attribute names and types.
@@ -34,11 +34,6 @@ class ModuleAdapter(BaseApiAdapter):
         """ Return the standard string representation. """
 
         return self.model.name
-
-    def generate_sip(self, output):
-        """ Generate the .sip file content. """
-
-        # TODO
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

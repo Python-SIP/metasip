@@ -14,10 +14,10 @@ from ..header_directory import HeaderDirectory
 from ..module import Module
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseApiAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class ProjectAdapter(BaseApiAdapter):
+class ProjectAdapter(BaseAdapter):
     """ This is the Project adapter. """
 
     # The map of attribute names and types.
@@ -35,11 +35,6 @@ class ProjectAdapter(BaseApiAdapter):
         """ Return the standard string representation. """
 
         return self.model.rootmodule
-
-    def generate_sip(self, output):
-        """ Generate the .sip file content. """
-
-        # TODO
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

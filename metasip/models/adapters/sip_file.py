@@ -59,11 +59,6 @@ class SipFileAdapter(BaseApiAdapter):
 
         return self.model.name
 
-    def generate_sip(self, output):
-        """ Generate the .sip file content. """
-
-        # TODO
-
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
@@ -76,6 +71,11 @@ class SipFileAdapter(BaseApiAdapter):
         # Progress any UI for the load.
         if ui is not None:
             ui.load_step()
+
+    def generate_sip(self, output):
+        """ Generate the .sip file content. """
+
+        # TODO
 
     def save(self, output):
         """ Save the model to an output file. """
