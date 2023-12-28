@@ -81,3 +81,24 @@ class OperatorMethodAdapter(BaseApiAdapter):
 
         adapt(self.model, Callable).load(element, ui)
         adapt(self.model, Access).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        method = self.model
+
+        output.write('<OperatorMethod')
+        adapt(method, Callable).save_attributes(output)
+        adapt(method, Access).save_attributes(output)
+        self.save_bool('virtual', output)
+        self.save_bool('const', output)
+        self.save_bool('abstract', output)
+        output.write('>\n')
+
+        output += 1
+        adapt(method, Callable).save_subelements(output)
+        adapt(method, Access).save_subelements(output)
+        self.save_literal('virtcode', output)
+        output -= 1
+
+        output.write('</OperatorMethod>\n')

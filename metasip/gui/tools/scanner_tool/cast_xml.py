@@ -638,7 +638,7 @@ class _Enumeration(_ScopedItem, _Access):
         if self.access.startswith("private"):
             return
 
-        tci = Enum(name=self.name, access=self.access, enum_class=self.scoped)
+        tci = Enum(name=self.name, access=self.access, enumclass=self.scoped)
 
         for e in self.values:
             tci.content.append(EnumValue(name=e.name))

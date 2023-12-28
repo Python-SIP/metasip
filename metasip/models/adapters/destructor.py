@@ -54,3 +54,24 @@ class DestructorAdapter(BaseApiAdapter):
 
         adapt(self.model, Code).load(element, ui)
         adapt(self.model, Access).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        dtor = self.model
+
+        output.write('<Destructor')
+        adapt(dtor, Code).save_attributes(output)
+        adapt(dtor, Access).save_attributes(output)
+        self.save_attribute('name', dtor.name, output)
+        self.save_bool('virtual', output)
+        output.write('>\n')
+
+        output += 1
+        self.save_literal('methcode', output)
+        self.save_literal('virtcode', output)
+        adapt(dtor, Code).save_subelements(output)
+        adapt(dtor, Access).save_subelements(output)
+        output -= 1
+
+        output.write('</Destructor>\n')

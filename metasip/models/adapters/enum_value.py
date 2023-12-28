@@ -46,3 +46,18 @@ class EnumValueAdapter(BaseApiAdapter):
         adapt(self.model, Annos).load(element, ui)
         adapt(self.model, Tagged).load(element, ui)
         adapt(self.model, Workflow).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        enum_value = self.model
+
+        output.write('<Typedef')
+        adapt(enum_value, Annos).save_attributes(output)
+        adapt(enum_value, Tagged).save_attributes(output)
+        adapt(enum_value, Workflow).save_attributes(output)
+        self.save_attribute('name', enum_value.name, output)
+
+        # Note that we are assuming model super-classes do not have any
+        # subelements.
+        output.write('/>\n')

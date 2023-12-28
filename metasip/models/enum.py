@@ -25,7 +25,7 @@ class Enum(Code, Access):
     content: list[EnumValue] = field(default_factory=list)
 
     # Set if the enum is a C++11 enum class.
-    enum_class: bool = False
+    enumclass: bool = False
 
     # The optional name of the enum.
     name: str = ''

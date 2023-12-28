@@ -106,3 +106,22 @@ class CallableAdapter(BaseApiAdapter):
             s += ' '
 
         return s
+
+    def save_attributes(self, output):
+        """ Save the XML attributes. """
+
+        callable = self.model
+
+        adapt(callable, Code).save_attributes(output)
+        self.save_attribute('name', callable.name, output)
+        self.save_str('rtype', output)
+        self.save_str('pytype', output)
+        self.save_str('pyargs', output)
+
+    def save_subelements(self, output):
+        """ Save the XML subelements. """
+
+        for argument in self.model.args:
+            adapt(argument).save(output)
+
+        self.save_literal('methcode', output)

@@ -51,3 +51,21 @@ class OperatorCastAdapter(BaseApiAdapter):
 
         adapt(self.model, Callable).load(element, ui)
         adapt(self.model, Access).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        cast = self.model
+
+        output.write('<OperatorCast')
+        adapt(cast, Callable).save_attributes(output)
+        adapt(cast, Access).save_attributes(output)
+        self.save_bool('const', output)
+        output.write('>\n')
+
+        output += 1
+        adapt(cast, Callable).save_subelements(output)
+        adapt(cast, Access).save_subelements(output)
+        output -= 1
+
+        output.write('</OperatorCast>\n')

@@ -23,7 +23,7 @@ class Destructor(Code, Access):
     # The optional %MethodCode.
     methcode: str = ''
 
-    # The name of the destructor (ie. the class)..
+    # The name of the destructor (ie. the class).
     name: str = ''
 
     # The optional %VirtualCatcherCode.

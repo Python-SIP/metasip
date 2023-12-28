@@ -92,3 +92,45 @@ class ClassAdapter(BaseApiAdapter):
         adapt(self.model, CodeContainer).load(self._TAG_CODE_MAP, element, ui)
         adapt(self.model, Docstring).load(element, ui)
         adapt(self.model, Access).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        klass = self.model
+
+        output.write('<Class')
+        adapt(klass, Code).save_attributes(output)
+        adapt(klass, CodeContainer).save_attributes(output)
+        adapt(klass, Docstring).save_attributes(output)
+        adapt(klass, Access).save_attributes(output)
+        self.save_attribute('name', klass.name, output)
+        self.save_str('bases', output)
+        self.save_str('pybases', output)
+        self.save_bool('struct', output)
+        output.write('>\n')
+
+        output += 1
+        # The order is to match older versions.
+        adapt(klass, Code).save_subelements(output)
+        adapt(klass, Docstring).save_subelements(output)
+        self.save_literal('typehintcode', output)
+        self.save_literal('typeheadercode', output)
+        self.save_literal('typecode', output)
+        self.save_literal('finalisationcode', output)
+        self.save_literal('subclasscode', output)
+        self.save_literal('convtotypecode', output)
+        self.save_literal('convfromtypecode', output)
+        self.save_literal('gctraversecode', output)
+        self.save_literal('gcclearcode', output)
+        self.save_literal('bigetbufcode', output)
+        self.save_literal('birelbufcode', output)
+        self.save_literal('bireadbufcode', output)
+        self.save_literal('biwritebufcode', output)
+        self.save_literal('bisegcountcode', output)
+        self.save_literal('bicharbufcode', output)
+        self.save_literal('picklecode', output)
+        adapt(klass, CodeContainer).save_subelements(output)
+        adapt(klass, Access).save_subelements(output)
+        output -= 1
+
+        output.write('</Class>\n')

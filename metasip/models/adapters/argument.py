@@ -73,3 +73,20 @@ class ArgumentAdapter(BaseApiAdapter):
         super().load(element, ui)
 
         adapt(self.model, Annos).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        argument = self.model
+
+        output.write('<Argument')
+        adapt(argument, Annos).save_attributes(output)
+        self.save_attribute('type', argument.type, output)
+        self.save_bool('unnamed', output)
+        self.save_str('name', output)
+        self.save_str('default', output)
+        self.save_str('pydefault', output)
+        self.save_str('pytype', output)
+
+        # Note that we are assuming Annos does not have any subelements.
+        output.write('/>\n')

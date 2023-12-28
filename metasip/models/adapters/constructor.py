@@ -53,3 +53,24 @@ class ConstructorAdapter(BaseApiAdapter):
         adapt(self.model, Callable).load(element, ui)
         adapt(self.model, Docstring).load(element, ui)
         adapt(self.model, Access).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        ctor = self.model
+
+        output.write('<Constructor')
+        adapt(ctor, Callable).save_attributes(output)
+        adapt(ctor, Docstring).save_attributes(output)
+        adapt(ctor, Access).save_attributes(output)
+        self.save_bool('explicit', output)
+        output.write('>\n')
+
+        output += 1
+        # The order is to match older versions.
+        adapt(ctor, Docstring).save_subelements(output)
+        adapt(ctor, Callable).save_subelements(output)
+        adapt(ctor, Access).save_subelements(output)
+        output -= 1
+
+        output.write('</Constructor>\n')

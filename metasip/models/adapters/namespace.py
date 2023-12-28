@@ -69,3 +69,22 @@ class NamespaceAdapter(BaseApiAdapter):
 
         adapt(self.model, Code).load(element, ui)
         adapt(self.model, CodeContainer).load(self._TAG_CODE_MAP, element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        namespace = self.model
+
+        output.write('<Namespace')
+        adapt(namespace, Code).save_attributes(output)
+        adapt(namespace, CodeContainer).save_attributes(output)
+        self.save_attribute('name', namespace.name, output)
+        output.write('>\n')
+
+        output += 1
+        self.save_literal('typeheadercode', output)
+        adapt(namespace, Code).save_subelements(output)
+        adapt(namespace, CodeContainer).save_subelements(output)
+        output -= 1
+
+        output.write('</Namespace>\n')

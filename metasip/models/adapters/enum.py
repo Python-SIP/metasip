@@ -23,7 +23,7 @@ class EnumAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
-        'enum_class':   AttributeType.BOOL,
+        'enumclass':    AttributeType.BOOL,
         'name':         AttributeType.STRING,
     }
 
@@ -34,7 +34,7 @@ class EnumAdapter(BaseApiAdapter):
 
         s = 'enum'
 
-        if enum.enum_class:
+        if enum.enumclass:
             s += ' class'
 
         if enum.name != '':
@@ -62,3 +62,26 @@ class EnumAdapter(BaseApiAdapter):
                 enum_value = EnumValue()
                 adapt(enum_value).load(subelement, ui)
                 self.model.content.append(enum_value)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        enum = self.model
+
+        output.write('<Enum')
+        adapt(enum, Code).save_attributes(output)
+        adapt(enum, Access).save_attributes(output)
+        self.save_bool('enumclass', output)
+        self.save_attribute('name', enum.name, output)
+        output.write('>\n')
+
+        output += 1
+        adapt(enum, Code).save_subelements(output)
+        adapt(enum, Access).save_subelements(output)
+
+        for enum_value in enum.content:
+            adapt(enum_value).save(output)
+
+        output -= 1
+
+        output.write('</Enum>\n')

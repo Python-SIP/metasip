@@ -47,3 +47,17 @@ class OpaqueClassAdapter(BaseApiAdapter):
 
         adapt(self.model, Code).load(element, ui)
         adapt(self.model, Access).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        opaque_class = self.model
+
+        output.write('<OpaqueClass')
+        adapt(opaque_class, Code).save_attributes(output)
+        adapt(opaque_class, Access).save_attributes(output)
+        self.save_attribute('name', opaque_class.name, output)
+
+        # Note that we are assuming model super-classes do not have any
+        # subelements.
+        output.write('/>\n')

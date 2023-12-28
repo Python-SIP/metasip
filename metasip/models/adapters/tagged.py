@@ -45,7 +45,7 @@ class TaggedAdapter(BaseAdapter):
 
         versions = self.versions_as_str()
         if versions != '':
-            self.save_attribute('versions', versions)
+            self.save_attribute('versions', versions, output)
 
         self.save_str_list('platforms', output)
         self.save_str_list('features', output)

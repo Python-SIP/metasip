@@ -29,12 +29,6 @@ class CodeContainerAdapter(BaseAdapter):
                 adapt(model).load(subelement, ui)
                 self.model.content.append(model)
 
-    def save_attributes(self, output):
-        """ Save the XML attributes. """
-
-        for code in self.model.content:
-            adapt(code).save_attributes(output)
-
     def save_subelements(self, output):
         """ Save the XML subelements. """
 

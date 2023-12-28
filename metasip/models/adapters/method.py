@@ -90,3 +90,28 @@ class MethodAdapter(BaseApiAdapter):
         adapt(self.model, Callable).load(element, ui)
         adapt(self.model, Docstring).load(element, ui)
         adapt(self.model, ExtendedAccess).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        method = self.model
+
+        output.write('<Method')
+        adapt(method, Callable).save_attributes(output)
+        adapt(method, Docstring).save_attributes(output)
+        adapt(method, ExtendedAccess).save_attributes(output)
+        self.save_bool('virtual', output)
+        self.save_bool('const', output)
+        self.save_bool('final', output)
+        self.save_bool('static', output)
+        self.save_bool('abstract', output)
+        output.write('>\n')
+
+        output += 1
+        adapt(method, Callable).save_subelements(output)
+        adapt(method, Docstring).save_subelements(output)
+        adapt(method, ExtendedAccess).save_subelements(output)
+        self.save_literal('virtcode', output)
+        output -= 1
+
+        output.write('</Method>\n')

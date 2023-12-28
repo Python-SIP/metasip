@@ -55,3 +55,18 @@ class OperatorFunctionAdapter(BaseApiAdapter):
         """
 
         adapt(self.model, Callable).load(element, ui)
+
+    def save(self, output):
+        """ Save the model to an output file. """
+
+        function = self.model
+
+        output.write('<OperatorFunction')
+        adapt(function, Callable).save_attributes(output)
+        output.write('>\n')
+
+        output += 1
+        adapt(function, Callable).save_subelements(output)
+        output -= 1
+
+        output.write('</OperatorFunction>\n')

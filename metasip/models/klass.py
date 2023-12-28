@@ -25,22 +25,22 @@ class Class(Code, CodeContainer, Docstring, Access):
     # The C++ base classes.
     bases: str = ''
 
-    # The optional %BIGetCharBufferCode.
+    # The optional %BIGetCharBufferCode (deprecated).
     bicharbufcode: str = ''
 
     # The optional %BIGetBufferCode.
     bigetbufcode: str = ''
 
-    # The optional %BIReadBufferCode.
+    # The optional %BIReadBufferCode (deprecated).
     bireadbufcode: str = ''
 
     # The optional %BIReleaseBufferCode.
     birelbufcode: str = ''
 
-    # The optional %BIGetSegCountCode.
+    # The optional %BIGetSegCountCode (deprecated).
     bisegcountcode: str = ''
 
-    # The optional %BIWriteBufferCode.
+    # The optional %BIWriteBufferCode (deprecated).
     biwritebufcode: str = ''
 
     # The optional %ConvertFromTypeCode.
