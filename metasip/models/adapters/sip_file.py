@@ -22,10 +22,10 @@ from ..typedef import Typedef
 from ..variable import Variable
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseApiAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class SipFileAdapter(BaseApiAdapter):
+class SipFileAdapter(BaseAdapter):
     """ This is the SipFile adapter. """
 
     # The map of attribute names and types.
@@ -71,11 +71,6 @@ class SipFileAdapter(BaseApiAdapter):
         # Progress any UI for the load.
         if ui is not None:
             ui.load_step()
-
-    def generate_sip(self, output):
-        """ Generate the .sip file content. """
-
-        # TODO
 
     def save(self, output):
         """ Save the model to an output file. """

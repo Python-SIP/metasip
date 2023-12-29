@@ -10,6 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from ...helpers import version_range
+
 from ..version_range import VersionRange
 
 from .base_adapter import AttributeType, BaseAdapter
@@ -53,30 +55,16 @@ class TaggedAdapter(BaseAdapter):
     def versions_as_str(self, as_xml=False):
         """ Return the standard string representation of the versions. """
 
-        if as_xml:
-            separator = ' '
-            left_dash = middle_dash = right_dash = '-'
-        else:
-            separator = ', '
-            left_dash = '- '
-            middle_dash = ' - '
-            right_dash = ' -'
-
         version_ranges = []
 
-        for version_range in self.model.versions:
-            startversion = version_range.startversion
-            endversion = version_range.endversion
+        for version in self.model.versions:
+            version_range_s = version_range(version)
 
-            if startversion == '':
-                if endversion == '':
-                    # This should never happen.
-                    continue
+            if as_xml:
+                version_range_s = version_range_s.replace(' ', '')
 
-                version_ranges.append(left_dash + endversion)
-            elif endversion == '':
-                version_ranges.append(startversion + right_dash)
-            else:
-                version_ranges.append(startversion + middle_dash + endversion)
+            version_ranges.append(version_range_s)
+
+        separator = ' ' if as_xml else ', '
 
         return separator.join(version_ranges)

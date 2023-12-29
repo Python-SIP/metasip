@@ -19,6 +19,7 @@ from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
         QLineEdit, QMessageBox, QPushButton, QStyle, QToolButton, QVBoxLayout,
         QWidget)
 
+from .....helpers import VersionMap
 from .....models import (Callable, CodeContainer, Constructor, Enum,
         HeaderDirectory, HeaderFile, HeaderFileVersion, ManualCode, SipFile,
         VersionRange)
@@ -627,17 +628,11 @@ class ControlWidget(QWidget):
         if len(api.versions) != 0:
             project = self._tool.shell.project
 
-            # Construct the existing list of version ranges to a version map.
-            vmap = project.vmap_create(False)
-            project.vmap_or_version_ranges(vmap, api.versions)
-
             # Add the working version.
-            working_idx = project.versions.index(
-                    self._working_version.currentText())
-            vmap[working_idx] = True
+            vmap = VersionMap(project, api.versions)
+            vmap[self._working_version.currentText()] = True
+            api.versions = vmap.as_version_ranges()
 
-            # Convert the version map back to a list of version ranges.
-            api.versions = project.vmap_to_version_ranges(vmap)
             self._tool.shell.notify(EventType.API_VERSIONS, api)
 
     def _remove_working_version(self, api):
@@ -650,24 +645,19 @@ class ControlWidget(QWidget):
         project = self._tool.shell.project
 
         # Construct the existing list of version ranges to a version map.
-        if len(api) == 0:
-            vmap = project.vmap_create(True)
-        else:
-            vmap = project.vmap_create(False)
-            project.vmap_or_version_ranges(vmap, api.versions)
+        vmap = VersionMap(project, api.versions)
 
         # Update the version map appropriately using the working version.
         # First take a shortcut to see if anything has changed.
-        working_idx = project.versions.index(
-                self._working_version.currentText())
+        working_version = self._working_version.currentText()
 
-        if not vmap[working_idx]:
+        if not vmap[working_version]:
             return 'wasnt_working'
 
-        vmap[working_idx] = False
+        vmap[working_version] = False
 
         # Convert the version map back to a list of version ranges.
-        versions = project.vmap_to_version_ranges(vmap)
+        versions = vmap.as_version_ranges()
 
         if versions is None:
             return 'no_longer_any'

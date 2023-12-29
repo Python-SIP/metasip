@@ -637,7 +637,7 @@ class SipFile(Model):
         # See if we need a %ModuleCode directive for things which will be
         # implemented at the module level.  At the same time find the version
         # ranges that cover all the API items.
-        vmap = self.project.vmap_create(False)
+        vmap = VersionMap(self.project)
         platforms = set()
         features = set()
         need_header = False
@@ -651,8 +651,7 @@ class SipFile(Model):
             if isinstance(api_item, (Function, Variable, Enum)):
                 need_header = True
 
-            if vmap is not None and self.project.vmap_or_version_ranges(vmap, api_item.versions):
-                vmap = None
+            vmap.update_from_version_ranges(api_item.versions)
 
             if platforms is not None:
                 if api_item.platforms:
@@ -667,12 +666,7 @@ class SipFile(Model):
                     features = None
 
         if need_header:
-            if vmap is None:
-                need = [VersionRange()]
-            else:
-                need = self.project.vmap_to_version_ranges(vmap)
-
-            vranges_str = [version_range(vr) for vr in need]
+            vranges_str = [version_range(vr) for vr in vmap.as_version_ranges()]
 
             plat_feat = []
 
@@ -683,8 +677,7 @@ class SipFile(Model):
                 plat_feat.extend(features)
 
             for vr_str in vranges_str:
-                if vr_str != '':
-                    f.write("%%If (%s)\n" % vr_str, False)
+                f.write("%%If (%s)\n" % vr_str, False)
 
             if plat_feat:
                 f.write("%%If (%s)\n" % " || ".join(plat_feat), False)
@@ -699,8 +692,7 @@ class SipFile(Model):
                 f.write("%End\n", False)
 
             for vr_str in vranges_str:
-                if vr_str != '':
-                    f.write("%End\n", False)
+                f.write("%End\n", False)
 
             f.blank()
 
@@ -2309,115 +2301,6 @@ class ManualCode(Code, Access):
         xml.append('precis="{0}"'.format(escape(self.precis)))
 
         return xml
-
-
-class _IndentFile:
-    """
-    This is a thin wrapper around a file object that supports indentation.
-    """
-    def __init__(self, fname, indent):
-        """
-        Create a file for writing.
-
-        fname is the name of the file.
-        indent is the default indentation step.
-        """
-        self._f = open(fname, 'w', encoding='UTF-8')
-        self._indent = indent
-        self._nrindents = 0
-        self._indentnext = True
-        self._blank = False
-        self._suppressblank = False
-
-        self.name = fname
-
-    def write(self, data, indent=True):
-        """
-        Write some data to the file with optional automatic indentation.
-
-        data is the data to write.
-        indent is True if the data should be indented.
-        """
-        if data:
-            if self._blank:
-                self._f.write("\n")
-                self._blank = False
-
-            lines = data.split("\n")
-
-            for l in lines[:-1]:
-                if indent and self._indentnext:
-                    self._f.write(" " * (self._indent * self._nrindents))
-
-                self._f.write(l + "\n")
-                self._indentnext = True
-
-            # Handle the last line.
-            l = lines[-1]
-
-            if l:
-                if indent and self._indentnext:
-                    self._f.write(" " * (self._indent * self._nrindents))
-
-                self._f.write(l)
-                self._indentnext = False
-            else:
-                self._indentnext = True
-
-            self._suppressblank = False
-
-    def blank(self):
-        """
-        Write a blank line.
-        """
-        if not self._suppressblank:
-            self._blank = True
-
-    def close(self):
-        """
-        Close the file.
-        """
-        self._f.close()
-
-    def __iadd__(self, n):
-        """
-        Increase the indentation.
-
-        n is the increase in the number of levels of indentation.
-        """
-        self._nrindents += n
-        self._suppressblank = True
-
-        return self
-
-    def __isub__(self, n):
-        """
-        Decrease the indentation.
-
-        n is the decrease in the number of levels of indentation.
-        """
-        self._nrindents -= n
-        self._blank = False
-        self._suppressblank = False
-
-        return self
-
-
-def _createIndentFile(prj, fname, indent=4):
-    """
-    Return an indent file or None if there was an error.
-
-    prj is the project instance.
-    fname is the name of the file.
-    indent is the default indentation step.
-    """
-    try:
-        f = _IndentFile(fname, indent)
-    except IOError as detail:
-        prj.diagnostic = "Unable to create file %s: %s" % (fname, detail)
-        return None
-
-    return f
 
 
 def _writeLiteralXML(f, type, text):
