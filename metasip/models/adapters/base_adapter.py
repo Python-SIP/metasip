@@ -14,6 +14,8 @@ from abc import ABC, abstractmethod
 from enum import auto, Enum
 from xml.sax.saxutils import escape
 
+from ...helpers import version_range
+
 from .adapt import adapt
 
 
@@ -39,6 +41,48 @@ class BaseAdapter(ABC):
         """ Initialise the adapter. """
 
         self.model = model
+
+    def as_str(self):
+        """ Return the standard string representation. """
+
+        # This method must be reimplemented by those adapters contribute to the
+        # string representation of an API.  However we don't want to make it
+        # abstract and have to provide a stub reimplementation in other
+        # adapters.
+        raise NotImplementedError
+
+    @staticmethod
+    def expand_type(type, name=None):
+        """ Return the full type with an optional name. """
+
+        # Handle the trivial case.
+        if type == '':
+            return ''
+
+        # SIP can't handle every C++ fundamental type.
+        # TODO: add the SIP support.
+        s = type.replace('long int', 'long')
+
+        # Append any name.
+        if name:
+            if s[-1] not in '&*':
+                s += ' '
+
+            s += name
+
+        return s
+
+    def generate_sip_detail(self, output):
+        """ Write the detail to a .sip file. """
+
+        # This default implementation does nothing.
+        pass
+
+    def generate_sip_directives(self, output):
+        """ Write any directives to a .sip file. """
+
+        # This default implementation does nothing.
+        pass
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
@@ -67,7 +111,7 @@ class BaseAdapter(ABC):
     def save(self, output):
         """ Save the model to an output file. """
 
-        # This method must be reimplemented by those adapters that write its
+        # This method must be reimplemented by those adapters that write their
         # own XML element.  However we don't want to make it abstract and have
         # to provide a stub reimplementation in other adapters.
         raise NotImplementedError
@@ -139,34 +183,42 @@ class BaseApiAdapter(BaseAdapter):
     """
 
     @abstractmethod
-    def as_str(self):
-        """ Return the standard string representation. """
-
-        ...
-
-    @staticmethod
-    def expand_type(type, name=None):
-        """ Return the full type with an optional name. """
-
-        # Handle the trivial case.
-        if type == '':
-            return ''
-
-        # SIP can't handle every C++ fundamental type.
-        # TODO: add the SIP support.
-        s = type.replace('long int', 'long')
-
-        # Append any name.
-        if name:
-            if s[-1] not in '&*':
-                s += ' '
-
-            s += name
-
-        return s
-
-    @abstractmethod
     def generate_sip(self, output):
         """ Generate the .sip file content. """
 
         ...
+
+    def version_start(self, output):
+        """ Write the start of the version tests for an API.  Returns the
+        number of %End statements needed to be passed to the corresponding call
+        to version_end().
+        """
+
+        api = self.model
+
+        nr_ends = 0
+
+        for vrange in api.versions:
+            vr = version_range(vrange)
+            output.write(f'%If ({vr})\n', indent=False)
+            nr_ends += 1
+
+        # Multiple platforms are logically or-ed.
+        if len(api.platforms) != 0:
+            platforms = ' || '.join(api.platforms)
+            output.write(f'%If ({platforms})\n', indent=False)
+            nr_ends += 1
+
+        # Multiple features are nested (ie. logically and-ed).
+        for feature in api.features:
+            output.write(f'%If ({feature})\n', indent=False)
+            nr_ends += 1
+
+        return nr_ends
+
+    @staticmethod
+    def version_end(nr_ends, output):
+        """ Write the end of the version tests for an API item. """
+
+        for _ in range(nr_ends):
+            output.write('%End\n', indent=False)

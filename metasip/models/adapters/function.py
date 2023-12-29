@@ -28,7 +28,17 @@ class FunctionAdapter(BaseApiAdapter):
     def generate_sip(self, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        function = self.model
+
+        nr_ends = self.version_start(output)
+
+        adapt(function, Callable).generate_sip_detail(output)
+        adapt(function, Docstring).generate_sip_detail(output)
+        output.write(';\n')
+        adapt(function, Docstring).generate_sip_directives(output)
+        adapt(function, Callable).generate_sip_directives(output)
+
+        self.version_end(nr_ends, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

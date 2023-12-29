@@ -10,6 +10,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from ...helpers import code_directive
+
 from .base_adapter import AttributeType, BaseAdapter
 
 
@@ -20,6 +22,12 @@ class DocstringAdapter(BaseAdapter):
     ATTRIBUTE_TYPE_MAP = {
         'docstring':    AttributeType.LITERAL,
     }
+
+    def generate_sip_directives(self, output):
+        """ Write any directives to a .sip file. """
+
+        code_directive('%Docstring', self.model.docstring, output,
+                indent=False)
 
     def save_subelements(self, output):
         """ Save the XML subelements. """

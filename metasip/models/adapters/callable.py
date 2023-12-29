@@ -10,15 +10,17 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from ...helpers import code_directive
+
 from ..annos import Annos
 from ..argument import Argument
 from ..code import Code
 
 from .adapt import adapt
-from .base_adapter import AttributeType, BaseApiAdapter
+from .base_adapter import AttributeType, BaseAdapter
 
 
-class CallableAdapter(BaseApiAdapter):
+class CallableAdapter(BaseAdapter):
     """ This is the Callable adapter. """
 
     # The map of attribute names and types.
@@ -70,10 +72,15 @@ class CallableAdapter(BaseApiAdapter):
 
         return False
 
-    def generate_sip(self, output):
-        """ Generate the .sip file content. """
+    def generate_sip_detail(self, output):
+        """ Write the detail to a .sip file. """
 
-        # TODO
+        output.write(self.as_str())
+
+    def generate_sip_directives(self, output):
+        """ Write any directives to a .sip file. """
+
+        code_directive('%MethodCode', self.model.methcode, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
