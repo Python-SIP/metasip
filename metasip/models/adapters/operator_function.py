@@ -38,13 +38,13 @@ class OperatorFunctionAdapter(BaseApiAdapter):
         s += adapt(function, Annos).as_str()
 
         if callable_adapter.has_different_signatures():
-            return_type = callable_adapter.return_type_as_str()
+            return_type = callable_adapter.return_type_as_str().strip()
             args = ', '.join([adapt(arg).as_str() for arg in function.args])
             s += f' [{return_type} ({args})]'
 
         return s
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
         function = self.model

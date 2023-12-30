@@ -43,10 +43,30 @@ class VariableAdapter(BaseApiAdapter):
 
         return s
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        variable = self.model
+
+        nr_ends = self.version_start(output)
+
+        output.write(self.as_str())
+
+        need_brace = variable.accesscode != '' or variable.getcode != '' or variable.setcode != ''
+
+        if need_brace:
+            output.write(' {\n', indent=False)
+
+        output.write_code_directive('%AccessCode', variable.accesscode)
+        output.write_code_directive('%GetCode', variable.getcode)
+        output.write_code_directive('%SetCode', variable.setcode)
+
+        if need_brace:
+            output.write('}')
+
+        output.write(';\n', indent=False)
+
+        self.version_end(nr_ends, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

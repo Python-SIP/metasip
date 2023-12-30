@@ -33,10 +33,15 @@ class OpaqueClassAdapter(BaseApiAdapter):
 
         return 'class ' + opaque_class.name + adapt(opaque_class, Annos).as_str()
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        nr_ends = self.version_start(output)
+
+        output.write(self.as_str())
+        output.write(';\n')
+
+        self.version_end(nr_ends, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

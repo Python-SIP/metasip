@@ -38,6 +38,7 @@ class Module:
 
     # The optional suffix added to the output directory to create the full name
     # of the directory where the generated .sip files will be placed.
+    # TODO: remove this and use the module name instead.
     outputdirsuffix: str = ''
 
     # Set if the module is PY_SSIZE_T_CLEAN.

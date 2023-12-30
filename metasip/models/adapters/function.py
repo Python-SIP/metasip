@@ -10,6 +10,7 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from ..annos import Annos
 from ..callable import Callable
 from ..docstring import Docstring
 
@@ -25,16 +26,28 @@ class FunctionAdapter(BaseApiAdapter):
 
         return adapt(self.model, Callable).as_str()
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
         function = self.model
 
         nr_ends = self.version_start(output)
 
-        adapt(function, Callable).generate_sip_detail(output)
-        adapt(function, Docstring).generate_sip_detail(output)
+        # Note that we don't use CallableAdapter's implementation because we
+        # dont want any C/C++ signature.
+
+        s = adapt(function, Callable).return_type_as_str(allow_py=True) + function.name
+
+        if function.pyargs != '':
+            s += function.pyargs
+        else:
+            args = ', '.join([adapt(arg).as_py_str() for arg in function.args])
+            s += '(' + args + ')'
+
+        s += adapt(function, Annos).as_str()
+        output.write(s)
         output.write(';\n')
+
         adapt(function, Docstring).generate_sip_directives(output)
         adapt(function, Callable).generate_sip_directives(output)
 

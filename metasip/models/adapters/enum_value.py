@@ -29,12 +29,19 @@ class EnumValueAdapter(BaseApiAdapter):
     def as_str(self):
         """ Return the standard string representation. """
 
-        return self.model.name
+        enum_value = self.model
 
-    def generate_sip(self, output):
+        return enum_value.name + adapt(enum_value, Annos).as_str()
+
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        nr_ends = self.version_start(output)
+
+        output.write(self.as_str())
+        output.write(',\n')
+
+        self.version_end(nr_ends, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

@@ -15,6 +15,7 @@ from ..annos import Annos
 from ..constructor import Constructor
 from ..destructor import Destructor
 from ..docstring import Docstring
+from ..extended_access import ExtendedAccess
 from ..klass import Class
 from ..code import Code
 from ..code_container import CodeContainer
@@ -92,10 +93,107 @@ class ClassAdapter(BaseApiAdapter):
 
         return s
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        klass = self.model
+
+        nr_ends = self.version_start(output)
+
+        output.blank()
+
+        type_type = 'struct ' if klass.struct else 'class '
+        bases_s = ''
+
+        if klass.pybases != '':
+            # Treat None as meaning no super classes:
+            if klass.pybases != 'None':
+                bases_s = ' : ' + ', '.join(klass.pybases.split())
+        elif klass.bases != '':
+            bases = []
+
+            for base in klass.bases.split(', '):
+                access, base_cls = base.split()
+
+                # Remove public to maintain compatibility with old SIPs.
+                # TODO: don't bother about old SIPs.
+                if access == 'public':
+                    bases.append(base_cls)
+                else:
+                    bases.append(f'{access} {base_cls}')
+
+            bases_s = ' : ' + ', '.join(bases)
+
+        output.write(type_type + klass.name + bases_s + adapt(klass, Annos).as_str() + '\n{\n')
+
+        adapt(klass, Docstring).generate_sip_directives(output)
+        output.write_code_directive('%TypeHintCode', klass.typehintcode,
+                indent=False)
+
+        output.write('%TypeHeaderCode\n', indent=False)
+
+        if klass.typeheadercode != '':
+            output.write(klass.typeheadercode + '\n', indent=False)
+        else:
+            output.write(f'#include <{sip_file.name}>\n', indent=False)
+
+        output.write('%End\n', indent=False)
+
+        output.blank()
+
+        output.write_code_directive('%TypeCode', klass.typecode, indent=False)
+        output.write_code_directive('%FinalisationCode',
+                klass.finalisationcode)
+        output.write_code_directive('%ConvertToSubClassCode',
+                klass.subclasscode)
+        output.write_code_directive('%ConvertToTypeCode', klass.convtotypecode,
+                indent=False)
+        output.write_code_directive('%ConvertFromTypeCode',
+                klass.convfromtypecode, indent=False)
+        output.write_code_directive('%GCTraverseCode', klass.gctraversecode)
+        output.write_code_directive('%GCClearCode', klass.gcclearcode)
+        output.write_code_directive('%BIGetBufferCode', klass.bigetbufcode)
+        output.write_code_directive('%BIReleaseBufferCode', klass.birelbufcode)
+        output.write_code_directive('%BIGetReadBufferCode',
+                klass.bireadbufcode)
+        output.write_code_directive('%BIGetWriteBufferCode',
+                klass.biwritebufcode)
+        output.write_code_directive('%BIGetSegCountCode', klass.bisegcountcode)
+        output.write_code_directive('%BIGetCharBufferCode',
+                klass.bicharbufcode)
+        output.write_code_directive('%PickleCode', klass.picklecode)
+
+        output += 1
+
+        access = '' if klass.struct else 'private'
+
+        for api in klass.content:
+            if api.status != '':
+                continue
+
+            if isinstance(api, (Access, ExtendedAccess)):
+                if access != api.access:
+                    output -= 1
+                    access = api.access
+
+                    if access != '':
+                        access_s = access
+                    else:
+                        access_s = 'public'
+
+                    output.blank()
+                    output.write(access_s + ':\n')
+                    output += 1
+
+            adapt(api).generate_sip(sip_file, output)
+
+        output -= 1
+
+        output.write('};\n')
+
+        output.blank()
+
+        self.version_end(nr_ends, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

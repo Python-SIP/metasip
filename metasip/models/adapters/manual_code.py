@@ -33,10 +33,25 @@ class ManualCodeAdapter(BaseApiAdapter):
 
         return self.model.precis
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        manual_code = self.model
+
+        nr_ends = self.version_start(output)
+
+        if manual_code.body != '':
+            output.write(f'// {manual_code.precis}\n{manual_code.body}\n',
+                    indent=False)
+        elif manual_code.precis.startswith('%'):
+            output.write(manual_code.precis + '\n', indent=False)
+        else:
+            output.write(manual_code.precis + ';\n')
+
+        adapt(manual_code, Docstring).generate_sip_directives(output)
+        output.write_code_directive('%MethodCode', manual_code.methcode)
+
+        self.version_end(nr_ends, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

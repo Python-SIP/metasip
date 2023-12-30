@@ -38,10 +38,20 @@ class ConstructorAdapter(BaseApiAdapter):
 
         return s
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        ctor = self.model
+
+        nr_ends = self.version_start(output)
+
+        output.write(self.as_str())
+        output.write(';\n')
+
+        adapt(ctor, Docstring).generate_sip_directives(output)
+        adapt(ctor, Callable).generate_sip_directives(output)
+
+        self.version_end(nr_ends, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

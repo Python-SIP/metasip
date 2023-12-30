@@ -55,10 +55,42 @@ class NamespaceAdapter(BaseApiAdapter):
 
         return 'namespace ' + namespace.name + adapt(namespace, Annos).as_str()
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        namespace = self.model
+
+        nr_ends = self.version_start(output)
+
+        output.blank()
+
+        output.write(self.as_str())
+        output.write('\n{\n')
+
+        output.write('%TypeHeaderCode\n', indent=False)
+
+        if namespace.typeheadercode != '':
+            output.write(namespace.typeheadercode + '\n', indent=False)
+        else:
+            output.write(f'#include <{sip_file.name}>\n', indent=False)
+
+        output.write('%End\n', indent=False)
+
+        output.blank()
+
+        output += 1
+
+        for api in namespace.content:
+            if api.status == '':
+                adapt(api).generate_sip(sip_file, output)
+
+        output -= 1
+
+        output.write('};\n')
+
+        output.blank()
+
+        self.version_end(nr_ends, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

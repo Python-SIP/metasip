@@ -51,20 +51,25 @@ class BaseAdapter(ABC):
         # adapters.
         raise NotImplementedError
 
-    @staticmethod
-    def expand_type(type, name=None):
+    @classmethod
+    def expand_type(cls, type, name=None):
         """ Return the full type with an optional name. """
 
         # Handle the trivial case.
         if type == '':
             return ''
 
+        # This is entirely cosmetic to be consistent with older versions.
+        type = cls._normalise_templates(type)
+
         # SIP can't handle every C++ fundamental type.
         # TODO: add the SIP support.
         s = type.replace('long int', 'long')
 
-        # Append any name.
-        if name:
+        # If there is no embedded %s then just append the name.
+        if '%s' in s:
+            s = s % name
+        elif name:
             if s[-1] not in '&*':
                 s += ' '
 
@@ -176,6 +181,24 @@ class BaseAdapter(ABC):
 
         return escape(s, {'"': '&quot;'})
 
+    @classmethod
+    def _normalise_templates(cls, type):
+        """ Return the normalised form of any templates. """
+
+        t_start = type.find('<')
+        t_end = type.rfind('>')
+
+        if t_start > 0 and t_end > t_start:
+            xt = []
+
+            # Note that this doesn't handle nested template arguments properly.
+            for t_arg in type[t_start + 1:t_end].split(','):
+                xt.append(cls._normalise_templates(t_arg.strip()))
+
+            type = type[:t_start + 1] + ', '.join(xt) + type[t_end:]
+
+        return type
+
 
 class BaseApiAdapter(BaseAdapter):
     """ This is the base class for all adapters for models that are written to
@@ -183,7 +206,7 @@ class BaseApiAdapter(BaseAdapter):
     """
 
     @abstractmethod
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
         ...

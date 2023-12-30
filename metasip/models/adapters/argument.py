@@ -53,17 +53,15 @@ class ArgumentAdapter(BaseApiAdapter):
 
         s = self.expand_type(arg.type, name=arg.name)
 
-        s += adapt(arg, Annos).as_str()
-
         if arg.default != '':
             s += ' = ' + arg.default
 
         return s
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        output.write(self.as_py_str())
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

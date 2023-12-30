@@ -33,7 +33,7 @@ class TypedefAdapter(BaseApiAdapter):
 
         return 'typedef ' + self.expand_type(typedef.type, typedef.name) + adapt(typedef, Annos).as_str()
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
         typedef = self.model

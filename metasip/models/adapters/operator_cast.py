@@ -30,17 +30,27 @@ class OperatorCastAdapter(BaseApiAdapter):
 
         cast = self.model
 
-        s = adapt(cast, Callable).as_str()
+        s = 'operator ' + adapt(cast, Callable).as_str()
 
         if cast.const:
             s += ' const'
 
         return s
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        cast = self.model
+
+        nr_ends = self.version_start(output)
+
+        output.write(self.as_str())
+        output.write(';\n')
+
+        adapt(cast, Callable).generate_sip_directives(output)
+        adapt(cast, Access).generate_sip_directives(output)
+
+        self.version_end(nr_ends, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

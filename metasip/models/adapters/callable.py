@@ -10,8 +10,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from ...helpers import code_directive
-
 from ..annos import Annos
 from ..argument import Argument
 from ..code import Code
@@ -52,9 +50,12 @@ class CallableAdapter(BaseAdapter):
         # signature.  This is so we always hint to the user that something has
         # been manually changed.
         if self.has_different_signatures():
-            return_type = self.return_type_as_str()
+            return_type = self.return_type_as_str().strip()
+            if return_type != '':
+                return_type += ' '
+
             args = ', '.join([adapt(arg).as_str() for arg in callable.args])
-            s += f' [{return_type} ({args})]'
+            s += f' [{return_type}({args})]'
 
         return s
 
@@ -67,7 +68,7 @@ class CallableAdapter(BaseAdapter):
             return True
 
         for arg in callable.args:
-            if arg.pytype != '' or arg.pydefault != '':
+            if arg.pytype != '':
                 return True
 
         return False
@@ -80,7 +81,7 @@ class CallableAdapter(BaseAdapter):
     def generate_sip_directives(self, output):
         """ Write any directives to a .sip file. """
 
-        code_directive('%MethodCode', self.model.methcode, output)
+        output.write_code_directive('%MethodCode', self.model.methcode)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

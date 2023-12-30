@@ -13,7 +13,7 @@
 import os
 
 from ..exceptions import UserException
-from ..helpers import code_directive, VersionMap, version_range
+from ..helpers import VersionMap, version_range
 from ..models import Enum, Function, Variable
 from ..models.adapters import adapt
 
@@ -131,7 +131,7 @@ def _create_sip_file(project, module, module_output_dir, file_name, verbose):
     if verbose:
         print(f"Generating '{file_name}'")
 
-    output = IndentFile.create(os.path.join(module_output_dir, file_name))
+    output = _IndentSipFile.create(os.path.join(module_output_dir, file_name))
 
     # Add the standard header.
     output.write(
@@ -217,22 +217,39 @@ f'''%ModuleCode
 
     for api in sip_file.content:
         if api.status == '':
-            adapt(api).generate_sip(output)
+            adapt(api).generate_sip(sip_file, output)
 
     output.blank()
 
-    code_directive('%ExportedHeaderCode', sip_file.exportedheadercode, output,
+    output.write_code_directive('%ExportedHeaderCode',
+            sip_file.exportedheadercode, indent=False)
+    output.write_code_directive('%ModuleHeaderCode', sip_file.moduleheadercode,
             indent=False)
-    code_directive('%ModuleHeaderCode', sip_file.moduleheadercode, output,
+    output.write_code_directive('%ModuleCode', sip_file.modulecode,
             indent=False)
-    code_directive('%ModuleCode', sip_file.modulecode, output, indent=False)
-    code_directive('%PreInitialisationCode', sip_file.preinitcode, output,
+    output.write_code_directive('%PreInitialisationCode', sip_file.preinitcode,
             indent=False)
-    code_directive('%InitialisationCode', sip_file.initcode, output,
+    output.write_code_directive('%InitialisationCode', sip_file.initcode,
             indent=False)
-    code_directive('%PostInitialisationCode', sip_file.postinitcode, output,
+    output.write_code_directive('%PostInitialisationCode',
+            sip_file.postinitcode, indent=False)
+    output.write_code_directive('%ExportedTypeHintCode',
+            sip_file.exportedtypehintcode, indent=False)
+    output.write_code_directive('%TypeHintCode', sip_file.typehintcode,
             indent=False)
-    code_directive('%ExportedTypeHintCode', sip_file.exportedtypehintcode,
-            output, indent=False)
-    code_directive('%TypeHintCode', sip_file.typehintcode, output,
-            indent=False)
+
+
+class _IndentSipFile(IndentFile):
+    """ An indentation file with extra functionality for writing .sip files.
+    """
+
+    def write_code_directive(self, directive, code, indent=True):
+        """ Write a code directive. """
+
+        if code != '':
+            self.write(directive + '\n', indent=False)
+            self += 1
+            self.write(code + '\n', indent=indent)
+            self -= 1
+            self.write('%End\n', indent=False)
+            self.blank()

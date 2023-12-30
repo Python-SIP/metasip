@@ -11,6 +11,7 @@
 
 
 from ..access import Access
+from ..annos import Annos
 from ..code import Code
 
 from .adapt import adapt
@@ -33,17 +34,27 @@ class DestructorAdapter(BaseApiAdapter):
 
         dtor = self.model
 
-        s = '~' + dtor.name + '()'
+        s = '~' + dtor.name + '()' + adapt(dtor, Annos).as_str()
 
         if dtor.virtual:
             s = 'virtual ' + s
 
         return s
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        dtor = self.model
+
+        nr_ends = self.version_start(output)
+
+        output.write(self.as_str())
+        output.write(';\n')
+
+        output.write_code_directive('%MethodCode', dtor.methcode)
+        output.write_code_directive('%VirtualCatcherCode', dtor.virtcode)
+
+        self.version_end(nr_ends, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface

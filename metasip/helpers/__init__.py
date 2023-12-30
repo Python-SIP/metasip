@@ -10,6 +10,5 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from .code_directive import code_directive
 from .version_map import VersionMap
 from .version_range import version_range

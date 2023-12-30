@@ -11,6 +11,7 @@
 
 
 from ..access import Access
+from ..annos import Annos
 from ..code import Code
 from ..enum_value import EnumValue
 
@@ -40,12 +41,31 @@ class EnumAdapter(BaseApiAdapter):
         if enum.name != '':
             s += ' ' + enum.name
 
+        s += adapt(enum, Annos).as_str()
+
         return s
 
-    def generate_sip(self, output):
+    def generate_sip(self, sip_file, output):
         """ Generate the .sip file content. """
 
-        # TODO
+        enum = self.model
+
+        nr_ends = self.version_start(output)
+
+        output.blank()
+        output.write(self.as_str())
+        output.write('\n{\n')
+        output += 1
+
+        for enum_value in enum.content:
+            if enum_value.status == '':
+                adapt(enum_value).generate_sip(sip_file, output)
+
+        output -= 1
+        output.write('};\n')
+        output.blank()
+
+        self.version_end(nr_ends, output)
 
     def load(self, element, ui):
         """ Load the model from the XML element.  An optional user interface
