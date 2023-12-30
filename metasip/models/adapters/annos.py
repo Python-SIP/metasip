@@ -28,11 +28,6 @@ class AnnosAdapter(BaseAdapter):
 
         return f' /{annos}/' if annos != '' else ''
 
-    def generate_sip_detail(self, output):
-        """ Write the detail to a .sip file. """
-
-        output.write(self.as_str())
-
     def save_attributes(self, output):
         """ Save the XML attributes. """
 

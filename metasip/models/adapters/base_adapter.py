@@ -77,12 +77,6 @@ class BaseAdapter(ABC):
 
         return s
 
-    def generate_sip_detail(self, output):
-        """ Write the detail to a .sip file. """
-
-        # This default implementation does nothing.
-        pass
-
     def generate_sip_directives(self, output):
         """ Write any directives to a .sip file. """
 

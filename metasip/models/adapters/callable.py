@@ -73,11 +73,6 @@ class CallableAdapter(BaseAdapter):
 
         return False
 
-    def generate_sip_detail(self, output):
-        """ Write the detail to a .sip file. """
-
-        output.write(self.as_str())
-
     def generate_sip_directives(self, output):
         """ Write any directives to a .sip file. """
 
