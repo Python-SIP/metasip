@@ -140,7 +140,7 @@ class ApiEditor(QTreeWidget):
 
             parent = view.parent()
             if parent is not None:
-                for sibling in parent.all_child_viws():
+                for sibling in parent.all_child_views():
                     if sibling is not view and sibling.isSelected() and not sibling.isHidden():
                         siblings.append(sibling)
 
@@ -278,25 +278,6 @@ class ApiEditor(QTreeWidget):
 
         return source, target
 
-    def acceptArgumentNames(self, api):
-        """ Mark the arguments of all callables contained in a part of a
-        project as being named.
-        """
-
-        updated_args = self._shell.project.acceptArgumentNames(api)
-
-        callable_views = []
-        for arg in updated_args:
-            arg._view.draw_name()
-
-            callable_view = arg._view.parent()
-            if callable_view not in callable_views:
-                callable_views.append(callable_view)
-
-        for callable_view in callable_views:
-            callable_view.draw_name()
-            callable_view.draw_status()
-
     def _all_views(self, container_view=None):
         """ A generator for all API views. """
 
@@ -358,7 +339,7 @@ class APIView(QTreeWidgetItem):
     def all_child_views(self):
         """ A generator for all the views's children. """
 
-        for index in range(self.count()):
+        for index in range(self.childCount()):
             yield self.child(index)
 
     def api_add(self, api):
@@ -668,7 +649,7 @@ class SipFileView(ContainerView):
         if len(siblings) != 0:
             return None
 
-        multiple_modules = (len(self.treeWidget().project.modules) > 0)
+        multiple_modules = (len(self.shell.project.modules) > 0)
 
         empty_sipfile = True
         for code in self.api.content:
@@ -690,8 +671,6 @@ class SipFileView(ContainerView):
                 None,
                 ("%ExportedTypeHintCode", self._exportedTypeHintCodeSlot, ("ethc" not in self._editors)),
                 ("%TypeHintCode", self._typeHintCodeSlot, ("thc" not in self._editors)),
-                None,
-                ("Accept argument names", self._acceptNames),
                 None,
                 ("Move to...", self._handle_move, multiple_modules),
                 ("Delete", self._deleteFile, empty_sipfile)]
@@ -724,11 +703,6 @@ class SipFileView(ContainerView):
             self.shell.dirty = True
 
             self.parent().api.content.remove(self.api)
-
-    def _acceptNames(self):
-        """ Accept all argument names. """
-
-        self.treeWidget().acceptArgumentNames(self.api)
 
     def _handle_add_manual_code(self):
         """ Slot to handle the creation of manual code. """
@@ -1295,7 +1269,7 @@ class CodeView(ContainerView):
                 self._add_directive(menu, '%Docstring', self.api.docstring,
                         self._docstringSlot, 'ds')
 
-        if isinstance(self.api, (Class, Constructor, Function, Method)):
+        if isinstance(self.api, (Constructor, Function, Method)):
             menu.append(None)
             menu.append(("Accept all argument names", self._acceptNames))
 
@@ -1338,7 +1312,18 @@ class CodeView(ContainerView):
     def _acceptNames(self):
         """ Accept all argument names. """
 
-        self.treeWidget().acceptArgumentNames(self.api)
+        updated = False
+
+        for arg in self.api.args:
+            if arg.unnamed and arg.default != '':
+                arg.unnamed = False
+                arg._view.draw_name()
+                updated = True
+
+        if updated:
+            self.draw_name()
+            self.draw_status()
+            self.shell.dirty = True
 
     def _handle_add_manual_code(self):
         """ Slot to handle the addition of manual code. """
