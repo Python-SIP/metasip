@@ -23,6 +23,7 @@ from .....helpers import VersionMap
 from .....models import (Callable, CodeContainer, Constructor, Enum,
         HeaderDirectory, HeaderFile, HeaderFileVersion, ManualCode, SipFile,
         VersionRange)
+from .....models.adapters import adapt
 
 from ....helpers import warning
 from ....shell import EventType
@@ -529,7 +530,7 @@ class ControlWidget(QWidget):
 
             # Go through each potentially new code API.
             for src_api in list(src_code):
-                if type(dst_api) is type(src_api) and dst_api.signature(working_version) == src_api.signature(working_version):
+                if adapt(dst_api) == adapt(src_api):
                     # Make sure the versions include the working version.
                     if working_version != '':
                         self._add_working_version(dst_api)

@@ -26,6 +26,28 @@ class ConstructorAdapter(BaseApiAdapter):
         'explicit': AttributeType.BOOL,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        ctor = self.model
+        other_ctor = other.model
+
+        if type(ctor) is not type(other_ctor):
+            return False
+
+        if adapt(ctor, Callable) != adapt(other_ctor, Callable):
+            return False
+
+        # TODO: move this to ClassCallableAdapter when the ClassCallable model
+        # is added.
+        if ctor.access != other_ctor.access:
+            return False
+
+        if ctor.explicit != other_ctor.explicit:
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

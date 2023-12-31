@@ -26,6 +26,23 @@ class TypedefAdapter(BaseApiAdapter):
         'type': AttributeType.STRING,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        typedef = self.model
+        other_typedef = other.model
+
+        if type(typedef) is not type(other_typedef):
+            return False
+
+        if typedef.name != other_typedef.name:
+            return False
+
+        if self.expand_type(typedef.type) != self.expand_type(other_typedef.type):
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

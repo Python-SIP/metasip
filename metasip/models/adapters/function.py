@@ -21,6 +21,20 @@ from .base_adapter import BaseApiAdapter
 class FunctionAdapter(BaseApiAdapter):
     """ This is the Function adapter. """
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        function = self.model
+        other_function = other.model
+
+        if type(function) is not type(other_function):
+            return False
+
+        if adapt(function, Callable) != adapt(other_function, Callable):
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

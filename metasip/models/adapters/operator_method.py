@@ -29,6 +29,32 @@ class OperatorMethodAdapter(BaseApiAdapter):
         'virtual':  AttributeType.BOOL,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        method = self.model
+        other_method = other.model
+
+        if type(method) is not type(other_method):
+            return False
+
+        if adapt(method, Callable) != adapt(other_method, Callable):
+            return False
+
+        if method.access != other_method.access:
+            return False
+
+        if method.virtual != other_method.virtual:
+            return False
+
+        if method.const != other_method.const:
+            return False
+
+        if method.abstract != other_method.abstract:
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

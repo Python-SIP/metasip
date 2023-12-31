@@ -26,6 +26,20 @@ class EnumValueAdapter(BaseApiAdapter):
         'name': AttributeType.STRING,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        enum_value = self.model
+        other_enum_value = other.model
+
+        if type(enum_value) is not type(other_enum_value):
+            return False
+
+        if enum_value.name != other_enum_value.name:
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

@@ -20,6 +20,20 @@ from .base_adapter import BaseApiAdapter
 class OperatorFunctionAdapter(BaseApiAdapter):
     """ This is the OperatorFunction adapter. """
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        arg = self.model
+        other_arg = other.model
+
+        if type(arg) is not type(other_arg):
+            return False
+
+        if adapt(function, Callable) != adapt(other_function, Callable):
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

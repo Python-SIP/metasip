@@ -25,6 +25,23 @@ class OperatorCastAdapter(BaseApiAdapter):
         'const':    AttributeType.BOOL,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        cast = self.model
+        other_cast = other.model
+
+        if type(cast) is not type(other_cast):
+            return False
+
+        if adapt(cast, Callable) != adapt(other_cast, Callable):
+            return False
+
+        if cast.const != other_cast.const:
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

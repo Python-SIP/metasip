@@ -29,6 +29,23 @@ class ArgumentAdapter(BaseApiAdapter):
         'unnamed':      AttributeType.BOOL,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        arg = self.model
+        other_arg = other.model
+
+        if type(arg) is not type(other_arg):
+            return False
+
+        if self.expand_type(arg.type) != self.expand_type(other_arg.type):
+            return False
+
+        if arg.default != other_arg.default:
+            return False
+
+        return True
+
     def as_py_str(self):
         """ Return the Python representation of the argument. """
 

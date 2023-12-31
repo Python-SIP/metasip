@@ -48,6 +48,20 @@ class NamespaceAdapter(BaseApiAdapter):
         'Variable':         Variable,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        namespace = self.model
+        other_namespace = other.model
+
+        if type(namespace) is not type(other_namespace):
+            return False
+
+        if namespace.name != other_namespace.name:
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

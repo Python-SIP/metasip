@@ -30,6 +30,29 @@ class CallableAdapter(BaseAdapter):
         'rtype':    AttributeType.STRING,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        callable = self.model
+        other_callable = other.model
+
+        # Note that we have already checked the types.
+
+        if callable.name != other_callable.name:
+            return False
+
+        if self.expand_type(callable.rtype) != self.expand_type(other_callable.rtype):
+            return False
+
+        if len(callable.args) != len(other_callable.args):
+            return False
+
+        for arg, other_arg in zip(callable.args, other_callable.args):
+            if adapt(arg) != adapt(other_arg):
+                return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

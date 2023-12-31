@@ -76,6 +76,29 @@ class ClassAdapter(BaseApiAdapter):
         'Variable':         Variable,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        klass = self.model
+        other_klass = other.model
+
+        if type(klass) is not type(other_klass):
+            return False
+
+        if klass.access != other_klass.access:
+            return False
+
+        if klass.name != other_klass.name:
+            return False
+
+        if klass.struct != other_klass.struct:
+            return False
+
+        if klass.bases != other_klass.bases:
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

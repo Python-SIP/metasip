@@ -26,6 +26,23 @@ class OpaqueClassAdapter(BaseApiAdapter):
         'name': AttributeType.STRING,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        klass = self.model
+        other_klass = other.model
+
+        if type(klass) is not type(other_klass):
+            return False
+
+        if klass.access != other_klass.access:
+            return False
+
+        if klass.name != other_klass.name:
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

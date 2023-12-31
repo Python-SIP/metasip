@@ -31,6 +31,29 @@ class VariableAdapter(BaseApiAdapter):
         'type':         AttributeType.STRING,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        variable = self.model
+        other_variable = other.model
+
+        if type(variable) is not type(other_variable):
+            return False
+
+        if variable.access != other_variable.access:
+            return False
+
+        if variable.name != other_variable.name:
+            return False
+
+        if self.expand_type(variable.type) != self.expand_type(other_variable.type):
+            return False
+
+        if variable.static != other_variable.static:
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 

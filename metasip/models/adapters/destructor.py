@@ -29,6 +29,26 @@ class DestructorAdapter(BaseApiAdapter):
         'virtual':  AttributeType.BOOL,
     }
 
+    def __eq__(self, other):
+        """ Compare for C/C++ equality. """
+
+        dtor = self.model
+        other_dtor = other.model
+
+        if type(dtor) is not type(other_dtor):
+            return False
+
+        if dtor.access != other_dtor.access:
+            return False
+
+        if dtor.name != other_dtor.name:
+            return False
+
+        if dtor.virtual != other_dtor.virtual:
+            return False
+
+        return True
+
     def as_str(self):
         """ Return the standard string representation. """
 
