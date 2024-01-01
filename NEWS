@@ -1,4 +1,4 @@
-v2.12.0 31st December 2023
+v2.12.0 1st January 2024
   - Ported to PyQt6.
   - Removed the dependency on dip.
 
