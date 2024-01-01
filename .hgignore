@@ -2,4 +2,4 @@ syntax: glob
 .DS_Store
 __pycache__
 metasip.egg-info
-metasip/version.py
+metasip/_version.py

@@ -13,7 +13,10 @@
 from enum import auto, Enum
 
 from PyQt6.QtCore import QSettings, Qt
-from PyQt6.QtWidgets import QDockWidget, QMainWindow, QMenuBar, QMessageBox
+from PyQt6.QtWidgets import (QDockWidget, QMainWindow, QMenuBar, QMessageBox,
+        QWhatsThis)
+
+from .._version import version
 
 from .shell_tool import ShellTool, ShellToolLocation
 
@@ -164,6 +167,7 @@ class Shell:
                     menu.addAction(action)
 
         # Make sure any well known menus are created in the expected order.
+        # TODO: add support for shortcuts
         for menu_name in ("File", "Edit", "View", "Tools"):
             actions = menus.pop(menu_name, None)
             if actions is not None:
@@ -172,6 +176,10 @@ class Shell:
         # Now do any remaining menus.
         for menu_name, actions in menus.items():
             add_menu(menu_name, actions)
+
+        help_menu = menu_bar.addMenu("&Help")
+        help_menu.addAction("About msip...", self._about)
+        help_menu.addAction(QWhatsThis.createAction(help_menu))
 
         self.widget.setMenuBar(menu_bar)
 
@@ -274,6 +282,15 @@ class Shell:
         """ Make the shell visible. """
 
         self.widget.show()
+
+    def _about(self):
+        """ Tell the user about the application. """
+
+        QMessageBox.about(self.widget, "About msip",
+f"""This is msip v{version}, part of MetaSIP.
+
+msip is a tool for creating .sip files from C/C++ header files.
+""")
 
     def _handle_close_event(self):
         """ Handle a close event and return True if the event should be

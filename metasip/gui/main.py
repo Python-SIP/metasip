@@ -13,7 +13,11 @@
 import argparse
 import sys
 
-from PyQt6.QtWidgets import QApplication
+try:
+    from PyQt6.QtWidgets import QApplication
+except ImportError:
+    print("Run \"pip install 'metasip[gui]'\" to install the additional GUI packages", file=sys.stderr)
+    sys.exit(1)
 
 from ..exceptions import UserException
 from ..models import Project

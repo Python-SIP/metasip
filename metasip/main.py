@@ -17,6 +17,7 @@ import os
 from .exceptions import UserException
 from .models import Project
 from .project_io import generate_sip_files, load_project
+from ._version import version
 
 
 def main():
@@ -25,8 +26,8 @@ def main():
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
-    # TODO: add -V/--version arguments.
     # TODO: use -- long arguments.
+    parser.add_argument('-V', '--version', action='version', version=version)
     parser.add_argument('project', help="the project to generate code for",
             nargs='?')
     parser.add_argument('-g',
