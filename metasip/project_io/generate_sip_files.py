@@ -23,6 +23,9 @@ from .indent_file import IndentFile
 def generate_sip_files(project, output_dir, ignored_modules, verbose):
     """ Generate the .sip files for a project. """
 
+    if ignored_modules is None:
+        ignored_modules = []
+
     for module in project.modules:
         # See if the module should be ignored.
         if module.name in ignored_modules:

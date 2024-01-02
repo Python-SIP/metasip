@@ -1,6 +1,9 @@
-v2.12.0 1st January 2024
+v2.12.0 2nd January 2024
   - Ported to PyQt6.
   - Removed the dependency on dip.
+  - The '-g' command line option to msipgen is now '--output-dir'.
+  - The '--ignore' command line option to msipgen replaces '-m'.
+  - Added the '-V' and '--version' command line options to msipgen.
 
 v2.11.3 14th October 2023
   - Workarounds for Xcode v14.3.

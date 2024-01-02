@@ -26,29 +26,27 @@ def main():
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
-    # TODO: use -- long arguments.
     parser.add_argument('-V', '--version', action='version', version=version)
     parser.add_argument('project', help="the project to generate code for",
             nargs='?')
-    parser.add_argument('-g',
-            help="the directory to write the generated code to",
-            dest='output_dir', metavar='DIR', required=True)
-    # TODO: change this to a list of modules to ignore - also change rbtools
-    parser.add_argument('-m',
+    parser.add_argument('--ignore',
             help="the module to generate code for",
-            dest='modules', metavar='MODULE', action='append')
+            metavar='MODULE', action='append')
+    parser.add_argument('--output-dir',
+            help="the directory to write the generated code to",
+            metavar='DIR', required=True)
     parser.add_argument('--verbose', help="display progress messages",
             dest='verbose', default=False, action='store_true')
 
     args = parser.parse_args()
 
     try:
-        _generate(args.project, args.modules, args.output_dir, args.verbose)
+        _generate(args.project, args.output_dir, args.ignore, args.verbose)
     except Exception as e:
         _handle_exception(e)
 
 
-def _generate(project_name, modules, output_dir, verbose):
+def _generate(project_name, output_dir, ignore, verbose):
     """ Generate the .sip files for a project and return an exit code or 0 if
     there was no error.
     """
@@ -59,15 +57,7 @@ def _generate(project_name, modules, output_dir, verbose):
     project = Project(project_name)
     load_project(project)
 
-    # TODO: no need to calculate this when passed on the command line.
-    ignored_modules = []
-
-    if modules:
-        for module in project.modules:
-            if module.name not in modules:
-                ignored_modules.append(module.name)
-
-    generate_sip_files(project, output_dir, ignored_modules, verbose)
+    generate_sip_files(project, output_dir, ignore, verbose)
 
 
 def _handle_exception(e):
