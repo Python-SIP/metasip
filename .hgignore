@@ -1,5 +1,0 @@
-syntax: glob
-.DS_Store
-__pycache__
-metasip.egg-info
-metasip/_version.py
