@@ -1,1 +1,1 @@
-exclude .hg*
+exclude .git*
