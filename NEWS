@@ -1,5 +1,5 @@
-v2.12.1 3rd January 2024
-  - An administrative release.
+v2.12.1 21st January 2024
+  - Relicensed under the BSD 2 clause license instead of the GPL v3.
 
 v2.12.0 2nd January 2024
   - Ported to PyQt6.
