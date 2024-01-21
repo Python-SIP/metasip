@@ -37,7 +37,7 @@ documented with no online help.
 
 ## License
 
-MetaSIP is licensed under the GPL v3.
+MetaSIP is licensed under the BSD 2 clause license.
 
 
 ## Installation
@@ -50,3 +50,14 @@ To install the additional dependencies required by the ``msip`` GUI development
 tool, run::
 
     pip install 'metasip[gui]'
+
+
+## Creating Packages for Distribution
+
+Python sdists and wheels can be created with any standard Python build
+frontend.
+
+For example, using [build](https://pypi.org/project/build/) an sdist and wheel
+will be created from a checkout in the current directory by running::
+
+    python -m build --outdir .
