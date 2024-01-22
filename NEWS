@@ -1,3 +1,6 @@
+v2.12.2 21st January 2024
+  - Updated the license classifier in pyproject.toml for PyPI.
+
 v2.12.1 21st January 2024
   - Relicensed under the BSD 2 clause license instead of the GPL v3.
 
