@@ -57,11 +57,11 @@ def load_project(project, ui=None):
 
         project.dirty = True
 
-    elif version[1] != ProjectVersion[1] and ui is not None:
-        if not ui.confirm_minor_version_update(version, ProjectVersion):
-            return False
+    elif version[1] != ProjectVersion[1]:
+        if ui is not None:
+            ui.warn_minor_version_update(version, ProjectVersion)
 
-        project.dirty = True
+        project.version = version
 
     # Populate the project.
     adapt(project).load(root, ui)

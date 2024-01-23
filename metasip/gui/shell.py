@@ -160,7 +160,6 @@ class Shell:
                     menu.addAction(action)
 
         # Make sure any well known menus are created in the expected order.
-        # TODO: add support for shortcuts
         for menu_name in ("File", "Edit", "View", "Tools"):
             actions = menus.pop(menu_name, None)
             if actions is not None:

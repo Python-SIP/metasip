@@ -1,13 +1,6 @@
-# Copyright (c) 2023 Riverbank Computing Limited.
-#
-# This file is part of metasip.
-#
-# This file may be used under the terms of the GNU General Public License v3
-# as published by the Free Software Foundation which can be found in the file
-# LICENSE-GPL3.txt included in this package.
-#
-# This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-# WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+# SPDX-License-Identifier: BSD-2-Clause
+
+# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from ..access import Access
@@ -137,13 +130,7 @@ class ClassAdapter(BaseApiAdapter):
 
             for base in klass.bases.split(', '):
                 access, base_cls = base.split()
-
-                # Remove public to maintain compatibility with old SIPs.
-                # TODO: don't bother about old SIPs.
-                if access == 'public':
-                    bases.append(base_cls)
-                else:
-                    bases.append(f'{access} {base_cls}')
+                bases.append(f'{access} {base_cls}')
 
             bases_s = ' : ' + ', '.join(bases)
 

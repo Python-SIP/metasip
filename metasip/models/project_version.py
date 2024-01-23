@@ -5,14 +5,14 @@
 
 # In metasip prior to v2.12 the project format version was a single integer and
 # some versions were known to require input from the user in order to update
-# the project to that version.  For v2.8 and later the format version is a
+# the project to that version.  For v2.12 and later the format version is a
 # 2-tuple of major and minor version.  A change in the major version means user
 # input is needed and a project cannot be used until the project is updated.  A
 # change in the minor version means the project can be viewed and will only be
 # updated to the latest minor version if the project is saved.
 #
 # A minimum project version is specified so that any version prior to this is
-# not supported by metasip v2.12 and later.  An earlier version of metasip
+# not supported by metasip v2.12 and later.  An earlier version of metasip must
 # first be used to update the project to that version.  Old versions were never
 # seen "in the wild" so there is no need to carry the baggage of supporting
 # them in current code.
@@ -24,6 +24,9 @@
 
 
 # Project format version history:
+#
+#  0.17 Implemented by metasip v2.13.
+#       - removed outputdirsuffix from the Module element.
 #
 #  0.16 Implemented by metasip v2.11.
 #       - added pyssizetclean to the Module element.
@@ -37,4 +40,4 @@
 MinimumProjectVersion = (0, 15)
 
 # The latest supported project format.
-ProjectVersion = (0, 16)
+ProjectVersion = (0, 17)

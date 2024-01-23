@@ -1,17 +1,11 @@
-# Copyright (c) 2023 Riverbank Computing Limited.
-#
-# This file is part of metasip.
-#
-# This file may be used under the terms of the GNU General Public License v3
-# as published by the Free Software Foundation which can be found in the file
-# LICENSE-GPL3.txt included in this package.
-#
-# This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-# WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+# SPDX-License-Identifier: BSD-2-Clause
+
+# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from ..header_directory import HeaderDirectory
 from ..module import Module
+from ..project_version import ProjectVersion
 
 from .adapt import adapt
 from .base_adapter import AttributeType, BaseAdapter
@@ -63,7 +57,8 @@ class ProjectAdapter(BaseAdapter):
 
         project = self.model
 
-        major_version, minor_version = project.version
+        # Note that we always use the current project version.
+        major_version, minor_version = ProjectVersion
         if major_version == 0:
             format_version = f'version="{minor_version}"'
         else:

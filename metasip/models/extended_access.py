@@ -14,5 +14,4 @@ class ExtendedAccess:
 
     # The access specifier.  Values are '' (meaning public), 'protected',
     # 'protected slots', 'private', 'public slots', 'signals'.
-    # TODO: convert to an Enum.
     access: str = ''

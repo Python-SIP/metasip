@@ -492,7 +492,6 @@ class ControlWidget(QWidget):
             header_file.module = self._module.currentText()
 
             # We may just have un-ignored the header file.
-            # TODO: what about the md5 attribute?
             if len(header_file.versions) == 0:
                 header_file.versions.append(
                         HeaderFileVersion(parse=True,

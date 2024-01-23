@@ -14,5 +14,4 @@ class Access:
 
     # The access specifier.  Values are '' (meaning public), 'protected' and
     # 'private'.
-    # TODO: convert this to an Enum.
     access: str = ''

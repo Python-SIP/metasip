@@ -24,12 +24,13 @@ class ModulePropertiesDialog(BaseDialog):
         form = QFormLayout()
         layout.addLayout(form)
 
-        self._output_dir_suffix = QLineEdit()
-        form.addRow("Output directory suffix", self._output_dir_suffix)
+        if project.version < (0, 17):
+            self._output_dir_suffix = QLineEdit()
+            form.addRow("Output directory suffix", self._output_dir_suffix)
 
         self._directives = QPlainTextEdit()
         self._directives.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
-        form.addRow("Addional directives", self._directives)
+        form.addRow("Additional directives", self._directives)
 
         self._call_super_init = QComboBox()
         self._call_super_init.addItems(("Undefined", "No", "Yes"))
@@ -56,7 +57,9 @@ class ModulePropertiesDialog(BaseDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
-        self._output_dir_suffix.setText(self.model.outputdirsuffix)
+        if self.shell.project.version < (0, 17):
+            self._output_dir_suffix.setText(self.model.outputdirsuffix)
+
         self._directives.setPlainText(self.model.directives)
 
         if self.model.callsuperinit == 'undefined':
@@ -82,7 +85,9 @@ class ModulePropertiesDialog(BaseDialog):
     def get_fields(self):
         """ Update the API item from the dialog's fields. """
 
-        self.model.outputdirsuffix = self._output_dir_suffix.text().strip()
+        if self.shell.project.version < (0, 17):
+            self.model.outputdirsuffix = self._output_dir_suffix.text().strip()
+
         self.model.directives = self._directives.toPlainText().strip()
         self.model.callsuperinit = self._call_super_init.currentText().lower()
         self.model.virtualerrorhandler = self._virtual_error_handler.text().strip()

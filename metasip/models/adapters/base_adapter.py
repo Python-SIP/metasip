@@ -1,13 +1,6 @@
-# Copyright (c) 2023 Riverbank Computing Limited.
-#
-# This file is part of metasip.
-#
-# This file may be used under the terms of the GNU General Public License v3
-# as published by the Free Software Foundation which can be found in the file
-# LICENSE-GPL3.txt included in this package.
-#
-# This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-# WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+# SPDX-License-Identifier: BSD-2-Clause
+
+# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from abc import ABC, abstractmethod
@@ -71,8 +64,7 @@ class BaseAdapter(ABC):
         # This is entirely cosmetic to be consistent with older versions.
         type = cls._normalise_templates(type)
 
-        # SIP can't handle every C++ fundamental type.
-        # TODO: add the SIP support.
+        # SIP can't yet handle every C++ fundamental type.
         s = type.replace('long int', 'long')
 
         # If there is no embedded %s then just append the name.

@@ -9,7 +9,6 @@ from .argument import Argument
 from .code import Code
 
 
-# TODO: add ClassCallable to deal with 'virt', 'virtcode', 'const'? 'abstract'?
 @dataclass
 class Callable(Code):
     """ This class implements API items that represent most callables (i.e.

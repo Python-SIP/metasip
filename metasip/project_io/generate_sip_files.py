@@ -28,10 +28,13 @@ def generate_sip_files(project, output_dir, ignored_modules, verbose):
             continue
 
         # Create the module-specific output directory.
-        if module.outputdirsuffix != '':
-            module_output_dir = os.path.join(output_dir, module.outputdirsuffix)
+        if project.version >= (0, 17):
+            module_output_dir = os.path.join(output_dir, module.name)
         else:
-            module_output_dir = output_dir
+            if module.outputdirsuffix != '':
+                module_output_dir = os.path.join(output_dir, module.outputdirsuffix)
+            else:
+                module_output_dir = output_dir
 
         # Make sure the output directory exists.
         try:
@@ -69,7 +72,6 @@ def generate_sip_files(project, output_dir, ignored_modules, verbose):
         if module.virtualerrorhandler != '':
             output.write(', default_VirtualErrorHandler=' + module.virtualerrorhandler)
 
-        # TODO: This should be a module property.
         output.write(', keyword_arguments="Optional"')
 
         if module.uselimitedapi:
@@ -84,8 +86,6 @@ def generate_sip_files(project, output_dir, ignored_modules, verbose):
 
         if len(module.imports) != 0:
             for imported in module.imports:
-                # TODO: this assumes that the module's outputdirsuffix is the
-                # same as the module name.
                 output.write(f'%Import {imported}/{imported}mod.sip\n')
 
                 if imported not in project.externalmodules:

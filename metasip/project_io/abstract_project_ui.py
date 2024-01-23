@@ -12,15 +12,6 @@ class AbstractProjectUi(ABC):
     """
 
     @abstractmethod
-    def confirm_minor_version_update(self, from_version, to_version):
-        """ Called to confirm with the user that the project can be updated
-        from it's current minor version.  Return True if the user didn't
-        cancel.
-        """
-
-        ...
-
-    @abstractmethod
     def error_creating_file(self, title, text, detail):
         """ Called when there was an error when creating a file. """
 
@@ -46,6 +37,14 @@ class AbstractProjectUi(ABC):
     def update_project_format(self, root_element, from_version, to_version):
         """ Called to update the project from it's current major version before
         it is parsed.  Return True if the user didn't cancel.
+        """
+
+        ...
+
+    @abstractmethod
+    def warn_minor_version_update(self, from_version, to_version):
+        """ Called to warn the user that the project will be updated to the
+        current minor version if saved.
         """
 
         ...

@@ -1,13 +1,6 @@
-# Copyright (c) 2023 Riverbank Computing Limited.
-#
-# This file is part of metasip.
-#
-# This file may be used under the terms of the GNU General Public License v3
-# as published by the Free Software Foundation which can be found in the file
-# LICENSE-GPL3.txt included in this package.
-#
-# This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-# WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+# SPDX-License-Identifier: BSD-2-Clause
+
+# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from ..sip_file import SipFile
@@ -24,7 +17,7 @@ class ModuleAdapter(BaseAdapter):
         'directives':           AttributeType.LITERAL,
         'imports':              AttributeType.STRING_LIST,
         'name':                 AttributeType.STRING,
-        'outputdirsuffix':      AttributeType.STRING,
+        'outputdirsuffix':      AttributeType.STRING,       # Removed in v0.17
         'pyssizetclean':        AttributeType.BOOL,
         'uselimitedapi':        AttributeType.BOOL,
         'virtualerrorhandler':  AttributeType.STRING,
@@ -64,7 +57,6 @@ class ModuleAdapter(BaseAdapter):
         module = self.model
 
         output.write(f'<Module name="{module.name}"')
-        self.save_str('outputdirsuffix', output)
 
         if module.callsuperinit != 'undefined':
             self.save_attribute('callsuperinit',

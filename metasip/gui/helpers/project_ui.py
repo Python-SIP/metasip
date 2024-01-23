@@ -7,7 +7,6 @@ from PyQt6.QtWidgets import QApplication, QProgressDialog
 
 from ...project_io import AbstractProjectUi
 
-from .question import question
 from .warning import warning
 
 
@@ -15,18 +14,6 @@ class ProjectUi(AbstractProjectUi):
     """ This class encapsulates the UI-related methods supporting the loading
     of a project.
     """
-
-    def confirm_minor_version_update(self, from_version, to_version):
-        """ Called to confirm with the user that the project can be updated
-        from it's current minor version.  Return True if the user didn't
-        cancel.
-        """
-
-        from_s = f'{from_version[0]}.{from_version[1]}'
-        to_s = f'{to_version[0]}.{to_version[1]}'
-
-        return question("Update project format",
-                f"The project format is v{from_s}. Do you want to update it to {to_s}?")
 
     def error_creating_file(self, title, text, detail):
         """ Called when there was an error when creating a file. """
@@ -58,3 +45,14 @@ class ProjectUi(AbstractProjectUi):
 
         # At the moment there is only one major version number.
         return True
+
+    def warn_minor_version_update(self, from_version, to_version):
+        """ Called to warn the user that the project will be updated to the
+        current minor version if saved.
+        """
+
+        from_s = f'{from_version[0]}.{from_version[1]}'
+        to_s = f'{to_version[0]}.{to_version[1]}'
+
+        warning("Update project format",
+                f"The format of this project is v{from_s}. It will be automatically updated to v{to_s} if you save it.")

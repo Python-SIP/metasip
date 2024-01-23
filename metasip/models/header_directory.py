@@ -20,9 +20,6 @@ class HeaderDirectory:
 
     # The suffix added to the input directory to create the full name of the
     # directory.
-    # TODO: the way this is currently used it is platform-specific and needs to
-    # be platform neutral.  It is also poorly named - it is the sub-path
-    # relative to the source directory of the header directory.
     inputdirsuffix: str = ''
 
     # The name of the header directory.  This is used for display purposes.

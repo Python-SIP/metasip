@@ -12,5 +12,4 @@ class Workflow:
 
     # The workflow status of the API item.  Values are '', 'ignored',
     # 'removed', 'todo', and 'unknown'.
-    # TODO: change this to an enum.
     status: str = ''
