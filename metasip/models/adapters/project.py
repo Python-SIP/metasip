@@ -30,7 +30,7 @@ class ProjectAdapter(BaseAdapter):
 
         return self.model.rootmodule
 
-    def load(self, element, ui):
+    def load(self, element, project, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
         """
@@ -40,16 +40,16 @@ class ProjectAdapter(BaseAdapter):
             # Each .sip file is a step of the load.
             ui.load_starting(self.model, len(element.findall('.//SipFile')))
 
-        super().load(element, ui)
+        super().load(element, project, ui)
 
         for subelement in element:
             if subelement.tag == 'HeaderDirectory':
                 header_directory = HeaderDirectory()
-                adapt(header_directory).load(subelement, ui)
+                adapt(header_directory).load(subelement, project, ui)
                 self.model.headers.append(header_directory)
             elif subelement.tag == 'Module':
                 module = Module()
-                adapt(module).load(subelement, ui)
+                adapt(module).load(subelement, project, ui)
                 self.model.modules.append(module)
 
     def save(self, output):

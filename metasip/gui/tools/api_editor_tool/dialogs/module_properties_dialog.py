@@ -36,6 +36,11 @@ class ModulePropertiesDialog(BaseDialog):
         self._call_super_init.addItems(("Undefined", "No", "Yes"))
         form.addRow("Call super().__init__()", self._call_super_init)
 
+        self._keyword_arguments = QComboBox()
+        self._keyword_arguments.addItems(("None", "All", "Optional"))
+        form.addRow("Default handling of keyword arguments",
+                self._keyword_arguments)
+
         self._virtual_error_handler = QLineEdit()
         form.addRow("Default virtual error handler",
                 self._virtual_error_handler)
@@ -57,42 +62,59 @@ class ModulePropertiesDialog(BaseDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
+        module = self.model
+
         if self.shell.project.version < (0, 17):
-            self._output_dir_suffix.setText(self.model.outputdirsuffix)
+            self._output_dir_suffix.setText(module.outputdirsuffix)
 
-        self._directives.setPlainText(self.model.directives)
+        self._directives.setPlainText(module.directives)
 
-        if self.model.callsuperinit == 'undefined':
+        if module.callsuperinit == 'undefined':
             idx = 0
-        elif self.model.callsuperinit == 'no':
+        elif module.callsuperinit == 'no':
             idx = 1
         else:
             idx = 2
 
         self._call_super_init.setCurrentIndex(idx)
 
-        self._virtual_error_handler.setText(self.model.virtualerrorhandler)
-        self._use_limited_api.setChecked(self.model.uselimitedapi)
-        self._py_ssizet_clean.setChecked(self.model.pyssizetclean)
+        if module.keywordarguments == 'Optional':
+            idx = 2
+        elif module.keywordarguments == 'All':
+            idx = 1
+        else:
+            idx = 0
+
+        self._keyword_arguments.setCurrentIndex(idx)
+
+        self._virtual_error_handler.setText(module.virtualerrorhandler)
+        self._use_limited_api.setChecked(module.uselimitedapi)
+        self._py_ssizet_clean.setChecked(module.pyssizetclean)
 
         for i in range(self._imports_layout.count()):
             check_box = self._imports_layout.itemAt(i).widget()
             module_name = check_box.text()
 
-            check_box.setEnabled(module_name != self.model.name)
-            check_box.setChecked(module_name in self.model.imports)
+            check_box.setEnabled(module_name != module.name)
+            check_box.setChecked(module_name in module.imports)
 
     def get_fields(self):
         """ Update the API item from the dialog's fields. """
 
-        if self.shell.project.version < (0, 17):
-            self.model.outputdirsuffix = self._output_dir_suffix.text().strip()
+        module = self.model
 
-        self.model.directives = self._directives.toPlainText().strip()
-        self.model.callsuperinit = self._call_super_init.currentText().lower()
-        self.model.virtualerrorhandler = self._virtual_error_handler.text().strip()
-        self.model.pyssizetclean = self._py_ssizet_clean.isChecked()
-        self.model.uselimitedapi = self._use_limited_api.isChecked()
+        if self.shell.project.version < (0, 17):
+            module.outputdirsuffix = self._output_dir_suffix.text().strip()
+
+        module.directives = self._directives.toPlainText().strip()
+        module.callsuperinit = self._call_super_init.currentText().lower()
+        module.virtualerrorhandler = self._virtual_error_handler.text().strip()
+        module.pyssizetclean = self._py_ssizet_clean.isChecked()
+        module.uselimitedapi = self._use_limited_api.isChecked()
+
+        module.keywordarguments = self._keyword_arguments.currentText()
+        if module.keywordarguments == 'None':
+            module.keywordarguments = ''
 
         imports_list = []
 
@@ -100,6 +122,6 @@ class ModulePropertiesDialog(BaseDialog):
             if self._imports_layout.itemAt(i).widget().isChecked():
                 imports_list.append(self._all_imports[i])
 
-        self.model.imports = imports_list
+        module.imports = imports_list
 
         return True

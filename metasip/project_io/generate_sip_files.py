@@ -72,7 +72,8 @@ def generate_sip_files(project, output_dir, ignored_modules, verbose):
         if module.virtualerrorhandler != '':
             output.write(', default_VirtualErrorHandler=' + module.virtualerrorhandler)
 
-        output.write(', keyword_arguments="Optional"')
+        if module.keywordarguments != '':
+            output.write(f', keyword_arguments="{module.keywordarguments}"')
 
         if module.uselimitedapi:
             output.write(', use_limited_api=True')

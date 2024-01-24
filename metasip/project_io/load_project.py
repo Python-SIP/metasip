@@ -64,7 +64,7 @@ def load_project(project, ui=None):
         project.version = version
 
     # Populate the project.
-    adapt(project).load(root, ui)
+    adapt(project).load(root, project, ui)
 
     return True
 

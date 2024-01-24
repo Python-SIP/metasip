@@ -14,14 +14,14 @@ from .base_adapter import BaseAdapter
 class CodeAdapter(BaseAdapter):
     """ This is the Code adapter. """
 
-    def load(self, element, ui):
+    def load(self, element, project, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
         """
 
-        adapt(self.model, Annos).load(element, ui)
-        adapt(self.model, Tagged).load(element, ui)
-        adapt(self.model, Workflow).load(element, ui)
+        adapt(self.model, Annos).load(element, project, ui)
+        adapt(self.model, Tagged).load(element, project, ui)
+        adapt(self.model, Workflow).load(element, project, ui)
 
     def save_attributes(self, output):
         """ Save the XML attributes. """

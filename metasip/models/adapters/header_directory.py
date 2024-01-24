@@ -20,12 +20,12 @@ class HeaderDirectoryAdapter(BaseAdapter):
         'parserargs':       AttributeType.STRING,
     }
 
-    def load(self, element, ui):
+    def load(self, element, project, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
         """
 
-        super().load(element, ui)
+        super().load(element, project, ui)
 
         scan = element.get('scan')
         if scan is None:
@@ -40,7 +40,7 @@ class HeaderDirectoryAdapter(BaseAdapter):
         for subelement in element:
             if subelement.tag == 'HeaderFile':
                 header_file = HeaderFile()
-                adapt(header_file).load(subelement, ui)
+                adapt(header_file).load(subelement, project, ui)
                 self.model.content.append(header_file)
 
     def save(self, output):

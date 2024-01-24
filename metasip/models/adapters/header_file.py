@@ -19,17 +19,17 @@ class HeaderFileAdapter(BaseAdapter):
         'name':     AttributeType.STRING,
     }
 
-    def load(self, element, ui):
+    def load(self, element, project, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
         """
 
-        super().load(element, ui)
+        super().load(element, project, ui)
 
         for subelement in element:
             if subelement.tag == 'HeaderFileVersion':
                 header_file_version = HeaderFileVersion()
-                adapt(header_file_version).load(subelement, ui)
+                adapt(header_file_version).load(subelement, project, ui)
                 self.model.versions.append(header_file_version)
 
     def save(self, output):

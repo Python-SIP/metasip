@@ -84,7 +84,7 @@ class BaseAdapter(ABC):
         # This default implementation does nothing.
         pass
 
-    def load(self, element, ui):
+    def load(self, element, project, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
         """

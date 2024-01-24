@@ -26,6 +26,11 @@ class Module:
     # The list of modules that this module depends on.
     imports: list[str] = field(default_factory=list)
 
+    # The default handling of keyword arguments, either '', 'all' or
+    # 'optional'.
+    # Added in v0.17
+    keywordarguments: str = ''
+
     # The name of the module.
     name: str = ''
 

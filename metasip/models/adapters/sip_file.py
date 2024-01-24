@@ -52,14 +52,15 @@ class SipFileAdapter(BaseAdapter):
 
         return self.model.name
 
-    def load(self, element, ui):
+    def load(self, element, project, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
         """
 
-        super().load(element, ui)
+        super().load(element, project, ui)
 
-        adapt(self.model, CodeContainer).load(self._TAG_CODE_MAP, element, ui)
+        adapt(self.model, CodeContainer).load(self._TAG_CODE_MAP, element,
+                project, ui)
 
         # Progress any UI for the load.
         if ui is not None:

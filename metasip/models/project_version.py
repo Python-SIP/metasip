@@ -26,14 +26,15 @@
 # Project format version history:
 #
 #  0.17 Implemented by metasip v2.13.
-#       - Added docstring to the Typedef element.
-#       - Removed outputdirsuffix from the Module element.
+#       - Added 'docstring' to the 'Typedef' element.
+#       - Added 'keywordarguments' to the 'Module' element.
+#       - Removed 'outputdirsuffix' from the 'Module' element.
 #
 #  0.16 Implemented by metasip v2.11.
-#       - Added pyssizetclean to the Module element.
+#       - Added 'pyssizetclean' to the 'Module' element.
 #
 #  0.15 Implemented by metasip v2.8.
-#       - Removed the 'version' attribute of the Module element.
+#       - Removed 'version' from the 'Module' element.
 #       - Added the 'removed' value of the 'status' attribute.
 
 

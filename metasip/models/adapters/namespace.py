@@ -99,15 +99,16 @@ class NamespaceAdapter(BaseApiAdapter):
 
         self.version_end(nr_ends, output)
 
-    def load(self, element, ui):
+    def load(self, element, project, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
         """
 
-        super().load(element, ui)
+        super().load(element, project, ui)
 
-        adapt(self.model, Code).load(element, ui)
-        adapt(self.model, CodeContainer).load(self._TAG_CODE_MAP, element, ui)
+        adapt(self.model, Code).load(element, project, ui)
+        adapt(self.model, CodeContainer).load(self._TAG_CODE_MAP, element,
+                project, ui)
 
     def save(self, output):
         """ Save the model to an output file. """

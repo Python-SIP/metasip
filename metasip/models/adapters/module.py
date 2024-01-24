@@ -28,12 +28,14 @@ class ModuleAdapter(BaseAdapter):
 
         return self.model.name
 
-    def load(self, element, ui):
+    def load(self, element, project, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
         """
 
-        super().load(element, ui)
+        module = self.model
+
+        super().load(element, project, ui)
 
         callsuperinit = int(element.get('callsuperinit', '-1'))
         if callsuperinit < 0:
@@ -43,13 +45,17 @@ class ModuleAdapter(BaseAdapter):
         else:
             callsuperinit = 'yes'
 
-        self.model.callsuperinit = callsuperinit
+        module.callsuperinit = callsuperinit
+
+        # Prior to v0.17 'keyword_arguments' was hardcoded as "Optional".
+        module.keywordarguments = element.get('keywordarguments',
+                'Optional' if project.version < (0, 17) else '')
 
         for subelement in element:
             if subelement.tag == 'SipFile':
                 sip_file = SipFile()
-                adapt(sip_file).load(subelement, ui)
-                self.model.content.append(sip_file)
+                adapt(sip_file).load(subelement, project, ui)
+                module.content.append(sip_file)
 
     def save(self, output):
         """ Save the model to an output file. """
@@ -62,6 +68,7 @@ class ModuleAdapter(BaseAdapter):
             self.save_attribute('callsuperinit',
                     '1' if module.callsuperinit == 'yes' else '0', output)
 
+        self.save_str('keywordarguments', output)
         self.save_str('virtualerrorhandler', output)
         self.save_bool('uselimitedapi', output)
         self.save_bool('pyssizetclean', output)

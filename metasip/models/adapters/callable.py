@@ -94,19 +94,19 @@ class CallableAdapter(BaseAdapter):
 
         output.write_code_directive('%MethodCode', self.model.methcode)
 
-    def load(self, element, ui):
+    def load(self, element, project, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
         """
 
-        super().load(element, ui)
+        super().load(element, project, ui)
 
-        adapt(self.model, Code).load(element, ui)
+        adapt(self.model, Code).load(element, project, ui)
 
         for subelement in element:
             if subelement.tag == 'Argument':
                 arg = Argument()
-                adapt(arg).load(subelement, ui)
+                adapt(arg).load(subelement, project, ui)
                 self.model.args.append(arg)
 
     def return_type_as_str(self, allow_py=False):

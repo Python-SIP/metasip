@@ -10,7 +10,7 @@ from .base_adapter import BaseAdapter
 class CodeContainerAdapter(BaseAdapter):
     """ This is the CodeContainer adapter. """
 
-    def load(self, tag_code_map, element, ui):
+    def load(self, tag_code_map, element, project, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
         """
@@ -19,7 +19,7 @@ class CodeContainerAdapter(BaseAdapter):
             model_factory = tag_code_map.get(subelement.tag)
             if model_factory is not None:
                 model = model_factory()
-                adapt(model).load(subelement, ui)
+                adapt(model).load(subelement, project, ui)
                 self.model.content.append(model)
 
     def save_subelements(self, output):

@@ -19,13 +19,13 @@ class TaggedAdapter(BaseAdapter):
         'platforms':    AttributeType.STRING_LIST,
     }
 
-    def load(self, element, ui):
+    def load(self, element, project, ui):
         """ Load the model from the XML element.  An optional user interface
         may be available to inform the user of progress.
         """
 
         # Load the simple attributes.
-        super().load(element, ui)
+        super().load(element, project, ui)
 
         versions = element.get('versions')
 
