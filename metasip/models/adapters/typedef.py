@@ -5,6 +5,7 @@
 
 from ..annos import Annos
 from ..code import Code
+from ..docstring import Docstring
 
 from .adapt import adapt
 from .base_adapter import AttributeType, BaseApiAdapter
@@ -53,6 +54,8 @@ class TypedefAdapter(BaseApiAdapter):
         output.write(self.as_str())
         output.write(';\n')
 
+        adapt(ctor, Docstring).generate_sip_directives(output)
+
         self.version_end(nr_ends, output)
 
     def load(self, element, ui):
@@ -63,6 +66,7 @@ class TypedefAdapter(BaseApiAdapter):
         super().load(element, ui)
 
         adapt(self.model, Code).load(element, ui)
+        adapt(self.model, Docstring).load(element, ui)
 
     def save(self, output):
         """ Save the model to an output file. """
@@ -71,8 +75,13 @@ class TypedefAdapter(BaseApiAdapter):
 
         output.write('<Typedef')
         adapt(typedef, Code).save_attributes(output)
+        adapt(typedef, Docstring).save_attributes(output)
         self.save_attribute('name', typedef.name, output)
         self.save_attribute('type', typedef.type, output)
+        output.write('>\n')
 
-        # Note that we are assuming Code does not have any subelements.
-        output.write('/>\n')
+        output += 1
+        adapt(typedef, Docstring).save_subelements(output)
+        output -= 1
+
+        output.write('</Typedef>\n')

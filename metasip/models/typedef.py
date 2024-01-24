@@ -6,10 +6,11 @@
 from dataclasses import dataclass
 
 from .code import Code
+from .docstring import Docstring
 
 
 @dataclass
-class Typedef(Code):
+class Typedef(Code, Docstring):
     """ This class implements a typedef. """
 
     # The name of the type.

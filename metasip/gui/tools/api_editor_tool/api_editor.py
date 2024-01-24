@@ -8,9 +8,10 @@ from PyQt6.QtGui import QDrag
 from PyQt6.QtWidgets import (QApplication, QMenu, QMessageBox, QProgressDialog,
         QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator)
 
-from ....models import (Class, Constructor, Destructor, Method, Function,
-        Variable, Enum, EnumValue, OperatorFunction, Access, OperatorMethod,
-        ManualCode, Module, OpaqueClass, OperatorCast, Namespace, Tagged)
+from ....models import (Class, Constructor, Destructor, Method, Function, Enum,
+        EnumValue, OperatorFunction, Access, OperatorMethod, ManualCode,
+        Module, OpaqueClass, OperatorCast, Namespace, Tagged, Typedef,
+        Variable)
 from ....models.adapters import adapt
 
 from ...helpers import warning
@@ -20,7 +21,7 @@ from .dialogs import (ArgumentPropertiesDialog, CallablePropertiesDialog,
         EnumMemberPropertiesDialog, FeaturesDialog, ManualCodeDialog,
         ModulePropertiesDialog, MoveHeaderDialog, NamespacePropertiesDialog,
         OpaqueClassPropertiesDialog, PlatformsDialog, ProjectPropertiesDialog,
-        VariablePropertiesDialog, VersionsDialog)
+        TypedefPropertiesDialog, VariablePropertiesDialog, VersionsDialog)
 
 from .external_editor import ExternalEditor
 
@@ -1150,6 +1151,9 @@ class CodeView(ContainerView):
         elif isinstance(self.api, OperatorFunction):
             mcslot = True
             pslot = self._handle_callable_properties
+        elif isinstance(self.api, Typedef):
+            pslot = self._handle_typedef_properties
+            dsslot = True
         elif isinstance(self.api, Variable):
             acslot = True
             gcslot = True
@@ -1823,6 +1827,16 @@ class CodeView(ContainerView):
         """ Slot to handle the properties for callables. """
 
         dialog = CallablePropertiesDialog(self.api, 'Placeholder', self.shell)
+
+        if dialog.update():
+            self.shell.dirty = True
+            self.setText(ApiEditor.NAME, self.api_as_str())
+
+    def _handle_typedef_properties(self):
+        """ Slot to handle the properties for typedefs. """
+
+        dialog = TypedefPropertiesDialog(self.api, "Typedef Properties",
+                self.shell)
 
         if dialog.update():
             self.shell.dirty = True

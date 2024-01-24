@@ -42,9 +42,9 @@ class ExternalEditor(QObject):
         ed.setAutoIndent(True)
         ed.setIndentationWidth(4)
         ed.setIndentationsUseTabs(False)
-        ed.setFolding(QsciScintilla.PlainFoldStyle)
+        ed.setFolding(QsciScintilla.FoldStyle.PlainFoldStyle)
         ed.setEdgeColumn(80)
-        ed.setEdgeMode(QsciScintilla.EdgeLine)
+        ed.setEdgeMode(QsciScintilla.EdgeMode.EdgeLine)
 
         lexer = QsciLexerCPP(ed)
         ed.setLexer(lexer)
