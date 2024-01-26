@@ -85,7 +85,7 @@ def generate_sip_files(project, output_dir, ignored_modules, verbose):
 
         top_level_module = True
 
-        if len(module.imports) != 0:
+        if module.imports:
             for imported in module.imports:
                 output.write(f'%Import {imported}/{imported}mod.sip\n')
 
@@ -98,15 +98,15 @@ def generate_sip_files(project, output_dir, ignored_modules, verbose):
             # Add any version, platform and feature information to all top
             # level modules (ie. those that don't import anything).
 
-            if len(project.versions) != 0:
+            if project.versions:
                 versions = ' '.join(project.versions)
                 output.write(f'%Timeline {{{versions}}}\n\n')
 
-            if len(project.platforms) != 0:
+            if project.platforms:
                 platforms = ' '.join(project.platforms)
                 output.write(f'%Platforms {{{platforms}}}\n\n')
 
-            if len(project.features) != 0:
+            if project.features:
                 for feature in project.features:
                     output.write(f'%Feature {feature}\n')
 
@@ -169,13 +169,13 @@ def _generate_sip(sip_file, project, output):
         vmap.update_from_version_ranges(api.versions)
 
         if platforms is not None:
-            if len(api.platforms) != 0:
+            if api.platforms:
                 platforms.update(api.platforms)
             else:
                 platforms = None
 
         if features is not None:
-            if len(api.features) != 0:
+            if api.features:
                 features.update(api.features)
             else:
                 features = None
@@ -194,7 +194,7 @@ def _generate_sip(sip_file, project, output):
         for vr_str in vranges_str:
             output.write(f'%If ({vr_str})\n', indent=False)
 
-        if len(plat_feat) != 0:
+        if plat_feat:
             tags = ' || '.join(plat_feat)
             output.write(f'%If ({tags})\n', indent=False)
 
@@ -204,7 +204,7 @@ f'''%ModuleCode
 %End
 ''')
 
-        if len(plat_feat) != 0:
+        if plat_feat:
             output.write('%End\n', indent=False)
 
         for _ in vranges_str:

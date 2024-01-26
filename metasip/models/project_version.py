@@ -26,6 +26,10 @@
 # Project format version history:
 #
 #  0.17 Implemented by metasip v2.13.
+#       - Added 'comments' to the 'Class', 'Constructor', 'Destructor', 'Enum',
+#         'EnumValue', 'Function', 'ManualCode', 'Method', 'Namespace',
+#         'OpaqueClass', 'OperatorCast', 'OperatorFunction', 'OperatorMethod',
+#         'Typedef' and 'Variable' elements.
 #       - Added 'docstring' to the 'Typedef' element.
 #       - Added 'keywordarguments' to the 'Module' element.
 #       - Removed 'outputdirsuffix' from the 'Module' element.

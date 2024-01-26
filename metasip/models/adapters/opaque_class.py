@@ -72,7 +72,11 @@ class OpaqueClassAdapter(BaseApiAdapter):
         adapt(opaque_class, Code).save_attributes(output)
         adapt(opaque_class, Access).save_attributes(output)
         self.save_attribute('name', opaque_class.name, output)
+        output.write('>\n')
 
-        # Note that we are assuming model super-classes do not have any
-        # subelements.
-        output.write('/>\n')
+        output += 1
+        adapt(opaque_class, Code).save_subelements(output)
+        adapt(opaque_class, Access).save_subelements(output)
+        output -= 1
+
+        output.write('</OpaqueClass>\n')

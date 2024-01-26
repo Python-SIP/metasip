@@ -140,6 +140,8 @@ class CallableAdapter(BaseAdapter):
     def save_subelements(self, output):
         """ Save the XML subelements. """
 
+        adapt(self.model, Code).save_subelements(output)
+
         for argument in self.model.args:
             adapt(argument).save(output)
 

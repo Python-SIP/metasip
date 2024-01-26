@@ -24,7 +24,7 @@ class ManualCode(Code, Docstring, ExtendedAccess):
     methcode: str = ''
 
     # The one-line summary of the code.  If the body attribute is an empty
-    # strin then this is copied to the .sip file unaltered.  If the body
+    # string then this is copied to the .sip file unaltered.  If the body
     # attribute is not an empty string then this is copied to the .sip file as
     # a comment above the body.
     precis: str = ''

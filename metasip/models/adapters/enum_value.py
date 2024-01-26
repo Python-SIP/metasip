@@ -71,7 +71,12 @@ class EnumValueAdapter(BaseApiAdapter):
         adapt(enum_value, Workflow).save_attributes(output)
         adapt(enum_value, Tagged).save_attributes(output)
         self.save_attribute('name', enum_value.name, output)
+        output.write('>\n')
 
-        # Note that we are assuming model super-classes do not have any
-        # subelements.
-        output.write('/>\n')
+        output += 1
+        adapt(enum_value, Annos).save_subelements(output)
+        adapt(enum_value, Tagged).save_subelements(output)
+        adapt(enum_value, Workflow).save_subelements(output)
+        output -= 1
+
+        output.write('</EnumValue>\n')

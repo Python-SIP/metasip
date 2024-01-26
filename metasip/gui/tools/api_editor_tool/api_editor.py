@@ -3,6 +3,9 @@
 # Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
 
 
+from dataclasses import dataclass
+from typing import Callable, Optional
+
 from PyQt6.QtCore import QByteArray, QMimeData, Qt
 from PyQt6.QtGui import QDrag
 from PyQt6.QtWidgets import (QApplication, QMenu, QMessageBox, QProgressDialog,
@@ -139,34 +142,24 @@ class ApiEditor(QTreeWidget):
                         siblings.append(sibling)
 
             # Check it has a menu.
-            opts = view.get_menu(siblings)
+            options = view.get_menu(siblings)
 
-            if opts:
+            if options:
                 # Create the menu.
                 menu = QMenu()
 
-                for o in opts:
-                    if o is None:
+                for option in options:
+                    if option is None:
                         menu.addSeparator()
                         continue
 
-                    enabled = True
-                    checked = None
+                    action = menu.addAction(option.text, option.handler)
 
-                    if len(o) == 2:
-                        (mtext, mslot) = o
-                    elif len(o) == 3:
-                        (mtext, mslot, enabled) = o
-                    else:
-                        (mtext, mslot, enabled, checked) = o
+                    action.setEnabled(option.enabled)
 
-                    action = menu.addAction(mtext, mslot)
-
-                    action.setEnabled(enabled)
-
-                    if checked is not None:
+                    if option.checked is not None:
                         action.setCheckable(True)
-                        action.setChecked(checked)
+                        action.setChecked(option.checked)
 
                 menu.exec(ev.globalPos())
 
@@ -285,7 +278,24 @@ class ApiEditor(QTreeWidget):
                 yield sub_view
 
 
-class DropSite():
+@dataclass
+class MenuOption:
+    """ This class specifies a menu option. """
+
+    # The option text.
+    text: str
+
+    # The option handler.
+    handler: Callable
+
+    # Set if the option is checked.
+    checked: Optional[bool] = None
+
+    # Set if the option is enabled.
+    enabled: bool = True
+
+
+class DropSite:
     """ This mixin class implements a drop site.  Any derived class must also
     derive QTreeWidgetItem.
     """
@@ -409,10 +419,10 @@ class ProjectView(APIView):
     def get_menu(self, siblings):
         """ Return the list of context menu options. """
 
-        if len(siblings) != 0:
+        if siblings:
             return None
 
-        return [("Properties...", self._handle_project_properties)]
+        return [MenuOption("Properties...", self._handle_project_properties)]
 
     def module_add(self, module):
         """ Handle the addition of a module. """
@@ -502,10 +512,10 @@ class ModuleView(APIView, DropSite):
     def get_menu(self, siblings):
         """ Return the list of context menu options. """
 
-        if len(siblings) != 0:
+        if siblings:
             return None
 
-        return [("Properties...", self._handle_module_properties)]
+        return [MenuOption("Properties...", self._handle_module_properties)]
 
     def _handle_module_properties(self):
         """ Handle the module's properties. """
@@ -520,6 +530,9 @@ class ModuleView(APIView, DropSite):
 class ContainerView(APIView, DropSite):
     """ This class implements a view of a potential container for code. """
 
+    # The current external editor objects.
+    editors = {}
+
     def __init__(self, container, shell, parent, after):
         """ Initialise the container view. """
 
@@ -528,6 +541,14 @@ class ContainerView(APIView, DropSite):
         if hasattr(container, 'content'):
             for code in container.content:
                 CodeView(code, self.shell, self)
+
+    @classmethod
+    def add_editor_option(cls, menu, name, handler, value, editor_id):
+        """ Add the option that will invoke the external editor to a menu. """
+
+        menu.append(
+                MenuOption(name + '...', handler, checked=(value != ''),
+                        enabled=(editor_id not in cls.editors)))
 
     def droppable(self, view):
         """ Return True if a view can be dropped. """
@@ -589,7 +610,6 @@ class SipFileView(ContainerView):
         super().__init__(sip_file, shell, parent, after)
 
         self._targets = []
-        self._editors = {}
 
         self.setText(ApiEditor.NAME, sip_file.name)
 
@@ -640,7 +660,7 @@ class SipFileView(ContainerView):
     def get_menu(self, siblings):
         """ Return the list of context menu options. """
 
-        if len(siblings) != 0:
+        if siblings:
             return None
 
         multiple_modules = (len(self.shell.project.modules) > 0)
@@ -651,23 +671,41 @@ class SipFileView(ContainerView):
                 empty_sipfile = False
                 break
 
-        return [("Hide Ignored", self._hideIgnoredSlot),
-                ("Show Ignored", self._showIgnoredSlot),
-                None,
-                ("Add manual code...", self._handle_add_manual_code),
-                None,
-                ("%ExportedHeaderCode", self._exportedHeaderCodeSlot, ("ehc" not in self._editors)),
-                ("%ModuleHeaderCode", self._moduleHeaderCodeSlot, ("mhc" not in self._editors)),
-                ("%ModuleCode", self._moduleCodeSlot, ("moc" not in self._editors)),
-                ("%PreInitialisationCode", self._preInitCodeSlot, ("pric" not in self._editors)),
-                ("%InitialisationCode", self._initCodeSlot, ("ic" not in self._editors)),
-                ("%PostInitialisationCode", self._postInitCodeSlot, ("poic" not in self._editors)),
-                None,
-                ("%ExportedTypeHintCode", self._exportedTypeHintCodeSlot, ("ethc" not in self._editors)),
-                ("%TypeHintCode", self._typeHintCodeSlot, ("thc" not in self._editors)),
-                None,
-                ("Move to...", self._handle_move, multiple_modules),
-                ("Delete", self._deleteFile, empty_sipfile)]
+        menu = []
+
+        menu.append(MenuOption("Hide Ignored", self._hideIgnoredSlot)),
+        menu.append(MenuOption("Show Ignored", self._showIgnoredSlot)),
+        menu.append(None)
+        menu.append(
+                MenuOption("Add manual code...",
+                        self._handle_add_manual_code))
+        menu.append(None)
+        self.add_editor_option(menu, "%ExportedHeaderCode",
+                self._exportedHeaderCodeSlot, self.api.exportedheadercode,
+                'ehc')
+        self.add_editor_option(menu, "%ModuleHeaderCode",
+                self._moduleHeaderCodeSlot, self.api.moduleheadercode, 'mhc')
+        self.add_editor_option(menu, "%ModuleCode", self._moduleCodeSlot,
+                self.api.modulecode, 'moc')
+        self.add_editor_option(menu, "%PreInitialisationCode",
+                self._preInitCodeSlot, self.api.preinitcode, 'pric')
+        self.add_editor_option(menu, "%InitialisationCode", self._initCodeSlot,
+                self.api.initcode, 'ic')
+        self.add_editor_option(menu, "%PostInitialisationCode",
+                self._postInitCodeSlot, self.api.postinitcode, 'poic')
+        menu.append(None)
+        self.add_editor_option(menu, "%ExportedTypeHintCode",
+                self._exportedTypeHintCodeSlot, self.api.exportedtypehintcode,
+                'ethc')
+        self.add_editor_option(menu, "%TypeHintCode", self._typeHintCodeSlot,
+                self.api.typehintcode, 'thc')
+        menu.append(None)
+        menu.append(MenuOption("Move to...", self._handle_move,
+                enabled=multiple_modules))
+        menu.append(MenuOption("Delete", self._deleteFile,
+                enabled=empty_sipfile))
+
+        return menu
 
     def _handle_move(self):
         """ Move a .sip file to a different module. """
@@ -715,7 +753,7 @@ class SipFileView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._exportedHeaderCodeDone)
         ed.edit(self.api.exportedheadercode, "%ExportedHeaderCode: " + self.api.name)
-        self._editors["ehc"] = ed
+        self.editors['ehc'] = ed
 
     def _exportedHeaderCodeDone(self, text_changed, text):
         """ Slot to handle changed %ExportedHeaderCode. """
@@ -724,7 +762,7 @@ class SipFileView(ContainerView):
             self.api.exportedheadercode = text
             self.shell.dirty = True
 
-        del self._editors["ehc"]
+        del self.editors['ehc']
 
     def _moduleHeaderCodeSlot(self):
         """ Slot to handle %ModuleHeaderCode. """
@@ -732,7 +770,7 @@ class SipFileView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._moduleHeaderCodeDone)
         ed.edit(self.api.moduleheadercode, "%ModuleHeaderCode: " + self.api.name)
-        self._editors["mhc"] = ed
+        self.editors['mhc'] = ed
 
     def _moduleHeaderCodeDone(self, text_changed, text):
         """ Slot to handle changed %ModuleHeaderCode. """
@@ -741,7 +779,7 @@ class SipFileView(ContainerView):
             self.api.moduleheadercode = text
             self.shell.dirty = True
 
-        del self._editors["mhc"]
+        del self.editors['mhc']
 
     def _moduleCodeSlot(self):
         """ Slot to handle %ModuleCode. """
@@ -749,7 +787,7 @@ class SipFileView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._moduleCodeDone)
         ed.edit(self.api.modulecode, "%ModuleCode: " + self.api.name)
-        self._editors["moc"] = ed
+        self.editors['moc'] = ed
 
     def _moduleCodeDone(self, text_changed, text):
         """ Slot to handle changed %ModuleCode. """
@@ -758,7 +796,7 @@ class SipFileView(ContainerView):
             self.api.modulecode = text
             self.shell.dirty = True
 
-        del self._editors["moc"]
+        del self.editors['moc']
 
     def _preInitCodeSlot(self):
         """ Slot to handle %PreInitialisationCode. """
@@ -766,7 +804,7 @@ class SipFileView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._preInitCodeDone)
         ed.edit(self.api.preinitcode, "%PreInitialisationCode: " + self.api.name)
-        self._editors["pric"] = ed
+        self.editors['pric'] = ed
 
     def _preInitCodeDone(self, text_changed, text):
         """ Slot to handle changed %PreInitialisationCode. """
@@ -775,7 +813,7 @@ class SipFileView(ContainerView):
             self.api.preinitcode = text
             self.shell.dirty = True
 
-        del self._editors["pric"]
+        del self.editors['pric']
 
     def _initCodeSlot(self):
         """ Slot to handle %InitialisationCode. """
@@ -783,7 +821,7 @@ class SipFileView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._initCodeDone)
         ed.edit(self.api.initcode, "%InitialisationCode: " + self.api.name)
-        self._editors["ic"] = ed
+        self.editors['ic'] = ed
 
     def _initCodeDone(self, text_changed, text):
         """ Slot to handle changed %InitialisationCode. """
@@ -792,7 +830,7 @@ class SipFileView(ContainerView):
             self.api.initcode = text
             self.shell.dirty = True
 
-        del self._editors["ic"]
+        del self.editors['ic']
 
     def _postInitCodeSlot(self):
         """ Slot to handle %PostInitialisationCode. """
@@ -800,7 +838,7 @@ class SipFileView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._postInitCodeDone)
         ed.edit(self.api.postinitcode, "%PostInitialisationCode: " + self.api.name)
-        self._editors["poic"] = ed
+        self.editors['poic'] = ed
 
     def _postInitCodeDone(self, text_changed, text):
         """ Slot to handle changed %PostInitialisationCode. """
@@ -809,7 +847,7 @@ class SipFileView(ContainerView):
             self.api.postinitcode = text
             self.shell.dirty = True
 
-        del self._editors["poic"]
+        del self.editors['poic']
 
     def _exportedTypeHintCodeSlot(self):
         """ Slot to handle %ExportedTypeHintCode. """
@@ -817,7 +855,7 @@ class SipFileView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._exportedTypeHintCodeDone)
         ed.edit(self.api.exportedtypehintcode, "%ExportedTypeHintCode: " + self.api.name)
-        self._editors["ethc"] = ed
+        self.editors['ethc'] = ed
 
     def _exportedTypeHintCodeDone(self, text_changed, text):
         """ Slot to handle changed %ExportedTypeHintCode. """
@@ -826,7 +864,7 @@ class SipFileView(ContainerView):
             self.api.exportedtypehintcode = text
             self.shell.dirty = True
 
-        del self._editors["ethc"]
+        del self.editors['ethc']
 
     def _typeHintCodeSlot(self):
         """ Slot to handle %TypeHintCode. """
@@ -834,7 +872,7 @@ class SipFileView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._typeHintCodeDone)
         ed.edit(self.api.typehintcode, "%TypeHintCode: " + self.api.name)
-        self._editors["thc"] = ed
+        self.editors['thc'] = ed
 
     def _typeHintCodeDone(self, text_changed, text):
         """ Slot to handle changed %TypeHintCode. """
@@ -843,7 +881,7 @@ class SipFileView(ContainerView):
             self.api.typehintcode = text
             self.shell.dirty = True
 
-        del self._editors["thc"]
+        del self.editors['thc']
 
     def _hideIgnoredSlot(self):
         """ Hide all ignored scope elements. """
@@ -892,10 +930,10 @@ class ArgumentView(APIView):
     def get_menu(self, siblings):
         """ Return the list of context menu options. """
 
-        if len(siblings) != 0:
+        if siblings:
             return None
 
-        return [("Properties...", self._handle_argument_properties)]
+        return [MenuOption("Properties...", self._handle_argument_properties)]
 
     def _handle_argument_properties(self):
         """ Slot to handle the argument's properties. """
@@ -920,7 +958,6 @@ class CodeView(ContainerView):
         super().__init__(code, shell, parent, after)
 
         self._targets = []
-        self._editors = {}
 
         self.draw_name()
         self._draw_access()
@@ -1029,35 +1066,69 @@ class CodeView(ContainerView):
         self._targets = siblings[:]
         self._targets.append(self)
 
-        menu = [("Checked", self._setStatusChecked, True, (self.api.status == "")),
-                ("Todo", self._setStatusTodo, True, (self.api.status == "todo")),
-                ("Unchecked", self._setStatusUnchecked, True, (self.api.status == "unknown")),
-                ("Ignored", self._setStatusIgnored, True, (self.api.status == "ignored"))]
+        menu = []
+
+        # Handle the workflow.
+        menu.append(
+                MenuOption("Checked", self._setStatusChecked,
+                        checked=(self.api.status == '')))
+        menu.append(
+                MenuOption("Todo", self._setStatusTodo,
+                        checked=(self.api.status == 'todo')))
+        menu.append(
+                MenuOption("Unchecked", self._setStatusUnchecked,
+                        checked=(self.api.status == 'unknown')))
+        menu.append(
+                MenuOption("Ignored", self._setStatusIgnored,
+                        checked=(self.api.status == 'ignored')))
+
+        menu.append(None)
+        self.add_editor_option(menu, "Comments", self._handle_comments,
+                self.api.comments, 'comments')
 
         # Handle the access specifiers.
         if isinstance(self.api, Access):
                 menu.append(None)
-                menu.append(("public", self._setAccessPublic, True, (self.api.access == "")))
-                menu.append(("public slots", self._setAccessPublicSlots, True, (self.api.access == "public slots")))
-                menu.append(("protected", self._setAccessProtected, True, (self.api.access == "protected")))
-                menu.append(("protected slots", self._setAccessProtectedSlots, True, (self.api.access == "protected slots")))
-                menu.append(("private", self._setAccessPrivate, True, (self.api.access == "private")))
-                menu.append(("private slots", self._setAccessPrivateSlots, True, (self.api.access == "private slots")))
-                menu.append(("signals", self._setAccessSignals, True, (self.api.access == "signals")))
+                menu.append(
+                        MenuOption("public", self._setAccessPublic,
+                                checked=(self.api.access == '')))
+                menu.append(
+                        MenuOption("public slots", self._setAccessPublicSlots,
+                                checked=(self.api.access == 'public slots')))
+                menu.append(
+                        MenuOption("protected", self._setAccessProtected,
+                                checked=(self.api.access == 'protected')))
+                menu.append(
+                        MenuOption("protected slots",
+                                self._setAccessProtectedSlots,
+                                checked=(self.api.access == 'protected slots')))
+                menu.append(
+                        MenuOption("private", self._setAccessPrivate,
+                                checked=(self.api.access == 'private')))
+                menu.append(
+                        MenuOption("private slots",
+                                self._setAccessPrivateSlots,
+                                checked=(self.api.access == 'private slots')))
+                menu.append(
+                        MenuOption("signals", self._setAccessSignals,
+                                checked=(self.api.access == 'signals')))
 
-        if len(siblings) != 0:
-            menu.append(None)
-            menu.append(("Versions...", self._handle_versions,
-                    (len(project.versions) != 0)))
+        if siblings:
+            if project.versions:
+                menu.append(None)
+                menu.append(MenuOption("Versions...", self._handle_versions))
 
             menu.append(None)
-            menu.append(("Delete", self._deleteCode, (not self._editors)))
+            menu.append(
+                    MenuOption("Delete", self._deleteCode,
+                            enabled=(not self.editors)))
 
             return menu
 
         # Handle the manual code part of the menu.
         menu.append(None)
-        menu.append(("Add manual code...", self._handle_add_manual_code))
+        menu.append(
+                MenuOption("Add manual code...", self._handle_add_manual_code))
 
         # See what extra menu items are needed.
         thcslot = False
@@ -1082,20 +1153,26 @@ class CodeView(ContainerView):
         bicbslot = False
         pickslot = False
         xaslot = False
-        pslot = None
+        properties_handler = None
         dsslot = None
 
         if isinstance(self.api, ManualCode):
-            menu.append(("Modify manual code...", self._handle_modify_manual_code))
-            menu.append(("Modify manual code body...", self._bodyManualCode, ("mcb" not in self._editors)))
+            menu.append(
+                    MenuOption("Modify manual code...",
+                            self._handle_modify_manual_code))
+            menu.append(
+                    MenuOption("Modify manual code body...",
+                            self._bodyManualCode,
+                            checked=(self.api.body != ''),
+                            enabled=('mcb' not in self.editors)))
 
             mcslot = True
-            pslot = self._handle_callable_properties
+            properties_handler = self._handle_callable_properties
             dsslot = True
         elif isinstance(self.api, Namespace):
-            pslot = self._handle_namespace_properties
+            properties_handler = self._handle_namespace_properties
         elif isinstance(self.api, OpaqueClass):
-            pslot = self._handle_opaque_class_properties
+            properties_handler = self._handle_opaque_class_properties
         elif isinstance(self.api, Namespace):
             thcslot = True
         elif isinstance(self.api, Class):
@@ -1116,26 +1193,26 @@ class CodeView(ContainerView):
             bicbslot = True
             pickslot = True
             xaslot = True
-            pslot = self._handle_class_properties
+            properties_handler = self._handle_class_properties
             dsslot = True
         elif isinstance(self.api, Constructor):
             mcslot = True
-            pslot = self._handle_callable_properties
+            properties_handler = self._handle_callable_properties
             dsslot = True
         elif isinstance(self.api, Destructor):
             mcslot = True
             vccslot = True
-            pslot = self._handle_callable_properties
+            properties_handler = self._handle_callable_properties
         elif isinstance(self.api, OperatorCast):
             mcslot = True
-            pslot = self._handle_callable_properties
+            properties_handler = self._handle_callable_properties
         elif isinstance(self.api, Method):
             mcslot = True
 
             if self.api.virtual:
                 vccslot = True
 
-            pslot = self._handle_callable_properties
+            properties_handler = self._handle_callable_properties
             dsslot = True
         elif isinstance(self.api, OperatorMethod):
             mcslot = True
@@ -1143,168 +1220,158 @@ class CodeView(ContainerView):
             if self.api.virtual:
                 vccslot = True
 
-            pslot = self._handle_callable_properties
+            properties_handler = self._handle_callable_properties
         elif isinstance(self.api, Function):
             mcslot = True
-            pslot = self._handle_callable_properties
+            properties_handler = self._handle_callable_properties
             dsslot = True
         elif isinstance(self.api, OperatorFunction):
             mcslot = True
-            pslot = self._handle_callable_properties
+            properties_handler = self._handle_callable_properties
         elif isinstance(self.api, Typedef):
-            pslot = self._handle_typedef_properties
+            properties_handler = self._handle_typedef_properties
             dsslot = True
         elif isinstance(self.api, Variable):
             acslot = True
             gcslot = True
             scslot = True
-            pslot = self._handle_variable_properties
+            properties_handler = self._handle_variable_properties
         elif isinstance(self.api, Enum):
-            pslot = self._handle_enum_properties
+            properties_handler = self._handle_enum_properties
         elif isinstance(self.api, EnumValue):
-            pslot = self._handle_enum_member_properties
+            properties_handler = self._handle_enum_member_properties
 
         if thcslot or thicslot or tcslot or cttcslot or cftcslot or fcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
             menu.append(None)
 
             if thcslot:
-                self._add_directive(menu, '%TypeHeaderCode',
-                        self.api.typeheadercode, self._typeheaderCodeSlot,
+                self.add_editor_option(menu, '%TypeHeaderCode',
+                        self._typeheaderCodeSlot, self.api.typeheadercode,
                         'thc')
 
             if tcslot:
-                self._add_directive(menu, '%TypeCode', self.api.typecode,
-                        self._typeCodeSlot, 'tc')
+                self.add_editor_option(menu, '%TypeCode', self._typeCodeSlot,
+                        self.api.typecode, 'tc')
 
             if thicslot:
-                self._add_directive(menu, '%TypeHintCode',
-                        self.api.typehintcode, self._typehintCodeSlot, 'thic')
+                self.add_editor_option(menu, '%TypeHintCode',
+                        self._typehintCodeSlot, self.api.typehintcode, 'thic')
 
             if fcslot:
-                self._add_directive(menu, '%FinalisationCode',
-                        self.api.finalisationcode, self._finalCodeSlot, 'fc')
+                self.add_editor_option(menu, '%FinalisationCode',
+                        self._finalCodeSlot, self.api.finalisationcode, 'fc')
 
             if sccslot:
-                self._add_directive(menu, '%ConvertToSubClassCode',
-                        self.api.subclasscode, self._subclassCodeSlot, 'scc')
+                self.add_editor_option(menu, '%ConvertToSubClassCode',
+                        self._subclassCodeSlot, self.api.subclasscode, 'scc')
 
             if cttcslot:
-                self._add_directive(menu, '%ConvertToTypeCode',
-                        self.api.convtotypecode, self._convToTypeCodeSlot,
+                self.add_editor_option(menu, '%ConvertToTypeCode',
+                        self._convToTypeCodeSlot, self.api.convtotypecode,
                         'cttc')
 
             if cftcslot:
-                self._add_directive(menu, '%ConvertFromTypeCode',
-                        self.api.convfromtypecode, self._convFromTypeCodeSlot,
+                self.add_editor_option(menu, '%ConvertFromTypeCode',
+                        self._convFromTypeCodeSlot, self.api.convfromtypecode,
                         'cftc')
 
             if mcslot:
-                self._add_directive(menu, '%MethodCode', self.api.methcode,
-                        self._methodCodeSlot, 'mc')
+                self.add_editor_option(menu, '%MethodCode',
+                        self._methodCodeSlot, self.api.methcode, 'mc')
 
             if vccslot:
-                self._add_directive(menu, '%VirtualCatcherCode',
-                        self.api.virtcode, self._virtualCatcherCodeSlot,
-                        'vcc')
+                self.add_editor_option(menu, '%VirtualCatcherCode',
+                        self._virtualCatcherCodeSlot, self.api.virtcode, 'vcc')
 
             if acslot:
-                self._add_directive(menu, '%AccessCode', self.api.accesscode,
-                        self._accessCodeSlot, 'ac')
+                self.add_editor_option(menu, '%AccessCode',
+                        self._accessCodeSlot, self.api.accesscode, 'ac')
 
             if gcslot:
-                self._add_directive(menu, '%GetCode', self.api.getcode,
-                        self._getCodeSlot, 'gc')
+                self.add_editor_option(menu, '%GetCode', self._getCodeSlot,
+                        self.api.getcode, 'gc')
 
             if scslot:
-                self._add_directive(menu, '%SetCode', self.api.setcode,
-                        self._setCodeSlot, 'sc')
+                self.add_editor_option(menu, '%SetCode', self._setCodeSlot,
+                        self.api.setcode, 'sc')
 
             if gctcslot:
-                self._add_directive(menu, '%GCTraverseCode',
-                        self.api.gctraversecode, self._gcTraverseCodeSlot,
+                self.add_editor_option(menu, '%GCTraverseCode',
+                        self._gcTraverseCodeSlot, self.api.gctraversecode,
                         'gctc')
 
             if gcccslot:
-                self._add_directive(menu, '%GCClearCode',
-                        self.api.gcclearcode, self._gcClearCodeSlot, 'gccc')
+                self.add_editor_option(menu, '%GCClearCode',
+                        self._gcClearCodeSlot, self.api.gcclearcode, 'gccc')
 
             if bigetbslot:
-                self._add_directive(menu, '%BIGetBufferCode',
-                        self.api.bigetbufcode, self._biGetBufCodeSlot,
+                self.add_editor_option(menu, '%BIGetBufferCode',
+                        self._biGetBufCodeSlot, self.api.bigetbufcode,
                         'bigetb')
 
             if birelbslot:
-                self._add_directive(menu, '%BIReleaseBufferCode',
-                        self.api.birelbufcode, self._biRelBufCodeSlot,
+                self.add_editor_option(menu, '%BIReleaseBufferCode',
+                        self._biRelBufCodeSlot, self.api.birelbufcode,
                         'birelb')
 
             if birbslot:
-                self._add_directive(menu, '%BIGetReadBufferCode',
-                        self.api.bireadbufcode, self._biReadBufCodeSlot,
+                self.add_editor_option(menu, '%BIGetReadBufferCode',
+                        self._biReadBufCodeSlot, self.api.bireadbufcode,
                         'birb')
 
             if biwbslot:
-                self._add_directive(menu, '%BIGetWriteBufferCode',
-                        self.api.biwritebufcode, self._biWriteBufCodeSlot,
+                self.add_editor_option(menu, '%BIGetWriteBufferCode',
+                        self._biWriteBufCodeSlot, self.api.biwritebufcode,
                         'biwb')
 
             if biscslot:
-                self._add_directive(menu, '%BIGetSegCountCode',
-                        self.api.bisegcountcode, self._biSegCountCodeSlot,
+                self.add_editor_option(menu, '%BIGetSegCountCode',
+                        self._biSegCountCodeSlot, self.api.bisegcountcode,
                         'bisc')
 
             if bicbslot:
-                self._add_directive(menu, '%BIGetCharBufferCode',
-                        self.api.bicharbufcode, self._biCharBufCodeSlot,
+                self.add_editor_option(menu, '%BIGetCharBufferCode',
+                        self._biCharBufCodeSlot, self.api.bicharbufcode,
                         'bicb')
 
             if pickslot:
-                self._add_directive(menu, '%PickleCode', self.api.picklecode,
-                        self._pickleCodeSlot, 'pick')
+                self.add_editor_option(menu, '%PickleCode',
+                        self._pickleCodeSlot, self.api.picklecode, 'pick')
 
             if dsslot:
-                self._add_directive(menu, '%Docstring', self.api.docstring,
-                        self._docstringSlot, 'ds')
+                self.add_editor_option(menu, '%Docstring', self._docstringSlot,
+                        self.api.docstring, 'ds')
 
         if isinstance(self.api, (Constructor, Function, Method)):
             menu.append(None)
-            menu.append(("Accept all argument names", self._acceptNames))
+            menu.append(
+                    MenuOption("Accept all argument names", self._acceptNames))
 
-        # Add the extra menu items.
+        if project.versions or project.platforms or project.features or project.externalfeatures:
+            menu.append(None)
+
+            if project.versions:
+                menu.append(MenuOption("Versions...", self._handle_versions))
+
+            if project.platforms:
+                menu.append(
+                        MenuOption("Platform Tags...", self._handle_platforms,
+                                checked=bool(self.api.platforms)))
+
+            if project.features or project.externalfeatures:
+                menu.append(
+                        MenuOption("Feature Tags...", self._handle_features,
+                                checked=bool(self.api.features)))
+
+        if properties_handler is not None:
+            menu.append(MenuOption("Properties...", properties_handler))
+
         menu.append(None)
-        menu.append(("Versions...", self._handle_versions,
-                len(project.versions) != 0))
         menu.append(
-                (self._flagged_text("Platform Tags...", self.api.platforms),
-                        self._handle_platforms, len(project.platforms) != 0))
-        menu.append(
-                (self._flagged_text("Feature Tags...", self.api.features),
-                        self._handle_features,
-                        (len(project.features) != 0 or len(project.externalfeatures) != 0)))
-
-        if pslot:
-            menu.append(("Properties...", pslot))
-
-        menu.append(None)
-        menu.append(("Delete", self._deleteCode, (not self._editors)))
+                MenuOption("Delete", self._deleteCode,
+                        enabled=(not self.editors)))
 
         return menu
-
-    def _add_directive(self, menu, name, flag, slot, editor):
-        """ Add the entry for a directive to a menu. """
-
-        menu.append(
-                (self._flagged_text(name + '...', flag), slot,
-                        (editor not in self._editors)))
-
-    @staticmethod
-    def _flagged_text(text, flag):
-        """ Return a (possibly) flagged version of a piece of text. """
-
-        if flag:
-            text += ' \N{small orange diamond}'
-
-        return text
 
     def _acceptNames(self):
         """ Accept all argument names. """
@@ -1321,6 +1388,25 @@ class CodeView(ContainerView):
             self.draw_name()
             self.draw_status()
             self.shell.dirty = True
+
+    def _handle_comments(self):
+        """ Slot to handle comments. """
+
+        name = self.api.precis if isinstance(self.api, ManualCode) else self.api.name
+
+        ed = ExternalEditor()
+        ed.editDone.connect(self._handle_comments_done)
+        ed.edit(self.api.comments, "Comments: " + name)
+        self.editors['comments'] = ed
+
+    def _handle_comments_done(self, text_changed, text):
+        """ Slot to handle changed comments. """
+
+        if text_changed:
+            self.api.comments = text
+            self.shell.dirty = True
+
+        del self.editors['comments']
 
     def _handle_add_manual_code(self):
         """ Slot to handle the addition of manual code. """
@@ -1351,7 +1437,7 @@ class CodeView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._mcBodyDone)
         ed.edit(self.api.body, "Manual Code: " + self.api.precis)
-        self._editors["mcb"] = ed
+        self.editors['mcb'] = ed
 
     def _mcBodyDone(self, text_changed, text):
         """ Slot to handle changed manual code body. """
@@ -1360,7 +1446,7 @@ class CodeView(ContainerView):
             self.api.body = text
             self.shell.dirty = True
 
-        del self._editors["mcb"]
+        del self.editors['mcb']
 
     def _deleteCode(self):
         """ Slot to handle the deletion of one or more code items. """
@@ -1384,7 +1470,7 @@ class CodeView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._accessCodeDone)
         ed.edit(self.api.accesscode, "%AccessCode: " + self.api_as_str())
-        self._editors["ac"] = ed
+        self.editors['ac'] = ed
 
     def _accessCodeDone(self, text_changed, text):
         """ Slot to handle changed %AccessCode. """
@@ -1393,7 +1479,7 @@ class CodeView(ContainerView):
             self.api.accesscode = text
             self.shell.dirty = True
 
-        del self._editors["ac"]
+        del self.editors['ac']
 
     def _getCodeSlot(self):
         """ Slot to handle %GetCode. """
@@ -1401,7 +1487,7 @@ class CodeView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._getCodeDone)
         ed.edit(self.api.getcode, "%GetCode: " + self.api_as_str())
-        self._editors["gc"] = ed
+        self.editors['gc'] = ed
 
     def _getCodeDone(self, text_changed, text):
         """ Slot to handle changed %GetCode. """
@@ -1410,7 +1496,7 @@ class CodeView(ContainerView):
             self.api.getcode = text
             self.shell.dirty = True
 
-        del self._editors["gc"]
+        del self.editors['gc']
 
     def _setCodeSlot(self):
         """ Slot to handle %SetCode. """
@@ -1418,7 +1504,7 @@ class CodeView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._setCodeDone)
         ed.edit(self.api.setcode, "%SetCode: " + self.api_as_str())
-        self._editors["sc"] = ed
+        self.editors['sc'] = ed
 
     def _setCodeDone(self, text_changed, text):
         """ Slot to handle changed %SetCode. """
@@ -1427,7 +1513,7 @@ class CodeView(ContainerView):
             self.api.setcode = text
             self.shell.dirty = True
 
-        del self._editors["sc"]
+        del self.editors['sc']
 
     def _typehintCodeSlot(self):
         """ Slot to handle %TypeHintCode. """
@@ -1435,7 +1521,7 @@ class CodeView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._typehintCodeDone)
         ed.edit(self.api.typeheadercode, "%TypeHintCode: " + self.api_as_str())
-        self._editors["thic"] = ed
+        self.editors['thic'] = ed
 
     def _typehintCodeDone(self, text_changed, text):
         """ Slot to handle changed %TypeHintCode. """
@@ -1444,7 +1530,7 @@ class CodeView(ContainerView):
             self.api.typehintcode = text
             self.shell.dirty = True
 
-        del self._editors["thic"]
+        del self.editors['thic']
 
     def _typeheaderCodeSlot(self):
         """ Slot to handle %TypeHeaderCode. """
@@ -1453,7 +1539,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._typeheaderCodeDone)
         ed.edit(self.api.typeheadercode,
                 "%TypeHeaderCode: " + self.api_as_str())
-        self._editors["thc"] = ed
+        self.editors['thc'] = ed
 
     def _typeheaderCodeDone(self, text_changed, text):
         """ Slot to handle changed %TypeHeaderCode. """
@@ -1462,7 +1548,7 @@ class CodeView(ContainerView):
             self.api.typeheadercode = text
             self.shell.dirty = True
 
-        del self._editors["thc"]
+        del self.editors['thc']
 
     def _typeCodeSlot(self):
         """ Slot to handle %TypeCode. """
@@ -1470,7 +1556,7 @@ class CodeView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._typeCodeDone)
         ed.edit(self.api.typecode, "%TypeCode: " + self.api_as_str())
-        self._editors["tc"] = ed
+        self.editors['tc'] = ed
 
     def _typeCodeDone(self, text_changed, text):
         """ Slot to handle changed %TypeCode. """
@@ -1479,7 +1565,7 @@ class CodeView(ContainerView):
             self.api.typecode = text
             self.shell.dirty = True
 
-        del self._editors["tc"]
+        del self.editors['tc']
 
     def _convToTypeCodeSlot(self):
         """ Slot to handle %ConvertToTypeCode. """
@@ -1488,7 +1574,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._convToTypeCodeDone)
         ed.edit(self.api.convtotypecode,
                 "%ConvertToTypeCode: " + self.api_as_str())
-        self._editors["cttc"] = ed
+        self.editors['cttc'] = ed
 
     def _convToTypeCodeDone(self, text_changed, text):
         """ Slot to handle changed %ConvertToTypeCode. """
@@ -1497,7 +1583,7 @@ class CodeView(ContainerView):
             self.api.convtotypecode = text
             self.shell.dirty = True
 
-        del self._editors["cttc"]
+        del self.editors['cttc']
 
     def _convFromTypeCodeSlot(self):
         """ Slot to handle %ConvertFromTypeCode. """
@@ -1506,7 +1592,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._convFromTypeCodeDone)
         ed.edit(self.api.convfromtypecode,
                 "%ConvertFromTypeCode: " + self.api_as_str())
-        self._editors["cftc"] = ed
+        self.editors['cftc'] = ed
 
     def _convFromTypeCodeDone(self, text_changed, text):
         """ Slot to handle changed %ConvertFromTypeCode. """
@@ -1515,7 +1601,7 @@ class CodeView(ContainerView):
             self.api.convfromtypecode = text
             self.shell.dirty = True
 
-        del self._editors["cftc"]
+        del self.editors['cftc']
 
     def _gcTraverseCodeSlot(self):
         """ Slot to handle %GCTraverseCode. """
@@ -1524,7 +1610,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._gcTraverseCodeDone)
         ed.edit(self.api.gctraversecode,
                 "%GCTraverseCode: " + self.api_as_str())
-        self._editors["gctc"] = ed
+        self.editors['gctc'] = ed
 
     def _gcTraverseCodeDone(self, text_changed, text):
         """ Slot to handle changed %GCTraverseCode. """
@@ -1533,7 +1619,7 @@ class CodeView(ContainerView):
             self.api.gctraversecode = text
             self.shell.dirty = True
 
-        del self._editors["gctc"]
+        del self.editors['gctc']
 
     def _gcClearCodeSlot(self):
         """ Slot to handle %GCClearCode. """
@@ -1541,7 +1627,7 @@ class CodeView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._gcClearCodeDone)
         ed.edit(self.api.gcclearcode, "%GCClearCode: " + self.api_as_str())
-        self._editors["gccc"] = ed
+        self.editors['gccc'] = ed
 
     def _gcClearCodeDone(self, text_changed, text):
         """ Slot to handle changed %GCClearCode. """
@@ -1550,7 +1636,7 @@ class CodeView(ContainerView):
             self.api.gcclearcode = text
             self.shell.dirty = True
 
-        del self._editors["gccc"]
+        del self.editors['gccc']
 
     def _biGetBufCodeSlot(self):
         """ Slot to handle %BIGetBufferCode. """
@@ -1559,7 +1645,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._biGetBufCodeDone)
         ed.edit(self.api.bigetbufcode,
                 "%BIGetBufferCode: " + self.api_as_str())
-        self._editors["bigetb"] = ed
+        self.editors['bigetb'] = ed
 
     def _biGetBufCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIGetBufferCode. """
@@ -1568,7 +1654,7 @@ class CodeView(ContainerView):
             self.api.bigetbufcode = text
             self.shell.dirty = True
 
-        del self._editors["bigetb"]
+        del self.editors['bigetb']
 
     def _biRelBufCodeSlot(self):
         """ Slot to handle %BIReleaseBufferCode. """
@@ -1577,7 +1663,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._biRelBufCodeDone)
         ed.edit(self.api.birelbufcode,
                 "%BIReleaseBufferCode: " + self.api_as_str())
-        self._editors["birelb"] = ed
+        self.editors['birelb'] = ed
 
     def _biRelBufCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIReleaseBufferCode. """
@@ -1586,7 +1672,7 @@ class CodeView(ContainerView):
             self.api.birelbufcode = text
             self.shell.dirty = True
 
-        del self._editors["birelb"]
+        del self.editors['birelb']
 
     def _biReadBufCodeSlot(self):
         """ Slot to handle %BIGetReadBufferCode. """
@@ -1595,7 +1681,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._biReadBufCodeDone)
         ed.edit(self.api.bireadbufcode,
                 "%BIGetReadBufferCode: " + self.api_as_str())
-        self._editors["birb"] = ed
+        self.editors['birb'] = ed
 
     def _biReadBufCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIGetReadBufferCode. """
@@ -1604,7 +1690,7 @@ class CodeView(ContainerView):
             self.api.bireadbufcode = text
             self.shell.dirty = True
 
-        del self._editors["birb"]
+        del self.editors['birb']
 
     def _biWriteBufCodeSlot(self):
         """ Slot to handle %BIGetWriteBufferCode. """
@@ -1613,7 +1699,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._biWriteBufCodeDone)
         ed.edit(self.api.biwritebufcode,
                 "%BIGetWriteBufferCode: " + self.api_as_str())
-        self._editors["biwb"] = ed
+        self.editors['biwb'] = ed
 
     def _biWriteBufCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIGetWriteBufferCode. """
@@ -1622,7 +1708,7 @@ class CodeView(ContainerView):
             self.api.biwritebufcode = text
             self.shell.dirty = True
 
-        del self._editors["biwb"]
+        del self.editors['biwb']
 
     def _biSegCountCodeSlot(self):
         """ Slot to handle %BIGetSegCountCode. """
@@ -1631,7 +1717,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._biSegCountCodeDone)
         ed.edit(self.api.bisegcountcode,
                 "%BIGetSegCountCode: " + self.api_as_str())
-        self._editors["bisc"] = ed
+        self.editors['bisc'] = ed
 
     def _biSegCountCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIGetSegCountCode. """
@@ -1640,7 +1726,7 @@ class CodeView(ContainerView):
             self.api.bisegcountcode = text
             self.shell.dirty = True
 
-        del self._editors["bisc"]
+        del self.editors['bisc']
 
     def _biCharBufCodeSlot(self):
         """ Slot to handle %BIGetCharBufferCode. """
@@ -1649,7 +1735,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._biCharBufCodeDone)
         ed.edit(self.api.bicharbufcode,
                 "%BIGetCharBufferCode: " + self.api_as_str())
-        self._editors["bicb"] = ed
+        self.editors['bicb'] = ed
 
     def _biCharBufCodeDone(self, text_changed, text):
         """ Slot to handle changed %BIGetCharBufferCode. """
@@ -1658,7 +1744,7 @@ class CodeView(ContainerView):
             self.api.bicharbufcode = text
             self.shell.dirty = True
 
-        del self._editors["bicb"]
+        del self.editors['bicb']
 
     def _pickleCodeSlot(self):
         """ Slot to handle %PickleCode. """
@@ -1666,7 +1752,7 @@ class CodeView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._pickleCodeDone)
         ed.edit(self.api.picklecode, "%PickleCode: " + self.api_as_str())
-        self._editors["pick"] = ed
+        self.editors['pick'] = ed
 
     def _pickleCodeDone(self, text_changed, text):
         """ Slot to handle changed %PickleCode. """
@@ -1675,7 +1761,7 @@ class CodeView(ContainerView):
             self.api.picklecode = text
             self.shell.dirty = True
 
-        del self._editors["pick"]
+        del self.editors['pick']
 
     def _finalCodeSlot(self):
         """ Slot to handle %FinalisationCode. """
@@ -1684,7 +1770,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._finalCodeDone)
         ed.edit(self.api.finalisationcode,
                 "%FinalisationCode: " + self.api_as_str())
-        self._editors["fc"] = ed
+        self.editors['fc'] = ed
 
     def _finalCodeDone(self, text_changed, text):
         """ Slot to handle changed %FinalisationCode. """
@@ -1693,7 +1779,7 @@ class CodeView(ContainerView):
             self.api.finalisationcode = text
             self.shell.dirty = True
 
-        del self._editors["fc"]
+        del self.editors['fc']
 
     def _subclassCodeSlot(self):
         """ Slot to handle %ConvertToSubClassCode. """
@@ -1702,7 +1788,7 @@ class CodeView(ContainerView):
         ed.editDone.connect(self._subclassCodeDone)
         ed.edit(self.api.subclasscode,
                 "%ConvertToSubClassCode: " + self.api_as_str())
-        self._editors["scc"] = ed
+        self.editors['scc'] = ed
 
     def _subclassCodeDone(self, text_changed, text):
         """ Slot to handle changed %ConvertToSubClassCode. """
@@ -1711,7 +1797,7 @@ class CodeView(ContainerView):
             self.api.subclasscode = text
             self.shell.dirty = True
 
-        del self._editors["scc"]
+        del self.editors['scc']
 
     def _docstringSlot(self):
         """ Slot to handle %Docstring. """
@@ -1719,7 +1805,7 @@ class CodeView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._docstringDone)
         ed.edit(self.api.docstring, "%Docstring: " + self.api_as_str())
-        self._editors["ds"] = ed
+        self.editors['ds'] = ed
 
     def _docstringDone(self, text_changed, text):
         """ Slot to handle changed %Docstring. """
@@ -1728,7 +1814,7 @@ class CodeView(ContainerView):
             self.api.docstring = text
             self.shell.dirty = True
 
-        del self._editors["ds"]
+        del self.editors['ds']
 
     def _methodCodeSlot(self):
         """ Slot to handle %MethodCode. """
@@ -1736,7 +1822,7 @@ class CodeView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._methodCodeDone)
         ed.edit(self.api.methcode, "%MethodCode: " + self.api_as_str())
-        self._editors["mc"] = ed
+        self.editors['mc'] = ed
 
     def _methodCodeDone(self, text_changed, text):
         """ Slot to handle changed %MethodCode. """
@@ -1745,7 +1831,7 @@ class CodeView(ContainerView):
             self.api.methcode = text
             self.shell.dirty = True
 
-        del self._editors["mc"]
+        del self.editors['mc']
 
     def _virtualCatcherCodeSlot(self):
         """ Slot to handle %VirtualCatcherCode. """
@@ -1753,7 +1839,7 @@ class CodeView(ContainerView):
         ed = ExternalEditor()
         ed.editDone.connect(self._virtualCatcherCodeDone)
         ed.edit(self.api.virtcode, "%VirtualCatcherCode: " + self.api_as_str())
-        self._editors["vcc"] = ed
+        self.editors['vcc'] = ed
 
     def _virtualCatcherCodeDone(self, text_changed, text):
         """ Slot to handle changed %VirtualCatcherCode. """
@@ -1762,7 +1848,7 @@ class CodeView(ContainerView):
             self.api.virtcode = text
             self.shell.dirty = True
 
-        del self._editors["vcc"]
+        del self.editors['vcc']
 
     def _handle_versions(self):
         """ Slot to handle the versions. """

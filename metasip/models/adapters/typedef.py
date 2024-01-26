@@ -54,7 +54,7 @@ class TypedefAdapter(BaseApiAdapter):
         output.write(self.as_str())
         output.write(';\n')
 
-        adapt(ctor, Docstring).generate_sip_directives(output)
+        adapt(typedef, Docstring).generate_sip_directives(output)
 
         self.version_end(nr_ends, output)
 
@@ -81,6 +81,7 @@ class TypedefAdapter(BaseApiAdapter):
         output.write('>\n')
 
         output += 1
+        adapt(typedef, Code).save_subelements(output)
         adapt(typedef, Docstring).save_subelements(output)
         output -= 1
 

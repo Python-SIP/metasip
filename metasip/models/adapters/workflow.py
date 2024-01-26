@@ -11,6 +11,7 @@ class WorkflowAdapter(BaseAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
+        'comments': AttributeType.LITERAL,
         'status':   AttributeType.STRING,
     }
 
@@ -18,3 +19,8 @@ class WorkflowAdapter(BaseAdapter):
         """ Save the XML attributes. """
 
         self.save_str('status', output)
+
+    def save_subelements(self, output):
+        """ Save the XML subelements. """
+
+        self.save_literal('comments', output)

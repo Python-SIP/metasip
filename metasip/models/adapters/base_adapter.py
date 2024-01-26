@@ -232,6 +232,17 @@ class BaseApiAdapter(BaseAdapter):
             output.write(f'%If ({feature})\n', indent=False)
             nr_ends += 1
 
+        # Also handle comments.
+        if api.comments != '':
+            for line in api.comments.split('\n'):
+                line = line.rstrip()
+                if line != '':
+                    line = '// ' + line + '\n'
+                else:
+                    line = '//\n'
+
+                output.write(line)
+
         return nr_ends
 
     @staticmethod

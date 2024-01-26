@@ -105,18 +105,14 @@ class VariableAdapter(BaseApiAdapter):
         self.save_attribute('name', variable.name, output)
         self.save_attribute('type', variable.type, output)
         self.save_bool('static', output)
+        output.write('>\n')
 
-        # Note that this assumes all model super-classes do not have
-        # subelements.
-        if variable.accesscode != '' or variable.getcode != '' or variable.setcode != '':
-            output.write('>\n')
+        output += 1
+        adapt(variable, Code).save_subelements(output)
+        adapt(variable, Access).save_subelements(output)
+        self.save_literal('accesscode', output)
+        self.save_literal('getcode', output)
+        self.save_literal('setcode', output)
+        output -= 1
 
-            output += 1
-            self.save_literal('accesscode', output)
-            self.save_literal('getcode', output)
-            self.save_literal('setcode', output)
-            output -= 1
-
-            output.write('</Variable>\n')
-        else:
-            output.write('/>\n')
+        output.write('</Variable>\n')
