@@ -9,10 +9,11 @@ import os
 
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
         QFormLayout, QGridLayout, QGroupBox, QHBoxLayout, QInputDialog, QLabel,
-        QLineEdit, QMessageBox, QPushButton, QStyle, QToolButton, QVBoxLayout,
-        QWidget)
+        QLineEdit, QMessageBox, QPushButton, QStyle, QTabWidget, QToolButton,
+        QVBoxLayout, QWidget)
 
-from .....helpers import VersionMap
+from .....helpers import (get_platform_name, get_supported_platforms,
+        header_directory_platform, VersionMap)
 from .....models import (Callable, CodeContainer, Constructor, Enum,
         HeaderDirectory, HeaderFile, HeaderFileVersion, ManualCode, SipFile,
         VersionRange)
@@ -71,15 +72,28 @@ class ControlWidget(QWidget):
         self._header_directory_name = QLabel()
         self._header_directory_form.addRow("Name", self._header_directory_name)
 
-        self._header_suffix = QLineEdit()
-        self._header_directory_form.addRow("Suffix", self._header_suffix)
+        self._platforms = QTabWidget()
+        v_box.addWidget(self._platforms)
 
-        self._header_filter = QLineEdit()
-        self._header_directory_form.addRow("File filter", self._header_filter)
+        current_platform_name = get_platform_name()
+        current_platform_page = None
 
-        self._header_parser_args = QLineEdit()
-        self._header_directory_form.addRow("Parser arguments",
-                self._header_parser_args)
+        for platform_name in get_supported_platforms():
+            page = QWidget()
+
+            form = QFormLayout()
+            page.setLayout(form)
+
+            form.addRow("Header file pattern",
+                    QLineEdit(objectName='inputdirpattern'))
+            form.addRow("Parser arguments", QLineEdit(objectName='parserargs'))
+
+            self._platforms.addTab(page, platform_name)
+
+            if platform_name == current_platform_name:
+                current_platform_page = page
+
+        self._platforms.setCurrentWidget(current_platform_page)
 
         self._showing_ignored = QCheckBox("Show ignored header files?",
                 stateChanged=self._handle_showing_ignored)
@@ -173,17 +187,24 @@ class ControlWidget(QWidget):
 
         if header_directory is None:
             self._header_directory_name.setText(None)
-            self._header_suffix.clear()
-            self._header_filter.clear()
-            self._header_parser_args.clear()
+
+            for _, inputdirpattern, parserargs in self._get_platform_widgets():
+                inputdirpattern.clear()
+                parserargs.clear()
+
             self._showing_ignored.setChecked(False)
 
             enabled = False
         else:
             self._header_directory_name.setText(header_directory.name)
-            self._header_suffix.setText(header_directory.inputdirsuffix)
-            self._header_filter.setText(header_directory.filefilter)
-            self._header_parser_args.setText(header_directory.parserargs)
+
+            for platform_name, inputdirpattern, parserargs in self._get_platform_widgets():
+                platform = header_directory_platform(header_directory,
+                        platform_name=platform_name)
+
+                inputdirpattern.setText(platform.inputdirpattern)
+                parserargs.setText(platform.parserargs)
+
             self._showing_ignored.setChecked(showing_ignored)
 
             enabled = True
@@ -323,7 +344,9 @@ class ControlWidget(QWidget):
 
         parser = CastXMLParser()
 
-        name = os.path.join(source_directory, header_directory.inputdirsuffix,
+        header_directory_name = os.path.dirname(
+                header_directory_platform(header_directory).inputdirpattern)
+        name = os.path.join(source_directory, header_directory_name,
                 header_file.name)
 
         if not os.access(name, os.R_OK):
@@ -389,23 +412,19 @@ class ControlWidget(QWidget):
         shell = self._tool.shell
         project = shell.project
         header_directory = self._header_directory
+        platform = header_directory_platform(header_directory)
 
-        source_directory = os.path.abspath(self._source_directory.text())
+        source_pattern = os.path.abspath(self._source_directory.text())
+        source_pattern = os.path.join(source_directory,
+                platform.inputdirpattern)
 
-        if header_directory.inputdirsuffix != '':
-            source_directory = os.path.join(source_directory,
-                    header_directory.inputdirsuffix)
-
-        shell.log(f"Scanning header directory '{source_directory}'")
-
-        if header_directory.filefilter != '':
-            source_directory = os.path.join(source_directory,
-                    header_directory.filefilter)
+        header_directory_path = os.path.dirname(source_pattern)
+        shell.log(f"Scanning header directory '{header_directory_path}'")
 
         # Save the files that were in the directory.
         saved = list(header_directory.content)
 
-        for header_path in glob.iglob(source_directory):
+        for header_path in glob.iglob(source_pattern):
             if not os.path.isfile(header_path):
                 continue
 
@@ -471,9 +490,12 @@ class ControlWidget(QWidget):
     def _handle_update_header_directory_properties(self):
         """ Handle the button to update a header directory's properties. """
 
-        self._header_directory.filefilter = self._header_filter.text()
-        self._header_directory.inputdirsuffix = self._header_suffix.text()
-        self._header_directory.parserargs = self._header_parser_args.text()
+        for platform_name, inputdirpattern, parserargs in self._get_platform_widgets():
+            platform = header_directory_platform(self._header_directory,
+                    platform_name=platform_name)
+
+            platform.inputdirpattern = inputdirpattern.text()
+            platform.parserargs = parserargs.text()
 
         self._tool.shell.dirty = True
 
@@ -863,3 +885,17 @@ class ControlWidget(QWidget):
                         break
 
             self._module.setCurrentText(module_name)
+
+    def _get_platform_widgets(self):
+        """ A generator that returns a 3-tuple of the name and each field
+        widget for each supported platform.
+        """
+
+        for i in range(self._platforms.count()):
+            platform_name = self._platforms.tabText(i)
+
+            page = self._platforms.widget(i)
+            inputdirpattern = page.findChild(QLineEdit, 'inputdirpattern')
+            parserargs = page.findChild(QLineEdit, 'parserargs')
+
+            yield (platform_name, inputdirpattern, parserargs)

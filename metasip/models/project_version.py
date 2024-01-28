@@ -33,6 +33,9 @@
 #       - Added 'docstring' to the 'Typedef' element.
 #       - Added 'keywordarguments' to the 'Module' element.
 #       - Removed 'outputdirsuffix' from the 'Module' element.
+#       - Added 'platforms' to the 'HeaderDirectory' element.
+#       - Removed 'filefilter', 'inputdirsuffix' and 'parserargs' from the
+#         'HeaderDirectory' element.
 #
 #  0.16 Implemented by metasip v2.11.
 #       - Added 'pyssizetclean' to the 'Module' element.

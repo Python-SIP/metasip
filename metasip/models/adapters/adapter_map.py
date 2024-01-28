@@ -28,6 +28,7 @@ from ..opaque_class import OpaqueClass
 from ..operator_cast import OperatorCast
 from ..operator_function import OperatorFunction
 from ..operator_method import OperatorMethod
+from ..platform import Platform
 from ..project import Project
 from ..sip_file import SipFile
 from ..tagged import Tagged
@@ -60,6 +61,7 @@ from .opaque_class import OpaqueClassAdapter
 from .operator_cast import OperatorCastAdapter
 from .operator_function import OperatorFunctionAdapter
 from .operator_method import OperatorMethodAdapter
+from .platform import PlatformAdapter
 from .project import ProjectAdapter
 from .sip_file import SipFileAdapter
 from .tagged import TaggedAdapter
@@ -95,6 +97,7 @@ ADAPTER_MAP = {
     OperatorFunction:   OperatorFunctionAdapter,
     OperatorMethod:     OperatorMethodAdapter,
     OpaqueClass:        OpaqueClassAdapter,
+    Platform:           PlatformAdapter,
     Project:            ProjectAdapter,
     SipFile:            SipFileAdapter,
     Tagged:             TaggedAdapter,

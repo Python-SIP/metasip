@@ -28,6 +28,7 @@ from .opaque_class import OpaqueClass
 from .operator_cast import OperatorCast
 from .operator_function import OperatorFunction
 from .operator_method import OperatorMethod
+from .platform import Platform
 from .project import Project
 from .sip_file import SipFile
 from .tagged import Tagged

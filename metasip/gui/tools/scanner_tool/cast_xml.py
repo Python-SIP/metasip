@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 
+from ....helpers import header_directory_platform
 from ....project import (Function, Argument, Variable, Typedef, OpaqueClass,
         Class, Constructor, Destructor, Method, Enum, EnumValue,
         OperatorFunction, OperatorMethod, Namespace, OperatorCast)
@@ -984,7 +985,7 @@ class CastXMLParser(ParserBase):
         self._pathname = pathname
         iname = os.path.join(tempfile.gettempdir(), hf.name + '.tmp')
 
-        argv = ['castxml', '-x', 'c++', '-std=c++17', '--castxml-output=1']
+        argv = ['castxml', '-x', 'c++', '--castxml-output=1']
 
         if sys.platform == 'darwin':
             # Workaround issues with Xcode v14.3 (and possibly later).
@@ -998,7 +999,7 @@ class CastXMLParser(ParserBase):
 
         argv.append('-o')
         argv.append(iname)
-        argv.append(hdir.parserargs)
+        argv.append(header_directory_platform(hdir).parserargs)
         argv.append(self._pathname)
 
         # We use shell=True and a string argv for macOS - but I don't

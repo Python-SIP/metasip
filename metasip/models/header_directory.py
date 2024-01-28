@@ -6,6 +6,7 @@
 from dataclasses import dataclass, field
 
 from .header_file import HeaderFile
+from .platform import Platform
 
 
 @dataclass
@@ -15,18 +16,11 @@ class HeaderDirectory:
     # The list of C/C++ .h files in the directory.
     content: list[HeaderFile] = field(default_factory=list)
 
-    # The optional glob-like filter to apply to file names.
-    filefilter: str = ''
-
-    # The suffix added to the input directory to create the full name of the
-    # directory.
-    inputdirsuffix: str = ''
+    # The platform-specific configurations.
+    platforms: list[Platform] = field(default_factory=list)
 
     # The name of the header directory.  This is used for display purposes.
     name: str = ''
-
-    # The optional additional arguments passed to the external C++ parser.
-    parserargs: str = ''
 
     # The versions for which the header directory needs scanning.  A single
     # empty string means that no explicit versions have been defined but the
