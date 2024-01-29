@@ -3,6 +3,12 @@
 
 ## v2.13.0
 
+### Initial documentation
+
+Created the initial, very superficial documentation hosted at Read the Docs.
+
+Resolves [#8](https://github.com/Python-SIP/metasip/issues/8)
+
 ### Platform-specific header directory properties
 
 The header directory properties that specify the header files to scan (ie.
