@@ -20,13 +20,13 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-V', '--version', action='version', version=version)
-    parser.add_argument('project', help="the project to generate code for",
+    parser.add_argument('project',
+            help="the project to generate .sip files from",
             nargs='?')
     parser.add_argument('--ignore',
-            help="the module to generate code for",
+            help="do not generate .sip files for MODULE",
             metavar='MODULE', action='append')
-    parser.add_argument('--output-dir',
-            help="the directory to write the generated code to",
+    parser.add_argument('--output-dir', help="generate the .sip files in DIR",
             metavar='DIR', required=True)
     parser.add_argument('--verbose', help="display progress messages",
             dest='verbose', default=False, action='store_true')

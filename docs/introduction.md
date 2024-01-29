@@ -1,5 +1,4 @@
-# MetaSIP - a GUI Development Tool for SIP
-
+# Introduction
 
 [SIP](https://pypi.org/project/sip/) is a Python bindings generator for C and
 C++ libraries.  It takes as its input a set of `.sip` text files that describes
@@ -25,52 +24,4 @@ easy to maintain the bindings for a large library.
 Currently the scanning of a library's header files is done using
 [CastXML](https://github.com/CastXML/CastXML) and this must also be installed.
 
-MetaSIP is implemented with Python and
-[PyQt6](https://pypi.org/project/PyQt6/).
-
-It should be noted that MetaSIP was developed a number of years ago by the
-author as a personal productivity tool.  As a result it is fairly feature
-complete.  However because it has not been used by a significant number of
-people, its behavour may seem quirky in places.  It is certainly poorly
-documented with no online help.
-
-
-## License
-
 MetaSIP is licensed under the BSD 2 clause license.
-
-
-## Installation
-
-To install `msipgen`, run:
-
-    pip install metasip
-
-To install the additional dependencies required by the `msip` GUI development
-tool, run:
-
-    pip install 'metasip[gui]'
-
-
-## Creating Packages for Distribution
-
-Python sdists and wheels can be created with any standard Python build
-frontend.
-
-For example, using [build](https://pypi.org/project/build/) an sdist and wheel
-will be created from a checkout in the current directory by running:
-
-    python -m build --outdir .
-
-
-## Building the Documentation
-
-The documentation is built using [Sphinx](https://pypi.org/project/Sphinx/),
-[myst_parser](https://pypi.org/project/myst-parser/) and the
-[sphinx-rtd-theme](https://pypi.org/project/sphinx-rtd-theme/) theme.
-
-Change to the `docs` directory of a checkout and run:
-
-    make html
-
-The HTML documentation can then be found in the `_build/html` subdirectory.
