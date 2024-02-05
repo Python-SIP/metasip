@@ -1,6 +1,24 @@
 # Release Notes
 
 
+## v2.13.1
+
+### Regression fixes
+
+The following regressions from the PyQt5 based version were fixed:
+
+- crash when resetting the workflow
+- crash when scanning a header directory
+- a scanned header directory did not expand to show files that need parsing
+- crash when parsing a header file
+- slots and signals were not recognised as existing methods
+- crash when adding a new header file to a module
+- drag and drop didn't work
+- some new API elements were not initialised as `Unchecked`.
+
+Resolves [#12](https://github.com/Python-SIP/metasip/issues/12)
+
+
 ## v2.13.0
 
 ### Initial documentation
