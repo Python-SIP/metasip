@@ -174,7 +174,8 @@ class ApiEditor(QTreeWidget):
         # Find the selected view.
         dragging = None
 
-        it = QTreeWidgetItemIterator(self, QTreeWidgetItemIterator.Selected)
+        it = QTreeWidgetItemIterator(self,
+                QTreeWidgetItemIterator.IteratorFlag.Selected)
         itm = it.value()
 
         while itm is not None:
@@ -234,7 +235,7 @@ class ApiEditor(QTreeWidget):
         """
 
         # Get the target.
-        target = self.itemAt(ev.pos())
+        target = self.itemAt(ev.position().toPoint())
 
         # Check that the payload is a view.
         mime = ev.mimeData()
@@ -245,7 +246,8 @@ class ApiEditor(QTreeWidget):
         source_id = int(mime.data(self.MIME_FORMAT))
         source = None
 
-        it = QTreeWidgetItemIterator(self, QTreeWidgetItemIterator.DragEnabled)
+        it = QTreeWidgetItemIterator(self,
+                QTreeWidgetItemIterator.IteratorFlag.DragEnabled)
         itm = it.value()
 
         while itm is not None:
@@ -350,7 +352,7 @@ class APIView(QTreeWidgetItem):
         """ An API has been added. """
 
         # The order of views must match the order of APIs.
-        index = self.api.content.find(api)
+        index = self.api.content.index(api)
         after = self if index == 0 else self.child(index - 1)
         self.get_child_factory()(api, self.shell, self, after)
 
@@ -494,13 +496,16 @@ class ModuleView(APIView, DropSite):
     def drop(self, view):
         """ Handle the drop of a view. """
 
-        # The .sip file is always placed at the top.
-        sip_file = view.api
-        dst_api = self.api.content
-        src_api = view.parent().api.content
+        view_parent = view.parent()
 
-        src_api.remove(sip_file)
-        dst_api.insert(0, sip_file)
+        # Remove the view from its parent and the API item from its container.
+        api = view.api
+        view_parent.api.content.remove(api)
+        view_parent.removeChild(view)
+
+        # The .sip file is always placed at the top.
+        self.api.content.insert(0, api)
+        self.insertChild(0, view)
 
         self.shell.dirty = True
 
@@ -553,12 +558,15 @@ class ContainerView(APIView, DropSite):
     def droppable(self, view):
         """ Return True if a view can be dropped. """
 
+        parent = self.parent()
+        view_parent = view.parent()
+
         # See if we are moving a sibling.
-        if view.parent() is self.parent():
+        if view_parent is parent:
             return True
 
         # See if we are moving a child to the top.
-        if view.parent() is self:
+        if view_parent is self:
             return True
 
         return False
@@ -566,34 +574,32 @@ class ContainerView(APIView, DropSite):
     def drop(self, view):
         """ Handle the drop of a view. """
 
-        if view.parent() is self.parent():
-            # We are moving a sibling after us.
-            parent_content = self.parent().api.content
-            api = view.api
+        parent = self.parent()
+        view_parent = view.parent()
 
-            parent_content.remove(api)
+        # Remove the view from its parent and the API item from its container.
+        api = view.api
+        view_parent.api.content.remove(api)
+        view_parent.removeChild(view)
+
+        if view_parent is parent:
+            # We are moving a sibling after us.
+            parent_content = parent.api.content
 
             new_idx = parent_content.index(self.api) + 1
             if new_idx < len(parent_content):
                 parent_content.insert(new_idx, api)
+                parent.insertChild(new_idx, view)
             else:
                 parent_content.append(api)
+                parent.addChild(view)
 
-            self.shell.dirty = True
-
-            return
-
-        if view.parent() is self:
+        elif view_parent is self:
             # Dropping a child is interpreted as moving it to the top.
-            my_content = self.api.content
-            api = view.api
+            self.api.content.insert(0, api)
+            self.insertChild(0, view)
 
-            my_content.remove(api)
-            my_content.insert(0, api)
-
-            self.shell.dirty = True
-
-            return
+        self.shell.dirty = True
 
     def get_child_factory(self):
         """ Return the callable that will return a child instance. """
@@ -616,6 +622,7 @@ class SipFileView(ContainerView):
     def droppable(self, view):
         """ Return True if a view can be dropped. """
 
+        print("!!! in SipFileView.droppable, dropping a", type(view))
         # See if we are moving another .sip file.
         if isinstance(view, SipFileView):
             return True
@@ -629,33 +636,32 @@ class SipFileView(ContainerView):
     def drop(self, view):
         """ Handle the drop of a view. """
 
+        parent = self.parent()
+        view_parent = view.parent()
+
+        # Remove the view from its parent and the API item from its container.
+        api = view.api
+        view_parent.api.content.remove(api)
+        view_parent.removeChild(view)
+
         if isinstance(view, SipFileView):
-            # We are moving another .sip file after us.  First remove it from
-            # its container.
-            view.parent().api.content.remove(view.api)
+            # We are moving a sibling after us.
+            parent_content = parent.api.content
 
-            # Now add it to our container.
-            content = self.parent().api.content
-            idx = content.index(self.api) + 1
-            if idx < len(content):
-                content.insert(idx, view.api)
+            new_idx = parent_content.index(self.api) + 1
+            if new_idx < len(parent_content):
+                parent_content.insert(new_idx, api)
+                parent.insertChild(new_idx, view)
             else:
-                content.append(view.api)
+                parent_content.append(api)
+                parent.addChild(view)
 
-            self.shell.dirty = True
-
-            return
-
-        if view.parent() is self:
+        elif view_parent is self:
             # Dropping a child is interpreted as moving it to the top.
-            content = self.api.content
+            self.api.content.insert(0, api)
+            self.insertChild(0, view)
 
-            content.remove(view.api)
-            content.insert(0, view.api)
-
-            self.shell.dirty = True
-
-            return
+        self.shell.dirty = True
 
     def get_menu(self, siblings):
         """ Return the list of context menu options. """

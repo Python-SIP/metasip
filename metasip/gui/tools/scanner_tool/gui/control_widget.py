@@ -375,7 +375,7 @@ class ControlWidget(QWidget):
                     sip_file = SipFile(name=header_file.name)
                     module.content.append(sip_file)
                     self._tool.shell.notify(EventType.CONTAINER_API_ADD,
-                            module, sip_file)
+                            (module, sip_file))
 
                 self._merge_code(sip_file, parsed_header_file)
                 break
@@ -414,7 +414,7 @@ class ControlWidget(QWidget):
         header_directory = self._header_directory
         platform = header_directory_platform(header_directory)
 
-        source_pattern = os.path.abspath(self._source_directory.text())
+        source_directory = os.path.abspath(self._source_directory.text())
         source_pattern = os.path.join(source_directory,
                 platform.inputdirpattern)
 

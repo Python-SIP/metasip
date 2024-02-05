@@ -9,9 +9,10 @@ import sys
 import tempfile
 
 from ....helpers import header_directory_platform
-from ....project import (Function, Argument, Variable, Typedef, OpaqueClass,
+from ....models import (Function, Argument, Variable, Typedef, OpaqueClass,
         Class, Constructor, Destructor, Method, Enum, EnumValue,
         OperatorFunction, OperatorMethod, Namespace, OperatorCast)
+from ....models.adapters import adapt
 
 from .parser_base import ParserBase, optAttribute
 
@@ -67,7 +68,7 @@ def _fixQt(code):
 
         return s
 
-    cs = leading(code.user())
+    cs = leading(adapt(code).as_str())
 
     for qo in _Q_OBJECT:
         if cs == leading(qo):
@@ -172,7 +173,7 @@ class _Namespace(_ScopedItem):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        tci = Namespace(name=self.name, container=scope)
+        tci = Namespace(name=self.name, status='unknown')
         scope.content.append(tci)
 
         parser.transformScope(tci, self)
@@ -207,8 +208,8 @@ class _Class(_ScopedItem, _Access):
 
         if self.incomplete:
             scope.content.append(
-                    OpaqueClass(name=self.name, container=scope,
-                            access=self.access, status='ignored'))
+                    OpaqueClass(name=self.name, access=self.access,
+                            status='ignored'))
         else:
             bl = []
 
@@ -226,8 +227,8 @@ class _Class(_ScopedItem, _Access):
             # Automatically ignore non-public classes.
             status = 'unknown' if self.access == '' else 'ignored'
 
-            tci = Class(name=self.name, container=scope, bases=', '.join(bl),
-                    struct=False, access=self.access, status=status)
+            tci = Class(name=self.name, bases=', '.join(bl),
+                    access=self.access, status=status)
             scope.content.append(tci)
 
             parser.transformScope(tci, self)
@@ -261,14 +262,14 @@ class _Struct(_ScopedItem, _Access):
 
         if self.incomplete:
             scope.content.append(
-                    OpaqueClass(name=self.name, container=scope,
-                            access=self.access, status='ignored'))
+                    OpaqueClass(name=self.name, access=self.access,
+                            status='ignored'))
         else:
             # Automatically ignore non-public classes.
             status = 'unknown' if self.access == '' else 'ignored'
 
-            tci = Class(name=self.name, container=scope, struct=True,
-                    access=self.access, status=status)
+            tci = Class(name=self.name, struct=True, access=self.access,
+                    status=status)
             scope.content.append(tci)
 
             parser.transformScope(tci, self)
@@ -338,8 +339,8 @@ class _Constructor(_ClassCallable):
         else:
             explicit = False
 
-        tci = Constructor(name=self.name, container=scope, access=self.access,
-                explicit=explicit)
+        tci = Constructor(name=self.name, access=self.access,
+                explicit=explicit, status='unknown')
 
         _transformArgs(parser, self.args, tci.args)
 
@@ -370,8 +371,8 @@ class _Destructor(_ScopedItem, _Access):
         scope is the scope to append the transformed entity to.
         """
         scope.content.append(
-                Destructor(name=self.name, container=scope, access=self.access,
-                        virtual=self.virtual))
+                Destructor(name=self.name, access=self.access,
+                        virtual=self.virtual, status='unknown'))
 
 
 class _Converter(_ClassCallable):
@@ -399,8 +400,8 @@ class _Converter(_ClassCallable):
         """
         name = parser.asType(self.returns)
         if name is not None:
-            tci = OperatorCast(name=name, container=scope, access=self.access,
-                    const=self.const)
+            tci = OperatorCast(name=name, access=self.access, const=self.const,
+                    status='unknown')
 
             scope.content.append(tci)
 
@@ -434,7 +435,7 @@ class _Method(_ClassCallable):
         # Private methods are ignored by default.
         status = 'ignored' if self.access.startswith('private') else 'unknown'
 
-        tci = Method(name=self.name, container=scope, access=self.access,
+        tci = Method(name=self.name, access=self.access,
                 rtype=parser.asType(self.returns), virtual=self.virtual,
                 const=self.const, static=self.static, abstract=self.abstract,
                 status=status)
@@ -474,10 +475,9 @@ class _OperatorMethod(_ClassCallable):
         # Private methods are ignored by default.
         status = 'ignored' if self.access.startswith('private') else 'unknown'
 
-        tci = OperatorMethod(name=self.name, container=scope,
-                access=self.access, rtype=parser.asType(self.returns),
-                virtual=self.virtual, const=self.const, abstract=self.abstract,
-                status=status)
+        tci = OperatorMethod(name=self.name, access=self.access,
+                rtype=parser.asType(self.returns), virtual=self.virtual,
+                const=self.const, abstract=self.abstract, status=status)
 
         _transformArgs(parser, self.args, tci.args)
 
@@ -506,8 +506,8 @@ class _Function(_Callable):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        tci = Function(name=self.name, container=scope,
-                rtype=parser.asType(self.returns))
+        tci = Function(name=self.name, rtype=parser.asType(self.returns),
+                status='unknown')
 
         _transformArgs(parser, self.args, tci.args)
 
@@ -538,8 +538,8 @@ class _OperatorFunction(_Callable):
         parser is the parser instance.
         scope is the scope to append the transformed entity to.
         """
-        tci = OperatorFunction(name=self.name, container=scope,
-                rtype=parser.asType(self.returns))
+        tci = OperatorFunction(name=self.name,
+                rtype=parser.asType(self.returns), status='unknown')
 
         _transformArgs(parser, self.args, tci.args)
 
@@ -632,10 +632,11 @@ class _Enumeration(_ScopedItem, _Access):
         if self.access.startswith("private"):
             return
 
-        tci = Enum(name=self.name, access=self.access, enumclass=self.scoped)
+        tci = Enum(name=self.name, access=self.access, enumclass=self.scoped,
+                status='unknown')
 
         for e in self.values:
-            tci.content.append(EnumValue(name=e.name))
+            tci.content.append(EnumValue(name=e.name, status='unknown'))
 
         scope.content.append(tci)
 
@@ -681,7 +682,8 @@ class _Typedef(_ScopedItem):
         # Ignore unsupported types - probably only those defined in terms of
         # a MethodType (eg. typedef foo_t (scope::*bar)();).
         if t:
-            scope.content.append(Typedef(name=self.name, type=t))
+            scope.content.append(
+                    Typedef(name=self.name, type=t, status='unknown'))
 
     def asType(self, parser, prefix_ok):
         """

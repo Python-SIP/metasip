@@ -36,7 +36,13 @@ class MethodAdapter(BaseApiAdapter):
         if adapt(method, Callable) != adapt(other_method, Callable):
             return False
 
-        if method.access != other_method.access:
+        # This code is called when we are comparing a potentially new version
+        # of an API item (when the extended access hasn't been specified yet)
+        # with an existing one (when the extended access has been specified).
+        # Therefore we ignore the extension when doing the comparison.
+        access = method.access.replace('signals', '').replace(' slots', '').replace('public', '')
+        other_access = other_method.access.replace('signals', '').replace(' slots', '').replace('public', '')
+        if access != other_access:
             return False
 
         # Note that we don't include 'final' because this is implemented as an

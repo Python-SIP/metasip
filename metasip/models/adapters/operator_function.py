@@ -16,10 +16,10 @@ class OperatorFunctionAdapter(BaseApiAdapter):
     def __eq__(self, other):
         """ Compare for C/C++ equality. """
 
-        arg = self.model
-        other_arg = other.model
+        function = self.model
+        other_function = other.model
 
-        if type(arg) is not type(other_arg):
+        if type(function) is not type(other_function):
             return False
 
         if adapt(function, Callable) != adapt(other_function, Callable):

@@ -42,10 +42,10 @@ class ScannerTool(ShellTool):
         self._gui.sources_widget.header_directory_added(header_directory,
                 working_version)
 
-    def header_directories_status(self, header_file):
+    def header_directory_status(self, header_directory):
         """ The status of a header directory has changed. """
 
-        self._gui.sources_widget.header_directory_status()
+        self._gui.sources_widget.header_directory_status(header_directory)
 
     def header_directory_removed(self, header_directory):
         """ A header directory has been removed. """

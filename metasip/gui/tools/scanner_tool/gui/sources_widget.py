@@ -34,12 +34,16 @@ class SourcesWidget(QTreeWidget):
         header_directory_item.set_working_version(working_version)
         self._sort_header_directories()
 
-    def header_directories_status(self, header_directory):
+    def header_directory_status(self, header_directory):
         """ The status of a header directory has changed. """
 
         header_directory_item = self._find_header_directory_item(
                 header_directory)
         header_directory_item.set_status()
+
+        # Set the status of the children so that our expanded state is correct.
+        for header_file_item in self._header_file_items(header_directory_item):
+            header_file_item.set_status()
 
     def header_directory_removed(self, header_directory):
         """ A header directory has been removed. """

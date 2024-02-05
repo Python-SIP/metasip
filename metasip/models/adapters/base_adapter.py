@@ -47,6 +47,7 @@ class BaseAdapter(ABC):
     def as_str(self):
         """ Return the standard string representation. """
 
+        print("!!!", type(self))
         # This method must be reimplemented by those adapters that contribute
         # to the string representation of an API.  However we don't want to
         # make it abstract and have to provide a stub reimplementation in other
