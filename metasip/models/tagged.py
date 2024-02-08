@@ -4,6 +4,7 @@
 
 
 from dataclasses import dataclass, field
+from typing import List
 
 from .version_range import VersionRange
 
@@ -17,15 +18,15 @@ class Tagged:
     # The optional list of logically or-ed features that the API item is
     # limited to.  A feature may be preceded by "!" to indicate the logical
     # inverse.
-    features: list[str] = field(default_factory=list)
+    features: List[str] = field(default_factory=list)
 
     # The optional list of logically or-ed platforms that the API item is
     # limited to.  Note that SIP supports inverting a platform, as does the
     # MetaSIP platforms tool, but the MetaSIP UI for picking a platform doesn't
     # yet.
-    platforms: list[str] = field(default_factory=list)
+    platforms: List[str] = field(default_factory=list)
 
     # The optional list of logically and-ed version ranges.  Note that SIP
     # supports multiple ranges, as does the MetaSIP versions tool, but the
     # MetaSIP UI for picking a version range doesn't yet.
-    versions: list[VersionRange] = field(default_factory=list)
+    versions: List[VersionRange] = field(default_factory=list)

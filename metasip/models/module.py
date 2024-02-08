@@ -4,6 +4,7 @@
 
 
 from dataclasses import dataclass, field
+from typing import List
 
 from .sip_file import SipFile
 
@@ -17,14 +18,14 @@ class Module:
     callsuperinit: str = ''
 
     # The list of .sip files defining API items included in the module.
-    content: list[SipFile] = field(default_factory=list)
+    content: List[SipFile] = field(default_factory=list)
 
     # The SIP directives to be included at the start of the main .sip file for
     # the module.
     directives: str = ''
 
     # The list of modules that this module depends on.
-    imports: list[str] = field(default_factory=list)
+    imports: List[str] = field(default_factory=list)
 
     # The default handling of keyword arguments, either '', 'all' or
     # 'optional'.

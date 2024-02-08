@@ -4,6 +4,7 @@
 
 
 from dataclasses import dataclass, field
+from typing import List
 
 from .header_file_version import HeaderFileVersion
 
@@ -25,4 +26,4 @@ class HeaderFile:
     # The individual versions of the header file.  The list will be empty if
     # it is being ignored.  If no versions have been defined the the list will
     # have one element.  Note that these are unordered.
-    versions: list[HeaderFileVersion] = field(default_factory=list)
+    versions: List[HeaderFileVersion] = field(default_factory=list)

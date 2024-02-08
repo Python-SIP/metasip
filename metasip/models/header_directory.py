@@ -4,6 +4,7 @@
 
 
 from dataclasses import dataclass, field
+from typing import List
 
 from .header_file import HeaderFile
 from .platform import Platform
@@ -14,10 +15,10 @@ class HeaderDirectory:
     """ This class implements a directory containing C/C++ .h files. """
 
     # The list of C/C++ .h files in the directory.
-    content: list[HeaderFile] = field(default_factory=list)
+    content: List[HeaderFile] = field(default_factory=list)
 
     # The platform-specific configurations.
-    platforms: list[Platform] = field(default_factory=list)
+    platforms: List[Platform] = field(default_factory=list)
 
     # The name of the header directory.  This is used for display purposes.
     name: str = ''
@@ -25,4 +26,4 @@ class HeaderDirectory:
     # The versions for which the header directory needs scanning.  A single
     # empty string means that no explicit versions have been defined but the
     # header directory needs scanning.
-    scan: list[str] = field(default_factory=list)
+    scan: List[str] = field(default_factory=list)

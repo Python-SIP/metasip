@@ -4,6 +4,7 @@
 
 
 from dataclasses import dataclass, field
+from typing import List
 
 from .access import Access
 from .code import Code
@@ -15,7 +16,7 @@ class Enum(Code, Access):
     """ This class implements an enum. """
 
     # The list of enum values.
-    content: list[EnumValue] = field(default_factory=list)
+    content: List[EnumValue] = field(default_factory=list)
 
     # Set if the enum is a C++11 enum class.
     enumclass: bool = False

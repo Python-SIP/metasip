@@ -4,6 +4,7 @@
 
 
 from dataclasses import dataclass, field
+from typing import List, Tuple
 
 from .header_directory import HeaderDirectory
 from .module import Module
@@ -23,22 +24,22 @@ class Project:
     dirty: bool = False
 
     # The list of externally defined features.
-    externalfeatures: list[str] = field(default_factory=list)
+    externalfeatures: List[str] = field(default_factory=list)
 
     # The list of externally defined modules.
-    externalmodules: list[str] = field(default_factory=list)
+    externalmodules: List[str] = field(default_factory=list)
 
     # The list of features.
-    features: list[str] = field(default_factory=list)
+    features: List[str] = field(default_factory=list)
 
     # The list of header directories.
-    headers: list[HeaderDirectory] = field(default_factory=list)
+    headers: List[HeaderDirectory] = field(default_factory=list)
 
     # The list of Python modules.
-    modules: list[Module] = field(default_factory=list)
+    modules: List[Module] = field(default_factory=list)
 
     # The list of platforms.
-    platforms: list[str] = field(default_factory=list)
+    platforms: List[str] = field(default_factory=list)
 
     # The name of the optional root Python module.
     rootmodule: str = ''
@@ -47,7 +48,7 @@ class Project:
     sipcomments: str = ''
 
     # The version number of the project format.
-    version: tuple[int] = ProjectVersion
+    version: Tuple[int] = ProjectVersion
 
     # The ordered list of versions.
-    versions: list[str] = field(default_factory=list)
+    versions: List[str] = field(default_factory=list)

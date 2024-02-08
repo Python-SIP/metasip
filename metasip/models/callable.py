@@ -4,6 +4,7 @@
 
 
 from dataclasses import dataclass, field
+from typing import List
 
 from .argument import Argument
 from .code import Code
@@ -16,7 +17,7 @@ class Callable(Code):
     """
 
     # The C/C++ arguments.
-    args: list[Argument] = field(default_factory=list)
+    args: List[Argument] = field(default_factory=list)
 
     # The optional %MethodCode.
     methcode: str = ''

@@ -4,6 +4,10 @@
 
 
 from dataclasses import dataclass, field
+from typing import List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .code import Code
 
 
 @dataclass
@@ -11,4 +15,4 @@ class CodeContainer:
     """ This class is a mixin for APIs that can contain other APIs. """
 
     # The list of contained API items.
-    content: list['.code.Code'] = field(default_factory=list)
+    content: List['Code'] = field(default_factory=list)
