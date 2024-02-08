@@ -1,6 +1,15 @@
 # Release Notes
 
 
+## v2.13.2
+
+### Support for Python v3.8
+
+The code has been fixed to enable it to be run under Python v3.8.
+
+Resolves #13
+
+
 ## v2.13.1
 
 ### Regression fixes
