@@ -35,6 +35,12 @@ people, its behavour may seem quirky in places.  It is certainly poorly
 documented with no online help.
 
 
+## Documentation
+
+The documentation can be found at
+[Read the Docs](https://metasip.readthedocs.io).
+
+
 ## License
 
 MetaSIP is licensed under the BSD 2 clause license.

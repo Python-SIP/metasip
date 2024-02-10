@@ -24,4 +24,9 @@ easy to maintain the bindings for a large library.
 Currently the scanning of a library's header files is done using
 [CastXML](https://github.com/CastXML/CastXML) and this must also be installed.
 
+MetaSIP is hosted at [GitHub](https://github.com/Python-SIP/metasip).
+
+The documentation is hosted at
+[Read the Docs](https://metasip.readthedocs.io).
+
 MetaSIP is licensed under the BSD 2 clause license.
