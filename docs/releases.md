@@ -1,13 +1,42 @@
 # Release Notes
 
 
+## v2.13.3
+
+### Bug fixes
+
+- Fixed the initial status of newly scanned class variables.
+- Fixed the displayed signatures after `%MethodCode` has been defined.
+- New manual code is now displayed and has an appropriate status and
+  version range.
+- Added the missing access specifiers in the context menu for methods.
+- Updating the version range of an API item will now update the GUI.
+- Deleting an API item will now update the GUI.
+- Deleting a `.sip` file will now update the GUI.
+- Fixed a crash inserting a file into the external editor.
+- Fixed a crash when selecting the `KeepReference` annotation of the
+  argument properties dialog.
+- Fixed two crashes in the callable properties dialog.
+- Fixed a crash when doing `Hide Ignored`.
+- Fixed a crash in the version range dialog.
+
+Resolves [#16](https://github.com/Python-SIP/metasip/issues/16)
+
+### Documentation references
+
+Links to the documentation have been added to `README.md` and to the
+documentation itself.
+
+Resolves [#14](https://github.com/Python-SIP/metasip/issues/14)
+
+
 ## v2.13.2
 
 ### Support for Python v3.8
 
 The code has been fixed to enable it to be run under Python v3.8.
 
-Resolves #13
+Resolves [#13](https://github.com/Python-SIP/metasip/issues/13)
 
 
 ## v2.13.1
