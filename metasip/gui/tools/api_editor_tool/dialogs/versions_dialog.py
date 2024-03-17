@@ -47,6 +47,8 @@ class VersionsDialog(BaseDialog):
     def set_fields(self):
         """ Set the dialog's fields from the API item. """
 
+        project = self.shell.project
+
         # Note that we ignore (and eventually discard) anything other than the
         # first version range.
 

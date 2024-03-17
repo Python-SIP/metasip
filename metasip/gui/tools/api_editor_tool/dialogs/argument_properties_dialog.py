@@ -233,7 +233,7 @@ class ArgumentPropertiesDialog(BaseDialog):
             annos_list.append('In')
 
         if self._keep_reference.isChecked():
-            reference = self.ref.text().strip()
+            reference = self._reference.text().strip()
             if reference:
                 annos_list.append('KeepReference=' + reference)
             else:

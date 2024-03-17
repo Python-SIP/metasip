@@ -95,7 +95,7 @@ class ExternalEditor(QObject):
 
         f = QFile(fn)
 
-        if not f.open(f.ReadOnly):
+        if not f.open(f.OpenModeFlag.ReadOnly):
             QMessageBox.warning(self._dialog, "Insert File",
                     "Unable to open file")
             return

@@ -11,10 +11,10 @@ from PyQt6.QtGui import QDrag
 from PyQt6.QtWidgets import (QApplication, QMenu, QMessageBox, QProgressDialog,
         QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator)
 
-from ....models import (Class, Constructor, Destructor, Method, Function, Enum,
-        EnumValue, OperatorFunction, Access, OperatorMethod, ManualCode,
-        Module, OpaqueClass, OperatorCast, Namespace, Tagged, Typedef,
-        Variable)
+from ....models import (Access, Class, Constructor, Destructor, Enum,
+        EnumValue, ExtendedAccess, Function, ManualCode, Method, Module,
+        Namespace, OperatorCast, OpaqueClass, OperatorFunction, OperatorMethod,
+        Tagged, Typedef, Variable, VersionRange)
 from ....models.adapters import adapt
 
 from ...helpers import warning
@@ -606,6 +606,18 @@ class ContainerView(APIView, DropSite):
 
         return CodeView
 
+    def new_manual_code(self):
+        """ Return a new ManualCode object appropriately configured. """
+
+        manual_code = ManualCode(status='unknown')
+
+        project_versions = self.shell.project.versions
+        if project_versions:
+            manual_code.versions.append(
+                    VersionRange(startversion=project_versions[-1]))
+
+        return manual_code
+
 
 class SipFileView(ContainerView):
     """ This class implements a view of a .sip file. """
@@ -622,7 +634,6 @@ class SipFileView(ContainerView):
     def droppable(self, view):
         """ Return True if a view can be dropped. """
 
-        print("!!! in SipFileView.droppable, dropping a", type(view))
         # See if we are moving another .sip file.
         if isinstance(view, SipFileView):
             return True
@@ -740,16 +751,20 @@ class SipFileView(ContainerView):
             # Mark as dirty before removing it.
             self.shell.dirty = True
 
-            self.parent().api.content.remove(self.api)
+            parent = self.parent()
+            parent.api.content.remove(self.api)
+            parent.removeChild(self)
 
     def _handle_add_manual_code(self):
         """ Slot to handle the creation of manual code. """
 
-        manual_code = ManualCode()
+        manual_code = self.new_manual_code()
 
         dialog = ManualCodeDialog(manual_code, "Add Manual Code", self.shell)
 
         if dialog.update():
+            CodeView(manual_code, self.shell, self, after=self)
+
             self.api.content.insert(0, manual_code)
             self.shell.dirty = True
 
@@ -906,7 +921,7 @@ class SipFileView(ContainerView):
         itm = it.value()
 
         while itm:
-            if isinstance(itm, CodeView) and itm.code.status == "ignored":
+            if isinstance(itm, CodeView) and itm.api.status == "ignored":
                 itm.setHidden(not visible)
 
             it += 1
@@ -1093,24 +1108,32 @@ class CodeView(ContainerView):
                 self.api.comments, 'comments')
 
         # Handle the access specifiers.
-        if isinstance(self.api, Access):
-                menu.append(None)
-                menu.append(
-                        MenuOption("public", self._setAccessPublic,
-                                checked=(self.api.access == '')))
+        if isinstance(self.api, (Access, ExtendedAccess)):
+            menu.append(None)
+            menu.append(
+                    MenuOption("public", self._setAccessPublic,
+                            checked=(self.api.access == '')))
+
+            if isinstance(self.api, ExtendedAccess):
                 menu.append(
                         MenuOption("public slots", self._setAccessPublicSlots,
                                 checked=(self.api.access == 'public slots')))
-                menu.append(
-                        MenuOption("protected", self._setAccessProtected,
-                                checked=(self.api.access == 'protected')))
+
+            menu.append(
+                    MenuOption("protected", self._setAccessProtected,
+                            checked=(self.api.access == 'protected')))
+
+            if isinstance(self.api, ExtendedAccess):
                 menu.append(
                         MenuOption("protected slots",
                                 self._setAccessProtectedSlots,
                                 checked=(self.api.access == 'protected slots')))
-                menu.append(
-                        MenuOption("private", self._setAccessPrivate,
-                                checked=(self.api.access == 'private')))
+
+            menu.append(
+                    MenuOption("private", self._setAccessPrivate,
+                            checked=(self.api.access == 'private')))
+
+            if isinstance(self.api, ExtendedAccess):
                 menu.append(
                         MenuOption("private slots",
                                 self._setAccessPrivateSlots,
@@ -1417,11 +1440,13 @@ class CodeView(ContainerView):
     def _handle_add_manual_code(self):
         """ Slot to handle the addition of manual code. """
 
-        manual_code = ManualCode()
+        manual_code = self.new_manual_code()
 
         dialog = ManualCodeDialog(manual_code, "Add Manual Code", self.shell)
 
         if dialog.update():
+            CodeView(manual_code, self.shell, self.parent(), after=self)
+
             parent_content = self.parent().api.content
             parent_content.insert(parent_content.index(self.api) + 1,
                     manual_code)
@@ -1467,8 +1492,11 @@ class CodeView(ContainerView):
             # Mark as dirty before removing them.
             self.shell.dirty = True
 
+            parent = self.parent()
+
             for target in self._targets:
-                self.parent().api.content.remove(target.api)
+                parent.api.content.remove(target.api)
+                parent.removeChild(target)
 
     def _accessCodeSlot(self):
         """ Slot to handle %AccessCode. """
@@ -1835,6 +1863,7 @@ class CodeView(ContainerView):
 
         if text_changed:
             self.api.methcode = text
+            self.draw_name()
             self.shell.dirty = True
 
         del self.editors['mc']
@@ -1862,10 +1891,13 @@ class CodeView(ContainerView):
         dialog = VersionsDialog(self.api, "Versions", self.shell)
 
         if dialog.update():
+            self.draw_versions()
+
             # Apply the version range to all targets.
             for view in self._targets:
                 if view.api is not self.api:
                     view.api.versions = list(self.api.versions)
+                    view.draw_versions()
 
             self.shell.dirty = True
 

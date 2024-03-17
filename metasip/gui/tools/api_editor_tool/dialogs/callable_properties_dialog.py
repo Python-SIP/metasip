@@ -142,7 +142,7 @@ class CallablePropertiesDialog(BaseDialog):
         group_box_layout.addWidget(self._imatmul, 14, 1)
 
         if isinstance(self.model, Constructor):
-            self.setWindowTitle("Constructor Properties")
+            self.widget.setWindowTitle("Constructor Properties")
 
             self._py_type.setEnabled(False)
             self._abort_on_exception.setEnabled(False)
@@ -168,7 +168,7 @@ class CallablePropertiesDialog(BaseDialog):
             self._type_hint.setEnabled(False)
 
         elif isinstance(self.model, Destructor):
-            self.setWindowTitle("Destructor Properties")
+            self.widget.setWindowTitle("Destructor Properties")
 
             self._py_type.setEnabled(False)
             self._py_args.setEnabled(False)
@@ -201,13 +201,13 @@ class CallablePropertiesDialog(BaseDialog):
             self._type_hint.setEnabled(False)
 
         elif isinstance(self.model, Method):
-            self.setWindowTitle("Method Properties")
+            self.widget.setWindowTitle("Method Properties")
 
             self._default.setEnabled(False)
             self._no_derived.setEnabled(False)
 
         elif isinstance(self.model, OperatorMethod):
-            self.setWindowTitle("Operator Method Properties")
+            self.widget.setWindowTitle("Operator Method Properties")
 
             self._abort_on_exception.setEnabled(False)
             self._default.setEnabled(False)
@@ -221,7 +221,7 @@ class CallablePropertiesDialog(BaseDialog):
             self._py_name.setEnabled(False)
 
         elif isinstance(self.model, Function):
-            self.setWindowTitle("Function Properties")
+            self.widget.setWindowTitle("Function Properties")
 
             self._abort_on_exception.setEnabled(False)
             self._default.setEnabled(False)
@@ -236,7 +236,7 @@ class CallablePropertiesDialog(BaseDialog):
             self._transfer_this.setEnabled(False)
 
         elif isinstance(self.model, OperatorFunction):
-            self.setWindowTitle("Operator Function Properties")
+            self.widget.setWindowTitle("Operator Function Properties")
 
             self._abort_on_exception.setEnabled(False)
             self._default.setEnabled(False)
@@ -253,7 +253,7 @@ class CallablePropertiesDialog(BaseDialog):
             self._py_name.setEnabled(False)
 
         elif isinstance(self.model, ManualCode):
-            self.setWindowTitle("Manual Code Properties")
+            self.widget.setWindowTitle("Manual Code Properties")
 
             self._py_type.setEnabled(False)
             self._py_args.setEnabled(False)
@@ -315,7 +315,7 @@ class CallablePropertiesDialog(BaseDialog):
             elif name == 'NoDerived':
                 self._no_derived.setChecked(True)
             elif name == 'NoTypeHint':
-                self.noTypeHintCb.setChecked(True)
+                self._no_type_hint.setChecked(True)
             elif name == 'Numeric':
                 self._numeric.setChecked(True)
             elif name == 'PostHook':
@@ -412,7 +412,7 @@ class CallablePropertiesDialog(BaseDialog):
         if self._no_derived.isChecked():
             annos_list.append('NoDerived')
 
-        if self.noTypeHintCb.isChecked():
+        if self._no_type_hint.isChecked():
             annos_list.append('NoTypeHint')
 
         if self._numeric.isChecked():

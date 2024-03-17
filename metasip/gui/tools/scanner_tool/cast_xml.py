@@ -594,9 +594,11 @@ class _Field(_Variable):
         t = parser.asType(self.type_id)
 
         if t:
+            status = 'ignored' if self.access.startswith('protected') else 'unknown'
+
             scope.content.append(
                     Variable(name=self.name, type=t, static=False,
-                            access=self.access))
+                            access=self.access, status=status))
 
 
 class _Enumeration(_ScopedItem, _Access):
