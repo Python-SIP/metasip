@@ -13,6 +13,7 @@ description = "GUI Development Tool for SIP"
 readme = "README.md"
 urls.homepage = "https://github.com/Python-SIP/metasip"
 requires-python = ">=3.8"
+license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: BSD License"]
 dynamic = ["version"]
 
