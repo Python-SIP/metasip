@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
 
 
 import glob
@@ -15,8 +15,8 @@ from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
 from .....helpers import (get_platform_name, get_supported_platforms,
         header_directory_platform, VersionMap)
 from .....models import (Callable, CodeContainer, Constructor, Enum,
-        HeaderDirectory, HeaderFile, HeaderFileVersion, ManualCode, SipFile,
-        VersionRange)
+        HeaderDirectory, HeaderFile, HeaderFileVersion, ManualCode, Platform,
+        SipFile, VersionRange)
 from .....models.adapters import adapt
 
 from ....helpers import warning
@@ -326,6 +326,8 @@ class ControlWidget(QWidget):
         if ok:
             working_version = self._working_version.currentText()
             header_directory = HeaderDirectory(name=name,
+                    platforms=[Platform(name=name)
+                            for name in get_supported_platforms()],
                     scan=[working_version])
             self._tool.shell.project.headers.append(header_directory)
             self._tool.header_directory_added(header_directory,
