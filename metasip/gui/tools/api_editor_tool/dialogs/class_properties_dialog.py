@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from PyQt6.QtWidgets import (QCheckBox, QFormLayout, QGridLayout, QGroupBox,
@@ -114,23 +114,23 @@ class ClassPropertiesDialog(BaseDialog):
             elif name == 'Mixin':
                 self._mixin.setChecked(True)
             elif name == 'PyName':
-                self._py_name.setText(Value)
+                self._py_name.setText(value)
             elif name == 'API':
-                self._api.setText(Value)
+                self._api.setText(value)
             elif name == 'Metatype':
-                self._metatype.setText(Value)
+                self._metatype.setText(value)
             elif name == 'Supertype':
-                self._supertype.setText(Value)
+                self._supertype.setText(value)
             elif name == 'PyQtInterface':
-                self._pyqt_interface.setText(Value)
+                self._pyqt_interface.setText(value)
             elif name == 'TypeHint':
-                self._type_hint.setText(Value)
+                self._type_hint.setText(value)
             elif name == 'TypeHintIn':
-                self._type_hint_in.setText(Value)
+                self._type_hint_in.setText(value)
             elif name == 'TypeHintOut':
-                self._type_hint_out.setText(Value)
+                self._type_hint_out.setText(value)
             elif name == 'TypeHintValue':
-                self._type_hint_value.setText(Value)
+                self._type_hint_value.setText(value)
 
     def get_fields(self):
         """ Update the API item from the dialog's fields. """
