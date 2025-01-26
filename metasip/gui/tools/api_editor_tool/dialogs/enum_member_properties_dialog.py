@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from PyQt6.QtWidgets import (QCheckBox, QFormLayout, QGroupBox, QLineEdit,
@@ -50,7 +50,7 @@ class EnumMemberPropertiesDialog(BaseDialog):
 
         py_name = self._py_name.text().strip()
         if py_name:
-            annos_list.append('PyName=' + s)
+            annos_list.append('PyName=' + py_name)
 
         self.model.annos = ','.join(annos_list)
 
