@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from PyQt6.QtWidgets import QCheckBox, QFormLayout, QLineEdit
 
-from ....project import Module
+from ....models import Module
 
 from ...helpers import BaseDialog
 from ...shell import EventType
