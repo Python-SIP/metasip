@@ -1,5 +1,24 @@
 # Release Notes
 
+## v2.13.4
+
+### Bug fixes
+
+- Fixed a crash when creating a new header directory in the Scanner tool.
+  Resolves [#23](https://github.com/Python-SIP/metasip/issues/23)
+- Fixed a crash when editing a class's properties.  Resolves
+  [#22](https://github.com/Python-SIP/metasip/issues/22)
+- Fixed a crash when editing an enum member's properties.  Resolves
+  [#21](https://github.com/Python-SIP/metasip/issues/21)
+- Fixed a crash when creating a new module.  Resolves
+  [#20](https://github.com/Python-SIP/metasip/issues/20)
+
+### Missing `LICENSE` file
+
+The missing `LICENSE` file was added.
+
+Resolves [#18](https://github.com/Python-SIP/metasip/issues/18)
+
 
 ## v2.13.3
 

@@ -13,7 +13,7 @@ project = 'MetaSIP'
 copyright = '{0} Phil Thompson <phil@riverbankcomputing.com>'.format(
         date.today().year)
 author = 'Phil Thompson'
-version = 'v2.13.2'
+version = 'v2.13.4'
 
 
 # -- General configuration ---------------------------------------------------
