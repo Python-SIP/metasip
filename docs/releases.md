@@ -1,5 +1,13 @@
 # Release Notes
 
+## v2.13.5
+
+### Bug fixes
+
+Fixed the crash when creating a new project from the command line (ie. when
+running `msip` without a project name).
+
+
 ## v2.13.4
 
 ### Bug fixes
