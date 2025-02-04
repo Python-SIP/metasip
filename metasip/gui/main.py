@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
 
 
 import argparse
@@ -39,9 +39,12 @@ def main():
     sys.excepthook = _exception_hook
 
     # Load any project.
-    project = Project(project_name)
-    if not load_project(project, ui=ProjectUi()):
-        return 0
+    if project_name:
+        project = Project(project_name)
+        if not load_project(project, ui=ProjectUi()):
+            return 0
+    else:
+        project = Project('Untitled.msp')
 
     # Create the shell.
     shell = Shell(ApiEditorTool, FeaturesTool, ImportProjectTool, LoggerTool,
