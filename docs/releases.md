@@ -1,5 +1,17 @@
 # Release Notes
 
+## v2.14.0
+
+### Support for C++11 enum base types
+
+The scanner tool now recognises C++11 enum base types and includes them in
+generated `.sip` files.  SIP v6.12 is required to handle them.
+
+The project format version is now v0.18.
+
+Resolves [#24](https://github.com/Python-SIP/metasip/issues/24)
+
+
 ## v2.13.5
 
 ### Bug fixes
