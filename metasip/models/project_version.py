@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
 
 
 # In metasip prior to v2.12 the project format version was a single integer and
@@ -24,6 +24,9 @@
 
 
 # Project format version history:
+#
+#  0.18 Implemented by metasip v2.14.
+#       - Added 'basetype' to the 'Enum' element.
 #
 #  0.17 Implemented by metasip v2.13.
 #       - Added 'comments' to the 'Class', 'Constructor', 'Destructor', 'Enum',
@@ -49,4 +52,4 @@
 MinimumProjectVersion = (0, 15)
 
 # The latest supported project format.
-ProjectVersion = (0, 17)
+ProjectVersion = (0, 18)

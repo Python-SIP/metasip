@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from ..access import Access
@@ -17,6 +17,7 @@ class EnumAdapter(BaseApiAdapter):
 
     # The map of attribute names and types.
     ATTRIBUTE_TYPE_MAP = {
+        'basetype':     AttributeType.STRING,
         'enumclass':    AttributeType.BOOL,
         'name':         AttributeType.STRING,
     }
@@ -31,6 +32,9 @@ class EnumAdapter(BaseApiAdapter):
             return False
 
         if enum.access != other_enum.access:
+            return False
+
+        if enum.basetype != other_enum.basetype:
             return False
 
         if enum.name != other_enum.name:
@@ -53,6 +57,9 @@ class EnumAdapter(BaseApiAdapter):
 
         if enum.name != '':
             s += ' ' + enum.name
+
+        if enum.basetype != '':
+            s += ' : ' + enum.basetype
 
         s += adapt(enum, Annos).as_str()
 
@@ -104,6 +111,7 @@ class EnumAdapter(BaseApiAdapter):
         output.write('<Enum')
         adapt(enum, Code).save_attributes(output)
         adapt(enum, Access).save_attributes(output)
+        self.save_str('basetype', output)
         self.save_bool('enumclass', output)
         self.save_attribute('name', enum.name, output)
         output.write('>\n')

@@ -619,6 +619,7 @@ class _Enumeration(_ScopedItem, _Access):
         if self.name.startswith("."):
             self.name = ""
 
+        self.type_id = attrs['type']
         self.scoped = bool(int(attrs.get('scoped', '0')))
         self.values = []
 
@@ -634,8 +635,14 @@ class _Enumeration(_ScopedItem, _Access):
         if self.access.startswith("private"):
             return
 
-        tci = Enum(name=self.name, access=self.access, enumclass=self.scoped,
-                status='unknown')
+        # unsigned int is the CastXML default whereas int has always been the
+        # SIP default.
+        basetype = parser.asType(self.type_id)
+        if basetype in ('int', 'unsigned int'):
+            basetype = ''
+
+        tci = Enum(name=self.name, access=self.access, basetype=basetype,
+                enumclass=self.scoped, status='unknown')
 
         for e in self.values:
             tci.content.append(EnumValue(name=e.name, status='unknown'))

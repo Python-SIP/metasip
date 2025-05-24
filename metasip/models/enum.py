@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from dataclasses import dataclass, field
@@ -14,6 +14,9 @@ from .enum_value import EnumValue
 @dataclass
 class Enum(Code, Access):
     """ This class implements an enum. """
+
+    # The C++11 base type (if not int).
+    basetype: str = ''
 
     # The list of enum values.
     content: List[EnumValue] = field(default_factory=list)
