@@ -46,20 +46,23 @@ class ClassPropertiesDialog(BaseDialog):
         self._export_derived = QCheckBox('ExportDerived')
         group_box_layout.addWidget(self._export_derived, 4, 0)
 
+        self._export_derived_locally = QCheckBox('ExportDerivedLocally')
+        group_box_layout.addWidget(self._export_derived_locally, 5, 0)
+
         form = QFormLayout()
-        group_box_layout.addLayout(form, 5, 0)
+        group_box_layout.addLayout(form, 6, 0)
 
         self._metatype = QLineEdit()
         form.addRow('Metatype', self._metatype)
 
         self._mixin = QCheckBox('Mixin')
-        group_box_layout.addWidget(self._mixin, 6, 0)
+        group_box_layout.addWidget(self._mixin, 7, 0)
 
         self._no_default_ctors = QCheckBox('NoDefaultCtors')
-        group_box_layout.addWidget(self._no_default_ctors, 7, 0)
+        group_box_layout.addWidget(self._no_default_ctors, 8, 0)
 
         self._no_type_hint = QCheckBox('NoTypeHint')
-        group_box_layout.addWidget(self._no_type_hint, 8, 0)
+        group_box_layout.addWidget(self._no_type_hint, 9, 0)
 
         form = QFormLayout()
         group_box_layout.addLayout(form, 0, 1)
@@ -111,6 +114,8 @@ class ClassPropertiesDialog(BaseDialog):
                 self._pyqt_no_qmetaobject.setChecked(True)
             elif name == 'ExportDerived':
                 self._export_derived.setChecked(True)
+            elif name == 'ExportDerivedLocally':
+                self._export_derived_locally.setChecked(True)
             elif name == 'Mixin':
                 self._mixin.setChecked(True)
             elif name == 'PyName':
@@ -159,6 +164,9 @@ class ClassPropertiesDialog(BaseDialog):
 
         if self._export_derived.isChecked():
             annos_list.append('ExportDerived')
+
+        if self._export_derived_locally.isChecked():
+            annos_list.append('ExportDerivedLocally')
 
         if self._mixin.isChecked():
             annos_list.append('Mixin')
