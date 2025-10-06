@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from dataclasses import dataclass
@@ -1163,6 +1163,7 @@ class CodeView(ContainerView):
         thcslot = False
         thicslot = False
         tcslot = False
+        tdcslot = False
         cttcslot = False
         cftcslot = False
         mcslot = False
@@ -1208,6 +1209,7 @@ class CodeView(ContainerView):
             thcslot = True
             thicslot = True
             tcslot = True
+            tdcslot = True
             cttcslot = True
             cftcslot = True
             fcslot = True
@@ -1270,7 +1272,7 @@ class CodeView(ContainerView):
         elif isinstance(self.api, EnumValue):
             properties_handler = self._handle_enum_member_properties
 
-        if thcslot or thicslot or tcslot or cttcslot or cftcslot or fcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
+        if thcslot or thicslot or tcslot or tdcslot or cttcslot or cftcslot or fcslot or sccslot or mcslot or vccslot or acslot or gcslot or scslot or gctcslot or gcccslot or bigetbslot or birelbslot or birbslot or biwbslot or biscslot or bicbslot or pickslot or xaslot or dsslot:
             menu.append(None)
 
             if thcslot:
@@ -1281,6 +1283,11 @@ class CodeView(ContainerView):
             if tcslot:
                 self.add_editor_option(menu, '%TypeCode', self._typeCodeSlot,
                         self.api.typecode, 'tc')
+
+            if tdcslot:
+                self.add_editor_option(menu, '%TypeDerivedCode',
+                        self._typeDerivedCodeSlot, self.api.typederivedcode,
+                        'tdc')
 
             if thicslot:
                 self.add_editor_option(menu, '%TypeHintCode',
@@ -1600,6 +1607,24 @@ class CodeView(ContainerView):
             self.shell.dirty = True
 
         del self.editors['tc']
+
+    def _typeDerivedCodeSlot(self):
+        """ Slot to handle %TypeDerivedCode. """
+
+        ed = ExternalEditor()
+        ed.editDone.connect(self._typeDerivedCodeDone)
+        ed.edit(self.api.typederivedcode,
+                "%TypeDerivedCode: " + self.api_as_str())
+        self.editors['tdc'] = ed
+
+    def _typeDerivedCodeDone(self, text_changed, text):
+        """ Slot to handle changed %TypeDerivedCode. """
+
+        if text_changed:
+            self.api.typederivedcode = text
+            self.shell.dirty = True
+
+        del self.editors['tdc']
 
     def _convToTypeCodeSlot(self):
         """ Slot to handle %ConvertToTypeCode. """

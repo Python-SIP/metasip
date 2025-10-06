@@ -71,6 +71,9 @@ class Class(Code, CodeContainer, Docstring, Access):
     # The optional %TypeCode.
     typecode: str = ''
 
+    # The optional %TypeDerivedCode.
+    typederivedcode: str = ''
+
     # The optional %TypeHeaderCode.
     typeheadercode: str = ''
 

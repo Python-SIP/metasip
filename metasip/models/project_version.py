@@ -25,6 +25,9 @@
 
 # Project format version history:
 #
+#  0.19 Implemented by metasip v2.15.
+#       - Added 'typederivedcode' to the 'Class' element.
+#
 #  0.18 Implemented by metasip v2.14.
 #       - Added 'basetype' to the 'Enum' element.
 #
@@ -52,4 +55,4 @@
 MinimumProjectVersion = (0, 15)
 
 # The latest supported project format.
-ProjectVersion = (0, 18)
+ProjectVersion = (0, 19)

@@ -49,6 +49,7 @@ class ClassAdapter(BaseApiAdapter):
         'subclasscode':     AttributeType.LITERAL,
         'finalisationcode': AttributeType.LITERAL,
         'typecode':         AttributeType.LITERAL,
+        'typederivedcode':  AttributeType.LITERAL,
         'typeheadercode':   AttributeType.LITERAL,
         'typehintcode':     AttributeType.LITERAL,
     }
@@ -152,6 +153,8 @@ class ClassAdapter(BaseApiAdapter):
         output.blank()
 
         output.write_code_directive('%TypeCode', klass.typecode, indent=False)
+        output.write_code_directive('%TypeDerivedCode', klass.typederivedcode,
+                indent=False)
         output.write_code_directive('%FinalisationCode',
                 klass.finalisationcode)
         output.write_code_directive('%ConvertToSubClassCode',
@@ -241,6 +244,7 @@ class ClassAdapter(BaseApiAdapter):
         self.save_literal('typehintcode', output)
         self.save_literal('typeheadercode', output)
         self.save_literal('typecode', output)
+        self.save_literal('typederivedcode', output)
         self.save_literal('finalisationcode', output)
         self.save_literal('subclasscode', output)
         self.save_literal('convtotypecode', output)
