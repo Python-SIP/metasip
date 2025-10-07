@@ -1,5 +1,18 @@
 # Release Notes
 
+## v2.15.0
+
+### Support for `/ExportDerivedLocally/`
+
+Support was added for the `/ExportDerivedLocally/` class annotation.
+
+### Support for `%TypeDerivedCode`
+
+Support was added for the `%TypeDerivedCode` directive.
+
+The project format version is now v0.19.
+
+
 ## v2.14.0
 
 ### Support for C++11 enum base types
