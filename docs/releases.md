@@ -1,5 +1,13 @@
 # Release Notes
 
+## v2.16.0
+
+### CastXML Support
+
+Support was added for new versions of CastXML, specifically support for
+`ElaboratedType` and `RValueReferenceType`.
+
+
 ## v2.15.0
 
 ### Support for `/ExportDerivedLocally/`
