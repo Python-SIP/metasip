@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2026 Phil Thompson <phil@riverbankcomputing.com>
 
 
 import os
@@ -801,6 +801,15 @@ class _IndirectType(object):
         return parser.asInnerType(self.type_id, prefix_ok)
 
 
+class _ElaboratedType(_IndirectType):
+    """
+    This class represents a Cast-XML elaborated type entity.
+    """
+
+    # The base type behaviour is sufficient.
+    pass
+
+
 class _ReferenceType(_IndirectType):
     """
     This class represents a Cast-XML reference type entity.
@@ -817,6 +826,24 @@ class _ReferenceType(_IndirectType):
             s += " "
 
         return s + "&", False
+
+
+class _RValueReferenceType(_IndirectType):
+    """
+    This class represents a Cast-XML rvalue reference type entity.
+    """
+    def asType(self, parser, prefix_ok):
+        """
+        Return the string representation of the type.
+
+        parser is the parser instance.
+        """
+        s, _ = super().asType(parser, prefix_ok)
+
+        if s[-1] not in "*&":
+            s += " "
+
+        return s + "&&", False
 
 
 class _PointerType(_IndirectType):
@@ -974,13 +1001,15 @@ class CastXMLParser(ParserBase):
         Return a dictionary of XML entity names and their corresponding
         classes.  These are the ones that don't need any special handling.
         """
-        return {"class":            _Class,
-                "typedef":          _Typedef,
-                "fundamentaltype":  _FundamentalType,
-                "referencetype":    _ReferenceType,
-                "pointertype":      _PointerType,
-                "arraytype":        _PointerType,
-                "cvqualifiedtype":  _CvQualifiedType}
+        return {"class":                _Class,
+                "typedef":              _Typedef,
+                "elaboratedtype":       _ElaboratedType,
+                "fundamentaltype":      _FundamentalType,
+                "referencetype":        _ReferenceType,
+                "rvaluereferencetype":  _RValueReferenceType,
+                "pointertype":          _PointerType,
+                "arraytype":            _PointerType,
+                "cvqualifiedtype":      _CvQualifiedType}
 
     def parse(self, project, input_dir, hdir, hf, pathname, log):
         """
@@ -1367,6 +1396,6 @@ class CastXMLParser(ParserBase):
         try:
             type_str, prefix_ok = self.byid[type_id].asType(self, prefix_ok)
         except KeyError:
-            type_str = 'unknown_type'
+            type_str = 'unknown_type_' + type_id
 
         return type_str, prefix_ok
