@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2026 Phil Thompson <phil@riverbankcomputing.com>
 
 
 import glob
@@ -719,7 +719,7 @@ class ControlWidget(QWidget):
         """ Handle the removal of a header file from the project. """
 
         # Find the corresponding .sip file.
-        for mod in self.current_project.modules:
+        for mod in self._tool.shell.project.modules:
             if mod.name == header_file.module:
                 for sip_file in mod.content:
                     if sip_file.name == header_file.name:
