@@ -15,7 +15,7 @@ def get_platform_name():
     if sys.platform == 'win32':
         return 'Windows'
 
-    platform_name = 'Linux'
+    return 'Linux'
 
 
 def get_supported_platforms():
