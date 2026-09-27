@@ -62,8 +62,6 @@ def _exception_hook(exc_type, exc_value, exc_tb):
     """ Handle an exception. """
 
     if isinstance(exc_value, UserException):
-        from .utils import warning
-
         warning('metasip', exc_value.text, detail=exc_value.detail)
     else:
         import traceback
