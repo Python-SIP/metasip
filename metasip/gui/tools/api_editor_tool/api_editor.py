@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2026 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from dataclasses import dataclass
@@ -1042,6 +1042,8 @@ class CodeView(ContainerView):
         if s == 'removed':
             text = "Removed"
             expand = True
+        elif s == 'preview':
+            text = "Preview"
         elif s == 'todo':
             text = "Todo"
             expand = True
@@ -1093,6 +1095,9 @@ class CodeView(ContainerView):
         menu.append(
                 MenuOption("Checked", self._setStatusChecked,
                         checked=(self.api.status == '')))
+        menu.append(
+                MenuOption("Preview", self._setStatusPreview,
+                        checked=(self.api.status == 'preview')))
         menu.append(
                 MenuOption("Todo", self._setStatusTodo,
                         checked=(self.api.status == 'todo')))
@@ -2024,6 +2029,11 @@ class CodeView(ContainerView):
         """ Slot to handle the status being set to checked. """
 
         self._setStatus('')
+
+    def _setStatusPreview(self):
+        """ Slot to handle the status being set to preview. """
+
+        self._setStatus('preview')
 
     def _setStatusTodo(self):
         """ Slot to handle the status being set to todo. """

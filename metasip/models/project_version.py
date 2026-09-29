@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2025 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2026 Phil Thompson <phil@riverbankcomputing.com>
 
 
 # In metasip prior to v2.12 the project format version was a single integer and
@@ -24,6 +24,10 @@
 
 
 # Project format version history:
+#
+#  0.20 Implemented by metasip v2.17.
+#       - Added 'preview' as a value of the 'status' attribute of the
+#         'Workflow' element.
 #
 #  0.19 Implemented by metasip v2.15.
 #       - Added 'typederivedcode' to the 'Class' element.
@@ -55,4 +59,4 @@
 MinimumProjectVersion = (0, 15)
 
 # The latest supported project format.
-ProjectVersion = (0, 19)
+ProjectVersion = (0, 20)

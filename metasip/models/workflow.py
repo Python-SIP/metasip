@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2026 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from dataclasses import dataclass
@@ -14,5 +14,5 @@ class Workflow:
     comments: str = ''
 
     # The workflow status of the API item.  Values are '', 'ignored',
-    # 'removed', 'todo', and 'unknown'.
+    # 'preview', 'removed', 'todo', and 'unknown'.
     status: str = ''
