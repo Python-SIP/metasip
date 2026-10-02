@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2026 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from xml.etree import ElementTree
@@ -16,7 +16,10 @@ def load_project(project, ui=None):
     """
 
     # Load the file.
-    tree = ElementTree.parse(project.name)
+    try:
+        tree = ElementTree.parse(project.name)
+    except FileNotFoundError:
+        raise UserException(f"'{project.name}' doesn't exist")
 
     # Do some basic sanity checks.
     root = tree.getroot()
