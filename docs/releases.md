@@ -1,5 +1,24 @@
 # Release Notes
 
+## v2.17.0
+
+### Workflow
+
+Items can now be marked as 'Preview'.
+
+The project format is now v0.20.
+
+### Bug fixes
+
+- Properly handle an attempt to open a non-existent project.
+- Fixed a broken import triggered when trying to open a project with an
+  unsupported version number.
+- Fixed a bug when removing a header file from a module.
+- Fixed a crash that could occur on Linux when Metasip attempted to look up the
+  default platform name, and got `None` instead of the string `'Linux'`.  Pull
+  request [#26](https://github.com/Python-SIP/metasip/pull/26)
+
+
 ## v2.16.0
 
 ### CastXML Support
