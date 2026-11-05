@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Copyright (c) 2024 Phil Thompson <phil@riverbankcomputing.com>
+# Copyright (c) 2026 Phil Thompson <phil@riverbankcomputing.com>
 
 
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGridLayout,
@@ -19,7 +19,6 @@ class ModulePropertiesDialog(BaseDialog):
 
         self._all_imports = list(project.externalmodules)
         self._all_imports.extend([m.name for m in project.modules])
-        self._all_imports.sort()
 
         form = QFormLayout()
         layout.addLayout(form)
